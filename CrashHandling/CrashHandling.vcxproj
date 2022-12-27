@@ -143,6 +143,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_1.cpp" />
     <ClCompile Include="main_2.cpp" />
+    <ClCompile Include="main_4_miniDump.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Helpers\Helpers.vcxproj">

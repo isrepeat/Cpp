@@ -9,7 +9,7 @@
 #pragma comment (lib, "DbgHelp.lib")
 
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 
 bool CallStack::loaded = false;
 
@@ -134,4 +134,4 @@ CallStack& CallStack::getInstance()
     return cs;
 }
 
-#endif
+//#endif

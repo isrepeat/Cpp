@@ -9,7 +9,7 @@
   <Identity
     Name="6dd6c115-05f3-4d03-92bb-dd185a4f0faf"
     Publisher="CN=isrepeat"
-    Version="1.0.0.0" />
+    Version="1.0.3.0" />
 
   <Properties>
     <DisplayName>PackageConsole</DisplayName>

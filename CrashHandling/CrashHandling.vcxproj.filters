@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="3rdParty">
+    <Filter Include="callstack">
       <UniqueIdentifier>{b604cd20-14ac-46e6-a51a-526703d02077}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -28,36 +28,39 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="callstack.cpp">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
+    </ClCompile>
+    <ClCompile Include="main_4_miniDump.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algo.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="callstack.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="definition.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="error.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="iterator.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="stack.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="system.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="traits.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
     <ClInclude Include="typedef.h">
-      <Filter>3rdParty</Filter>
+      <Filter>callstack</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
