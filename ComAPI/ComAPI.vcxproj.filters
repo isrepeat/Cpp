@@ -15,24 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Helpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PackageProvider.h">
+    <ClInclude Include="ComAPI.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Helpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="System.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PackageProvider.cpp">
+    <ClCompile Include="ComAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
