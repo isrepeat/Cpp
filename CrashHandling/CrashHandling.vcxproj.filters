@@ -33,6 +33,12 @@
     <ClCompile Include="main_4_miniDump.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_5_Vectored_Exception_Handling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_6_VEH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algo.h">
