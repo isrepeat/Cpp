@@ -1,6 +1,6 @@
 #define BUILD_LIBRARY
 #include "CrashHandlingAPI.h"
-#include "../ComAPI/ComAPI.h"
+#include "../../Shared/ComAPI/ComAPI.h"
 #include <Windows.h>
 #include <filesystem>
 #include <dbghelp.h>

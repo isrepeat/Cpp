@@ -4,8 +4,8 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "../CrashHandlingAPI_DLL/CrashHandlingAPI.h"
-#pragma comment (lib, "../!VS_TMP/Build/v142/Debug/x64/CrashHandlingAPI_DLL.lib")
+#include "../../CrashHandlingAPI_DLL/CrashHandlingAPI.h"
+#pragma comment (lib, "../../../!VS_TMP/Build/v142/Debug/x64/CrashHandlingAPI_DLL.lib")
 
 using namespace WinRT_DLL;
 using namespace Platform;

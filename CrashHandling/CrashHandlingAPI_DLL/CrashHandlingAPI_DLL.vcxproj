@@ -157,7 +157,7 @@
     <ClCompile Include="CrashHandlingAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ComAPI\ComAPI.vcxproj">
+    <ProjectReference Include="..\..\Shared\ComAPI\ComAPI.vcxproj">
       <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
     </ProjectReference>
   </ItemGroup>

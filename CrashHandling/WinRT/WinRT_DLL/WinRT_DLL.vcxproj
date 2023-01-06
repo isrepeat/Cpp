@@ -320,10 +320,10 @@
   <!-- Build independent projects -->
   <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
     <Message Importance="High" Text="==== Build shared projects first ..." />
-    <MSBuild Projects="$(SolutionDir)\ComAPI\ComAPI.vcxproj" Targets="Build" />
+    <MSBuild Projects="$(SolutionDir)\Shared\ComAPI\ComAPI.vcxproj" Targets="Build" />
     <Message Importance="High" Text="==== Build independent projects ..." />
     <Message Importance="High" Text="==== CrashHandlingAPI_DLL" />
-    <MSBuild Projects="$(SolutionDir)\CrashHandlingAPI_DLL\CrashHandlingAPI_DLL.vcxproj" Targets="Build" />
+    <MSBuild Projects="$(SolutionDir)\CrashHandling\CrashHandlingAPI_DLL\CrashHandlingAPI_DLL.vcxproj" Targets="Build" />
     <!--<Message Importance="High" Text="==== Copy pre built files ..." />-->
     <!--<Copy SourceFiles="@(PreBuiltFiles)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />-->
 
