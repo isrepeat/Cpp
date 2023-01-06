@@ -24,6 +24,12 @@
     <ClInclude Include="PackageProvider.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Channel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
@@ -33,6 +39,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PackageProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Channel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

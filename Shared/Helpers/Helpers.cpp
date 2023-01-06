@@ -1,4 +1,3 @@
-//#include "pch.h"
 #include "Helpers.h"
 #include "System.h"
 #include <Shlobj.h>
