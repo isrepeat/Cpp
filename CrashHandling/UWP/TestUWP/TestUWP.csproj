@@ -163,12 +163,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WinRT_DLL\WinRT_DLL.vcxproj">
-      <Project>{f33c797c-305c-4a91-bd8a-6a55536bce1f}</Project>
-      <Name>WinRT_DLL</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="TestUWP_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
@@ -182,7 +176,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
   <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
     <ContentWithTargetPath Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll">
@@ -190,5 +183,4 @@
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
-  
 </Project>
