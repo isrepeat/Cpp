@@ -13,4 +13,5 @@
 
 namespace CrashAPI {
 	API void CreateMinidump(EXCEPTION_POINTERS* pep, const wchar_t* path);
+	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
 }

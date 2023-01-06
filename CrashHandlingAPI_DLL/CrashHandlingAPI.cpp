@@ -103,9 +103,25 @@ void GenerateMiniDump(EXCEPTION_POINTERS* pep, std::wstring) {
 	}
 }
 
+//LONG __stdcall CustomExceptionHandler(EXCEPTION_POINTERS* pep)
+//{
+//	printf("MyCustomFilter start \n");
+//	GenerateMiniDump(pep, L"");
+//	printf("MyCustomFilter end \n");
+//
+//	exit(1);
+//	return EXCEPTION_EXECUTE_HANDLER; //EXCEPTION_CONTINUE_EXECUTION
+//}
+
 
 namespace CrashAPI {
 	API void CreateMinidump(EXCEPTION_POINTERS* pep, const wchar_t* path) {
 		GenerateMiniDump(pep, path);
+	}
+
+	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
+		int xxx = 9;
+		//AddVectoredExceptionHandler(0, CustomExceptionHandler);
+		AddVectoredExceptionHandler(0, handler);
 	}
 }

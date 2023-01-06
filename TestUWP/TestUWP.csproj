@@ -183,9 +183,9 @@
   </Target>
   -->
 
-  <!-- Copy output dependencies (native dlls) -->
+  <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
-    <ContentWithTargetPath Include="$(SolutionDir)\!VS_TMP\OutputDependencies\$(Platform)\$(Configuration)\*.dll">
+    <ContentWithTargetPath Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>

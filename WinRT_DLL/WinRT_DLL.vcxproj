@@ -307,4 +307,37 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+
+  <!-- Pre built files -->
+  <!--<ItemGroup>
+    <PreBuiltFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)**" />
+  </ItemGroup>-->
+  <ItemGroup>
+    <NativeDlls Include="$(OutDir)\CrashHandlingAPI_DLL.dll" />
+    <!-- add other dll if need ... -->
+  </ItemGroup>
+  
+  <!-- Build independent projects -->
+  <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
+    <Message Importance="High" Text="==== Build shared projects first ..." />
+    <MSBuild Projects="$(SolutionDir)\ComAPI\ComAPI.vcxproj" Targets="Build" />
+    <Message Importance="High" Text="==== Build independent projects ..." />
+    <Message Importance="High" Text="==== CrashHandlingAPI_DLL" />
+    <MSBuild Projects="$(SolutionDir)\CrashHandlingAPI_DLL\CrashHandlingAPI_DLL.vcxproj" Targets="Build" />
+    <!--<Message Importance="High" Text="==== Copy pre built files ..." />-->
+    <!--<Copy SourceFiles="@(PreBuiltFiles)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />-->
+
+    <Message Importance="High" Text="==== Copy native dlls to PreBuilt folder  ..." />
+    <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Copy some native dlls to 'PreBuilt' folder -->
+  <!--<Target Name="AfterBuild">
+    <ItemGroup>
+      <NativeDlls Include="$(OutDir)\CrashHandlingAPI_DLL.dll" />
+    </ItemGroup>
+    <Message Importance="High" Text="=== Copy native dlls to PreBuilt folder  ..." />
+    <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)" SkipUnchangedFiles="true" />
+  </Target>-->
+  
 </Project>
