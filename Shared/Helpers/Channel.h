@@ -7,6 +7,8 @@
 #include <condition_variable>
 #include <queue>
 
+#include <sddl.h>
+
 // TODO: add TimeoutConnection exception !!!!!!!!
 
 enum class PipeError {
@@ -19,7 +21,7 @@ enum class PipeError {
 
 std::exception GetLastErrorException(const std::string& msg);
 bool WaitConnectPipe(HANDLE hPipe, const std::atomic<bool>& stop, int timeout = 0);
-HANDLE WaitOpenPipe(const std::string& pipeName, const std::atomic<bool>& stop, int timeout = 0);
+HANDLE WaitOpenPipe(const std::wstring& pipeName, const std::atomic<bool>& stop, int timeout = 0);
 
 // NOTE: for simplicity we can use max buffer size ...
 template<typename T = uint8_t>
@@ -86,6 +88,103 @@ std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& sto
 
 
 
+
+inline ULONG BOOL_TO_ERROR(BOOL f)
+{
+    return f ? NOERROR : GetLastError();
+}
+
+//volatile UCHAR guz = 0;
+
+
+//struct TokenInfo {
+//    int SessionId;
+//    std::wstring sid;
+//};
+
+std::wstring GetTokenUserSid(HANDLE hToken);
+//TokenInfo GetTokenInfo(HANDLE hToken);
+
+
+
+template <typename T>
+class LocalPtr {
+public:
+    //LocalRAII(int size)
+    //	: pData{ (T)LocalAlloc(LPTR, size) }
+    //{}
+
+    LocalPtr() = default;
+
+    LocalPtr(HLOCAL hPtr)
+        : pData{ (T*)hPtr }
+    {}
+    ~LocalPtr() {
+        if (pData != nullptr) {
+            LocalFree((HLOCAL)pData);
+        }
+    }
+
+    LocalPtr(const LocalPtr& x) = delete;
+    LocalPtr(LocalPtr&& other) noexcept
+        : pData{ other.pData }
+    {
+        other.pData = nullptr;
+    }
+
+    LocalPtr& operator=(const LocalPtr& other) = delete;
+    LocalPtr& operator=(LocalPtr&& other)
+    {
+        if (&other == this)
+            return *this;
+
+        if (pData != nullptr) {
+            LocalFree((HLOCAL)pData);
+        }
+
+        pData = other.pData;
+        other.pData = nullptr;
+
+        return *this;
+    }
+    T& operator*() const { return *pData; }
+    T* operator->() const { return pData; }
+
+    operator bool() {
+        return static_cast<bool>(pData);
+    }
+
+    T* get() {
+        return pData;
+    }
+
+    T** ReleaseAndGetAdressOf() {
+        pData = nullptr;
+        return &pData;
+    }
+
+private:
+    T* pData = nullptr;
+};
+
+
+template<typename T>
+LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
+    DWORD dwSize = 0;
+    if (!GetTokenInformation(hToken, typeInfo, NULL, 0, &dwSize) && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+        return nullptr;
+    }
+
+    if (auto pTokenData = LocalPtr<T>(LocalAlloc(LPTR, dwSize))) {
+        if (GetTokenInformation(hToken, typeInfo, pTokenData.get(), dwSize, &dwSize)) {
+            return pTokenData;
+        }
+    }
+
+    return nullptr;
+}
+
+
 // EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
 // TODO: fix when interrupt connection -> not process "None" msg
 // TODO: remove try .. catch if was not error in future
@@ -103,21 +202,121 @@ public:
     WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
 
     Channel() = default;
-    void Create(const std::string& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0, bool securityAccess = false) {
+    void Create(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0, bool securityAccess = false, bool forUWP = false, HANDLE hProcessUWP = nullptr) {
         // Make security attributes to connect admin & user pipe if need
-        PSECURITY_DESCRIPTOR psd = NULL;
-        BYTE  sd[SECURITY_DESCRIPTOR_MIN_LENGTH];
-        psd = (PSECURITY_DESCRIPTOR)sd;
-        InitializeSecurityDescriptor(psd, SECURITY_DESCRIPTOR_REVISION);
-        SetSecurityDescriptorDacl(psd, TRUE, (PACL)NULL, FALSE);
-        SECURITY_ATTRIBUTES sa = { sizeof(sa), psd, FALSE };
+        
+        if (forUWP) {
+            SECURITY_ATTRIBUTES sa = { sizeof(sa), 0, FALSE };
 
-        hNamedPipe = CreateNamedPipeA(
-            pipeName.c_str(),
-            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-            PIPE_UNLIMITED_INSTANCES,
-            512, 512, 5000, securityAccess ? &sa : NULL);
+            // SDDL_EVERYONE + SDDL_ALL_APP_PACKAGES + SDDL_ML_LOW
+            if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(L"D:(A;;GA;;;WD)(A;;GA;;;AC)S:(ML;;;;;LW)", SDDL_REVISION_1, &sa.lpSecurityDescriptor, 0)) {
+                return;// GetLastError();
+            }
+
+            std::wstring formattedPipeName;
+
+            HANDLE hToken = nullptr;
+            if (OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken)) {
+                if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
+                    if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
+                        LocalPtr<WCHAR> pStr;
+                        if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
+                            formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
+                            hNamedPipe = CreateNamedPipeW(formattedPipeName.c_str(),
+                                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                                PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                PIPE_UNLIMITED_INSTANCES, 512, 512, 5000, &sa);
+                        }
+                        else {
+                            auto err = GetLastError();
+                            //auto err = GetLastErrorAsString();
+                        }
+                    }
+                }
+            }
+
+
+            //HANDLE hToken;
+            /*ULONG err = BOOL_TO_ERROR(OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken));
+            if (err == NOERROR) {
+                PVOID stack = alloca(guz);
+                ULONG cb = 0, rcb = 128;
+                union {
+                    PVOID buf;
+                    PTOKEN_APPCONTAINER_INFORMATION AppConainer;
+                    PWSTR sz;
+                };
+                
+                do {
+                    if (cb < rcb) {
+                        cb = RtlPointerToOffset(buf = alloca(rcb - cb), stack);
+                    }
+
+                    buf = new void(512);
+
+
+                    err = BOOL_TO_ERROR(GetTokenInformation(hToken, ::TokenAppContainerSid, buf, cb, &rcb));
+                    if (err == NOERROR) {
+                        ULONG SessionId;
+
+                        err = BOOL_TO_ERROR(GetTokenInformation(hToken, ::TokenSessionId, &SessionId, sizeof(SessionId), &rcb));
+                        if (err == NOERROR) {
+                            PWSTR szSid;
+
+                            err = BOOL_TO_ERROR(ConvertSidToStringSid(AppConainer->TokenAppContainer, &szSid));
+                            if (err == NOERROR) {
+                                static const WCHAR fmt[] = L"\\\\?\\pipe\\Sessions\\%d\\AppContainerNamedObjects\\%s\\%s";
+
+                                rcb = (1 + _scwprintf(fmt, SessionId, szSid, pipeName.c_str())) * sizeof(WCHAR);
+
+                                if (cb < rcb) {
+                                    cb = RtlPointerToOffset(buf = alloca(rcb - cb), stack);
+                                }
+
+                                _swprintf(sz, fmt, SessionId, szSid, pipeName.c_str());*/
+
+            //                    HANDLE hPipe = CreateNamedPipeW(sz,
+            //                        PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+            //                        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+            //                        PIPE_UNLIMITED_INSTANCES, 512, 512, 5000, &sa);
+
+            //                    if (hPipe == INVALID_HANDLE_VALUE)
+            //                    {
+            //                        err = GetLastError();
+            //                    }
+            //                    else
+            //                    {
+            //                        hNamedPipe = hPipe;
+            //                    }
+
+            //                    LocalFree(szSid);
+            //                }
+            //            }
+            //            break;
+            //        }
+
+            //    } while (err == ERROR_INSUFFICIENT_BUFFER);
+
+            //    CloseHandle(hToken);
+            //}
+
+            //LocalFree(sa.lpSecurityDescriptor);
+        }
+        else {
+            PSECURITY_DESCRIPTOR psd = NULL;
+            BYTE  sd[SECURITY_DESCRIPTOR_MIN_LENGTH];
+            psd = (PSECURITY_DESCRIPTOR)sd;
+            InitializeSecurityDescriptor(psd, SECURITY_DESCRIPTOR_REVISION);
+            SetSecurityDescriptorDacl(psd, TRUE, (PACL)NULL, FALSE);
+            SECURITY_ATTRIBUTES sa = { sizeof(sa), psd, FALSE };
+
+            hNamedPipe = CreateNamedPipeW(
+                pipeName.c_str(),
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                PIPE_UNLIMITED_INSTANCES,
+                512, 512, 5000, securityAccess ? &sa : NULL);
+        }
 
         if (hNamedPipe == INVALID_HANDLE_VALUE) {
             throw PipeError::InvalidHandle;
@@ -158,7 +357,7 @@ public:
     }
 
 
-    void Open(const std::string& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 10'000) {
+    void Open(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 10'000) {
         closeChannel = false;
         hNamedPipe = WaitOpenPipe(pipeName, closeChannel, timeout);
 

@@ -35,9 +35,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{f33c797c-305c-4a91-bd8a-6a55536bce1f}</ProjectGuid>
+    <ProjectGuid>{39e544b4-2dfe-45ab-97bd-ec51df5292eb}</ProjectGuid>
     <Keyword>WindowsRuntimeComponent</Keyword>
-    <RootNamespace>WinRT_DLL</RootNamespace>
+    <RootNamespace>HelpersWinRT</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -63,7 +63,7 @@
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
@@ -171,7 +171,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -188,7 +187,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -205,7 +203,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -222,7 +219,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -239,7 +235,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -256,7 +251,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -273,12 +267,13 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <!-- disable metadata to link with static lib -->
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -290,7 +285,6 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204</DisableSpecificWarnings>
-      <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -299,48 +293,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Class1.h" />
+    <ClInclude Include="Helpers.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Class1.cpp" />
+    <ClCompile Include="Helpers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <!-- Pre built files -->
-  <!--<ItemGroup>
-    <PreBuiltFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)**" />
-  </ItemGroup>-->
-  <ItemGroup>
-    <NativeFiles Include="$(OutDir)\CrashHandlingAPI_DLL.dll" />
-    <NativeFiles Include="$(OutDir)\MiniDumpWriter.exe" />
-    <!-- add other dll/files if need ... -->
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\HelpersWinRT\HelpersWinRT.vcxproj">
-      <Project>{39e544b4-2dfe-45ab-97bd-ec51df5292eb}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <!-- Build independent projects -->
-  <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
-    <Message Importance="High" Text="==== Build shared projects first ..." />
-    <MSBuild Projects="$(SolutionDir)\Shared\ComAPI\ComAPI.vcxproj" Targets="Build" />
-    <Message Importance="High" Text="==== Build independent projects ..." />
-    <Message Importance="High" Text="==== CrashHandlingAPI_DLL" />
-    <MSBuild Projects="$(SolutionDir)\CrashHandling\CrashHandlingAPI_DLL\CrashHandlingAPI_DLL.vcxproj" Targets="Build" />
-    <Message Importance="High" Text="==== MiniDumpWriter" />
-    <MSBuild Projects="$(SolutionDir)\CrashHandling\MiniDumpWriter\MiniDumpWriter.vcxproj" Targets="Build" />
-    <!--<Message Importance="High" Text="==== Copy pre built files ..." />-->
-    <!--<Copy SourceFiles="@(PreBuiltFiles)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />-->
-    <Message Importance="High" Text="==== Copy native dlls to PreBuilt folder  ..." />
-    <Copy SourceFiles="@(NativeFiles)" DestinationFolder="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)" SkipUnchangedFiles="true" />
-  </Target>
-  <!-- Copy some native dlls to 'PreBuilt' folder -->
-  <!--<Target Name="AfterBuild">
-    <ItemGroup>
-      <NativeDlls Include="$(OutDir)\CrashHandlingAPI_DLL.dll" />
-    </ItemGroup>
-    <Message Importance="High" Text="=== Copy native dlls to PreBuilt folder  ..." />
-    <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)" SkipUnchangedFiles="true" />
-  </Target>-->
 </Project>

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <string>
 
 namespace WinRT_DLL
 {
@@ -6,5 +7,9 @@ namespace WinRT_DLL
     {
     public:
         Class1();
+
+    private:
+        const std::wstring packageFolder;
+        const std::wstring installedFolder;
     };
 }

@@ -1,11 +1,21 @@
 #define BUILD_LIBRARY
 #include "CrashHandlingAPI.h"
+#include "../../Shared/Helpers/Helpers.h"
+#include "../../Shared/Helpers/Channel.h"
 #include "../../Shared/ComAPI/ComAPI.h"
 #include <Windows.h>
 #include <filesystem>
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
+enum class MiniDumpMessages {
+	None,
+	Connect,
+	ThreadId,
+	ExceptionInfo,
+};
+
+Channel<MiniDumpMessages> channelMinidump;
 
 BOOL CALLBACK MiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput, PMINIDUMP_CALLBACK_OUTPUT pOutput) {
 	// Check parameters
@@ -123,5 +133,41 @@ namespace CrashAPI {
 		int xxx = 9;
 		//AddVectoredExceptionHandler(0, CustomExceptionHandler);
 		AddVectoredExceptionHandler(0, handler);
+	}
+
+	API bool ExecuteCommandLine(const wchar_t* parameters, bool admin, DWORD showFlag) {
+        return H::ExecuteCommandLine(parameters, admin, showFlag);
+    }
+
+	API void CreateMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep) {
+		channelMinidump.Create(L"\\\\.\\pipe\\Local\\MyPipe", [threadId, pep](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			auto reply = Read();
+			switch (reply.type)
+			{
+			case MiniDumpMessages::Connect:
+				Write({ (uint8_t)threadId }, MiniDumpMessages::ThreadId);
+				break;
+			}
+			
+			return true;
+			});
+
+		channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ThreadId);
+	}
+
+	void OpenMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep) {
+		channelMinidump.Open(L"\\\\.\\pipe\\Local\\MyPipe", [threadId, pep](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			auto reply = Read();
+			switch (reply.type)
+			{
+			case MiniDumpMessages::Connect:
+				Write({ (uint8_t)threadId }, MiniDumpMessages::ThreadId);
+				break;
+			}
+
+			return true;
+			});
+
+		channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ThreadId);
 	}
 }

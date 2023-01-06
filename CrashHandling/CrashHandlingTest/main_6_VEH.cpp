@@ -3,6 +3,7 @@
 #include <dbghelp.h>
 #include <stdio.h>
 #include <crtdbg.h>
+#include "../../Shared/Helpers/Helpers.h"
 
 #pragma comment (lib, "dbghelp.lib" )
 
@@ -36,8 +37,13 @@ LONG __stdcall CustomExceptionHandler(EXCEPTION_POINTERS* pep)
 
 int main(int argc, char* argv[])
 {
-	AddVectoredExceptionHandler(0, CustomExceptionHandler);
-	DoWork();
+	//AddVectoredExceptionHandler(0, CustomExceptionHandler);
+	//DoWork();
+
+
+	auto exePath = H::ExePathW() + L"\\MiniDumpWriter.exe";
+	std::wstring command = L"/c " + exePath;
+	H::ExecuteCommandLine(command, false, SW_SHOW);
 
 	//__try
 	//{

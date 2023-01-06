@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
+#include <functional>
 #include <Windows.h>
+
 // #include <winnt.h> // EXCEPTION_POINTERS
 
 #ifdef BUILD_LIBRARY
@@ -14,4 +16,7 @@
 namespace CrashAPI {
 	API void CreateMinidump(EXCEPTION_POINTERS* pep, const wchar_t* path);
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
+	API bool ExecuteCommandLine(const wchar_t* parameters, bool admin, DWORD showFlag);
+	API void CreateMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep);
+	API void OpenMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep);
 }
