@@ -18,14 +18,26 @@ using namespace Platform;
 LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep)
 {
 	printf("MyCustomFilter start \n");
-	//std::wstring packageFolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data();
-	std::wstring exePath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
-	std::wstring command = L"/c " + exePath + L"\\MiniDumpWriter.exe";
-	CrashAPI::ExecuteCommandLine(command.c_str(), false, SW_SHOW);
-	
-	//CrashAPI::CreateMinidump(pep, L"");
+	//std::wstring exePath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
+	//std::wstring command = L"/c " + exePath + L"\\MiniDumpWriter.exe";
+	//CrashAPI::ExecuteCommandLine(command.c_str(), false, SW_SHOW);
+
+
+	std::wstring packageFolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data();
+	std::wstring protcolWithParams = L"dumpwriter:\"" + HelpersWinRT::CreateStringParams({
+				{L"-processId", std::to_wstring(GetCurrentProcessId())},
+				{L"-minidumpPath", packageFolder}
+		}) + L"\"";
+
+	//auto exePath = HelpersWinRT::ExePathW();
+	auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
+	Windows::System::Launcher::LaunchUriAsync(uri);
+
+	CrashAPI::OpenMinidumpChannel(pep, packageFolder);
+
 	printf("MyCustomFilter end \n");
 
+	Sleep(8000);
 	exit(1);
 	return EXCEPTION_EXECUTE_HANDLER; //EXCEPTION_CONTINUE_EXECUTION
 }
@@ -33,7 +45,7 @@ LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep)
 
 
 void Bar() {
-	int aaa = 9;
+	//int aaa = 9;
 
 	int* ptr = new int{ 1 };
 	delete ptr;
@@ -41,13 +53,10 @@ void Bar() {
 	*ptr = 17;
 
 
-
-	//*(int*)0 = 0;
-
 	//__try {
 	//	*(int*)0 = 0;
 	//}
-	//__except (CustomUnhandledExceptionFilter(GetExceptionInformation())) {
+	//__except (MyCustomExceptionHandler(GetExceptionInformation())) {
 	//}
 
 	int bbb = 9;
@@ -57,20 +66,26 @@ Class1::Class1()
 	: packageFolder{ Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data() }
 	, installedFolder{ Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data() }
 {	
-	////CrashAPI::RegisterVectorHandler(&MyCustomExceptionHandler);
+	CrashAPI::RegisterVectorHandler(&MyCustomExceptionHandler);
 
-	
-	auto processId = Windows::System::Diagnostics::ProcessDiagnosticInfo::GetForCurrentProcess()->ProcessId;
-	std::wstring protcolWithParams = L"dumpwriter:\"" + HelpersWinRT::CreateStringParams({
-				{L"-threadId", std::to_wstring(processId)}
-		}) + L"\"";
+	////auto win32ProcessId = GetCurrentProcessId();
+	////auto processId = Windows::System::Diagnostics::ProcessDiagnosticInfo::GetForCurrentProcess()->ProcessId;
+	//std::wstring protcolWithParams = L"dumpwriter:\"" + HelpersWinRT::CreateStringParams({
+	//			{L"-threadId", std::to_wstring(GetCurrentProcessId())}
+	//	}) + L"\"";
 
-	auto exePath = HelpersWinRT::ExePathW();
-	auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
-	Windows::System::Launcher::LaunchUriAsync(uri);
+	//auto exePath = HelpersWinRT::ExePathW();
+	//auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
+	//Windows::System::Launcher::LaunchUriAsync(uri);
 
-	//CrashAPI::CreateMinidumpChannel(1488, nullptr);
-	CrashAPI::OpenMinidumpChannel(1488, nullptr);
+	//
+
+	////auto win32CurrentThreadId = GetCurrentThreadId();
+	////CrashAPI::CreateMinidumpChannel(1488, nullptr);
+	//CrashAPI::OpenMinidumpChannel();
+
+
+	Bar();
 
 
 	int aa = 9;

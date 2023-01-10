@@ -88,25 +88,6 @@ std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& sto
 
 
 
-
-inline ULONG BOOL_TO_ERROR(BOOL f)
-{
-    return f ? NOERROR : GetLastError();
-}
-
-//volatile UCHAR guz = 0;
-
-
-//struct TokenInfo {
-//    int SessionId;
-//    std::wstring sid;
-//};
-
-std::wstring GetTokenUserSid(HANDLE hToken);
-//TokenInfo GetTokenInfo(HANDLE hToken);
-
-
-
 template <typename T>
 class LocalPtr {
 public:
@@ -202,121 +183,56 @@ public:
     WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
 
     Channel() = default;
-    void Create(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0, bool securityAccess = false, bool forUWP = false, HANDLE hProcessUWP = nullptr) {
-        // Make security attributes to connect admin & user pipe if need
-        
-        if (forUWP) {
-            SECURITY_ATTRIBUTES sa = { sizeof(sa), 0, FALSE };
 
-            // SDDL_EVERYONE + SDDL_ALL_APP_PACKAGES + SDDL_ML_LOW
-            if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(L"D:(A;;GA;;;WD)(A;;GA;;;AC)S:(ML;;;;;LW)", SDDL_REVISION_1, &sa.lpSecurityDescriptor, 0)) {
-                return;// GetLastError();
-            }
+    // Make security attributes to connect admin & user pipe
+    void CreateForAdmin(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+        auto pSecurityDescriptor = std::make_unique<SECURITY_DESCRIPTOR>();
+        InitializeSecurityDescriptor(pSecurityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION);
+        SetSecurityDescriptorDacl(pSecurityDescriptor.get(), TRUE, (PACL)NULL, FALSE);
+        pSecurityAttributes = std::make_unique<SECURITY_ATTRIBUTES>(SECURITY_ATTRIBUTES{ sizeof(SECURITY_ATTRIBUTES), pSecurityDescriptor.get(), FALSE });
 
-            std::wstring formattedPipeName;
+        Create(pipeName, listenHandler, timeout);
+    }
 
-            HANDLE hToken = nullptr;
-            if (OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken)) {
-                if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
-                    if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
-                        LocalPtr<WCHAR> pStr;
-                        if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
-                            formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
-                            hNamedPipe = CreateNamedPipeW(formattedPipeName.c_str(),
-                                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-                                PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                PIPE_UNLIMITED_INSTANCES, 512, 512, 5000, &sa);
-                        }
-                        else {
-                            auto err = GetLastError();
-                            //auto err = GetLastErrorAsString();
-                        }
+    // Make security attributes to connect UWP & desktop apps
+    void CreateForUWP(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, HANDLE hProcessUWP, int timeout = 0) {
+        pSecurityAttributes = std::make_unique<SECURITY_ATTRIBUTES>(SECURITY_ATTRIBUTES{ sizeof(SECURITY_ATTRIBUTES), NULL, FALSE });
+
+        // SDDL_EVERYONE + SDDL_ALL_APP_PACKAGES + SDDL_ML_LOW
+        if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(L"D:(A;;GA;;;WD)(A;;GA;;;AC)S:(ML;;;;;LW)", SDDL_REVISION_1, &pSecurityAttributes->lpSecurityDescriptor, 0)) {
+            //return;// GetLastError();
+            DebugBreak();
+        }
+
+        std::wstring formattedPipeName;
+
+        HANDLE hToken = nullptr;
+        if (OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken)) {
+            if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
+                if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
+                    LocalPtr<WCHAR> pStr;
+                    if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
+                        formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
+                    }
+                    else {
+                        auto err = GetLastError();
+                        //auto err = GetLastErrorAsString();
+                        DebugBreak();
                     }
                 }
             }
-
-
-            //HANDLE hToken;
-            /*ULONG err = BOOL_TO_ERROR(OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken));
-            if (err == NOERROR) {
-                PVOID stack = alloca(guz);
-                ULONG cb = 0, rcb = 128;
-                union {
-                    PVOID buf;
-                    PTOKEN_APPCONTAINER_INFORMATION AppConainer;
-                    PWSTR sz;
-                };
-                
-                do {
-                    if (cb < rcb) {
-                        cb = RtlPointerToOffset(buf = alloca(rcb - cb), stack);
-                    }
-
-                    buf = new void(512);
-
-
-                    err = BOOL_TO_ERROR(GetTokenInformation(hToken, ::TokenAppContainerSid, buf, cb, &rcb));
-                    if (err == NOERROR) {
-                        ULONG SessionId;
-
-                        err = BOOL_TO_ERROR(GetTokenInformation(hToken, ::TokenSessionId, &SessionId, sizeof(SessionId), &rcb));
-                        if (err == NOERROR) {
-                            PWSTR szSid;
-
-                            err = BOOL_TO_ERROR(ConvertSidToStringSid(AppConainer->TokenAppContainer, &szSid));
-                            if (err == NOERROR) {
-                                static const WCHAR fmt[] = L"\\\\?\\pipe\\Sessions\\%d\\AppContainerNamedObjects\\%s\\%s";
-
-                                rcb = (1 + _scwprintf(fmt, SessionId, szSid, pipeName.c_str())) * sizeof(WCHAR);
-
-                                if (cb < rcb) {
-                                    cb = RtlPointerToOffset(buf = alloca(rcb - cb), stack);
-                                }
-
-                                _swprintf(sz, fmt, SessionId, szSid, pipeName.c_str());*/
-
-            //                    HANDLE hPipe = CreateNamedPipeW(sz,
-            //                        PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-            //                        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-            //                        PIPE_UNLIMITED_INSTANCES, 512, 512, 5000, &sa);
-
-            //                    if (hPipe == INVALID_HANDLE_VALUE)
-            //                    {
-            //                        err = GetLastError();
-            //                    }
-            //                    else
-            //                    {
-            //                        hNamedPipe = hPipe;
-            //                    }
-
-            //                    LocalFree(szSid);
-            //                }
-            //            }
-            //            break;
-            //        }
-
-            //    } while (err == ERROR_INSUFFICIENT_BUFFER);
-
-            //    CloseHandle(hToken);
-            //}
-
-            //LocalFree(sa.lpSecurityDescriptor);
         }
-        else {
-            PSECURITY_DESCRIPTOR psd = NULL;
-            BYTE  sd[SECURITY_DESCRIPTOR_MIN_LENGTH];
-            psd = (PSECURITY_DESCRIPTOR)sd;
-            InitializeSecurityDescriptor(psd, SECURITY_DESCRIPTOR_REVISION);
-            SetSecurityDescriptorDacl(psd, TRUE, (PACL)NULL, FALSE);
-            SECURITY_ATTRIBUTES sa = { sizeof(sa), psd, FALSE };
 
-            hNamedPipe = CreateNamedPipeW(
-                pipeName.c_str(),
-                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-                PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                PIPE_UNLIMITED_INSTANCES,
-                512, 512, 5000, securityAccess ? &sa : NULL);
-        }
+        Create(formattedPipeName, listenHandler, timeout);
+    }
+
+    void Create(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+        hNamedPipe = CreateNamedPipeW(
+            pipeName.c_str(),
+            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+            PIPE_UNLIMITED_INSTANCES,
+            512, 512, 5000, pSecurityAttributes.get());
 
         if (hNamedPipe == INVALID_HANDLE_VALUE) {
             throw PipeError::InvalidHandle;
@@ -355,6 +271,7 @@ public:
             }
             });
     }
+
 
 
     void Open(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 10'000) {
@@ -512,6 +429,7 @@ private:
             threadInterrupt.join();
     }
 
+    std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
     HANDLE hNamedPipe = nullptr;
     std::thread threadChannel;
     std::thread threadConnect;
@@ -519,11 +437,11 @@ private:
     std::atomic<bool> connected = false;
     std::atomic<bool> stopSignal = false;
     std::atomic<bool> closeChannel = false;
-    //std::function<void(std::string)> loggerHandler = [](std::string msg) {fprintf(stdout, "%s [%ld]\n", msg.c_str(), GetLastError()); };
     std::function<void(std::string)> loggerHandler = [](std::string msg) {};
     std::function<void()> interruptHandler = []() {};
     std::function<void()> connectHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;
+
 
     EnumMsg waitedMessage = EnumMsg::None;
     std::atomic<bool> isWaitingSendingMessage = false;

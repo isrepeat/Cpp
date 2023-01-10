@@ -17,6 +17,6 @@ namespace CrashAPI {
 	API void CreateMinidump(EXCEPTION_POINTERS* pep, const wchar_t* path);
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
 	API bool ExecuteCommandLine(const wchar_t* parameters, bool admin, DWORD showFlag);
-	API void CreateMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep);
-	API void OpenMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep);
+	//API void CreateMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep);
+	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder);
 }

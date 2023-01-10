@@ -1,8 +1,119 @@
 #include <iostream>
+#include <filesystem>
 #include <Windows.h>
 #include <string>
 #include "../../Shared/Helpers/Helpers.h"
 #include "../../Shared/Helpers/Channel.h"
+#include "../../Shared/Helpers/CrashInfo.h"
+#include <dbghelp.h>
+#pragma comment (lib, "dbghelp.lib" )
+
+
+enum class MiniDumpMessages {
+	None,
+	Connect,
+	PackageFolder,
+	ExceptionInfo,
+};
+
+Channel<MiniDumpMessages> channelMinidump;
+std::wstring packageFolder;
+
+
+BOOL CALLBACK MiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput, PMINIDUMP_CALLBACK_OUTPUT pOutput) {
+	// Check parameters
+	if (pInput == 0)
+		return FALSE;
+
+	if (pOutput == 0)
+		return FALSE;
+
+
+	// Process the callbacks 
+	BOOL bRet = FALSE;
+
+	switch (pInput->CallbackType) {
+	case IncludeModuleCallback:
+		// Include the module into the dump 
+		bRet = TRUE;
+		break;
+
+	case IncludeThreadCallback:
+		// Include the thread into the dump 
+		bRet = TRUE;
+		break;
+
+	case ModuleCallback:
+		// Does the module have ModuleReferencedByMemory flag set ? 
+		if (!(pOutput->ModuleWriteFlags & ModuleReferencedByMemory)) {
+			// No, it does not - exclude it 
+			//wprintf(L"Excluding module: %s \n", pInput->Module.FullPath);
+			pOutput->ModuleWriteFlags &= (~ModuleWriteModule);
+		}
+		bRet = TRUE;
+		break;
+
+	case ThreadCallback:
+		// Include all thread information into the minidump 
+		bRet = TRUE;
+		break;
+
+	case ThreadExCallback:
+		// Include this information 
+		bRet = TRUE;
+		break;
+
+	case MemoryCallback:
+		// We do not include any information here -> return FALSE 
+		bRet = FALSE;
+		break;
+
+	case CancelCallback:
+		break;
+	}
+
+	return bRet;
+}
+
+
+//void GenerateMiniDump(EXCEPTION_POINTERS* pep, std::wstring path) {
+void GenerateMiniDump(CrashInfo& crashInfo, HANDLE hProcess, int processId, std::wstring path) {
+	if (!std::filesystem::exists(path))
+		std::filesystem::create_directories(path);
+
+	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
+		MINIDUMP_EXCEPTION_INFORMATION mdei;
+
+		mdei.ThreadId = crashInfo.threadId;
+		mdei.ExceptionPointers = &crashInfo.exceptionPointers;
+		mdei.ClientPointers = FALSE;
+
+		MINIDUMP_CALLBACK_INFORMATION mci;
+
+		mci.CallbackRoutine = (MINIDUMP_CALLBACK_ROUTINE)MiniDumpCallback;
+		mci.CallbackParam = 0;
+
+		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
+
+		//BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, mdt, (mdei.ExceptionPointers != 0) ? &mdei : 0, 0, &mci);
+		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != 0) ? &mdei : 0, 0, &mci);
+
+		if (!rv) {
+			//WriteDebug(L"MiniDumpWriteDump failed. Error: %u", GetLastError());
+		}
+		else {
+			//WriteDebug(L"Minidump created");
+		}
+
+		CloseHandle(hFile);
+	}
+	else {
+		//WriteDebug(L"CreateFile failed. Error: %u", GetLastError());
+	}
+}
+
 
 
 std::wstring GetLastErrorAsString()
@@ -29,14 +140,9 @@ std::wstring GetLastErrorAsString()
 	return message;
 }
 
-enum class MiniDumpMessages {
-    None,
-    Connect,
-    ThreadId,
-    ExceptionInfo,
-};
 
-Channel<MiniDumpMessages> channelMinidump;
+
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -46,6 +152,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	wprintf(L"\n\n");
 
 	int processId = 0;
+	std::wstring minidumpPath;
 	if (argc > 1) {
 		auto listArgs = H::ParseArgsFromString(std::wstring{ argv[1] });
 
@@ -53,50 +160,26 @@ int _tmain(int argc, _TCHAR* argv[])
 	        wprintf(L"parsed .. %s \n", arg.c_str());
 		}
 
-		if (listArgs.size() > 1 && listArgs[0] == L"-threadId") {
+		if (listArgs.size() > 3 && listArgs[0] == L"-processId" && listArgs[2] == L"-minidumpPath") {
 			processId = std::stoi(listArgs[1]);
+			minidumpPath = listArgs[3];
+		}
+		else {
+	        wprintf(L"wrong parsed ... ");
+			Sleep(2000);
+			return 1;
 		}
 	}
 
 
-	if (!processId)
-		return 1;
-
-
-	//int processId = 25340;
-	////HANDLE hProcess = GetCurrentProcess();
-	//HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, processId);
-
-	//std::wstring pipeNameUWP;
-
-	//HANDLE hToken = nullptr;
-	//if (OpenProcessToken(hProcess, TOKEN_QUERY, &hToken)) {
-
-	//	GetTokenUserSid(hToken);
-
-	//	if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
-	//		if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
-	//			LocalPtr<WCHAR> pStr;
-	//			if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
-	//				int aaa = 11;
-
-	//				pipeNameUWP = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\MyPipe";
-	//			}
-	//			else {
-	//				auto err = GetLastErrorAsString();
-	//				int xx = 9;
-	//			}
-	//		}
-	//	}
-	//}
-
-	
-	//int processId = 25340;
+	//Sleep(15'000);
 
 	try {
-		if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, processId))
+		Sleep(100);
+		//if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, processId))
+		if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE, FALSE, processId))
 		{
-			channelMinidump.Create(L"MyPipe", [processId](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			channelMinidump.CreateForUWP(L"channelDumpWriter", [hProcessUWP, processId](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type) {
 				case MiniDumpMessages::Connect: {
@@ -104,23 +187,36 @@ int _tmain(int argc, _TCHAR* argv[])
 					break;
 				}
 
-				case MiniDumpMessages::ThreadId: {
-					int threadId = reply.readData[0];
-					printf("[PIPE] threadId = %d \n", threadId);
+				case MiniDumpMessages::PackageFolder: {
+					auto strData = std::string{ reply.readData.begin(), reply.readData.end() };
+					printf("[PIPE] packageFolder = %s \n", strData.c_str());
+					packageFolder = H::StrToWStr(strData);
+					break;
+				}
+
+				case MiniDumpMessages::ExceptionInfo: {
+					auto crashInfo = DeserializeCrashInfo(reply.readData);
+					FixExceptionPointersInCrashInfo(crashInfo);
+					printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
+					printf("[PIPE] crashInfo: hProcessUWP = 0x%08x \n", (DWORD)hProcessUWP);
+					printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
+
+					GenerateMiniDump(crashInfo, hProcessUWP, processId, packageFolder);
 					break;
 				}
 				}
 				return true;
-				}, 0, true, true, hProcessUWP);
+				}, hProcessUWP, 20'000);
 		}
-
 	}
 	catch (PipeError err) {
 		printf("channelApplication error = %d", static_cast<int>(err));
 	}
 
 
-	Beep(1000, 1000);
-    Sleep(10000);
+	while (true) {
+		Sleep(1000);
+		//Beep(500, 500);
+	}
     return 0;
 }
