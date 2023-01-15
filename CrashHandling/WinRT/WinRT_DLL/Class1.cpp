@@ -1,5 +1,6 @@
 ﻿#include "Class1.h"
 #include <Windows.h>
+#include <shellapi.h>
 #include <errhandlingapi.h>
 #include <filesystem>
 #include <fstream>
@@ -7,77 +8,36 @@
 #include "../../CrashHandlingAPI_DLL/CrashHandlingAPI.h"
 #pragma comment (lib, "../../../!VS_TMP/Build/v142/Debug/x64/CrashHandlingAPI_DLL.lib")
 
+#include "../../../Shared/HelpersWinRT/Helpers.h"
+
 using namespace WinRT_DLL;
 using namespace Platform;
+//using namespace HelpersWinRT;
 
-
-//// To debug custom filter wrap your test crash code to __try ... __except(CustomUnhandledExceptionFilter(GetExceptionInformation()))
-//LONG __stdcall CustomUnhandledExceptionFilter(EXCEPTION_POINTERS* pep) {
-//	{
-//		std::wstring packageFolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data();
-//		std::ofstream file(packageFolder + L"\\hello.txt");
-//	}
-//
-//	std::string exceptionMsg;
-//	switch (pep->ExceptionRecord->ExceptionCode) {
-//	case EXCEPTION_ACCESS_VIOLATION:
-//		exceptionMsg = "EXCEPTION_ACCESS_VIOLATION";
-//		break;
-//	case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-//		exceptionMsg = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
-//		break;
-//	case EXCEPTION_DATATYPE_MISALIGNMENT:
-//		exceptionMsg = "EXCEPTION_DATATYPE_MISALIGNMENT";
-//		break;
-//	case EXCEPTION_FLT_DENORMAL_OPERAND:
-//		exceptionMsg = "EXCEPTION_FLT_DENORMAL_OPERAND";
-//		break;
-//	case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-//		exceptionMsg = "EXCEPTION_FLT_DIVIDE_BY_ZERO";
-//		break;
-//	case EXCEPTION_FLT_INEXACT_RESULT:
-//		exceptionMsg = "EXCEPTION_FLT_INEXACT_RESULT";
-//		break;
-//	case EXCEPTION_FLT_INVALID_OPERATION:
-//		exceptionMsg = "EXCEPTION_FLT_INVALID_OPERATION";
-//		break;
-//	case EXCEPTION_FLT_OVERFLOW:
-//		exceptionMsg = "EXCEPTION_FLT_OVERFLOW";
-//		break;
-//	case EXCEPTION_FLT_STACK_CHECK:
-//		exceptionMsg = "EXCEPTION_FLT_STACK_CHECK";
-//		break;
-//	case EXCEPTION_ILLEGAL_INSTRUCTION:
-//		exceptionMsg = "EXCEPTION_ILLEGAL_INSTRUCTION";
-//		break;
-//	case EXCEPTION_IN_PAGE_ERROR:
-//		exceptionMsg = "EXCEPTION_IN_PAGE_ERROR";
-//		break;
-//	case EXCEPTION_INT_DIVIDE_BY_ZERO:
-//		exceptionMsg = "EXCEPTION_INT_DIVIDE_BY_ZERO";
-//		break;
-//	case EXCEPTION_INT_OVERFLOW:
-//		exceptionMsg = "EXCEPTION_INT_OVERFLOW";
-//		break;
-//	default:
-//		exceptionMsg = "Unrecognized Exception";
-//	}
-//
-//
-//	CrashAPI::CreateMinidump(pep, L"D:\\WORK\\TEST\\CrashHandling_MiniDumps");
-//
-//	exit(0);
-//
-//	return EXCEPTION_EXECUTE_HANDLER;
-//}
 
 LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep)
 {
 	printf("MyCustomFilter start \n");
-	//std::wstring packageFolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data();
-	CrashAPI::CreateMinidump(pep, L"");
+	//std::wstring exePath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data();
+	//std::wstring command = L"/c " + exePath + L"\\MiniDumpWriter.exe";
+	//CrashAPI::ExecuteCommandLine(command.c_str(), false, SW_SHOW);
+
+
+	std::wstring packageFolder = Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data();
+	std::wstring protcolWithParams = L"dumpwriter:\"" + HelpersWinRT::CreateStringParams({
+				{L"-processId", std::to_wstring(GetCurrentProcessId())},
+				{L"-minidumpPath", packageFolder}
+		}) + L"\"";
+
+	//auto exePath = HelpersWinRT::ExePathW();
+	auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
+	Windows::System::Launcher::LaunchUriAsync(uri);
+
+	CrashAPI::OpenMinidumpChannel(pep, packageFolder);
+
 	printf("MyCustomFilter end \n");
 
+	Sleep(8000);
 	exit(1);
 	return EXCEPTION_EXECUTE_HANDLER; //EXCEPTION_CONTINUE_EXECUTION
 }
@@ -85,7 +45,7 @@ LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep)
 
 
 void Bar() {
-	int aaa = 9;
+	//int aaa = 9;
 
 	int* ptr = new int{ 1 };
 	delete ptr;
@@ -93,24 +53,44 @@ void Bar() {
 	*ptr = 17;
 
 
-
-	//*(int*)0 = 0;
-
 	//__try {
 	//	*(int*)0 = 0;
 	//}
-	//__except (CustomUnhandledExceptionFilter(GetExceptionInformation())) {
+	//__except (MyCustomExceptionHandler(GetExceptionInformation())) {
 	//}
 
 	int bbb = 9;
 }
 
-Class1::Class1()
+Class1::Class1() 
+	: packageFolder{ Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data() }
+	, installedFolder{ Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data() }
 {	
-	//AddVectoredExceptionHandler(0, CustomUnhandledExceptionFilter);
-	//SetUnhandledExceptionFilter(CustomUnhandledExceptionFilter);
-
 	CrashAPI::RegisterVectorHandler(&MyCustomExceptionHandler);
 
+	////auto win32ProcessId = GetCurrentProcessId();
+	////auto processId = Windows::System::Diagnostics::ProcessDiagnosticInfo::GetForCurrentProcess()->ProcessId;
+	//std::wstring protcolWithParams = L"dumpwriter:\"" + HelpersWinRT::CreateStringParams({
+	//			{L"-threadId", std::to_wstring(GetCurrentProcessId())}
+	//	}) + L"\"";
+
+	//auto exePath = HelpersWinRT::ExePathW();
+	//auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
+	//Windows::System::Launcher::LaunchUriAsync(uri);
+
+	//
+
+	////auto win32CurrentThreadId = GetCurrentThreadId();
+	////CrashAPI::CreateMinidumpChannel(1488, nullptr);
+	//CrashAPI::OpenMinidumpChannel();
+
+
 	Bar();
+
+
+	int aa = 9;
+	Sleep(2000);
+	Sleep(2000);
+	int xx = 9;
+	//Bar();
 }

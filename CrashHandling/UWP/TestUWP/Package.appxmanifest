@@ -4,7 +4,10 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
+  IgnorableNamespaces="uap mp rescap desktop desktop2">
 
   <Identity
     Name="e3dddf3a-8e86-4e47-9d79-012fb4e664a9"
@@ -31,6 +34,22 @@
     <Application Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="TestUWP.App">
+
+      <Extensions>
+
+        <!--<desktop:Extension xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+                            Category="windows.fullTrustProcess"
+                            Executable="MiniDumpWriter.exe">
+          <desktop:FullTrustProcess>
+            <desktop:ParameterGroup GroupId="ExistingFile" Parameters="/existingFile"/>
+          </desktop:FullTrustProcess>
+        </desktop:Extension>-->
+        
+        <uap:Extension Category="windows.protocol" Executable="MiniDumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:Protocol Name="dumpwriter" />
+        </uap:Extension>
+      </Extensions>
+      
       <uap:VisualElements
         DisplayName="TestUWP"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -45,5 +64,6 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

@@ -151,14 +151,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Channel.h" />
+    <ClInclude Include="CrashInfo.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="PackageProvider.h" />
     <ClInclude Include="System.h" />
+    <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="CrashInfo.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="PackageProvider.cpp" />
     <ClCompile Include="System.cpp" />
+    <ClCompile Include="Time.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

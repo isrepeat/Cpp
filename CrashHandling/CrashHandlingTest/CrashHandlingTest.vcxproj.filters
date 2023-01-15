@@ -15,42 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Helpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PackageProvider.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Channel.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Time.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CrashInfo.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Helpers.cpp">
+    <ClCompile Include="main_4_miniDump.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="System.cpp">
+    <ClCompile Include="main_5_Vectored_Exception_Handling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PackageProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Channel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CrashInfo.cpp">
+    <ClCompile Include="main_6_VEH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

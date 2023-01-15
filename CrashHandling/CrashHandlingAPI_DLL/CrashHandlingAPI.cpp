@@ -1,11 +1,22 @@
 #define BUILD_LIBRARY
 #include "CrashHandlingAPI.h"
+#include "../../Shared/Helpers/CrashInfo.h"
+#include "../../Shared/Helpers/Helpers.h"
+#include "../../Shared/Helpers/Channel.h"
 #include "../../Shared/ComAPI/ComAPI.h"
 #include <Windows.h>
 #include <filesystem>
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
+enum class MiniDumpMessages {
+	None,
+	Connect,
+	PackageFolder,
+	ExceptionInfo,
+};
+
+Channel<MiniDumpMessages> channelMinidump;
 
 BOOL CALLBACK MiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput, PMINIDUMP_CALLBACK_OUTPUT pOutput) {
 	// Check parameters
@@ -69,8 +80,7 @@ void GenerateMiniDump(EXCEPTION_POINTERS* pep, std::wstring) {
 	if (!std::filesystem::exists(path))
 		std::filesystem::create_directories(path);
 
-	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(),
-		GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
 		MINIDUMP_EXCEPTION_INFORMATION mdei;
@@ -86,8 +96,7 @@ void GenerateMiniDump(EXCEPTION_POINTERS* pep, std::wstring) {
 
 		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
 
-		BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
-			hFile, mdt, (pep != 0) ? &mdei : 0, 0, &mci);
+		BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, mdt, (pep != 0) ? &mdei : 0, 0, &mci);
 
 		if (!rv) {
 			//WriteDebug(L"MiniDumpWriteDump failed. Error: %u", GetLastError());
@@ -123,5 +132,85 @@ namespace CrashAPI {
 		int xxx = 9;
 		//AddVectoredExceptionHandler(0, CustomExceptionHandler);
 		AddVectoredExceptionHandler(0, handler);
+	}
+
+	API bool ExecuteCommandLine(const wchar_t* parameters, bool admin, DWORD showFlag) {
+        return H::ExecuteCommandLine(parameters, admin, showFlag);
+    }
+
+	//API void CreateMinidumpChannel(int threadId, EXCEPTION_POINTERS* pep) {
+	//	//channelMinidump.Create(L"\\\\.\\pipe\\Local\\MyPipe", [threadId, pep](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+	//	//	auto reply = Read();
+	//	//	switch (reply.type)
+	//	//	{
+	//	//	case MiniDumpMessages::Connect:
+	//	//		auto strData = std::to_string(threadId);
+	//	//		Write({ strData.begin(), strData.end() }, MiniDumpMessages::ThreadId);
+	//	//		break;
+	//	//	}
+	//	//	
+	//	//	return true;
+	//	//	});
+
+	//	if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, GetCurrentProcessId()))
+	//	{
+	//		channelMinidump.CreateForUWP(L"MyPipe", [threadId](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+	//			auto reply = Read();
+	//			switch (reply.type) 
+	//			{
+	//			case MiniDumpMessages::Connect: {
+	//				auto strData = std::to_string(threadId);
+	//				Write({ strData.begin(), strData.end() }, MiniDumpMessages::ThreadId);
+	//				break;
+	//			}
+	//			}
+
+	//			return true;
+	//			}, hProcessUWP);
+	//	}
+
+
+	//	channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ThreadId);
+	//}
+
+	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder) {
+
+		auto hProcess = GetCurrentProcess();
+		auto processId = GetCurrentProcessId();
+		auto threadId = GetCurrentThreadId();
+
+		try {
+			channelMinidump.Open(L"\\\\.\\pipe\\Local\\channelDumpWriter", [hProcess, processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+				auto reply = Read();
+				switch (reply.type)
+				{
+				case MiniDumpMessages::Connect: {
+					//auto strData = std::to_string(threadId);
+					//Write({ strData.begin(), strData.end() }, MiniDumpMessages::ThreadId);
+
+					auto strData = H::WStrToStr(packageFolder);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
+
+					CrashInfo crashInfo;
+					//crashInfo.hProcess = hProcess;
+					//crashInfo.processId = processId;
+					crashInfo.threadId = threadId;
+					FillCrashInfoWithExceptionPointers(crashInfo, pep);
+					auto serializedData = SerializeCrashInfo(crashInfo);
+					Write(std::move(serializedData), MiniDumpMessages::ExceptionInfo);
+					break;
+				}
+				}
+
+				return true;
+				}, 30'000);
+
+			channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ExceptionInfo);
+			int xxx = 9;
+		}
+		catch (...) {
+			int xxx = 9;
+		}
+
 	}
 }

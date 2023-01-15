@@ -176,9 +176,17 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+
+  <ItemGroup>
+    <!--<DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\CrashHandlingAPI_DLL.dll" />-->
+    <!--<DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\MiniDumpWriter.exe" />-->
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll" />
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe" />
+  </ItemGroup>
   <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
-    <ContentWithTargetPath Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll">
+    <!--<ContentWithTargetPath Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe">-->
+    <ContentWithTargetPath Include="@(DependecyFiles)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
