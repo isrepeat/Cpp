@@ -11,6 +11,10 @@
 namespace CrashHandling {
 	Channel<MiniDumpMessages> channelMinidump;
 
+	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
+		AddVectoredExceptionHandler(0, handler);
+	}
+
 	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder) {
 
 		auto hProcess = GetCurrentProcess();
