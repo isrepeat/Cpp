@@ -155,6 +155,8 @@
     <ClCompile Include="main_1_constexpr_string.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
+    <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
+    <ClCompile Include="main_5_format_string_cx17.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
