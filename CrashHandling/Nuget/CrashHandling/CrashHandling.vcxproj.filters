@@ -23,5 +23,16 @@
     <ClInclude Include="CrashHandling.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="MiniDumpMessages.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CrashHandling.targets">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="CrashHandling.nuspec">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
