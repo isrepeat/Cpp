@@ -5,8 +5,11 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "../../CrashHandlingAPI_DLL/CrashHandlingAPI.h"
-#pragma comment (lib, "../../../!VS_TMP/Build/v142/Debug/x64/CrashHandlingAPI_DLL.lib")
+#include <CrashHandling/CrashHandling.h>
+//#include "../../CrashHandlingAPI_DLL/CrashHandlingAPI.h"
+//#pragma comment (lib, "../../../!VS_TMP/Build/v142/Debug/x64/CrashHandlingAPI_DLL.lib")
+
+
 
 #include "../../../Shared/HelpersWinRT/Helpers.h"
 
@@ -33,7 +36,7 @@ LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep)
 	auto uri = ref new Windows::Foundation::Uri(ref new Platform::String(protcolWithParams.c_str()));
 	Windows::System::Launcher::LaunchUriAsync(uri);
 
-	CrashAPI::OpenMinidumpChannel(pep, packageFolder);
+	CrashHandling::OpenMinidumpChannel(pep, packageFolder);
 
 	printf("MyCustomFilter end \n");
 
@@ -66,7 +69,7 @@ Class1::Class1()
 	: packageFolder{ Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data() }
 	, installedFolder{ Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data() }
 {	
-	CrashAPI::RegisterVectorHandler(&MyCustomExceptionHandler);
+	CrashHandling::RegisterVectorHandler(&MyCustomExceptionHandler);
 
 	////auto win32ProcessId = GetCurrentProcessId();
 	////auto processId = Windows::System::Diagnostics::ProcessDiagnosticInfo::GetForCurrentProcess()->ProcessId;
