@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\*.dll" />
-    <Binaries Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\*.exe" />
+    <Binaries Include="$(MSBuildThisFileDirectory)..\..\bin\$(Platform)\$(Configuration)\*.exe" />
   </ItemGroup>
 
   <Target Name="CopyNugetDlls" AfterTargets="Build">
