@@ -90,6 +90,23 @@ namespace H {
         return list;
     }
 
+    std::map<std::wstring, std::wstring> ParseArgsFromStringToMap(const std::wstring& str) {
+        std::map<std::wstring, std::wstring> result;
+
+        int counter = 0;
+        std::wstring paramName;
+        for (auto& item : ParseArgsFromString(str)) {
+            if (IsEven(counter++)) {
+                paramName = item;
+            }
+            else {
+                result[paramName] = item;
+            }
+        }
+
+        return result;
+    }
+
     std::vector<std::pair<std::wstring, std::wstring>> ParseArgsFromStringToPair(const std::wstring& str) {
         std::vector<std::pair<std::wstring, std::wstring>> result;
 

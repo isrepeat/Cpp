@@ -1,12 +1,13 @@
 #include <Windows.h>
 #include "../Shared/Helpers/Helpers.h"
-
+#include <map>
 
 int main() {
 	std::wstring params = H::CreateStringParams({
 				{L"-processId", std::to_wstring(GetCurrentProcessId())},
 				{L"-minidumpPath", {}},
-				{L"-sleepAtStart", L"15000"}
+				{L"-sleepAtStart", L"15000"},
+				//{L"-isUWP", L"false"},
 		});
 
 	auto listArgs = H::ParseArgsFromString(params);
@@ -20,6 +21,16 @@ int main() {
 		wprintf(L"pair .. name = %s, value = %s \n", arg.first.c_str(), arg.second.c_str());
 	}
 
-	system("pause");
+	wprintf(L"\n");
+	auto mappedArgs = H::ParseArgsFromStringToMap(params);
+	if (!mappedArgs.count(L"-isUWP")) {
+		wprintf(L"error: missed 'isUWP' flag \n");
+	}
+	for (auto& item : mappedArgs) {
+		wprintf(L"map .. name = %s, value = %s \n", item.first.c_str(), item.second.c_str());
+	}
+
+	//system("pause");
+	Sleep(7000);
 	return 0;
 }
