@@ -41,6 +41,7 @@ namespace H {
     std::string ExePathA();
     std::wstring GetAppDataPath();
     std::wstring GetKnownFolder(GUID knownFolderGUID);
+    std::wstring GetLastErrorAsString();
 
 
     int GetProcessBitDepth(std::wstring processName);
