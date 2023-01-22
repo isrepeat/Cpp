@@ -6,6 +6,7 @@
 #include <thread>
 #include <condition_variable>
 #include <queue>
+#include "Helpers.h"
 
 #include <sddl.h>
 
@@ -200,8 +201,8 @@ public:
 
         // SDDL_EVERYONE + SDDL_ALL_APP_PACKAGES + SDDL_ML_LOW
         if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(L"D:(A;;GA;;;WD)(A;;GA;;;AC)S:(ML;;;;;LW)", SDDL_REVISION_1, &pSecurityAttributes->lpSecurityDescriptor, 0)) {
-            //return;// GetLastError();
-            DebugBreak();
+            loggerHandler(H::GetLastErrorAsString());
+            throw;
         }
 
         std::wstring formattedPipeName;
@@ -215,9 +216,8 @@ public:
                         formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
                     }
                     else {
-                        auto err = GetLastError();
-                        //auto err = GetLastErrorAsString();
-                        DebugBreak();
+                        loggerHandler(H::GetLastErrorAsString());
+                        throw;
                     }
                 }
             }
@@ -241,9 +241,9 @@ public:
         closeChannel = false;
         threadChannel = std::thread([this, listenHandler, timeout] {
             while (!closeChannel) {
-                loggerHandler("Waiting for connect...");
+                loggerHandler(L"Waiting for connect...");
                 if (WaitConnectPipe(hNamedPipe, closeChannel, timeout)) {
-                    loggerHandler("Connected. Waiting for command...");
+                    loggerHandler(L"Connected. Waiting for command...");
 
                     connected = true;
                     stopSignal = false; // used for multi threads (like listener, sender)
@@ -261,7 +261,7 @@ public:
                 else {
                     closeChannel = true;
                     stopSignal = true; // mb unnecessary?
-                    loggerHandler("Timeout connection ...");
+                    loggerHandler(L"Timeout connection ...");
                 }
 
                 cvFinishSendingMessage.notify_all();
@@ -321,7 +321,7 @@ public:
             CloseHandle(hNamedPipe);
     }
 
-    void SetLoggerHandler(std::function<void(std::string)> handler) {
+    void SetLoggerHandler(std::function<void(std::wstring)> handler) {
         loggerHandler = handler;
     }
 
@@ -353,7 +353,7 @@ public:
             switch (error)
             {
             case PipeError::WriteError:
-                loggerHandler("Write error");
+                loggerHandler(L"Write error");
                 break;
             };
             stopSignal = true;
@@ -378,7 +378,7 @@ public:
             switch (error)
             {
             case PipeError::WriteError:
-                loggerHandler("Write error");
+                loggerHandler(L"Write error");
                 break;
             };
             stopSignal = true;
@@ -413,7 +413,7 @@ private:
             switch (error)
             {
             case PipeError::ReadError:
-                loggerHandler("Read error");
+                loggerHandler(L"Read error");
                 break;
             };
             stopSignal = true;
@@ -437,7 +437,7 @@ private:
     std::atomic<bool> connected = false;
     std::atomic<bool> stopSignal = false;
     std::atomic<bool> closeChannel = false;
-    std::function<void(std::string)> loggerHandler = [](std::string msg) {};
+    std::function<void(std::wstring)> loggerHandler = [](std::wstring) {};
     std::function<void()> interruptHandler = []() {};
     std::function<void()> connectHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;

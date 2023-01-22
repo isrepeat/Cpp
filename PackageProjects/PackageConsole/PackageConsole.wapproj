@@ -63,7 +63,7 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <EntryPointProjectUniqueName>..\..\CrashHandling\MiniDumpWriter\MiniDumpWriter.vcxproj</EntryPointProjectUniqueName>
+    <EntryPointProjectUniqueName>..\..\CrashHandling\Win32\TestWin32\TestWin32.vcxproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <AppxBundle>Always</AppxBundle>
@@ -114,7 +114,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.19041.8" PrivateAssets="all" />
   </ItemGroup>
+  <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
-    <ProjectReference Include="..\..\CrashHandling\MiniDumpWriter\MiniDumpWriter.vcxproj" />
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll" />
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(DependecyFiles)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CrashHandling\Win32\TestWin32\TestWin32.vcxproj" />
   </ItemGroup>
 </Project>

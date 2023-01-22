@@ -13,5 +13,5 @@
 // Need comile with /EHa
 namespace CrashHandling {
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
-	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder);
+	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName = L"\\\\.\\pipe\\Local\\channelDumpWriter");
 }

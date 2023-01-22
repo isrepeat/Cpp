@@ -27,6 +27,19 @@ namespace TestUWP
         {
             this.InitializeComponent();
             var instance = new Class1();
+            //TestCall();
+        }
+
+        private async void TestCall() {
+            var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+            System.Diagnostics.Process newProcess = System.Diagnostics.Process.Start(installFolder + "\\ConsoleApp.exe", "cutstom args");
+
+            if (Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent("Windows.ApplicationModel.FullTrustAppContract", 1, 0)) {
+            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_1"] = "11111";
+            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_2"] = "22222";
+            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_3"] = "33333";
+                await Windows.ApplicationModel.FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync("TestParams");
+            }
         }
     }
 }
