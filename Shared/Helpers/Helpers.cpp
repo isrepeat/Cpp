@@ -61,7 +61,6 @@ namespace H {
         std::wstring stringParams = L"";
 
         for (auto& pair : params) {
-            //stringParams += L" " + pair.first + (pair.second.size() != 0 ? L" '" + pair.second + L"'" : L""); // wrap second(value) to quotes '' for containins spaces etc
             stringParams += L" " + pair.first + L" '" + pair.second + L"'"; // wrap second(value) to quotes '' for containins spaces etc
         }
 
@@ -98,6 +97,7 @@ namespace H {
         for (auto& item : ParseArgsFromString(str)) {
             if (IsEven(counter++)) {
                 paramName = item;
+                result[paramName] = L"";
             }
             else {
                 result[paramName] = item;

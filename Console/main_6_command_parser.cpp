@@ -10,6 +10,8 @@ int main() {
 				//{L"-isUWP", L"false"},
 		});
 
+	params += L"-isUWP";
+
 	auto listArgs = H::ParseArgsFromString(params);
 	for (auto& arg : listArgs) {
 		wprintf(L"parsed .. %s \n", arg.c_str());
