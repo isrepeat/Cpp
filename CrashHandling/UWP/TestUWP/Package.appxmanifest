@@ -12,7 +12,7 @@
   <Identity
     Name="e3dddf3a-8e86-4e47-9d79-012fb4e664a9"
     Publisher="CN=isrepeat"
-    Version="1.0.3.0" />
+    Version="1.0.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="e3dddf3a-8e86-4e47-9d79-012fb4e664a9" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -34,20 +34,17 @@
     <Application Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="TestUWP.App">
-
+      
       <Extensions>
-
-        <!--<desktop:Extension xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-                            Category="windows.fullTrustProcess"
-                            Executable="MiniDumpWriter.exe">
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="MiniDumpWriter.exe">
           <desktop:FullTrustProcess>
-            <desktop:ParameterGroup GroupId="ExistingFile" Parameters="/existingFile"/>
+            <desktop:ParameterGroup GroupId="TestParams" Parameters="hello"/>
           </desktop:FullTrustProcess>
-        </desktop:Extension>-->
-        
-        <uap:Extension Category="windows.protocol" Executable="MiniDumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+        </desktop:Extension>
+
+        <!--<uap:Extension Category="windows.protocol" Executable="MiniDumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
           <uap:Protocol Name="dumpwriter" />
-        </uap:Extension>
+        </uap:Extension>-->
       </Extensions>
       
       <uap:VisualElements
@@ -65,5 +62,6 @@
   <Capabilities>
     <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
+    <!--<rescap:Capability Name="broadFileSystemAccess" />-->
   </Capabilities>
 </Package>
