@@ -15,14 +15,14 @@ namespace CrashHandling {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder) {
+	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName) {
 
 		auto hProcess = GetCurrentProcess();
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
 
 		try {
-			channelMinidump.Open(L"\\\\.\\pipe\\Local\\channelDumpWriter", [hProcess, processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			channelMinidump.Open(channelName, [hProcess, processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type)
 				{

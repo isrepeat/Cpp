@@ -70,7 +70,6 @@ BOOL CALLBACK MiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInp
 }
 
 
-//void GenerateMiniDump(EXCEPTION_POINTERS* pep, std::wstring path) {
 void GenerateMiniDump(CrashInfo& crashInfo, HANDLE hProcess, int processId, std::wstring path) {
 	if (!std::filesystem::exists(path))
 		std::filesystem::create_directories(path);
@@ -108,35 +107,56 @@ void GenerateMiniDump(CrashInfo& crashInfo, HANDLE hProcess, int processId, std:
 	}
 }
 
+template<typename Ret>
+Ret Convert(const std::wstring& str) {
+	if constexpr (std::is_same_v<Ret, std::wstring>) {
+		return str;
+	}
+	else if constexpr (std::is_same_v<Ret, std::string>) {
+		return H::WStrToStr(str);
+	}
+	else if constexpr (std::is_same_v<Ret, int>) {
+		return std::stoi(str);
+	}
+	else if constexpr (std::is_same_v<Ret, bool>) {
+		return str == L"true" ? true : false;
+	}
+	else {
+		static_assert(false, "Type conversion not supported");
+	}
+}
+
+template<typename T>
+void SetValue(const std::map<std::wstring, std::wstring>& mapParams, const std::wstring& searchKey, T& value, bool isRequired = false) {
+	if (mapParams.count(searchKey)) {
+		value = Convert<T>(mapParams.at(searchKey));
+	}
+	else {
+		if (isRequired) {
+			wprintf(L"error: requeied parameter not found = '%s' \n", searchKey);
+			throw;
+		}
+		// not modified, use default value
+	}
+}
 
 
-//std::wstring GetLastErrorAsString()
-//{
-//	//Get the error message ID, if any.
-//	DWORD errorMessageID = ::GetLastError();
-//	if (errorMessageID == 0) {
-//		return std::wstring(); //No error message has been recorded
-//	}
-//
-//	LPWSTR messageBuffer = nullptr;
-//
-//	//Ask Win32 to give us the string version of that message ID.
-//	//The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
-//	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-//		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
-//
-//	//Copy the error message into a std::string.
-//	std::wstring message(messageBuffer, size);
-//
-//	//Free the Win32's string's buffer.
-//	LocalFree(messageBuffer);
-//
-//	return message;
-//}
 
+#define PAR_IS_UWP					L"-isUWP"
+#define PAR_PROCESS_ID				L"-processId"
+#define PAR_SLEEP_AT_START			L"-sleepAtStart"
+#define PAR_PROCESS_ACCESS_FLAGS	L"-processAccessFlags"
+#define PAR_MINIDUMP_CHANNEL_NAME	L"-minidumpChannelName"
 
+// default values:
+auto isUWP = false;
+auto processId = 0;
+auto sleepAtStart = 0;
+auto minidumpChannelName = std::wstring{ L"\\\\.\\pipe\\Local\\channelDumpWriter" };
+//auto processAccessFlags = PROCESS_QUERY_LIMITED_INFORMATION;
+auto processAccessFlags = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE;
 
-
+#define CONCAT(a, b) a##b
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -145,69 +165,153 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	wprintf(L"\n\n");
 
-	int processId = 0;
-	std::wstring minidumpPath;
-	if (argc > 1) {
-		auto listArgs = H::ParseArgsFromString(std::wstring{ argv[1] });
+	auto shortChannelName = H::FS::GetFilenameFromPathW(L"\\\\.\\pipe\\Local\\channelDumpWriter");
 
-		for (auto& arg : listArgs) {
-			wprintf(L"parsed .. %s \n", arg.c_str());
-		}
+	auto parseSuccessful = false;
 
-		if (listArgs.size() > 3 && listArgs[0] == L"-processId" && listArgs[2] == L"-minidumpPath") {
-			processId = std::stoi(listArgs[1]);
-			minidumpPath = listArgs[3];
+	//if (argc > 3) { // Parse for UWP LaunchFullTrustProcessForCurrentAppAsync(...) where the parsed string is the fourh argument
+	//	auto params = H::ParseArgsFromStringToMap(std::wstring{ argv[3] });
+
+	//	wprintf(L"list incomming params [UWP]: \n");
+	//	for (auto& param : params) {
+	//		wprintf(L"param .. [%s, %s] \n", param.first.c_str(), param.second.c_str());
+	//	}
+
+	//	if (params.count(PAR_IS_UWP)) {
+	//		isUWP = true;
+	//	}
+
+	//}
+	//else 
+	if (argc > 1) { // Parse for raw call where the parsed string is the second argument
+		try {
+			auto params = H::ParseArgsFromStringToMap(std::wstring{ argv[1] });
+
+			wprintf(L"list incomming params: \n");
+			for (auto& param : params) {
+				wprintf(L"param .. [%s, %s] \n", param.first.c_str(), param.second.c_str());
+			}
+
+			isUWP = params.count(PAR_IS_UWP);
+			SetValue(params, PAR_PROCESS_ID, processId, true);
+			SetValue(params, PAR_PROCESS_ACCESS_FLAGS, processAccessFlags);
+			SetValue(params, PAR_SLEEP_AT_START, sleepAtStart);
+			SetValue(params, PAR_MINIDUMP_CHANNEL_NAME, minidumpChannelName);
+			
+			parseSuccessful = true;
 		}
-		else {
-			wprintf(L"wrong parsed ... ");
-			Sleep(2000);
-			return 1;
+		catch (std::out_of_range ex) {
+			wprintf(L"map 'out of range' exception ... \n");
+			parseSuccessful = false;
+		}
+		catch (...) {
+			parseSuccessful = false;
 		}
 	}
 
+	wprintf(L"\n");
+	wprintf(L"list parsed params: \n");
+	wprintf(L"-isUWP = %s \n", isUWP ? L"true" : L"false");
+	wprintf(L"-processId = %d \n", processId);
+	wprintf(L"-sleepAtStart = %d \n", sleepAtStart);
+	wprintf(L"-processAccessFlags = %d \n", processAccessFlags);
+	wprintf(L"-minidumpChannelName = %s \n", minidumpChannelName.c_str());
 
-	//Sleep(15'000);
+	if (!parseSuccessful) {
+		wprintf(L"\n");
+		wprintf(L"wrong parsed ... \n");
+		Sleep(8000);
+		return 1;
+	}
+
+
+	channelMinidump.SetLoggerHandler([](std::wstring logMsg) {
+		wprintf(L"[channel logs ... %s] \n", logMsg.c_str());
+		});
+
+	Sleep(sleepAtStart);
 
 	try {
-		Sleep(100);
-		//if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, processId))
-		if (HANDLE hProcessUWP = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE, FALSE, processId))
-		{
-			channelMinidump.CreateForUWP(L"channelDumpWriter", [hProcessUWP, processId](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
-				auto reply = Read();
-				switch (reply.type) {
-				case MiniDumpMessages::Connect: {
-					printf("[PIPE] processId = %d \n", processId);
-					break;
-				}
+		if (HANDLE hProcess = OpenProcess(processAccessFlags, FALSE, processId)) {
+			if (isUWP) {
+				auto shortChannelName = H::FS::GetFilenameFromPathW(minidumpChannelName);
+				channelMinidump.CreateForUWP(shortChannelName, [hProcess](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+					auto reply = Read();
+					switch (reply.type) {
+					case MiniDumpMessages::Connect: {
+						printf("[PIPE] processId = %d \n", processId);
+						break;
+					}
 
-				case MiniDumpMessages::PackageFolder: {
-					auto strData = std::string{ reply.readData.begin(), reply.readData.end() };
-					printf("[PIPE] packageFolder = %s \n", strData.c_str());
-					packageFolder = H::StrToWStr(strData);
-					break;
-				}
+					case MiniDumpMessages::PackageFolder: {
+						auto strData = std::string{ reply.readData.begin(), reply.readData.end() };
+						printf("[PIPE] packageFolder = %s \n", strData.c_str());
+						packageFolder = H::StrToWStr(strData);
+						break;
+					}
 
-				case MiniDumpMessages::ExceptionInfo: {
-					auto crashInfo = DeserializeCrashInfo(reply.readData);
-					FixExceptionPointersInCrashInfo(crashInfo);
-					printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
-					printf("[PIPE] crashInfo: hProcessUWP = 0x%08x \n", (DWORD)hProcessUWP);
-					printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
+					case MiniDumpMessages::ExceptionInfo: {
+						auto crashInfo = DeserializeCrashInfo(reply.readData);
+						FixExceptionPointersInCrashInfo(crashInfo);
+						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
+						printf("[PIPE] crashInfo: hProcess = 0x%08x \n", (DWORD)hProcess);
+						printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
 
-					GenerateMiniDump(crashInfo, hProcessUWP, processId, packageFolder);
-					break;
-				}
-				}
-				return true;
-				}, hProcessUWP, 20'000);
+						printf("[PIPE] dump creating ... \n");
+						GenerateMiniDump(crashInfo, hProcess, processId, packageFolder);
+						printf("[PIPE] dump created! \n");
+						break;
+					}
+					}
+					return true;
+					}, hProcess, 20'000);
+			}
+			else {
+				channelMinidump.Create(minidumpChannelName, [hProcess](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+					auto reply = Read();
+					switch (reply.type) {
+					case MiniDumpMessages::Connect: {
+						printf("[PIPE] processId = %d \n", processId);
+						break;
+					}
+
+					case MiniDumpMessages::PackageFolder: {
+						auto strData = std::string{ reply.readData.begin(), reply.readData.end() };
+						printf("[PIPE] packageFolder = %s \n", strData.c_str());
+						packageFolder = H::StrToWStr(strData);
+						break;
+					}
+
+					case MiniDumpMessages::ExceptionInfo: {
+						auto crashInfo = DeserializeCrashInfo(reply.readData);
+						FixExceptionPointersInCrashInfo(crashInfo);
+						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
+						printf("[PIPE] crashInfo: hProcess = 0x%08x \n", (DWORD)hProcess);
+						printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
+
+						printf("[PIPE] dump creating ... \n");
+						GenerateMiniDump(crashInfo, hProcess, processId, packageFolder);
+						printf("[PIPE] dump created! \n");
+						break;
+					}
+					}
+					return true;
+					}, 20'000);
+			}
 		}
 	}
 	catch (PipeError err) {
-		printf("channelApplication error = %d", static_cast<int>(err));
+		wprintf(L"\n");
+		printf("channelApplication error = %d \n", static_cast<int>(err));
+	}
+	catch (...) {
+		wprintf(L"\n");
+		wprintf(L"last error = %s \n", H::GetLastErrorAsString().c_str());
 	}
 
 
+	printf("\n");
+	printf("infinity loop ... \n");
 	while (true) {
 		Sleep(1000);
 		//Beep(500, 500);
