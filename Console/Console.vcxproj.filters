@@ -33,5 +33,8 @@
     <ClCompile Include="main_5_format_string_cx17.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_6_command_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

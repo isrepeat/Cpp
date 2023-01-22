@@ -61,14 +61,15 @@ namespace H {
         std::wstring stringParams = L"";
 
         for (auto& pair : params) {
-            stringParams += L" " + pair.first + (pair.second.size() != 0 ? L" '" + pair.second + L"'" : L""); // wrap second(value) to quotes '' for containins spaces etc
+            //stringParams += L" " + pair.first + (pair.second.size() != 0 ? L" '" + pair.second + L"'" : L""); // wrap second(value) to quotes '' for containins spaces etc
+            stringParams += L" " + pair.first + L" '" + pair.second + L"'"; // wrap second(value) to quotes '' for containins spaces etc
         }
 
         return stringParams;
     }
 
     std::vector<std::wstring> ParseArgsFromString(const std::wstring& str) {
-        std::wregex word_regex(L"(\'[^\']+\'|[^\\s\']+)");
+        std::wregex word_regex(L"(\'[^\']*\'|[^\\s\']+)");
         auto words_begin = std::wsregex_iterator(str.begin(), str.end(), word_regex);
         auto words_end = std::wsregex_iterator();
 
@@ -87,6 +88,22 @@ namespace H {
         }
 
         return list;
+    }
+
+    std::vector<std::pair<std::wstring, std::wstring>> ParseArgsFromStringToPair(const std::wstring& str) {
+        std::vector<std::pair<std::wstring, std::wstring>> result;
+
+        int counter = 0;
+        for (auto& item : ParseArgsFromString(str)) {
+            if (IsEven(counter++)) {
+                result.push_back({item, L""});
+            }
+            else {
+                result.back().second = item;
+            }
+        }
+
+        return result;
     }
 
     std::wstring ReplaceSubStr(std::wstring src, const std::wstring& subStr, const std::wstring& newStr) {
