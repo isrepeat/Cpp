@@ -11,10 +11,10 @@ LONG __stdcall MyCustomExceptionHandler(EXCEPTION_POINTERS* pep) {
 	auto packageFolder = ComApi::GetPackageFolder();
 	auto installFolder = H::ExePathW();
 
-	std::wstring protcolWithParams = L"/c start testminidumpwriter:\"" + H::CreateStringParams({
+	std::wstring protcolWithParams = L"/c start test-minidumpwriter:\"" + H::CreateStringParams({
+				//{L"-isUWP", {}},
 				{L"-processId", std::to_wstring(GetCurrentProcessId())},
-				{L"-minidumpPath", packageFolder},
-				{L"-sleepAtStart", L"100"}
+				{L"-sleepAtStart", L"100"},
 		}) + L"\"";
 
 	auto res = H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);

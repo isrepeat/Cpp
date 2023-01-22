@@ -36,15 +36,15 @@
       EntryPoint="TestUWP.App">
       
       <Extensions>
-        <desktop:Extension Category="windows.fullTrustProcess" Executable="MiniDumpWriter.exe">
+        <!--<desktop:Extension Category="windows.fullTrustProcess" Executable="MiniDumpWriter.exe">
           <desktop:FullTrustProcess>
-            <desktop:ParameterGroup GroupId="TestParams" Parameters="hello"/>
+            <desktop:ParameterGroup GroupId="TestParams" Parameters="-isUWP"/>
           </desktop:FullTrustProcess>
-        </desktop:Extension>
+        </desktop:Extension>-->
 
-        <!--<uap:Extension Category="windows.protocol" Executable="MiniDumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap:Protocol Name="dumpwriter" />
-        </uap:Extension>-->
+        <uap:Extension Category="windows.protocol" Executable="MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:Protocol Name="test-minidumpwriter" />
+        </uap:Extension>
       </Extensions>
       
       <uap:VisualElements
