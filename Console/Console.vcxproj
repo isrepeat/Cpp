@@ -158,6 +158,7 @@
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
+    <ClCompile Include="main_7_regex_replace_group.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Helpers\Helpers.vcxproj">
