@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <functional>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -9,51 +10,70 @@
 #include <utility>
 
 
-int main() {
-	std::wstring inputFilename = L"Test.xml.txt";
-	std::wstring outpitFilename = L"TestOut.xml.txt";
+void ReadFileByLine(const std::wstring& inputFilename, std::function<void(std::wstring)> callback) {
+	std::wifstream inFile(inputFilename);
 
+	std::wstring line;
+	while (std::getline(inFile, line)) {
+		callback(line);
+	}
+}
 
-	std::list<std::pair<std::wstring, std::wstring>> listReplacedStrings{
-		{L"Personal data", L"Hello world"},
-		{L"Authorization", L"Parkurist1488"},
-	};
-
-
+std::vector<std::wstring> ReadFileWithReplacedLines(const std::wstring& inputFilename, std::list<std::pair<std::wstring, std::wstring>> listReplacedStrings = {}) {
 	std::vector<std::wstring> lines;
-	{
-		std::wifstream inFile(inputFilename);
-		
-		std::queue<std::pair<std::wstring, std::wstring>> replaceNextLinesRules;
+	std::queue<std::pair<std::wstring, std::wstring>> replaceNextLinesWithRules;
 
-		std::wstring line;
-		while (std::getline(inFile, line)) {
-			if (replaceNextLinesRules.empty()) {
-				for (auto& pair : listReplacedStrings) {
-					auto& replace = pair.first;
-					auto& replaceWith = pair.second;
-					if (line.find(pair.first) != std::wstring::npos) {
-						replaceNextLinesRules.push({ L"(<translation).+(translation>)", L"$1>" + pair.second+ L"</$2" }); // save 1 and 2 captured group but replace all between
-						listReplacedStrings.remove(pair);
-						break;
-					}
-				};
-			}
-			else {
-				auto& pair = replaceNextLinesRules.front();
-				line = std::regex_replace(line, std::wregex(pair.first), pair.second);
-				replaceNextLinesRules.pop();
-			}
-
-			lines.push_back(line);
+	ReadFileByLine(inputFilename, [&](std::wstring line) {
+		if (replaceNextLinesWithRules.empty()) {
+			for (auto& pair : listReplacedStrings) {
+				auto& replace = pair.first;
+				auto& replaceWith = pair.second;
+				if (line.find(pair.first) != std::wstring::npos) {
+					replaceNextLinesWithRules.push({ L"(<translation).+(translation>)", L"$1>" + pair.second + L"</$2" }); // save 1 and 2 captured group but replace all between
+					listReplacedStrings.remove(pair);
+					break;
+				}
+			};
 		}
-	}
-
-	{
-		std::wofstream outFile(outpitFilename);
-		for (const auto& i : lines) {
-			outFile << i << std::endl;
+		else {
+			auto& pair = replaceNextLinesWithRules.front();
+			line = std::regex_replace(line, std::wregex(pair.first), pair.second);
+			replaceNextLinesWithRules.pop();
 		}
+
+		lines.push_back(line);
+		});
+
+	return lines;
+}
+
+void WriteFile(const std::wstring& outputFilename, const std::vector<std::wstring>& lines) {
+	std::wofstream outFile(outputFilename);
+	for (const auto& i : lines) {
+		outFile << i << std::endl;
 	}
+}
+
+
+int main() {
+	std::list<std::pair<std::wstring, std::wstring>> listReplacedStrings;
+
+	ReadFileByLine(L"Original.txt", [&listReplacedStrings] (std::wstring originalString) {
+		listReplacedStrings.push_back({ originalString, L"" });
+		});
+
+
+	auto it = listReplacedStrings.begin();
+	ReadFileByLine(L"Replaced.txt", [&it, &listReplacedStrings](std::wstring replacedString) {
+		if (it != listReplacedStrings.end()) {
+			it->second = replacedString;
+			it++;
+		}
+		});
+
+
+	auto lines = ReadFileWithReplacedLines(L"Test.xml.txt", listReplacedStrings);
+	WriteFile(L"TestOut.xml.txt", lines);
+
 	return 0;
 }
