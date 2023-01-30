@@ -7,6 +7,7 @@
 #include <string>
 #include <regex>
 #include <list>
+#include <map>
 #include <queue>
 #include <utility>
 
@@ -15,6 +16,27 @@
 #ifndef _DEBUG
 #define TEST_WITHOUT_ARGS 0
 #endif
+
+
+std::wstring EncodeSpecialSymbols(const std::wstring str) {
+	//static const std::map<std::wstring, std::wstring> specialSybmols = {
+	//	{ L"<",L"&lt;" },
+	//	{ L">",L"&gt;" },
+	//	{ L"&",L"&amp;" },
+	//	{ L"'",L"&apos;" },
+	//	{ L"\"",L"&quot;" },
+	//};
+
+
+	std::wstring res = std::regex_replace(str, std::wregex(L"[<]|[>]|[&]|[']|[\"]"), L"[__$&__]");
+	res = std::regex_replace(res, std::wregex(L"\\[__<__\\]"), L"&lt;");
+	res = std::regex_replace(res, std::wregex(L"\\[__>__\\]"), L"&gt;");
+	res = std::regex_replace(res, std::wregex(L"\\[__&__\\]"), L"&amp;");
+	res = std::regex_replace(res, std::wregex(L"\\[__'__\\]"), L"&apos;");
+	res = std::regex_replace(res, std::wregex(L"\\[__\"__\\]"), L"&quot;");
+
+	return res;
+}
 
 void ReadFileByLine(const std::wstring& inputFilename, std::function<void(std::wstring)> callback) {
 	std::wifstream inFile(inputFilename);
@@ -92,14 +114,14 @@ int wmain(int argc, wchar_t* argv[]) {
 		std::list<std::pair<std::wstring, std::wstring>> listReplacedStrings;
 
 		ReadFileByLine(originalStringsFilename, [&listReplacedStrings](std::wstring originalString) {
-			listReplacedStrings.push_back({ originalString, L"" });
+			listReplacedStrings.push_back({ EncodeSpecialSymbols(originalString), L"" });
 			});
 
 
 		auto it = listReplacedStrings.begin();
 		ReadFileByLine(replacedStringsFilename, [&it, &listReplacedStrings](std::wstring replacedString) {
 			if (it != listReplacedStrings.end()) {
-				it->second = replacedString;
+				it->second = EncodeSpecialSymbols(replacedString);
 				it++;
 			}
 			});
