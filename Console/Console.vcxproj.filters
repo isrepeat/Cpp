@@ -39,5 +39,8 @@
     <ClCompile Include="main_7_regex_replace_group.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
