@@ -160,6 +160,7 @@
     <ClCompile Include="main_6_command_parser.cpp" />
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
+    <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Helpers\Helpers.vcxproj">
