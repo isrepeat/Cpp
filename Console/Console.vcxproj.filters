@@ -45,5 +45,8 @@
     <ClCompile Include="main_9_string_to_hex_conversion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_10_breakpoint_in_macros.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
