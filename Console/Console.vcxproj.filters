@@ -48,5 +48,13 @@
     <ClCompile Include="main_10_breakpoint_in_macros.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_11_enum_to_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main_11_enum_to_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
