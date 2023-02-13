@@ -51,6 +51,9 @@
     <ClCompile Include="main_11_enum_to_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_12_is_empty_variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
