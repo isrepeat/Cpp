@@ -166,12 +166,6 @@
     <None Include="TestUWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\WinRT\WinRT_DLL\WinRT_DLL.vcxproj">
-      <Project>{f33c797c-305c-4a91-bd8a-6a55536bce1f}</Project>
-      <Name>WinRT_DLL</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <SDKReference Include="WindowsDesktop, Version=10.0.19041.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
