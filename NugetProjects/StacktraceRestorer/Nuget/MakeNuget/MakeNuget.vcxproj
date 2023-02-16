@@ -155,12 +155,6 @@
   </ImportGroup>
   <!-- Copy files for build nuget -->
   <Target Name="AfterBuild">
-    <ItemGroup Condition="'$(Platform)'=='Win32'">
-      <MsdiaDll Include="$(ProjectDir)\..\StacktraceRestorer\DIA_SDK\bin\*.dll" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(Platform)'=='x64'">
-      <MsdiaDll Include="$(ProjectDir)\..\StacktraceRestorer\DIA_SDK\bin\amd64\*.dll" />
-    </ItemGroup>
     <ItemGroup>
       <NugetLibs Include="$(ProjectDir)\..\!VS_TMP\build\**\*.lib" />
       <NugetDlls Include="$(ProjectDir)\..\!VS_TMP\build\**\*.dll" />
@@ -174,8 +168,6 @@
     <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [StacktraceRestorer nuget] Copy includes ..." />
     <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\Nuget\build\native\include\StacktraceRestorer\" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [StacktraceRestorer nuget] Copy and rename msdia dlls  ..." />
-    <Copy SourceFiles="@(MsdiaDll)" DestinationFiles="@(MsdiaDll->'$(ProjectDir)\Nuget\lib\$(Platform)\$(Configuration)\%(Filename)_$(PlatformShortName)%(Extension)')" />
 
     <Message Importance="High" Text="==== [StacktraceRestorer nuget] Copy targets and nuspec ..." />
     <Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(ProjectDir)\Nuget\build\native\" SkipUnchangedFiles="true" />

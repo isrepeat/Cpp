@@ -182,27 +182,17 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <!-- Copy files for build nuget -->
+  
+  <!-- Copy ms_dia dlls to output and rename -->
   <Target Name="AfterBuild">
     <ItemGroup Condition="'$(Platform)'=='Win32'">
-      <MsdiaDll Include="$(ProjectDir)\DIA_SDK\bin\*.dll" />
+      <MsdiaDll Include="$(ProjectDir)\..\StacktraceRestorer\DIA_SDK\bin\*.dll" />
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='x64'">
-      <MsdiaDll Include="$(ProjectDir)\DIA_SDK\bin\amd64\*.dll" />
+      <MsdiaDll Include="$(ProjectDir)\..\StacktraceRestorer\DIA_SDK\bin\amd64\*.dll" />
     </ItemGroup>
-    <ItemGroup>
-      <NugetLibs Include="$(ProjectDir)\build\**\*.lib" />
-      <NugetDlls Include="$(ProjectDir)\build\**\*.dll" />
-      <NugetIncludes Include="$(ProjectDir)\Helpers.h" />
-      <NugetIncludes Include="$(ProjectDir)\StacktraceRestorer.h" />
-    </ItemGroup>
-    <Message Importance="High" Text="--- Nuget: Copy libs  ..." />
-    <Copy SourceFiles="@(NugetLibs)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="--- Nuget: Copy dlls  ..." />
-    <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="--- Nuget: Copy includes ..." />
-    <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\Nuget\build\native\include\StacktraceRestorer\" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="--- Nuget: Copy and rename msdia dlls  ..." />
-    <Copy SourceFiles="@(MsdiaDll)" DestinationFiles="@(MsdiaDll->'$(ProjectDir)\Nuget\lib\$(Platform)\$(Configuration)\%(Filename)_$(PlatformShortName)%(Extension)')" />
+
+    <Message Importance="High" Text="==== [StacktraceRestorer] Copy and rename msdia dlls  ..." />
+    <Copy SourceFiles="@(MsdiaDll)" DestinationFiles="@(MsdiaDll->'$(OutDir)\%(Filename)_$(PlatformShortName)%(Extension)')" />
   </Target>
 </Project>
