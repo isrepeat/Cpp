@@ -15,44 +15,30 @@ int wmain(int argc, wchar_t* argv[]) {
 	for (int i = 0; i < argc; i++) {
 		wprintf(L"arg [%d] = %s \n", i, argv[i]);
 	}
-	wprintf(L"\n\n");
-
+	wprintf(L"\n");
 
 	if (argc < 2) {
-		wprintf(L"Usage: RestoreStacktraceFromBacktrace.exe <path to offsets filename>");
-		return 0;
+		wprintf(L"Usage: RestoreStacktraceFromBacktrace.exe <path to offsets filename> \n");
+		return 1;
 	}
 
 	std::wstring offsetsFilename = argv[1];
-
-	//// Read offsets from file to backtrace struct
-	//std::wifstream inFile(pdbFolder + backtraceFilename); // backtrace file must be saved as UTF-8
-	//std::vector<StacktraceRestorer::BacktraceFrame> backtraceFrames;
-
-	////std::wstring pdbName = H::FS::GetFilenameFromPathW(argv[1]);
-
-	//std::wstring moduleName, RVA;
-	//while (inFile >> moduleName >> RVA) {
-	//	//if (H::FS::RemoveExtFromFilenameW(moduleName) == H::RemoveExtFromFilename(pdbName)) { // keep offsets that associate only with pdbName
-	//	//if (H::FS::RemoveExtFromFilenameW(moduleName) == L"TeamRemoteDesktop") {
-	//	backtraceFrames.push_back({
-	//			moduleName,
-	//			H::HexFromStringW<std::uint32_t>(RVA)
-	//			});
-	//	//}
-	//}
-
-	//for (auto& frame : backtrace) {
-	//	//wprintf(L"%s[0x%08x] + 0x%08x (VA = 0x%08x) \n", frame.moduleName.c_str(), frame.moduleBase, frame.RVA, frame.VA);
-	//	wprintf(L"%s + 0x%08x \n", frame.moduleName.c_str(), frame.RVA);
-	//}
-	//wprintf(L"\n\n");
-
-
 	auto backtrace = StacktraceRestorer::BackTrace(offsetsFilename);
+	auto stacktraceFrames = StacktraceRestorer::BuildStacktrace(backtrace, H::FS::GetPathToFileW(offsetsFilename));
 
-	auto stacktrace = StacktraceRestorer::BuildStacktrace(backtrace, H::FS::GetPathToFileW(offsetsFilename));
 
+	wprintf(L"Stacktrace:\n\n");
 
+	int counter = 0;
+	std::wstring strStacktrace;
+	for (auto& frame : stacktraceFrames) {
+		wprintf(L"#%d %s:%d  %s \n\n", ++counter, frame.filename.c_str(), frame.lineNumber, frame.symbolName.c_str());
+		//stacktrace += VecToWStr(buff);
+	}
+
+#if _DEBUG
+	wprintf(L"\n\n");
+	system("pause");
+#endif
 	return 0;
 }
