@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <Target Name="CopyNugetDlls" AfterTargets="Build">
-    <Message Importance="High" Text="--- StacktraceRestorer: Copy dlls ..." />
+    <Message Importance="High" Text="=== [StacktraceRestorer nuget] Copy dlls ..." />
     <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
 </Project>
