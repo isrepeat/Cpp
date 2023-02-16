@@ -156,6 +156,7 @@
     <ClCompile Include="main_11_enum_to_string.cpp" />
     <ClCompile Include="main_12_is_empty_variant.cpp" />
     <ClCompile Include="main_13_map_class_members.cpp" />
+    <ClCompile Include="main_14_extract_template_params.cpp" />
     <ClCompile Include="main_1_constexpr_string.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
