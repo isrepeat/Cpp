@@ -1,7 +1,8 @@
 #include "StacktraceRestorer.h"
 #include "PrintSymbol.h"
-#include "../../../../Shared/Helpers/Channel.h"
 #include "../../../../Shared/Helpers/Helpers.h"
+#include "../../../../Shared/Helpers/Channel.h"
+#include "../../../../Shared/Helpers/Conversion.h"
 #include <diacreate.h> // include after Windows.h
 #include <filesystem>
 #include <functional>
@@ -168,6 +169,28 @@ namespace StacktraceRestorer {
 	}
 
 
+	API Backtrace BackTrace(const std::wstring& offsetsFilename) {
+		Backtrace backtrace;
+		std::wifstream inFile(offsetsFilename);
+
+		std::wstring prevModuleName = L"";
+		std::wstring moduleName, RVA;
+		while (inFile >> moduleName >> RVA) {
+			if (moduleName != prevModuleName) {
+				prevModuleName = moduleName;
+				backtrace.push_back({ moduleName, {} });
+			}
+			backtrace.back().second.push_back({
+					moduleName,
+					H::HexFromStringW<std::uint32_t>(RVA)
+				});
+		}
+
+		return backtrace;
+	}
+
+
+
 	std::vector<StackFrame> RestoreStackTraceViaPDB(const std::wstring pdbFile, const std::vector<BacktraceFrame>& backtrace) {
 
 		CComPtr<IDiaDataSource> diaDataSource;
@@ -256,26 +279,19 @@ namespace StacktraceRestorer {
 	}
 
 	API std::vector<StackFrame> BuildStacktrace() {
-		std::vector<StacktraceRestorer::StackFrame> stacktrace;
-		std::wstring pdbFolder = H::ExePathW() + L"\\";
-
-		auto backtrace = StacktraceRestorer::BackTrace(0);
-		for (auto& [moduleName, moduleBacktrace] : backtrace) {
-			auto pdbName = H::FS::RemoveExtFromFilenameW(moduleName) + L".pdb";
-			auto stackFrames = RestoreStackTraceViaPDB(pdbFolder + pdbName, moduleBacktrace);
-			stacktrace.insert(stacktrace.end(), stackFrames.begin(), stackFrames.end());
-		}
-
-		return stacktrace;
+		return BuildStacktrace(BackTrace(0), H::ExePathW());
 	}
 
 	API std::vector<StackFrame> BuildStacktrace(const Backtrace& backtrace) {
+		return BuildStacktrace(backtrace, H::ExePathW());
+	}
+
+	API std::vector<StackFrame> BuildStacktrace(const Backtrace& backtrace, const std::wstring& pdbFolder) {
 		std::vector<StacktraceRestorer::StackFrame> stacktrace;
-		std::wstring pdbFolder = H::ExePathW() + L"\\";
 
 		for (auto& [moduleName, moduleBacktrace] : backtrace) {
 			auto pdbName = H::FS::RemoveExtFromFilenameW(moduleName) + L".pdb";
-			auto stackFrames = RestoreStackTraceViaPDB(pdbFolder + pdbName, moduleBacktrace);
+			auto stackFrames = RestoreStackTraceViaPDB(pdbFolder + L"\\" + pdbName, moduleBacktrace);
 			stacktrace.insert(stacktrace.end(), stackFrames.begin(), stackFrames.end());
 		}
 

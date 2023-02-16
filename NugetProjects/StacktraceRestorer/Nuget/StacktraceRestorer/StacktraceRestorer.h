@@ -23,13 +23,18 @@ namespace StacktraceRestorer {
         std::uint32_t RVA = 0;
     };
 
-    typedef std::vector<std::pair<std::wstring, std::vector<BacktraceFrame>>> Backtrace; // use vector pair to keep insertion order
+    using Backtrace = std::vector<std::pair<std::wstring, std::vector<BacktraceFrame>>>; // use vector pair to keep insertion order
 
     API Backtrace BackTrace(int SkipFrames);
+
+    // backtrace file must be saved as UTF-8
+    API Backtrace BackTrace(const std::wstring& offsetsFilename);
 
     // Slow stack building just now
     API std::vector<StackFrame> BuildStacktrace();
 
     // Slow stack building from a previously quickly obtained backtrace
-    API std::vector<StackFrame> BuildStacktrace(const Backtrace& backtrace); 
+    API std::vector<StackFrame> BuildStacktrace(const Backtrace& backtrace);
+ 
+    API std::vector<StackFrame> BuildStacktrace(const Backtrace& backtrace, const std::wstring& pdbFolder);
 }
