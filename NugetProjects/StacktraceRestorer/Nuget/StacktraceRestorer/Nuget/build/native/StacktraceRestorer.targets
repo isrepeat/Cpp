@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(MSBuildThisFileDirectory)include;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>
+        $(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\StacktraceRestorer.lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\*.dll" />
+  </ItemGroup>
+
+  <Target Name="CopyNugetDlls" AfterTargets="Build">
+    <Message Importance="High" Text="--- StacktraceRestorer: Copy dlls ..." />
+    <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

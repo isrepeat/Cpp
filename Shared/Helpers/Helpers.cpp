@@ -17,6 +17,22 @@ namespace H {
                 std::replace(path.begin(), path.end(), L'/', L'\\');
             }
         }
+
+
+        std::wstring RemoveExtFromFilenameW(std::wstring filename) {
+            int n = filename.rfind(L".");
+            if (n == std::wstring::npos)
+                return filename;
+
+            return filename.substr(0, n); // include last slash
+        }
+        std::string RemoveExtFromFilenameA(std::string filename) {
+            int n = filename.rfind(".");
+            if (n == std::string::npos)
+                return filename;
+
+            return filename.substr(0, n);
+        }
         std::wstring GetFilenameFromPathW(std::wstring filePath) {
             int n = filePath.rfind(L"\\");
             if (n == std::wstring::npos)
@@ -30,6 +46,22 @@ namespace H {
                 return filePath;
 
             return filePath.substr(n + 1);
+        }
+
+        std::wstring GetPathToFileW(std::wstring filePath) {
+            int n = filePath.rfind(L"\\");
+            if (n == std::wstring::npos)
+                return L"";
+
+            return filePath.substr(0, n + 1); // include last slash
+        }
+
+        std::string GetPathToFileA(std::string filePath) {
+            int n = filePath.rfind("\\");
+            if (n == std::string::npos)
+                return "";
+
+            return filePath.substr(0, n + 1);
         }
     }
 

@@ -20,8 +20,12 @@ namespace H {
     namespace FS {
         void CorrectPathWithBackslashes(std::wstring& path);
         void CorrectPathWithBackslashes(std::vector<std::wstring>& pathes);
+        std::wstring RemoveExtFromFilenameW(std::wstring filename);
+        std::string RemoveExtFromFilenameA(std::string filename);
         std::wstring GetFilenameFromPathW(std::wstring filePath);
         std::string GetFilenameFromPathA(std::string filePath);
+        std::wstring GetPathToFileW(std::wstring filePath);
+        std::string GetPathToFileA(std::string filePath);
     }
 
     std::vector<std::string> split(std::string str, const std::string& delim);
