@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>StacktraceRestorer</id>
+    <version>1.0.13</version>
+    <title>Restore stacktrace with PDB</title>
+    <authors>DCT.C++Team</authors>
+    <owners>DCT</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Restore stacktrace with PDB</description>
+    <copyright>C++Team</copyright>
+    <tags>Native, native</tags>
+  </metadata>
+</package>

@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Channel.h" />
+    <ClInclude Include="Conversion.h" />
     <ClInclude Include="CrashInfo.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="PackageProvider.h" />
