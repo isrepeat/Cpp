@@ -1,6 +1,6 @@
-#include "../../../Shared/Helpers/Helpers.h"
-#include "../../../Shared/Helpers/Channel.h"
-#include "../../../Shared/Helpers/CrashInfo.h"
+#include "../../../../Shared/Helpers/Helpers.h"
+#include "../../../../Shared/Helpers/Channel.h"
+#include "../../../../Shared/Helpers/CrashInfo.h"
 #include "../CrashHandling/MiniDumpMessages.h"
 #include <filesystem>
 #include <Windows.h>

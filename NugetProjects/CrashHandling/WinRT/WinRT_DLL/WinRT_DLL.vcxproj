@@ -315,12 +315,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets" Condition="Exists('..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" />
+    <Import Project="..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets" Condition="Exists('..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" />
   </ImportGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\HelpersWinRT\HelpersWinRT.vcxproj">
-      <Project>{39e544b4-2dfe-45ab-97bd-ec51df5292eb}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <!-- Build independent projects -->
   <!--<ItemGroup>
     <NativeFiles Include="$(OutDir)\CrashHandlingAPI_DLL.dll" />
@@ -348,6 +344,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Shared\HelpersWinRT\HelpersWinRT.vcxproj">
+      <Project>{39e544b4-2dfe-45ab-97bd-ec51df5292eb}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <!--<Target Name="AfterBuild">-->
   <Target Name="CopyToPreBuilt" AfterTargets="CopyNugetDlls">
     <Message Importance="High" Text="==== Copy dependencies to PreBuilt folder  ..." />
@@ -357,6 +358,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets'))" />
   </Target>
 </Project>

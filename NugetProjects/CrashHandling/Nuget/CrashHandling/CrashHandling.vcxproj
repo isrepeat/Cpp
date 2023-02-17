@@ -161,13 +161,13 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\Helpers\Helpers.vcxproj">
-      <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="CrashHandling.nuspec" />
     <None Include="CrashHandling.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Shared\Helpers\Helpers.vcxproj">
+      <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <!-- Build independent projects -->
   <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
