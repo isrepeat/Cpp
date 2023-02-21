@@ -137,10 +137,20 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibraryCLR\LibraryCLR.vcxproj">
-      <Project>{141b813e-b8bb-4d9d-a40e-61c759b41b92}</Project>
+      <Project>{bd3cab50-5275-4d1c-a6c1-83a0f84d3994}</Project>
       <Name>LibraryCLR</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Copy pre built files to output folder for Package project-->
+  <ItemGroup>
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll" />
+    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(DependecyFiles)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
 </Project>
