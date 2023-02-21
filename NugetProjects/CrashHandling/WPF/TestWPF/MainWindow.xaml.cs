@@ -25,7 +25,8 @@
         {
             InitializeComponent();
 
-            var instance = new LibraryCLR.TestClass();
+            //var instance = new LibraryCLR.TestClassCLR();
+            LibraryCLR.TestClassCLR.GetInstance();
         }
     }
 }

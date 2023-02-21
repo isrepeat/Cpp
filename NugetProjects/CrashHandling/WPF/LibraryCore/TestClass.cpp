@@ -7,16 +7,19 @@
 
 LONG __stdcall CustomUnhandledExceptionFilter(EXCEPTION_POINTERS* pep);
 
-namespace LibraryCLR {
+namespace LibraryCore {
+
+	TestClass& TestClass::GetInstance() {
+		static TestClass instance;
+		return instance;
+	}
+
+
 	TestClass::TestClass() {
 		CrashHandling::RegisterVectorHandler(&CustomUnhandledExceptionFilter);
-		Sleep(100);
-
 		*(int*)0 = 0;
-		Sleep(1000);
 	}
 }
-
 
 LONG __stdcall CustomUnhandledExceptionFilter(EXCEPTION_POINTERS* pep) {
 	static int counter = 0;

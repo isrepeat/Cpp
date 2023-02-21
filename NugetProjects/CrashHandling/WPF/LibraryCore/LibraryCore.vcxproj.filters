@@ -7,13 +7,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestClassCLR.h">
+    <ClInclude Include="TestClass.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TestClassCLR.cpp">
+    <ClCompile Include="TestClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
