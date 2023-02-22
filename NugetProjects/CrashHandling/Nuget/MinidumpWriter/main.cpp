@@ -2,10 +2,12 @@
 #include "../../../../Shared/Helpers/Channel.h"
 #include "../../../../Shared/Helpers/CrashInfo.h"
 #include "../CrashHandling/MiniDumpMessages.h"
-#include <filesystem>
 #include <Windows.h>
+#include <inttypes.h>
+#include <filesystem>
 #include <iostream>
 #include <string>
+#include <memory>
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
@@ -13,64 +15,7 @@
 Channel<MiniDumpMessages> channelMinidump;
 std::wstring packageFolder;
 
-
-BOOL CALLBACK MiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput, PMINIDUMP_CALLBACK_OUTPUT pOutput) {
-	// Check parameters
-	if (pInput == 0)
-		return FALSE;
-
-	if (pOutput == 0)
-		return FALSE;
-
-
-	// Process the callbacks 
-	BOOL bRet = FALSE;
-
-	switch (pInput->CallbackType) {
-	case IncludeModuleCallback:
-		// Include the module into the dump 
-		bRet = TRUE;
-		break;
-
-	case IncludeThreadCallback:
-		// Include the thread into the dump 
-		bRet = TRUE;
-		break;
-
-	case ModuleCallback:
-		// Does the module have ModuleReferencedByMemory flag set ? 
-		if (!(pOutput->ModuleWriteFlags & ModuleReferencedByMemory)) {
-			// No, it does not - exclude it 
-			//wprintf(L"Excluding module: %s \n", pInput->Module.FullPath);
-			pOutput->ModuleWriteFlags &= (~ModuleWriteModule);
-		}
-		bRet = TRUE;
-		break;
-
-	case ThreadCallback:
-		// Include all thread information into the minidump 
-		bRet = TRUE;
-		break;
-
-	case ThreadExCallback:
-		// Include this information 
-		bRet = TRUE;
-		break;
-
-	case MemoryCallback:
-		// We do not include any information here -> return FALSE 
-		bRet = FALSE;
-		break;
-
-	case CancelCallback:
-		break;
-	}
-
-	return bRet;
-}
-
-
-void GenerateMiniDump(CrashInfo& crashInfo, HANDLE hProcess, int processId, std::wstring path) {
+void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path) {
 	if (!std::filesystem::exists(path))
 		std::filesystem::create_directories(path);
 
@@ -78,23 +23,20 @@ void GenerateMiniDump(CrashInfo& crashInfo, HANDLE hProcess, int processId, std:
 
 	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
 		MINIDUMP_EXCEPTION_INFORMATION mdei;
-
-		mdei.ThreadId = crashInfo.threadId;
-		mdei.ExceptionPointers = &crashInfo.exceptionPointers;
+		mdei.ThreadId = crashInfo->threadId;
+		mdei.ExceptionPointers = &crashInfo->exceptionPointers;
 		mdei.ClientPointers = FALSE;
 
-		MINIDUMP_CALLBACK_INFORMATION mci;
-
-		mci.CallbackRoutine = (MINIDUMP_CALLBACK_ROUTINE)MiniDumpCallback;
-		mci.CallbackParam = 0;
+		if (mdei.ExceptionPointers == NULL) {
+			wprintf(L"ExceptionPointers == 0 \n");
+		}
 
 		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
 
-		//BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, mdt, (mdei.ExceptionPointers != 0) ? &mdei : 0, 0, &mci);
-		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != 0) ? &mdei : 0, 0, &mci);
+		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != NULL) ? &mdei : NULL, NULL, NULL);
 
 		if (!rv) {
-			//WriteDebug(L"MiniDumpWriteDump failed. Error: %u", GetLastError());
+			wprintf(L"MiniDumpWriteDump failed. [%u] %s \n", GetLastError(), H::GetLastErrorAsString().c_str());
 		}
 		else {
 			//WriteDebug(L"Minidump created");
@@ -156,10 +98,11 @@ auto minidumpChannelName = std::wstring{ L"\\\\.\\pipe\\Local\\channelDumpWriter
 //auto processAccessFlags = PROCESS_QUERY_LIMITED_INFORMATION;
 auto processAccessFlags = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE;
 
-#define CONCAT(a, b) a##b
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	wprintf(L"Version = 1.0.16 \n\n"); // <----------------- DON"T FORGET INCREASE VERSION
+
 	for (int i = 0; i < argc; i++) {
 		wprintf(L"arg [%d] = %s \n", i, argv[i]);
 	}
@@ -253,7 +196,8 @@ int _tmain(int argc, _TCHAR* argv[])
 					case MiniDumpMessages::ExceptionInfo: {
 						auto crashInfo = DeserializeCrashInfo(reply.readData);
 						FixExceptionPointersInCrashInfo(crashInfo);
-						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
+						printf("[PIPE] crashInfo: size serialized bytes = %" PRId64 "\n", reply.readData.size());
+						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo->numberOfExceptionRecords);
 						printf("[PIPE] crashInfo: hProcess = 0x%08x \n", (DWORD)hProcess);
 						printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
 
@@ -285,7 +229,8 @@ int _tmain(int argc, _TCHAR* argv[])
 					case MiniDumpMessages::ExceptionInfo: {
 						auto crashInfo = DeserializeCrashInfo(reply.readData);
 						FixExceptionPointersInCrashInfo(crashInfo);
-						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo.numberOfExceptionRecords);
+						printf("[PIPE] crashInfo: size serialized bytes = %" PRId64 "\n", reply.readData.size());
+						printf("[PIPE] crashInfo: number of exceptions = %d \n", crashInfo->numberOfExceptionRecords);
 						printf("[PIPE] crashInfo: hProcess = 0x%08x \n", (DWORD)hProcess);
 						printf("[PIPE] crashInfo: ProcessId = %d \n", processId);
 

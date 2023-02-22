@@ -161,4 +161,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Copy files for build nuget -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <NugetDlls Include="$(ProjectDir)\bin\$(PlatformShortName)\*.dll" />
+    </ItemGroup>
+    <Message Importance="High" Text="==== [MinidumpWriter] Copy dlls ..." />
+    <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\..\Nuget\lib\$(Platform)\$(Configuration)\" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

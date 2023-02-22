@@ -83,7 +83,7 @@ LONG __stdcall CustomUnhandledExceptionFilter(EXCEPTION_POINTERS* pep) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	std::wstring protcolWithParams = L"/c start trd-minidumpwriter:\"" + H::CreateStringParams({
+	std::wstring protcolWithParams = L"/c start fr-minidumpwriter:\"" + H::CreateStringParams({
 				{L"-processId", std::to_wstring(GetCurrentProcessId())},
 				{L"-sleepAtStart", L"100"},
 		}) + L"\"";

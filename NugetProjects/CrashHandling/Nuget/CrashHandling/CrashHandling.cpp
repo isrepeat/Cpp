@@ -72,13 +72,10 @@ namespace CrashHandling {
 	}
 
 	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName) {
-
-		auto hProcess = GetCurrentProcess();
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
-
 		try {
-			channelMinidump.Open(channelName, [hProcess, processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			channelMinidump.Open(channelName, [processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type)
 				{
@@ -89,10 +86,8 @@ namespace CrashHandling {
 					auto strData = H::WStrToStr(packageFolder);
 					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
 
-					CrashInfo crashInfo;
-					//crashInfo.hProcess = hProcess;
-					//crashInfo.processId = processId;
-					crashInfo.threadId = threadId;
+					auto crashInfo = std::make_shared<CrashInfo>();
+					crashInfo->threadId = threadId;
 					FillCrashInfoWithExceptionPointers(crashInfo, pep);
 					auto serializedData = SerializeCrashInfo(crashInfo);
 					Write(std::move(serializedData), MiniDumpMessages::ExceptionInfo);
