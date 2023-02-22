@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
+#include <memory>
 
 // The maximum number of nested exception that we can handle. The value we
 // use for this constant is an arbitrarily chosen number that is, hopefully,
@@ -28,10 +29,10 @@ struct CrashInfo {
 // The EXCEPTION_POINTERS parameter is the original exception pointer
 // that we are going to deep-copy.
 // The CrashInfo parameter receives the copy.
-void FillCrashInfoWithExceptionPointers(CrashInfo& crashInfo, EXCEPTION_POINTERS* exceptionPointers);
+void FillCrashInfoWithExceptionPointers(std::shared_ptr<CrashInfo> crashInfo, EXCEPTION_POINTERS* exceptionPointers);
 
-std::vector<uint8_t> SerializeCrashInfo(CrashInfo& crashInfo);
-CrashInfo DeserializeCrashInfo(std::vector<uint8_t>& crashInfo);
+std::vector<uint8_t> SerializeCrashInfo(std::shared_ptr<CrashInfo> crashInfo);
+std::shared_ptr<CrashInfo> DeserializeCrashInfo(std::vector<uint8_t>& crashInfo);
 
 // The CrashInfo parameter is both in/out (must be run from mini dump writer process)
-void FixExceptionPointersInCrashInfo(CrashInfo& crashInfo);
+void FixExceptionPointersInCrashInfo(std::shared_ptr<CrashInfo> crashInfo);

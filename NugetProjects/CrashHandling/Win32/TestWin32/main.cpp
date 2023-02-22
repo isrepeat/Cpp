@@ -1,6 +1,6 @@
 #include <CrashHandling/CrashHandling.h>
-#include "../../../Shared/ComAPI/ComAPI.h";
-#include "../../../Shared/Helpers/Helpers.h";
+#include "../../../../Shared/ComAPI/ComAPI.h";
+#include "../../../../Shared/Helpers/Helpers.h";
 #include <Windows.h>
 #include <thread>
 

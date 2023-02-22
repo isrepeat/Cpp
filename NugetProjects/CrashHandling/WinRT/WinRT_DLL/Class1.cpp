@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "../../../Shared/HelpersWinRT/Helpers.h"
+#include "../../../../Shared/HelpersWinRT/Helpers.h"
 #include <CrashHandling/CrashHandling.h>
 
 using namespace WinRT_DLL;
