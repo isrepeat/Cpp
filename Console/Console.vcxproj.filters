@@ -60,6 +60,9 @@
     <ClCompile Include="main_14_extract_template_params.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
