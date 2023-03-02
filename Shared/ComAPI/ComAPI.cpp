@@ -80,4 +80,27 @@ namespace ComApi {
 		std::wstring packageFolder = pacakgeFolderHstr.GetRawBuffer(NULL);
 		return packageFolder;
 	}
+
+	std::wstring API WindowsVersion() {
+		CCoInitialize tmpComInit;
+		ComPtr<ABI::Windows::System::Profile::IAnalyticsInfoStatics> analyticsInfoStatic;
+		auto hr = RoGetActivationFactory(HStringReference(RuntimeClass_Windows_System_Profile_AnalyticsInfo).Get(), __uuidof(analyticsInfoStatic), &analyticsInfoStatic);
+		CheckHr(hr);
+
+		ComPtr<IAnalyticsVersionInfo> analyticsInfo;
+		hr = analyticsInfoStatic->get_VersionInfo(analyticsInfo.GetAddressOf());
+		CheckHr(hr);
+
+		HString deviceFamilyVersionHstr;
+		analyticsInfo->get_DeviceFamilyVersion(deviceFamilyVersionHstr.GetAddressOf());
+		std::wstring deviceFamilyVersion = deviceFamilyVersionHstr.GetRawBuffer(NULL);
+
+		uint64_t version = std::stoll(deviceFamilyVersion);
+		uint16_t major = (version & 0xFFFF000000000000L) >> 48;
+		uint16_t minor = (version & 0x0000FFFF00000000L) >> 32;
+		uint16_t build = (version & 0x00000000FFFF0000L) >> 16;
+		uint16_t revision = (version & 0x000000000000FFFFL);
+
+		return std::format(L"{}.{}.{}.{}", major, minor, build, revision);
+	}
 }
