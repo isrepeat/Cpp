@@ -66,25 +66,53 @@ namespace CrashHandling {
 		return backtrace;
 	}
 
+	API std::wstring BacktraceToString(const Backtrace& backtrace) {
+		std::wstring backtraceStr;
+
+		for (auto& [modulename, backtraceFrames] : backtrace) {
+			for (auto& backtraceFrame : backtraceFrames) {
+				std::vector<wchar_t> buff(1024, '\0'); // mb need more for complex programs
+				swprintf_s(buff.data(), buff.size(), L"%s 0x%08lx \n", backtraceFrame.moduleName.c_str(), backtraceFrame.RVA);
+
+				backtraceStr += H::VecToWStr(buff);
+			}
+		}
+
+		return backtraceStr;
+	}
+
 
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName) {
+	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AppInfo& appInfo, std::wstring channelName) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
+		auto backtrace = GetBacktrace(0);
 		try {
-			channelMinidump.Open(channelName, [processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			channelMinidump.Open(channelName, [=](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type)
 				{
 				case MiniDumpMessages::Connect: {
-					//auto strData = std::to_string(threadId);
-					//Write({ strData.begin(), strData.end() }, MiniDumpMessages::ThreadId);
-
-					auto strData = H::WStrToStr(packageFolder);
+					std::string strData = H::WStrToStr(appInfo.packageFolder);
 					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
+
+					strData = H::WStrToStr(appInfo.appCenterId);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppCenterId);
+
+					strData = H::WStrToStr(appInfo.appVersion);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppVersion);
+
+					strData = H::WStrToStr(appInfo.appUuid);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppUuid);
+
+					strData = H::WStrToStr(appInfo.backtrace);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::Backtrace);
+
+					strData = H::WStrToStr(appInfo.exceptionMsg);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::ExceptionMessage);
 
 					auto crashInfo = std::make_shared<CrashInfo>();
 					crashInfo->threadId = threadId;
@@ -99,10 +127,9 @@ namespace CrashHandling {
 				}, 30'000);
 
 			channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ExceptionInfo);
-			int xxx = 9;
 		}
 		catch (...) {
-			int xxx = 9;
+			Dbreak;
 		}
 	}
 }

@@ -14,5 +14,6 @@
 extern "C" {
 	namespace ComApi {
 		std::wstring API GetPackageFolder();
+		std::wstring API WindowsVersion();
 	}
 }

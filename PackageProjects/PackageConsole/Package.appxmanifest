@@ -38,7 +38,7 @@
           </desktop:FullTrustProcess>
         </desktop:Extension>-->
 
-        <uap:Extension Category="windows.protocol" Executable="MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap:Extension Category="windows.protocol" Executable="TestWin32\MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
           <uap:Protocol Name="test-minidumpwriter" />
         </uap:Extension>
       </Extensions>

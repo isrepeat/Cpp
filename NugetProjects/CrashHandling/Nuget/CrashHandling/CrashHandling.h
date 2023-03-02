@@ -10,6 +10,7 @@
 #define API __declspec(dllimport) // for dll
 #endif
 
+
 namespace CrashHandling {
     struct BacktraceFrame {
         std::wstring moduleName;
@@ -24,9 +25,20 @@ namespace CrashHandling {
     };
 
     using Backtrace = std::vector<std::pair<std::wstring, std::vector<BacktraceFrame>>>; // use vector pair to keep insertion order
-	API Backtrace GetBacktrace(int SkipFrames);
+    
+    struct AppInfo {
+        std::wstring packageFolder;
+        std::wstring appCenterId;
+        std::wstring appVersion;
+        std::wstring appUuid = L"00000000-0000-0000-0000-000000000001"; // unique client app id
+        std::wstring backtrace;
+        std::wstring exceptionMsg;
+    };
 
-    // Need comile this project with /EHa
+	API Backtrace GetBacktrace(int SkipFrames);
+    API std::wstring BacktraceToString(const Backtrace& backtrace);
+
+    // Need comile this project with /EHa (need for Release)
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
-	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName = L"\\\\.\\pipe\\Local\\channelDumpWriter");
+	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AppInfo& appInfo, std::wstring channelName = L"\\\\.\\pipe\\Local\\channelDumpWriter");
 }
