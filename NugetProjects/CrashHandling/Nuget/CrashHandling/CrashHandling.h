@@ -26,13 +26,14 @@ namespace CrashHandling {
 
     using Backtrace = std::vector<std::pair<std::wstring, std::vector<BacktraceFrame>>>; // use vector pair to keep insertion order
     
-    struct AppInfo {
+    struct AdditionalInfo {
         std::wstring packageFolder;
         std::wstring appCenterId;
         std::wstring appVersion;
         std::wstring appUuid = L"00000000-0000-0000-0000-000000000001"; // unique client app id
         std::wstring backtrace;
         std::wstring exceptionMsg;
+        std::wstring channelName = L"\\\\.\\pipe\\Local\\channelDumpWriter";
     };
 
 	API Backtrace GetBacktrace(int SkipFrames);
@@ -40,5 +41,6 @@ namespace CrashHandling {
 
     // Need comile this project with /EHa (need for Release)
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
-	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AppInfo& appInfo, std::wstring channelName = L"\\\\.\\pipe\\Local\\channelDumpWriter");
+    API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback);
+    API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs = {});
 }

@@ -13,7 +13,7 @@
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
-#define VERSION L"1.1.2"
+#define VERSION L"1.1.5"
 
 // NOTE: use uint8_t (instead whar_t) to be able send serialized structs
 Channel<MiniDumpMessages> channelMinidump;
@@ -62,6 +62,7 @@ void SetValue(const std::map<std::wstring, std::wstring>& mapParams, const std::
 }
 
 
+#define PAR_DEBUG					L"-debug"
 #define PAR_IS_UWP					L"-isUWP"
 #define PAR_PROCESS_ID				L"-processId"
 #define PAR_SLEEP_AT_START			L"-sleepAtStart"
@@ -69,6 +70,7 @@ void SetValue(const std::map<std::wstring, std::wstring>& mapParams, const std::
 #define PAR_MINIDUMP_CHANNEL_NAME	L"-minidumpChannelName"
 
 // default values:
+auto debug = false;
 auto isUWP = false;
 auto processId = 0;
 auto sleepAtStart = 0;
@@ -101,10 +103,11 @@ int _tmain(int argc, _TCHAR* argv[])
 				wprintf(L"param .. [%s, %s] \n", param.first.c_str(), param.second.c_str());
 			}
 
+			debug = params.count(PAR_DEBUG);
 			isUWP = params.count(PAR_IS_UWP);
 			SetValue(params, PAR_PROCESS_ID, processId, true);
-			SetValue(params, PAR_PROCESS_ACCESS_FLAGS, processAccessFlags);
 			SetValue(params, PAR_SLEEP_AT_START, sleepAtStart);
+			SetValue(params, PAR_PROCESS_ACCESS_FLAGS, processAccessFlags);
 			SetValue(params, PAR_MINIDUMP_CHANNEL_NAME, minidumpChannelName);
 
 			parseSuccessful = true;
@@ -120,16 +123,23 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	wprintf(L"\n");
 	wprintf(L"list parsed params: \n");
+	wprintf(L"-debug = %s \n", debug ? L"true" : L"false");
 	wprintf(L"-isUWP = %s \n", isUWP ? L"true" : L"false");
 	wprintf(L"-processId = %d \n", processId);
 	wprintf(L"-sleepAtStart = %d \n", sleepAtStart);
 	wprintf(L"-processAccessFlags = %d \n", processAccessFlags);
 	wprintf(L"-minidumpChannelName = %s \n", minidumpChannelName.c_str());
 
+	if (!debug) {
+		::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+	}
+
 	if (!parseSuccessful) {
 		wprintf(L"\n");
 		wprintf(L"wrong parsed ... \n");
-		Sleep(8000);
+		if (debug) {
+			Sleep(8000);
+		}
 		return 1;
 	}
 
@@ -275,6 +285,11 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 		AppCenter::GetInstance().SendCrashReport(exceptionMessage, {}, backtrace, attachmentDirs);
 		
 		printf("[PIPE] report sent! \n");
+		if (debug) {
+			Sleep(10'000);
+		}
+
+		qApp->exit();
 		break;
 	}
 	}
