@@ -169,6 +169,10 @@ namespace CrashHandling {
 
 
 	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep) {
+		static bool handledCrashException = false;
+		if (handledCrashException)
+			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+
 		std::wstring exceptionMsg;
 		switch (pep->ExceptionRecord->ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION:
@@ -199,6 +203,7 @@ namespace CrashHandling {
 			return EXCEPTION_CONTINUE_SEARCH;
 		}
 
+		handledCrashException = true;
 		if (gCrashCallback) {
 			gCrashCallback(pep);
 			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
