@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{27c2c410-8770-4d35-941c-6ea738388f43}</ProjectGuid>
     <RootNamespace>Console</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -160,6 +160,7 @@
     <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp" />
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp" />
     <ClCompile Include="main_17_singleton_destructor.cpp" />
+    <ClCompile Include="main_18_detect_windows_11.cpp" />
     <ClCompile Include="main_1_constexpr_string.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
@@ -174,6 +175,9 @@
     <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
+      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\Helpers\Helpers.vcxproj">
       <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
     </ProjectReference>

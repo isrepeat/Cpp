@@ -81,6 +81,9 @@
     <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp">
       <Filter>Source Files\Static initialization fiasco</Filter>
     </ClCompile>
+    <ClCompile Include="main_18_detect_windows_11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
