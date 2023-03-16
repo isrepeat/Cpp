@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Static initialization fiasco">
+      <UniqueIdentifier>{2d028d6d-0577-49e8-96a1-e68bcd219647}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,10 +72,31 @@
     <ClCompile Include="main_17_singleton_destructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Static initialization fiasco\WAppConstants.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="Static initialization fiasco\fileB.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\WAppConstants.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\fileB.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\SettingsKeeper.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\StaticConstructor.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

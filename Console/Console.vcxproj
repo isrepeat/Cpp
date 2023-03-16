@@ -169,6 +169,9 @@
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
     <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
+    <ClCompile Include="Static initialization fiasco\WAppConstants.cpp" />
+    <ClCompile Include="Static initialization fiasco\fileB.cpp" />
+    <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Helpers\Helpers.vcxproj">
@@ -177,6 +180,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
+    <ClInclude Include="Static initialization fiasco\StaticConstructor.h" />
+    <ClInclude Include="Static initialization fiasco\WAppConstants.h" />
+    <ClInclude Include="Static initialization fiasco\fileB.h" />
+    <ClInclude Include="Static initialization fiasco\SettingsKeeper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
