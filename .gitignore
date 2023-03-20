@@ -331,9 +331,7 @@ ASALocalRun/
 
 
 # Third party
-3rdParty/
+#3rdParty/
 
 # Generated files
-/Prototype/GeneratedFiles
-/ProtobufTypes/GeneratedFiles/*.pb.h
-/ProtobufTypes/GeneratedFiles/*.pb.cc
+#...

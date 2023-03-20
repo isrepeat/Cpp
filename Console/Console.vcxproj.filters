@@ -13,10 +13,93 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Static initialization fiasco">
+      <UniqueIdentifier>{2d028d6d-0577-49e8-96a1-e68bcd219647}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_1_constexpr_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_2_constexpr_static_assert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_3_template_Vargs_to_array.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_4_tuple_to_multiple_args.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_5_format_string_cx17.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_6_command_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_7_regex_replace_group.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_9_string_to_hex_conversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_10_breakpoint_in_macros.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_11_enum_to_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_12_is_empty_variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_13_map_class_members.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_14_extract_template_params.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_16_GUID_to_string_conversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_17_singleton_destructor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Static initialization fiasco\WAppConstants.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="Static initialization fiasco\fileB.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="main_18_detect_windows_11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main_11_enum_to_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\WAppConstants.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\fileB.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\SettingsKeeper.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="Static initialization fiasco\StaticConstructor.h">
+      <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
