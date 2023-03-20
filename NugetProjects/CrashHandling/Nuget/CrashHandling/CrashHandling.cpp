@@ -8,7 +8,15 @@
 
 
 namespace CrashHandling {
+	std::function<void(EXCEPTION_POINTERS*)> gCrashCallback = nullptr;
 	Channel<MiniDumpMessages> channelMinidump;
+	const uint32_t ClrException = 0xE0434352;
+	bool wasCrashException = false;
+
+
+	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep);
+	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep);
+
 
 	API Backtrace GetBacktrace(int SkipFrames) {
 		constexpr int TRACE_MAX_STACK_FRAMES = 99;
@@ -30,9 +38,6 @@ namespace CrashHandling {
 			return {};
 		}
 
-		wchar_t buff[1024];
-		swprintf_s(buff, L"Stack hash: 0x%08lx\n", hash);
-
 		Backtrace backtrace;
 		std::wstring prevModuleFilename = L"";
 
@@ -42,7 +47,6 @@ namespace CrashHandling {
 			auto moduleBase = (const unsigned char*)moduleBaseVoid;
 			constexpr auto MODULE_BUF_SIZE = 4096U;
 			wchar_t modulePath[MODULE_BUF_SIZE];
-			//const wchar_t* moduleFilename = modulePath;
 			if (moduleBase != nullptr) {
 				GetModuleFileNameW((HMODULE)moduleBase, modulePath, MODULE_BUF_SIZE);
 				std::wstring moduleFilepath{ modulePath };
@@ -54,16 +58,26 @@ namespace CrashHandling {
 						prevModuleFilename = moduleFilename;
 						backtrace.push_back({ moduleFilename, {} });
 					}
-					//auto RVA = std::uint32_t((unsigned char*)stack[i] - moduleBase);
 					backtrace.back().second.push_back({ moduleFilename, std::uint32_t((unsigned char*)stack[i] - moduleBase) });
 				}
-				//else {
-				//    result += WStrPrintFormat(L"%02d:%s+0x%016llx\n", i, moduleFilename.c_str(),
-				//        (std::uint64_t)stack[i]);
-				//}
 			}
 		}
 		return backtrace;
+	}
+
+	API std::wstring BacktraceToString(const Backtrace& backtrace) {
+		std::wstring backtraceStr;
+
+		for (auto& [modulename, backtraceFrames] : backtrace) {
+			for (auto& backtraceFrame : backtraceFrames) {
+				std::vector<wchar_t> buff(1024, '\0'); // mb need more for complex programs
+				swprintf_s(buff.data(), buff.size(), L"%s 0x%08lx \n", backtraceFrame.moduleName.c_str(), backtraceFrame.RVA);
+
+				backtraceStr += H::VecToWStr(buff);
+			}
+		}
+
+		return backtraceStr;
 	}
 
 
@@ -71,20 +85,46 @@ namespace CrashHandling {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void OpenMinidumpChannel(EXCEPTION_POINTERS* pep, std::wstring packageFolder, std::wstring channelName) {
+	API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback) {
+		gCrashCallback = crashCallback;
+		AddVectoredExceptionHandler(1, DefaultUnhandledExceptionFilterFirst); // additional guard for cathing c++ exception within clr environment
+		AddVectoredExceptionHandler(0, DefaultUnhandledExceptionFilterLast);
+	}
+
+	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
+
+		std::vector<std::pair<std::wstring, std::wstring>> params = {
+			{L"-processId", std::to_wstring(processId)},
+		};
+		params.insert(params.end(), commandArgs.begin(), commandArgs.end());
+		std::wstring protcolWithParams = L"/c start " + runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
+		H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
+
 		try {
-			channelMinidump.Open(channelName, [processId, threadId, pep, packageFolder](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
+			channelMinidump.Open(additionalInfo.channelName, [=](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type)
 				{
 				case MiniDumpMessages::Connect: {
-					//auto strData = std::to_string(threadId);
-					//Write({ strData.begin(), strData.end() }, MiniDumpMessages::ThreadId);
-
-					auto strData = H::WStrToStr(packageFolder);
+					std::string strData = H::WStrToStr(additionalInfo.packageFolder);
 					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
+
+					strData = H::WStrToStr(additionalInfo.appCenterId);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppCenterId);
+
+					strData = H::WStrToStr(additionalInfo.appVersion);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppVersion);
+
+					strData = H::WStrToStr(additionalInfo.appUuid);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::AppUuid);
+
+					strData = H::WStrToStr(additionalInfo.backtrace);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::Backtrace);
+
+					strData = H::WStrToStr(additionalInfo.exceptionMsg);
+					Write({ strData.begin(), strData.end() }, MiniDumpMessages::ExceptionMessage);
 
 					auto crashInfo = std::make_shared<CrashInfo>();
 					crashInfo->threadId = threadId;
@@ -99,10 +139,75 @@ namespace CrashHandling {
 				}, 30'000);
 
 			channelMinidump.WaitFinishSendingMessage(MiniDumpMessages::ExceptionInfo);
-			int xxx = 9;
 		}
 		catch (...) {
-			int xxx = 9;
+			Dbreak;
 		}
+	}
+
+
+	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep) {
+		switch (pep->ExceptionRecord->ExceptionCode) {
+		case EXCEPTION_ACCESS_VIOLATION:
+		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+		case EXCEPTION_DATATYPE_MISALIGNMENT:
+		case EXCEPTION_FLT_DENORMAL_OPERAND:
+		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+		case EXCEPTION_FLT_INEXACT_RESULT:
+		case EXCEPTION_FLT_INVALID_OPERATION:
+		case EXCEPTION_FLT_OVERFLOW:
+		case EXCEPTION_FLT_STACK_CHECK:
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+		case EXCEPTION_IN_PAGE_ERROR:
+		case EXCEPTION_INT_OVERFLOW:
+			wasCrashException = true;
+			break;
+		}
+
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+
+	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep) {
+		static bool handledCrashException = false;
+		if (handledCrashException)
+			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+
+		std::wstring exceptionMsg;
+		switch (pep->ExceptionRecord->ExceptionCode) {
+		case EXCEPTION_ACCESS_VIOLATION:
+		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+		case EXCEPTION_DATATYPE_MISALIGNMENT:
+		case EXCEPTION_FLT_DENORMAL_OPERAND:
+		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+		case EXCEPTION_FLT_INEXACT_RESULT:
+		case EXCEPTION_FLT_INVALID_OPERATION:
+		case EXCEPTION_FLT_OVERFLOW:
+		case EXCEPTION_FLT_STACK_CHECK:
+		case EXCEPTION_ILLEGAL_INSTRUCTION:
+		case EXCEPTION_IN_PAGE_ERROR:
+		case EXCEPTION_INT_DIVIDE_BY_ZERO:
+		case EXCEPTION_INT_OVERFLOW:
+			break;
+
+		case ClrException: {
+			if (wasCrashException) {
+				break;
+			}
+			else {
+				return EXCEPTION_CONTINUE_SEARCH;
+			}
+		}
+
+		default:
+			return EXCEPTION_CONTINUE_SEARCH;
+		}
+
+		handledCrashException = true;
+		if (gCrashCallback) {
+			gCrashCallback(pep);
+			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
+		}
+		exit(0);
 	}
 }

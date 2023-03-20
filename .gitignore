@@ -20,7 +20,10 @@
 x64/
 x86/
 bld/
-[Bb]in/
+!3rdParty/**/x64
+!3rdParty/**/x86
+!3rdParty/**/[Ww]in32
+#[Bb]in
 [Oo]bj/
 [Ll]og/
 
@@ -328,10 +331,3 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
-
-
-# Third party
-#3rdParty/
-
-# Generated files
-#...
