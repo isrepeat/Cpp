@@ -58,12 +58,12 @@
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <PackageCertificateKeyFile>PackageConsole_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <!--<AppxPackageIncludePrivateSymbols>True</AppxPackageIncludePrivateSymbols>-->
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <EntryPointProjectUniqueName>..\..\NugetProjects\CrashHandling\Win32\TestWin32\TestWin32.vcxproj</EntryPointProjectUniqueName>
+    <EntryPointProjectUniqueName>..\..\Console\Console.vcxproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <AppxBundle>Always</AppxBundle>
@@ -114,8 +114,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.19041.8" PrivateAssets="all" />
   </ItemGroup>
-  <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
+    <ProjectReference Include="..\..\Console\Console.vcxproj" />
+  </ItemGroup>
+  <!-- Copy pre built files to output folder for Package project-->
+  <!--<ItemGroup>
     <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll" />
     <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe" />
   </ItemGroup>
@@ -126,6 +129,6 @@
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NugetProjects\CrashHandling\Win32\TestWin32\TestWin32.vcxproj" />
-  </ItemGroup>
+    <ProjectReference Include="..\..\Console\Console.vcxproj" />
+  </ItemGroup>-->
 </Project>
