@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
+  IgnorableNamespaces="uap mp rescap desktop desktop2">
+
+  <Identity
+    Name="e3dddf3a-8e86-4e47-9d79-012fb4e664a9"
+    Publisher="CN=isrepeat"
+    Version="1.0.4.0" />
+
+  <mp:PhoneIdentity PhoneProductId="e3dddf3a-8e86-4e47-9d79-012fb4e664a9" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
+  <Properties>
+    <DisplayName>TestUWP</DisplayName>
+    <PublisherDisplayName>isrepeat</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="TestUWP.App">
+      
+      <Extensions>
+        <!--<desktop:Extension Category="windows.fullTrustProcess" Executable="MiniDumpWriter.exe">
+          <desktop:FullTrustProcess>
+            <desktop:ParameterGroup GroupId="TestParams" Parameters="-isUWP"/>
+          </desktop:FullTrustProcess>
+        </desktop:Extension>-->
+
+        <uap:Extension Category="windows.protocol" Executable="MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:Protocol Name="test-minidumpwriter" />
+        </uap:Extension>
+      </Extensions>
+      
+      <uap:VisualElements
+        DisplayName="TestUWP"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        Description="TestUWP"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+    <!--<rescap:Capability Name="broadFileSystemAccess" />-->
+  </Capabilities>
+</Package>
