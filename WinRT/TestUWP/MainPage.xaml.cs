@@ -27,6 +27,9 @@ namespace TestUWP
         {
             this.InitializeComponent();
             var instance = new Class1_DuplicatesContainer();
+
+            var countPdfValue = instance.DuplicatesCountByFileType[".pdf"];
+
             instance.Dispose();
 
             int xx = 9;
