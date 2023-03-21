@@ -26,11 +26,12 @@ namespace TestUWP
         public MainPage()
         {
             this.InitializeComponent();
-            var instance = new Class1_DuplicatesContainer();
+            var instance = new Class2_Progress();
 
-            var countPdfValue = instance.DuplicatesCountByFileType[".pdf"];
-
-            instance.Dispose();
+            using (var lk = instance.LockScoped())
+            {
+                int xxx = 1;
+            }
 
             int xx = 9;
         }

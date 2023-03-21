@@ -6,11 +6,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="HTime.cpp" />
     <ClCompile Include="Helpers.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="HTime.h" />
     <ClInclude Include="Helpers.h">
       <Filter>Source files</Filter>
     </ClInclude>
