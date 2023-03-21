@@ -161,6 +161,7 @@
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp" />
     <ClCompile Include="main_17_singleton_destructor.cpp" />
     <ClCompile Include="main_18_detect_windows_11.cpp" />
+    <ClCompile Include="main_19_scoped_lock.cpp" />
     <ClCompile Include="main_1_constexpr_string.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />

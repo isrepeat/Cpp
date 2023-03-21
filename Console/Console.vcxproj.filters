@@ -84,6 +84,9 @@
     <ClCompile Include="main_18_detect_windows_11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_19_scoped_lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
