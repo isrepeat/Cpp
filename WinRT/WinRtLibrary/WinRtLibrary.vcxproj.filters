@@ -8,8 +8,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Class1_DuplicatesContainer.cpp" />
+    <ClCompile Include="Class2_ScopedLock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Class1_DuplicatesContainer.h" />
+    <ClInclude Include="Class2_ScopedLock.h" />
   </ItemGroup>
 </Project>
