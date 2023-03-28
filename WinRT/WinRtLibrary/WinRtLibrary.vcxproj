@@ -309,10 +309,12 @@
   <ItemGroup>
     <ClInclude Include="Class1_DuplicatesContainer.h" />
     <ClInclude Include="Class2_ScopedLock.h" />
+    <ClInclude Include="Class3_SingletonWinRt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Class1_DuplicatesContainer.cpp" />
     <ClCompile Include="Class2_ScopedLock.cpp" />
+    <ClCompile Include="Class3_SingletonWinRt.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
