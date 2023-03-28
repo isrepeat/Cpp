@@ -42,5 +42,6 @@ namespace CrashHandling {
     // Need comile this project with /EHa (need for Release)
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
     API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback);
-    API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs = {});
+    API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, 
+        const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs = {}, std::function<void(const std::wstring&)> callbackToRunProtocol = nullptr);
 }

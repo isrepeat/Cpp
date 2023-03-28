@@ -91,7 +91,8 @@ namespace CrashHandling {
 		AddVectoredExceptionHandler(0, DefaultUnhandledExceptionFilterLast);
 	}
 
-	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs) {
+	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, 
+		const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs, std::function<void(const std::wstring&)> callbackToRunProtocol) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
 
@@ -99,8 +100,15 @@ namespace CrashHandling {
 			{L"-processId", std::to_wstring(processId)},
 		};
 		params.insert(params.end(), commandArgs.begin(), commandArgs.end());
-		std::wstring protcolWithParams = L"/c start " + runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
-		H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
+
+		if (callbackToRunProtocol) {
+			std::wstring protcolWithParams = runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
+			callbackToRunProtocol(protcolWithParams);
+		}
+		else {
+			std::wstring protcolWithParams = L"/c start " + runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
+			H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
+		}
 
 		try {
 			channelMinidump.Open(additionalInfo.channelName, [=](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
