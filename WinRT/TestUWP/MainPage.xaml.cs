@@ -26,12 +26,17 @@ namespace TestUWP
         public MainPage()
         {
             this.InitializeComponent();
-            var instance = new Class2_Progress();
+            var instance1 = Class3_Singleton.CreateInstance(1, 3.14f);
+            var instance2 = Class3_Singleton.CreateInstance(7, 0.99f);
+            var instance3 = Class3_Singleton.GetInstance();
+            var instance4 = Class3_Singleton.GetInstance();
 
-            using (var lk = instance.LockScoped())
-            {
-                int xxx = 1;
-            }
+
+            instance4.Dispose();
+            //using (var lk = instance.LockScoped())
+            //{
+            //    int xxx = 1;
+            //}
 
             int xx = 9;
         }

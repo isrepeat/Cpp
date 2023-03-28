@@ -1,4 +1,4 @@
-//#include "Class2_ScopedLock.h"
+#include "Class3_SingletonWinRt.h"
 //#include "../../Shared/HelpersWinRT/Helpers.h"
 //#include "../../Shared/HelpersWinRT/HTime.h"
 //#include <Windows.h>
@@ -8,7 +8,7 @@
 //#include <filesystem>
 //#include <fstream>
 //#include <string>
-//
+
 //using namespace WinRtLibrary;
 //using namespace Platform;
 //
