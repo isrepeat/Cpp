@@ -26,20 +26,18 @@ namespace TestUWP
         public MainPage()
         {
             this.InitializeComponent();
-            var instance = new Class1();
-            //TestCall();
+            WinRT_DLL.CrashHandlerWinRt.CreateInstance("08792b7d-e0ca-47e6-a61f-a23f814c0685", "1.0.0.1", "00000000-0000-0000-0000-000000000001", "test-minidumpwriter");
+            WinRT_DLL.CrashHandlerWinRt.GetInstance().CrashEvent += this.CrashHandler;
+            
+            var crasher = new WinRT_DLL.Crasher();
+            int xxx = 9;
+            crasher.AccessViolation();
+            int yyy = 9;
         }
 
-        private async void TestCall() {
-            var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-            System.Diagnostics.Process newProcess = System.Diagnostics.Process.Start(installFolder + "\\ConsoleApp.exe", "cutstom args");
-
-            if (Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent("Windows.ApplicationModel.FullTrustAppContract", 1, 0)) {
-            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_1"] = "11111";
-            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_2"] = "22222";
-            //    Windows.Storage.ApplicationData.Current.LocalSettings.Values["param_3"] = "33333";
-                await Windows.ApplicationModel.FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync("TestParams");
-            }
+        private async void CrashHandler()
+        {
+            // ...
         }
     }
 }

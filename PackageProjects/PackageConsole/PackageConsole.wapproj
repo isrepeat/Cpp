@@ -63,7 +63,7 @@
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <EntryPointProjectUniqueName>..\..\Console\Console.vcxproj</EntryPointProjectUniqueName>
+    <EntryPointProjectUniqueName>..\..\NugetProjects\CrashHandling\UWP\TestUWP\TestUWP.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <AppxBundle>Always</AppxBundle>
@@ -115,7 +115,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.19041.8" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Console\Console.vcxproj" />
+    <ProjectReference Include="..\..\NugetProjects\CrashHandling\UWP\TestUWP\TestUWP.csproj" />
   </ItemGroup>
   <!-- Copy pre built files to output folder for Package project-->
   <!--<ItemGroup>
