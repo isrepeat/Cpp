@@ -39,6 +39,9 @@
     <ClInclude Include="Conversion.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
