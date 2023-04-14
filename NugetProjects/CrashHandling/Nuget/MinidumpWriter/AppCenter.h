@@ -30,9 +30,9 @@ public:
     void SetApplicationData(const QString& appSecret, const QString& instId, const QString& version);
     void SendCrashReport(const QString& exceptionMessage, QList<StackFrame> stackFrames, QString rawStackTrace = "", QList<QDir> attachmentDirs = {});
 
-    // TODO: use private signals
 signals:
-    void Send(QJsonObject payload);
+    void SendInternal(QJsonObject payload); // TODO: use private signals
+    void ReportSendingStatus(bool success);
 
 private:
     QString appSecret;

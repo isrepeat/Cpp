@@ -150,6 +150,24 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	Sleep(sleepAtStart);
 
+	QObject::connect(&AppCenter::GetInstance(), &AppCenter::ReportSendingStatus, [] (bool success) {
+		if (success) {
+			printf("Report sent successful !!! \n");
+			MessageBoxA(NULL, (LPCSTR)"Report sent successful", (LPCSTR)"Crash report", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		}
+		else {
+			printf("Report not sent !!! \n");
+			MessageBoxA(NULL, (LPCSTR)"Report not sent", (LPCSTR)"Crash report", MB_ICONWARNING | MB_DEFBUTTON2);
+		}
+
+		Sleep(5'000); // wait some time to user can read message
+
+		if (debug) {
+			Sleep(10'000); // wait some time to developer can read console output
+		}
+		qApp->exit();
+		});
+
 	try {
 		if (HANDLE hProcess = OpenProcess(processAccessFlags, FALSE, processId)) {
 			if (isUWP) {
@@ -163,7 +181,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	catch (PipeError err) {
 		wprintf(L"\n");
-		printf("channelApplication error = %d \n", static_cast<int>(err));
+		wprintf(L"channelApplication error = %d \n", static_cast<int>(err));
 	}
 	catch (...) {
 		wprintf(L"\n");
@@ -171,8 +189,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 
-	printf("\n");
-	printf("infinity loop ... \n");
+	wprintf(L"\n");
+	wprintf(L"infinity loop ... \n");
 
 	return app.exec();
 }
@@ -283,13 +301,6 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 		printf("[PIPE] send report to App Center ... \n");
 		AppCenter::GetInstance().SetApplicationData(appCenterId, appUuid, appVersion);
 		AppCenter::GetInstance().SendCrashReport(exceptionMessage, {}, backtrace, attachmentDirs);
-		
-		printf("[PIPE] report sent! \n");
-		if (debug) {
-			Sleep(10'000);
-		}
-
-		qApp->exit();
 		break;
 	}
 	}
