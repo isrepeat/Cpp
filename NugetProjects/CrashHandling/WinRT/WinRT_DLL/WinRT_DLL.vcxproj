@@ -307,15 +307,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Class1.h" />
+    <ClInclude Include="Crasher.h" />
+    <ClInclude Include="CrashHandler.h" />
+    <ClInclude Include="CrashHandlerWinRt.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Class1.cpp" />
+    <ClCompile Include="Crasher.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="CrashHandlerWinRt.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets" Condition="Exists('..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" />
-    <Import Project="..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets" Condition="Exists('..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" />
+    <Import Project="..\..\..\..\packages\CrashHandling.1.1.13\build\native\CrashHandling.targets" Condition="Exists('..\..\..\..\packages\CrashHandling.1.1.13\build\native\CrashHandling.targets')" />
   </ImportGroup>
   <!-- Build independent projects -->
   <!--<ItemGroup>
@@ -337,28 +340,17 @@
     <SDKReference Include="WindowsDesktop, Version=10.0.19041.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Shared\HelpersWinRT\HelpersWinRT.vcxproj">
       <Project>{39e544b4-2dfe-45ab-97bd-ec51df5292eb}</Project>
     </ProjectReference>
   </ItemGroup>
-  
-  <!-- Copy dependency files to PreBuilt -->
-  <Target Name="CopyToPreBuilt" AfterTargets="CopyNugetDlls">  
-    <ItemGroup>
-      <NativeFiles Include="$(OutDir)\CrashHandling.dll" />
-      <NativeFiles Include="$(OutDir)\MinidumpWriter.exe" />
-    </ItemGroup>
-    <Message Importance="High" Text="==== Copy dependencies to PreBuilt folder  ..." />
-    <Copy SourceFiles="@(NativeFiles)" DestinationFolder="$(SolutionDir)\!VS_TMP\PreBuilt\$(PlatformShortName)\$(Configuration)" SkipUnchangedFiles="true" />
-  </Target>
-  
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\CrashHandling.1.1.13\build\native\CrashHandling.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\CrashHandling.1.1.13\build\native\CrashHandling.targets'))" />
   </Target>
 </Project>

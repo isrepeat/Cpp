@@ -181,15 +181,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <!-- Copy pre built files to output folder for Package project-->
   <ItemGroup>
-    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.dll" />
-    <DependecyFiles Include="$(SolutionDir)\!VS_TMP\PreBuilt\$(Platform)\$(Configuration)\*.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <ContentWithTargetPath Include="@(DependecyFiles)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
-    </ContentWithTargetPath>
+    <ProjectReference Include="..\..\WinRT\WinRT_DLL\WinRT_DLL.vcxproj">
+      <Project>{f33c797c-305c-4a91-bd8a-6a55536bce1f}</Project>
+      <Name>WinRT_DLL</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

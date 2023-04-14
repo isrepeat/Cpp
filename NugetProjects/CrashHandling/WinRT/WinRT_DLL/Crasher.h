@@ -3,10 +3,12 @@
 
 namespace WinRT_DLL
 {
-    public ref class Class1 sealed
+    public ref class Crasher sealed
     {
     public:
-        Class1();
+        Crasher();
+
+        void AccessViolation();
 
     private:
         const std::wstring packageFolder;
