@@ -84,6 +84,18 @@
     <ClCompile Include="main_18_detect_windows_11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_19_scoped_lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_20_GetPackageInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_21_reinterpret_cast_to_array_of_structs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_22_async_thread_catch_exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
