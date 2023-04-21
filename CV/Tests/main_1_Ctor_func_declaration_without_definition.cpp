@@ -1,10 +1,15 @@
-class A {
+class ClassA {
 public:
-	A();
+	ClassA();
+};
+
+class ClassB {
+	ClassA();
 };
 
 int main() {
-	A a;
+	ClassA classA;
+	ClassB classB;
 
 	return 0;
 }
