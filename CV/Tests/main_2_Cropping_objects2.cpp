@@ -14,14 +14,19 @@ public:
 	};
 };
 
+
+void PrintName1(Parent* object) {
+	std::cout << object->GetName() << std::endl;
+}
+
+void PrintName2(Parent object) {
+	std::cout << object.GetName() << std::endl;
+}
+
 int main() {
 	Child child;
-	Parent  a = child;
-	Parent& b = child;
-	Parent* c = &child;
 
-	std::cout << a.GetName() << std::endl;
-	std::cout << b.GetName() << std::endl;
-	std::cout << c->GetName() << std::endl;
+	PrintName1(&child);
+	PrintName2(child);
 	return 0;
 }
