@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Create process console\main_1.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_10_breakpoint_in_macros.cpp" />
     <ClCompile Include="main_11_enum_to_string.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="main_18_detect_windows_11.cpp" />
     <ClCompile Include="main_19_scoped_lock.cpp" />
     <ClCompile Include="main_1_constexpr_string.cpp" />
+    <ClCompile Include="main_2.cpp" />
     <ClCompile Include="main_20_GetPackageInfo.cpp" />
     <ClCompile Include="main_21_reinterpret_cast_to_array_of_structs.cpp" />
     <ClCompile Include="main_22_async_thread_catch_exception.cpp" />
