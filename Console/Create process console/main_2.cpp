@@ -3,9 +3,13 @@
 #include <stdio.h> 
 #include <strsafe.h>
 #include <string>
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+
 
 #define BUFSIZE 4096 
 
+
+BOOL bStatus;
 HANDLE g_hChildStd_IN_Rd = NULL;
 HANDLE g_hChildStd_IN_Wr = NULL;
 HANDLE g_hChildStd_OUT_Rd = NULL;
@@ -51,8 +55,10 @@ std::wstring GetLastErrorAsString() {
     return message;
 }
 
-int _tmain(/*int argc, TCHAR* argv[]*/)
+
+int main(int argc, char** argv)
 {
+    bStatus = AllocConsole();
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
 
