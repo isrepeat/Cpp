@@ -102,7 +102,7 @@
     <ClCompile Include="Create process console\main_1.cpp">
       <Filter>Source Files\Create process console</Filter>
     </ClCompile>
-    <ClCompile Include="main_2.cpp">
+    <ClCompile Include="Create process console\main_2.cpp">
       <Filter>Source Files\Create process console</Filter>
     </ClCompile>
   </ItemGroup>
