@@ -90,9 +90,6 @@
     <ClCompile Include="main_19_scoped_lock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_20_GetPackageInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main_21_reinterpret_cast_to_array_of_structs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -104,6 +101,12 @@
     </ClCompile>
     <ClCompile Include="Create process console\main_2.cpp">
       <Filter>Source Files\Create process console</Filter>
+    </ClCompile>
+    <ClCompile Include="main_23_regex_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_20_GetPackageInfo.cpp">
+      <Filter>Source Files\Static initialization fiasco</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
