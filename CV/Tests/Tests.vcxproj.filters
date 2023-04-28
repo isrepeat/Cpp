@@ -27,6 +27,9 @@
     <ClCompile Include="main_2_Cropping_objects2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_3_Temporary_object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
