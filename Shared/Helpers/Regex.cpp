@@ -26,4 +26,18 @@ namespace H {
         }
         return false;
     }
+
+    bool FindInsideAnyTagWithRegex(const std::wstring& text, const std::wregex& innerRx) {
+        const std::wstring anyTag = L"[^>]*";
+        const std::wregex rx(L"([^<]*)<" + anyTag + L">(.+?)<[/]" + anyTag + L">([^<]*)");
+
+        auto matches = GetRegexMatches(text, rx);
+        for (auto& match : matches) {
+            std::wsmatch matchResult;
+            if (std::regex_search(match.matches[2], matchResult, innerRx)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
