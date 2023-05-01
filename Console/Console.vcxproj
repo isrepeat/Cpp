@@ -129,8 +129,10 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,6 +153,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Create process console\main_1.cpp" />
+    <ClCompile Include="Create process console\main_2.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_10_breakpoint_in_macros.cpp" />
     <ClCompile Include="main_11_enum_to_string.cpp" />
@@ -166,6 +170,7 @@
     <ClCompile Include="main_20_GetPackageInfo.cpp" />
     <ClCompile Include="main_21_reinterpret_cast_to_array_of_structs.cpp" />
     <ClCompile Include="main_22_async_thread_catch_exception.cpp" />
+    <ClCompile Include="main_23_regex_search.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
