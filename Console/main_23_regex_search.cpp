@@ -43,11 +43,24 @@ std::vector<RegexMatchResult> GetRegexMatches(const std::wstring& text, const st
     for (std::wsregex_token_iterator i(text.cbegin(), text.cend(), rx); i != end_i; ++i) {
         std::wstring matchString = *i;
         std::wsmatch matchResult;
-        if (regex_search(matchString, matchResult, rx)) {
+        if (std::regex_search(matchString, matchResult, rx)) {
             matches.push_back(matchResult);
         }
     }
     return matches;
+}
+
+bool FindInsideTagWithRegex(const std::wstring& text, const std::wstring& tag, const std::wregex& innerRx) {
+    const std::wregex rx(L"([^<]*)<" + tag + L"[^>]*>(.+?)<[/]" + tag + L">([^<]*)");
+
+    auto matches = GetRegexMatches(text, rx);
+    for (auto& match : matches) {
+        std::wsmatch matchResult;
+        if (std::regex_search(match.matches[2], matchResult, innerRx)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int main() {
@@ -77,6 +90,7 @@ int main() {
     const std::wstring input = L"Hello <a>Click One</a> world <a>Click two</a> and <a>Click three</a> the end";
     //const std::regex rx("<a>([^<]+)</a>");
 
+    bool found = FindInsideTagWithRegex(L"<name>Information</name>", L"name", std::wregex(L"^Information$"));
 
     //auto res = GetRegexCapturedGroups(input, rx);
     auto matches = GetRegexMatches(input, rx);
