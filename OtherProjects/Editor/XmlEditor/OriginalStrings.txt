@@ -1,0 +1,6 @@
+Send logs
+In order to continue we are asking you to agree with:
+I agree to the <%1 %2>Terms of Use</%1>
+Terms of Use
+Continue
+Information
