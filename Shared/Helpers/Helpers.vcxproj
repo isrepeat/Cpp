@@ -168,6 +168,7 @@
     <ClInclude Include="CrashInfo.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="PackageProvider.h" />
+    <ClInclude Include="Regex.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="System.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="CrashInfo.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="PackageProvider.cpp" />
+    <ClCompile Include="Regex.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Time.cpp" />
