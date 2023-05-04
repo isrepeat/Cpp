@@ -108,6 +108,9 @@
     <ClCompile Include="main_20_GetPackageInfo.cpp">
       <Filter>Source Files\Static initialization fiasco</Filter>
     </ClCompile>
+    <ClCompile Include="main_24_future.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
