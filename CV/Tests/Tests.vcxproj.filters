@@ -30,6 +30,9 @@
     <ClCompile Include="main_3_Temporary_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_4_Call_class_method_on_empty_instance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
