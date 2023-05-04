@@ -157,6 +157,7 @@
     <ClCompile Include="main_2_Cropping_objects2.cpp" />
     <ClCompile Include="main_3_Temporary_object.cpp" />
     <ClCompile Include="main_4_Call_class_method_on_empty_instance.cpp" />
+    <ClCompile Include="main_5_Labmda_capturing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
