@@ -18,19 +18,27 @@ void main() {
 			token = sharedPtr;
 		}
 
-
-		auto locked = callbackWeakPtr.lock();
-		if (locked) {
-			(*locked)();
+		
+		{
+			auto locked = callbackWeakPtr.lock();
+			if (locked) {
+				(*locked)();
+				token = nullptr;
+			}
 		}
 
-		int end = 111;
+		{
+			auto lockedAgain = callbackWeakPtr.lock();
+			if (lockedAgain) {
+				(*lockedAgain)();
+			}
+		}
 	}
 
-	auto locked = callbackWeakPtr.lock();
-	if (locked) {
-		(*locked)();
-	}
+	//auto locked = callbackWeakPtr.lock();
+	//if (locked) {
+	//	(*locked)();
+	//}
 
 	return;
 }
