@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Create process console">
       <UniqueIdentifier>{b444178d-39d5-4395-8f53-767c1ed000d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Test Helpers">
+      <UniqueIdentifier>{2026a733-39ce-4290-b359-e0940c4778e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -116,6 +119,9 @@
     </ClCompile>
     <ClCompile Include="main_26_weak_ptr.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Test Helpers\test_1_Timer_token.cpp">
+      <Filter>Source Files\Test Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

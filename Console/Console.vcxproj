@@ -185,6 +185,7 @@
     <ClCompile Include="Static initialization fiasco\WAppConstants.cpp" />
     <ClCompile Include="Static initialization fiasco\fileB.cpp" />
     <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
+    <ClCompile Include="Test Helpers\test_1_Timer_token.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
