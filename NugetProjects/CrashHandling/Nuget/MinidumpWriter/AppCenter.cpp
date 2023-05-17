@@ -6,8 +6,9 @@
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QEventLoop>
-#include "../../../../Shared/Helpers/Time.h"
 #include "../../../../Shared/ComAPI/ComAPI.h"
+#include "../../../../Shared/Helpers/Time.h"
+#include "../../../../Shared/Helpers/RegistryManager.h"
 
 
 
@@ -79,6 +80,7 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
         return; // we try send crash report before initialized AppCenter ...
 
     auto windowsVersion = QString::fromStdWString(ComApi::WindowsVersion());
+    auto productName = QString::fromStdString(H::RegistryManager::GetRegValue(HKey::LocalMachine, "HARDWARE\\DESCRIPTION\\System\\BIOS", "SystemProductName"));
 
     QJsonArray frames;
     for (auto& stackFrame : stackFrames) {
@@ -102,11 +104,12 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
         {"appBuild", "1"},
         {"sdkName", "appcenter.custom"},
         {"sdkVersion", "1.0.0"},
+        {"model", productName},
         {"osName", "Windows"},
         {"osVersion", windowsVersion},
         {"locale", "en-US"},
     };
-    //logs["userId"] = "ClientGUID";
+    logs["userId"] = instId;
     logs["exception"] = QJsonObject{
         {"type", "Cpp.RuntimeException"},
         {"message", QString("[%1] %2").arg(stacktraceHash).arg(exceptionMessage)},
@@ -143,6 +146,7 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
                    {"appBuild", "1"},
                    {"sdkName", "appcenter.custom"},
                    {"sdkVersion", "1.0.0"},
+                   {"model", productName},
                    {"osName", "Windows"},
                    {"osVersion", windowsVersion},
                    {"locale", "en-US"},
