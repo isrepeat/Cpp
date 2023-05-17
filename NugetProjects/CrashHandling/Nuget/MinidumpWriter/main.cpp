@@ -6,14 +6,16 @@
 #include <string>
 #include <memory>
 #include "AppCenter.h"
+#include "../CrashHandling/MiniDumpMessages.h"
 #include "../../../../Shared/Helpers/Helpers.h"
 #include "../../../../Shared/Helpers/Channel.h"
 #include "../../../../Shared/Helpers/CrashInfo.h"
-#include "../CrashHandling/MiniDumpMessages.h"
+#include "../../../../Shared/Helpers/FileSystem.h"
+#include "../../../../Shared/Helpers/RegistryManager.h"
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
-#define VERSION L"1.1.13"
+#define VERSION L"1.1.15"
 
 // NOTE: use uint8_t (instead whar_t) to be able send serialized structs
 Channel<MiniDumpMessages> channelMinidump;
@@ -25,8 +27,8 @@ QString appVersion;
 QString backtrace;
 QString appUuid;
 
-void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path);
 bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write, HANDLE hProcess);
+void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path);
 
 template<typename Ret>
 Ret Convert(const std::wstring& str) {
@@ -196,40 +198,6 @@ int _tmain(int argc, _TCHAR* argv[])
 }
 
 
-void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path) {
-	if (!std::filesystem::exists(path))
-		std::filesystem::create_directories(path);
-
-	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
-		MINIDUMP_EXCEPTION_INFORMATION mdei;
-		mdei.ThreadId = crashInfo->threadId;
-		mdei.ExceptionPointers = &crashInfo->exceptionPointers;
-		mdei.ClientPointers = FALSE;
-
-		if (mdei.ExceptionPointers == NULL) {
-			wprintf(L"ExceptionPointers == 0 \n");
-		}
-
-		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
-
-		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != NULL) ? &mdei : NULL, NULL, NULL);
-
-		if (!rv) {
-			wprintf(L"MiniDumpWriteDump failed. [%u] %s \n", GetLastError(), H::GetLastErrorAsString().c_str());
-		}
-		else {
-			//WriteDebug(L"Minidump created");
-		}
-
-		CloseHandle(hFile);
-	}
-	else {
-		//WriteDebug(L"CreateFile failed. Error: %u", GetLastError());
-	}
-}
-
 bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write, HANDLE hProcess) {
 	auto reply = Read();
 	switch (reply.type) {
@@ -292,7 +260,10 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 		GenerateMiniDump(crashInfo, hProcess, processId, crashReportFolder);
 		
 		printf("[PIPE] dump created! \n");
-		Write({}, MiniDumpMessages::DumpCreated); // now crahing process may be closed
+		Write({}, MiniDumpMessages::DumpCreated); // now crashing process may be closed
+
+		auto productName = H::StrToWStr(H::RegistryManager::GetRegValue(HKey::LocalMachine, "HARDWARE\\DESCRIPTION\\System\\BIOS", "SystemProductName"));
+		H::FileSystem::WriteFile(crashReportFolder + L"\\" + appUuid.toStdWString() + L"_" + productName, {});
 
 		QList attachmentDirs{
 			QDir{QString::fromStdWString(crashReportFolder)},
@@ -305,4 +276,39 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 	}
 	}
 	return true;
+}
+
+
+void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path) {
+	if (!std::filesystem::exists(path))
+		std::filesystem::create_directories(path);
+
+	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
+		MINIDUMP_EXCEPTION_INFORMATION mdei;
+		mdei.ThreadId = crashInfo->threadId;
+		mdei.ExceptionPointers = &crashInfo->exceptionPointers;
+		mdei.ClientPointers = FALSE;
+
+		if (mdei.ExceptionPointers == NULL) {
+			wprintf(L"ExceptionPointers == 0 \n");
+		}
+
+		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
+
+		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != NULL) ? &mdei : NULL, NULL, NULL);
+
+		if (!rv) {
+			wprintf(L"MiniDumpWriteDump failed. [%u] %s \n", GetLastError(), H::GetLastErrorAsString().c_str());
+		}
+		else {
+			//WriteDebug(L"Minidump created");
+		}
+
+		CloseHandle(hFile);
+	}
+	else {
+		//WriteDebug(L"CreateFile failed. Error: %u", GetLastError());
+	}
 }

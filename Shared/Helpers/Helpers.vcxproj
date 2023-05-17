@@ -166,9 +166,11 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Conversion.h" />
     <ClInclude Include="CrashInfo.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="PackageProvider.h" />
     <ClInclude Include="Regex.h" />
+    <ClInclude Include="RegistryManager.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="System.h" />
@@ -177,9 +179,11 @@
   <ItemGroup>
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="CrashInfo.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="PackageProvider.cpp" />
     <ClCompile Include="Regex.cpp" />
+    <ClCompile Include="RegistryManager.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Time.cpp" />
