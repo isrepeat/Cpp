@@ -4,15 +4,36 @@
 #include <functional>
 #include <condition_variable>
 
+using namespace std::chrono_literals;
+
 namespace H {
-	class Timer	{
+	class Timer {
 	public:
-		template <typename Duration, typename Func>
-		static void Once(Duration timeout, Func callback) {
+		template <typename Duration>
+		static void Once(Duration timeout, std::function<void()> callback) {
 			std::thread([=] {
 				std::this_thread::sleep_for(timeout);
 				callback();
 				}).detach();
+		}
+
+		template <typename Duration>
+		static bool Once(std::shared_ptr<std::function<void()>>& tokenTask, Duration timeout, std::function<void()> callback) {
+			if (tokenTask)
+				return false; // cannot rewrite token callback while it is not empty
+
+			tokenTask = std::make_shared<std::function<void()>>(callback);
+			std::weak_ptr<std::function<void()>> callbackWeakPtr = tokenTask;
+
+			std::thread([&tokenTask, timeout, callbackWeakPtr] {
+				std::this_thread::sleep_for(timeout);
+				if (auto lockedCallback = callbackWeakPtr.lock()) {
+					(*lockedCallback)();
+					tokenTask = nullptr;
+				}
+				}).detach();
+
+			return true;
 		}
 
 		Timer() = default;
