@@ -1,6 +1,21 @@
 #include "ChunkMerger.h"
 #include <Helpers/System.h>
 
+enum class MergingAudioOption {
+	UseSourceMediaTypes,
+	UsePassedMediaTypes,
+	UseCustomMediaTypes,
+};
+
+enum class MergingVideoOption {
+	UseSourceMediaTypes,
+	UsePassedMediaTypes,
+	UseCustomMediaTypes,
+};
+
+constexpr MergingAudioOption mergeAudioOpt = MergingAudioOption::UsePassedMediaTypes;
+constexpr MergingVideoOption mergeVideoOpt = MergingVideoOption::UsePassedMediaTypes;
+
 // NOTE: Merging takes longer than just writing bytes into a stream. Maybe optimize somehow? (try use GetNativeMediaType without decoding)
 ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 	Microsoft::WRL::ComPtr<IMFMediaType> mediaTypeAudioIn, Microsoft::WRL::ComPtr<IMFMediaType> mediaTypeAudioOut,
@@ -30,98 +45,132 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 		H::System::ThrowIfFailed(hr);
 	}
 
-
-	if (srcMediaTypeAudio) {
-		useAudioStream = true;
-
-		hr = writer->AddStream(srcMediaTypeAudio.Get(), &audioStreamIndexToWrite);
-		H::System::ThrowIfFailed(hr);
-
-		hr = writer->SetInputMediaType(audioStreamIndexToWrite, srcMediaTypeAudio.Get(), nullptr);
-		H::System::ThrowIfFailed(hr);
-
-
-
-		//hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
-		//H::System::ThrowIfFailed(hr);
-
-		//mediaTypeAudioBetween = mediaTypeAudioIn;
-		//hr = MFCreateMediaType(mediaTypeAudioBetween.ReleaseAndGetAddressOf());
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = mediaTypeAudioBetween->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = mediaTypeAudioBetween->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaTypeAudioBetween.Get());
-		//H::System::ThrowIfFailed(hr);
-
-
-
-		//hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, this->mediaTypeAudioIn.Get());
-		//H::System::ThrowIfFailed(hr);
-
-		//Microsoft::WRL::ComPtr<IMFMediaType> audioMediaTypeForWriter;
-		//hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, audioMediaTypeForWriter.GetAddressOf());
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = writer->SetInputMediaType(audioStreamIndexToWrite, audioMediaTypeForWriter.Get(), nullptr);
-		//H::System::ThrowIfFailed(hr);
+	switch (mergeAudioOpt) {
+	case MergingAudioOption::UseSourceMediaTypes:
+		if (srcMediaTypeAudio) {
+			useAudioStream = true;
+		}
+	case MergingAudioOption::UsePassedMediaTypes:
+	case MergingAudioOption::UseCustomMediaTypes:
+		if (mediaTypeAudioIn && mediaTypeAudioOut) {
+			useAudioStream = true;
+		}
+		break;
 	}
 
-	if (srcMediaTypeVideo) {
-		useVideoStream = true;
-
-		//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
-		hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
-		H::System::ThrowIfFailed(hr);
-
-		//hr = writer->SetInputMediaType(videoStreamIndexToWrite, this->mediaTypeVideoIn.Get(), NULL);
-		hr = writer->SetInputMediaType(videoStreamIndexToWrite, srcMediaTypeVideo.Get(), NULL);
-		H::System::ThrowIfFailed(hr);
-
-
-
-		//hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, srcMediaTypeVideo.Get());
-		//H::System::ThrowIfFailed(hr);
-
-		//Microsoft::WRL::ComPtr<IMFMediaType> videoMediaTypeForWriter;
-		//hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, videoMediaTypeForWriter.GetAddressOf());
-		//H::System::ThrowIfFailed(hr);
-
-		//hr = writer->SetInputMediaType(videoStreamIndexToWrite, videoMediaTypeForWriter.Get(), NULL);
-		//H::System::ThrowIfFailed(hr);
+	switch (mergeVideoOpt) {
+	case MergingVideoOption::UseSourceMediaTypes:
+		if (srcMediaTypeAudio) {
+			useVideoStream = true;
+		}
+	case MergingVideoOption::UsePassedMediaTypes:
+	case MergingVideoOption::UseCustomMediaTypes:
+		if (mediaTypeVideoIn && mediaTypeVideoOut) {
+			useVideoStream = true;
+		}
+		break;
+	}
 
 
+	if (useAudioStream) {
+		switch (mergeAudioOpt) {
+		case MergingAudioOption::UseSourceMediaTypes: {
+			hr = writer->AddStream(srcMediaTypeAudio.Get(), &audioStreamIndexToWrite);
+			H::System::ThrowIfFailed(hr);
 
-		//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
-		//H::System::ThrowIfFailed(hr);
+			hr = writer->SetInputMediaType(audioStreamIndexToWrite, srcMediaTypeAudio.Get(), nullptr);
+			H::System::ThrowIfFailed(hr);
+			break;
+		}
 
-		//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, this->mediaTypeVideoIn.Get());
-		//H::System::ThrowIfFailed(hr);
+		case MergingAudioOption::UsePassedMediaTypes: {
+			hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
+			H::System::ThrowIfFailed(hr);
 
-		//Microsoft::WRL::ComPtr<IMFMediaType> videoMediaTypeForWriter;
-		//hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, videoMediaTypeForWriter.GetAddressOf());
-		//H::System::ThrowIfFailed(hr);
+			hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, this->mediaTypeAudioIn.Get());
+			H::System::ThrowIfFailed(hr);
 
-		//hr = writer->SetInputMediaType(videoStreamIndexToWrite, videoMediaTypeForWriter.Get(), NULL);
-		//H::System::ThrowIfFailed(hr);
+			Microsoft::WRL::ComPtr<IMFMediaType> audioMediaTypeForWriter;
+			hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, audioMediaTypeForWriter.GetAddressOf());
+			H::System::ThrowIfFailed(hr);
 
+			hr = writer->SetInputMediaType(audioStreamIndexToWrite, audioMediaTypeForWriter.Get(), nullptr);
+			H::System::ThrowIfFailed(hr);
+			break;
+		}
 
+		case MergingAudioOption::UseCustomMediaTypes: {
+			//hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
+			//H::System::ThrowIfFailed(hr);
 
-		//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
-		//H::System::ThrowIfFailed(hr);
+			////mediaTypeAudioBetween = mediaTypeAudioIn;
+			//hr = MFCreateMediaType(mediaTypeAudioBetween.ReleaseAndGetAddressOf());
+			//H::System::ThrowIfFailed(hr);
 
-		//hr = writer->SetInputMediaType(videoStreamIndexToWrite, this->mediaTypeVideoIn.Get(), NULL);
-		//H::System::ThrowIfFailed(hr);
+			//hr = mediaTypeAudioBetween->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+			//H::System::ThrowIfFailed(hr);
+
+			//hr = mediaTypeAudioBetween->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+			//H::System::ThrowIfFailed(hr);
+
+			//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaTypeAudioBetween.Get());
+			//H::System::ThrowIfFailed(hr);
+			break;
+		}
+		}		
+	}
+
+	if (useVideoStream) {
+		switch (mergeVideoOpt) {
+		case MergingVideoOption::UseSourceMediaTypes: {
+			//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
+			hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
+			H::System::ThrowIfFailed(hr);
+
+			//hr = writer->SetInputMediaType(videoStreamIndexToWrite, this->mediaTypeVideoIn.Get(), NULL);
+			hr = writer->SetInputMediaType(videoStreamIndexToWrite, srcMediaTypeVideo.Get(), NULL);
+			H::System::ThrowIfFailed(hr);
+			break;
+		}
+		case MergingVideoOption::UsePassedMediaTypes: {
+			//hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
+			//H::System::ThrowIfFailed(hr);
+
+			//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, srcMediaTypeVideo.Get());
+			//H::System::ThrowIfFailed(hr);
+
+			//Microsoft::WRL::ComPtr<IMFMediaType> videoMediaTypeForWriter;
+			//hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, videoMediaTypeForWriter.GetAddressOf());
+			//H::System::ThrowIfFailed(hr);
+
+			//hr = writer->SetInputMediaType(videoStreamIndexToWrite, videoMediaTypeForWriter.Get(), NULL);
+			//H::System::ThrowIfFailed(hr);
+
+			hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
+			H::System::ThrowIfFailed(hr);
+
+			hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, this->mediaTypeVideoIn.Get());
+			H::System::ThrowIfFailed(hr);
+
+			Microsoft::WRL::ComPtr<IMFMediaType> videoMediaTypeForWriter;
+			hr = reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, videoMediaTypeForWriter.GetAddressOf());
+			H::System::ThrowIfFailed(hr);
+
+			hr = writer->SetInputMediaType(videoStreamIndexToWrite, videoMediaTypeForWriter.Get(), NULL);
+			H::System::ThrowIfFailed(hr);
+
+			//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
+			//H::System::ThrowIfFailed(hr);
+
+			//hr = writer->SetInputMediaType(videoStreamIndexToWrite, this->mediaTypeVideoIn.Get(), NULL);
+			//H::System::ThrowIfFailed(hr);
+			break;
+		}
+
+		case MergingVideoOption::UseCustomMediaTypes: {
+			break;
+		}
+		}
 	}
 
 	hr = writer->BeginWriting();
@@ -136,16 +185,20 @@ void ChunkMerger::Merge() {
 			HRESULT hr = MFCreateSourceReaderFromURL(file.c_str(), nullptr, reader.GetAddressOf());
 			H::System::ThrowIfFailed(hr);
 
-			//if (useAudioStream) {
-			//	hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaTypeAudioIn.Get());
-			//	H::System::ThrowIfFailed(hr);
-			//}
+			if (mergeAudioOpt == MergingAudioOption::UsePassedMediaTypes) {
+				if (useAudioStream) {
+					hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaTypeAudioIn.Get());
+					H::System::ThrowIfFailed(hr);
+				}
+			}
 
-			//if (useVideoStream) {
-			//	hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoIn.Get());
-			//	//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoBetween.Get());
-			//	H::System::ThrowIfFailed(hr);
-			//}
+			if (mergeVideoOpt == MergingVideoOption::UsePassedMediaTypes) {
+				if (useVideoStream) {
+					hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoIn.Get());
+					//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoBetween.Get());
+					H::System::ThrowIfFailed(hr);
+				}
+			}
 
 
 			bool videoDone = false;

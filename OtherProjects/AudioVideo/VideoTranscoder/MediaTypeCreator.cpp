@@ -3,10 +3,7 @@
 #include <Helpers/System.h>
 
 
-Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioInMediaType(
-    const IAudioCodecSettings* settings,
-    uint32_t bitsPerSample)
-{
+Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioInMediaType(const IAudioCodecSettings* settings, uint32_t bitsPerSample) {
     if (settings == nullptr)
         return nullptr;
 
@@ -53,10 +50,7 @@ Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioInMediaType(
 }
 
 
-Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioOutMediaType(
-    const IAudioCodecSettings* settings,
-    uint32_t bitsPerSample)
-{
+Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioOutMediaType(const IAudioCodecSettings* settings, uint32_t bitsPerSample) {
     if (settings == nullptr)
         return nullptr;
 
@@ -169,10 +163,44 @@ Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioOutMediaType(
     return mediaType;
 }
 
+Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateAudioAACOutMediaType(const IAudioCodecSettings* settings) {
+    if (settings == nullptr)
+        return nullptr;
 
-Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateVideoInMediaType(
-    const IVideoCodecSettings* settings, bool nv12VideoSamples)
-{
+    HRESULT hr = S_OK;
+    Microsoft::WRL::ComPtr<IMFMediaType> mediaType;
+
+    // Output type
+    hr = MFCreateMediaType(mediaType.ReleaseAndGetAddressOf());
+    H::System::ThrowIfFailed(hr);
+
+    hr = mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+    H::System::ThrowIfFailed(hr);
+
+    hr = mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
+    H::System::ThrowIfFailed(hr);
+
+    auto basicSettings = settings->GetBasicSettings();
+    auto bitrateSettings = settings->GetBitrateSettings();
+
+    if (basicSettings) {
+        hr = mediaType->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, basicSettings->numChannels);
+        H::System::ThrowIfFailed(hr);
+
+        hr = mediaType->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, basicSettings->sampleRate);
+        H::System::ThrowIfFailed(hr);
+    }
+
+    if (mediaType->GetItem(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, nullptr) != S_OK && bitrateSettings) {
+        hr = mediaType->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, bitrateSettings->bitrate / 8);
+        H::System::ThrowIfFailed(hr);
+    }
+
+    return mediaType;
+}
+
+
+Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateVideoInMediaType(const IVideoCodecSettings* settings, bool nv12VideoSamples) {
     if (settings == nullptr)
         return nullptr;
 
@@ -216,9 +244,7 @@ Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateVideoInMediaType(
 }
 
 
-Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateVideoOutMediaType(
-    const IVideoCodecSettings* settings)
-{
+Microsoft::WRL::ComPtr<IMFMediaType> MediaTypeCreator::CreateVideoOutMediaType(const IVideoCodecSettings* settings) {
     if (settings == nullptr)
         return nullptr;
 
