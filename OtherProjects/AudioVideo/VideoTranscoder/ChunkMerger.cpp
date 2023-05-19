@@ -2,19 +2,19 @@
 #include <Helpers/System.h>
 
 enum class MergingAudioOption {
-	UseSourceMediaTypes,
-	UsePassedMediaTypes,
-	UseCustomMediaTypes,
+	SourceMediaTypes,
+	PassedMediaTypes,
+	CustomMediaTypes,
 };
 
 enum class MergingVideoOption {
-	UseSourceMediaTypes,
-	UsePassedMediaTypes,
-	UseCustomMediaTypes,
+	SourceMediaTypes,
+	PassedMediaTypes,
+	CustomMediaTypes,
 };
 
-constexpr MergingAudioOption mergeAudioOpt = MergingAudioOption::UsePassedMediaTypes;
-constexpr MergingVideoOption mergeVideoOpt = MergingVideoOption::UsePassedMediaTypes;
+constexpr MergingAudioOption mergeAudioOpt = MergingAudioOption::SourceMediaTypes;
+constexpr MergingVideoOption mergeVideoOpt = MergingVideoOption::SourceMediaTypes;
 
 // NOTE: Merging takes longer than just writing bytes into a stream. Maybe optimize somehow? (try use GetNativeMediaType without decoding)
 ChunkMerger::ChunkMerger(const std::wstring& outputPath,
@@ -46,12 +46,12 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 	}
 
 	switch (mergeAudioOpt) {
-	case MergingAudioOption::UseSourceMediaTypes:
+	case MergingAudioOption::SourceMediaTypes:
 		if (srcMediaTypeAudio) {
 			useAudioStream = true;
 		}
-	case MergingAudioOption::UsePassedMediaTypes:
-	case MergingAudioOption::UseCustomMediaTypes:
+	case MergingAudioOption::PassedMediaTypes:
+	case MergingAudioOption::CustomMediaTypes:
 		if (mediaTypeAudioIn && mediaTypeAudioOut) {
 			useAudioStream = true;
 		}
@@ -59,12 +59,12 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 	}
 
 	switch (mergeVideoOpt) {
-	case MergingVideoOption::UseSourceMediaTypes:
+	case MergingVideoOption::SourceMediaTypes:
 		if (srcMediaTypeAudio) {
 			useVideoStream = true;
 		}
-	case MergingVideoOption::UsePassedMediaTypes:
-	case MergingVideoOption::UseCustomMediaTypes:
+	case MergingVideoOption::PassedMediaTypes:
+	case MergingVideoOption::CustomMediaTypes:
 		if (mediaTypeVideoIn && mediaTypeVideoOut) {
 			useVideoStream = true;
 		}
@@ -74,7 +74,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 
 	if (useAudioStream) {
 		switch (mergeAudioOpt) {
-		case MergingAudioOption::UseSourceMediaTypes: {
+		case MergingAudioOption::SourceMediaTypes: {
 			hr = writer->AddStream(srcMediaTypeAudio.Get(), &audioStreamIndexToWrite);
 			H::System::ThrowIfFailed(hr);
 
@@ -83,7 +83,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 			break;
 		}
 
-		case MergingAudioOption::UsePassedMediaTypes: {
+		case MergingAudioOption::PassedMediaTypes: {
 			hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
 			H::System::ThrowIfFailed(hr);
 
@@ -99,7 +99,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 			break;
 		}
 
-		case MergingAudioOption::UseCustomMediaTypes: {
+		case MergingAudioOption::CustomMediaTypes: {
 			//hr = writer->AddStream(this->mediaTypeAudioOut.Get(), &audioStreamIndexToWrite);
 			//H::System::ThrowIfFailed(hr);
 
@@ -122,7 +122,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 
 	if (useVideoStream) {
 		switch (mergeVideoOpt) {
-		case MergingVideoOption::UseSourceMediaTypes: {
+		case MergingVideoOption::SourceMediaTypes: {
 			//hr = writer->AddStream(this->mediaTypeVideoOut.Get(), &videoStreamIndexToWrite);
 			hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
 			H::System::ThrowIfFailed(hr);
@@ -132,7 +132,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 			H::System::ThrowIfFailed(hr);
 			break;
 		}
-		case MergingVideoOption::UsePassedMediaTypes: {
+		case MergingVideoOption::PassedMediaTypes: {
 			//hr = writer->AddStream(srcMediaTypeVideo.Get(), &videoStreamIndexToWrite);
 			//H::System::ThrowIfFailed(hr);
 
@@ -167,7 +167,7 @@ ChunkMerger::ChunkMerger(const std::wstring& outputPath,
 			break;
 		}
 
-		case MergingVideoOption::UseCustomMediaTypes: {
+		case MergingVideoOption::CustomMediaTypes: {
 			break;
 		}
 		}
@@ -185,14 +185,14 @@ void ChunkMerger::Merge() {
 			HRESULT hr = MFCreateSourceReaderFromURL(file.c_str(), nullptr, reader.GetAddressOf());
 			H::System::ThrowIfFailed(hr);
 
-			if (mergeAudioOpt == MergingAudioOption::UsePassedMediaTypes) {
+			if (mergeAudioOpt == MergingAudioOption::PassedMediaTypes) {
 				if (useAudioStream) {
 					hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaTypeAudioIn.Get());
 					H::System::ThrowIfFailed(hr);
 				}
 			}
 
-			if (mergeVideoOpt == MergingVideoOption::UsePassedMediaTypes) {
+			if (mergeVideoOpt == MergingVideoOption::PassedMediaTypes) {
 				if (useVideoStream) {
 					hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoIn.Get());
 					//hr = reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, mediaTypeVideoBetween.Get());

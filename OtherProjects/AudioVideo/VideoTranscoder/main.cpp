@@ -20,6 +20,11 @@ enum class ResolutionType {
     _3840x2400,
 };
 
+struct ScreenSize {
+    int width;
+    int height;
+};
+
 std::wstring GetCodecFolder(CodecType codec) {
     switch (codec) {
     case CodecType::MP4:
@@ -52,24 +57,31 @@ std::wstring GetResolutionFolder(ResolutionType resolution) {
     return L"";
 }
 
+ScreenSize GetScreenSize(ResolutionType resolution) {
+    switch (resolution) {
+    case ResolutionType::_1920x1080:
+        return {1920, 1080};
+    case ResolutionType::_3840x2400:
+        return {3840, 2400};
+    }
+    return {-1,-1};
+}
+
 
 CodecType codec = CodecType::HEVC;
 StreamType streamType = StreamType::AudioVideo;
-ResolutionType resolution = ResolutionType::_1920x1080;
+ResolutionType resolution = ResolutionType::_3840x2400;
 
-// default capture audio settings:
+// default capture settings for Audio:
 constexpr int NUM_CHANNELS = 1;
 constexpr int SAMPLE_RATE = 44100;
 constexpr int AUDIO_BIT_RATE = 192000;
 const uint32_t audioSampleBits = 16;
 
-// default capture video settings:
-constexpr int FPS = 30;
-//constexpr int WIDTH = 3840;
-//constexpr int HEIGHT = 2400;
-constexpr int WIDTH = 1920;
-constexpr int HEIGHT = 1080;
-constexpr int VIDEO_BIT_RATE = 5 * 1024 * 1024;
+// default capture settings for Video:
+const int FPS = 30;
+const int VIDEO_BIT_RATE = 5 * 1024 * 1024;
+const ScreenSize SCREEN_SIZE = GetScreenSize(resolution);
 
 
 const std::wstring testFolder = L"D:\\WORK\\TEST\\ScreenRecorder\\TestChunks";
@@ -93,8 +105,8 @@ int main() {
 
     VideoCodecBasicSettings videoCodecBasicSettings;
     videoCodecBasicSettings.fps = FPS;
-    videoCodecBasicSettings.width = WIDTH;
-    videoCodecBasicSettings.height = HEIGHT;
+    videoCodecBasicSettings.width = SCREEN_SIZE.width;
+    videoCodecBasicSettings.height = SCREEN_SIZE.height;
     videoCodecBasicSettings.bitrate = VIDEO_BIT_RATE;
 
 
