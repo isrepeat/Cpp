@@ -51,6 +51,9 @@
     <ClInclude Include="FileSystem.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Macros.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
