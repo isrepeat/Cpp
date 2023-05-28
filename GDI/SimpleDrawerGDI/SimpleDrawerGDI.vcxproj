@@ -101,6 +101,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ComCtl32.lib;ntdll.lib;rpcrt4.lib;user32.lib;shell32.lib;kernel32.lib;d3d11.lib;gdi32.lib;uuid.lib;dcomp.lib;mfplay.lib;mf.lib;mfplat.lib;Mfuuid.lib;ole32.lib;oleaut32.lib;Dwmapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,6 +119,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ComCtl32.lib;ntdll.lib;rpcrt4.lib;user32.lib;shell32.lib;kernel32.lib;d3d11.lib;gdi32.lib;uuid.lib;dcomp.lib;mfplay.lib;mf.lib;mfplat.lib;Mfuuid.lib;ole32.lib;oleaut32.lib;Dwmapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,6 +133,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ComCtl32.lib;ntdll.lib;rpcrt4.lib;user32.lib;shell32.lib;kernel32.lib;d3d11.lib;gdi32.lib;uuid.lib;dcomp.lib;mfplay.lib;mf.lib;mfplat.lib;Mfuuid.lib;ole32.lib;oleaut32.lib;Dwmapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,12 +151,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ComCtl32.lib;ntdll.lib;rpcrt4.lib;user32.lib;shell32.lib;kernel32.lib;d3d11.lib;gdi32.lib;uuid.lib;dcomp.lib;mfplay.lib;mf.lib;mfplat.lib;Mfuuid.lib;ole32.lib;oleaut32.lib;Dwmapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GdiTutorial_1\MAIN_1.CPP" />
     <ClCompile Include="GdiTutorial_2\MAIN_2.CPP" />
     <ClCompile Include="mainHelloWorld.cpp" />
+    <ClCompile Include="TestLayeredWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GdiTutorial_1\GDI01.RC" />

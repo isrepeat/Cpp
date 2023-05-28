@@ -78,6 +78,8 @@
 //  SelectBitmap(hdcMem,hbmT);
 //  DeleteDC(hdcMem);
 //  
+//  //Ellipse(hdcTarget, 30, 30, 120, 90);
+//
 //  // EndPaint balances off the BeginPaint call.
 //  EndPaint(hwnd,&ps);
 //}  

@@ -36,6 +36,9 @@
     <ClCompile Include="GdiTutorial_2\MAIN_2.CPP">
       <Filter>Source Files\GdiTutorial_2</Filter>
     </ClCompile>
+    <ClCompile Include="TestLayeredWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GdiTutorial_1\GDI01.RC">
