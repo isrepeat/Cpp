@@ -151,14 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GdiTutorial_1\MAIN.CPP" />
+    <ClCompile Include="GdiTutorial_1\MAIN_1.CPP" />
+    <ClCompile Include="GdiTutorial_2\MAIN_2.CPP" />
     <ClCompile Include="mainHelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GdiTutorial_1\GDI01.RC" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="GdiTutorial_1\RESOURCE.H" />
+    <ResourceCompile Include="GdiTutorial_2\GDI02.RC" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

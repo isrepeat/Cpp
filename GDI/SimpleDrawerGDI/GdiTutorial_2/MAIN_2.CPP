@@ -44,7 +44,8 @@ BOOL gdi02_OnCreate(
   HBITMAP hbmDstT = SelectBitmap(hdcDst,hbmMask);
   
   COLORREF clrTopLeft = GetPixel(hdcSrc,0,0);
-  COLORREF clrSaveBk = SetBkColor(hdcSrc,clrTopLeft);
+  //COLORREF clrSaveBk = SetBkColor(hdcSrc,clrTopLeft);
+  COLORREF clrSaveBk = SetBkColor(hdcSrc, RGB(252, 0, 0));
   
   // This call sets up the mask bitmap.
   BitBlt(hdcDst,0,0,bm.bmWidth,bm.bmHeight,hdcSrc,0,0,SRCCOPY);
@@ -102,27 +103,35 @@ void gdi02_OnPaint(
   PAINTSTRUCT ps;
   HDC hdc = BeginPaint(hwnd,&ps);
   
+
+  HWND hwndDesktop = GetDesktopWindow();
+  HDC hdcDesktop = GetDC(hwndDesktop);
+
+  HDC hdcTarget = hdc; 
+  //HDC hdcTarget = hdcDesktop; 
+ 
+ 
   // We are going to paint the two DDB's in sequence to the destination.
   // 1st the monochrome bitmap will be blitted using an AND operation to
   // cut a hole in the destination. The color image will then be ORed
   // with the destination, filling it into the hole, but leaving the
   // surrounding area untouched.
   
-  HDC hdcMem = CreateCompatibleDC(NULL);
+  HDC hdcMem = CreateCompatibleDC(hdcTarget);
   
   HBITMAP hbmT = SelectBitmap(hdcMem,hbmMask);
   
   BITMAP bm;
   GetObject(hbmMask,sizeof(bm),&bm);
   
-  BitBlt(hdc,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCAND);
+  BitBlt(hdcTarget,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCAND);
   
   // Notice that we don't bother to save the return from
   // SelectBitmap this time. We know what its going to return - 
   // our mask bitmap.
   // Also note the use of SRCPAINT rather than SRCCOPY.
   SelectBitmap(hdcMem,hbmImage);
-  BitBlt(hdc,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCPAINT);
+  BitBlt(hdcTarget,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCPAINT);
   
   // Now, clean up.
   SelectBitmap(hdcMem,hbmT);
@@ -166,7 +175,7 @@ void gdi02_RegisterClass(
     LoadCursor(NULL,IDC_ARROW),
     CreatePatternBrush(hbm),
     NULL,
-    "GDI02"
+    L"GDI02"
   };
   // A pattern brush, once created no longer relies on the bitmap that
   // was used to create it. We should delete the bitmap as we no
@@ -187,7 +196,7 @@ int WINAPI WinMain(
   
   HWND hwnd = CreateWindowEx(
     0L,
-    "GDI02","Show Transparent Bitmap",
+    L"GDI02",L"Show Transparent Bitmap",
     WS_OVERLAPPEDWINDOW,
     CW_USEDEFAULT,0,CW_USEDEFAULT,0,
     HWND_DESKTOP,NULL,hInstance,NULL);
