@@ -30,5 +30,18 @@
     <ClCompile Include="mainHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GdiTutorial_1\MAIN.CPP">
+      <Filter>Source Files\GdiTutorial_1</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GdiTutorial_1\GDI01.RC">
+      <Filter>Source Files\GdiTutorial_1</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GdiTutorial_1\RESOURCE.H">
+      <Filter>Source Files\GdiTutorial_1</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

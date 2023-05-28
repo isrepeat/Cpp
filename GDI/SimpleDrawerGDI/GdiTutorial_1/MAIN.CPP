@@ -42,17 +42,24 @@ void gdi01_OnPaint(
   // to InvalidateRect(). Once the update region is cleared no more
   // WM_PAINT messages will be sent to the window until InvalidateRect
   // is called again.
+
+
   PAINTSTRUCT ps;
   HDC hdc = BeginPaint(hwnd,&ps);
   
+  HWND hwndDesktop = GetDesktopWindow();
+  HDC hdcDesktop = GetDC(hwndDesktop);
+
+  HDC hdcTarget = hdc; 
+  //HDC hdcTarget = hdcDesktop; 
+
   // To paint with a DDB it first needs to be associated
   // with a memory device context. We make a DC that
   // is compatible with the screen by passing NULL to
   // CreateCompatibleDC.
   // Then we need to associate our saved bitmap with the
   // device context.
-  
-  HDC hdcMem = CreateCompatibleDC(NULL);
+  HDC hdcMem = CreateCompatibleDC(hdcTarget);
   HBITMAP hbmT = SelectBitmap(hdcMem,hbm);
   
   // Now, the BitBlt function is used to transfer the contents of the 
@@ -62,7 +69,7 @@ void gdi01_OnPaint(
   BITMAP bm;
   GetObject(hbm,sizeof(bm),&bm);
   
-  BitBlt(hdc,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCCOPY);
+  BitBlt(hdcTarget,0,0,bm.bmWidth,bm.bmHeight,hdcMem,0,0,SRCCOPY);
   
   // Now, clean up. A memory DC always has a drawing
   // surface in it. It is created with a 1X1 monochrome
@@ -105,7 +112,7 @@ void gdi01_RegisterClass(
     LoadCursor(NULL,IDC_ARROW),
     (HBRUSH)(COLOR_WINDOW+1),
     NULL,
-    "GDI01"
+    L"GDI01"
   };
   RegisterClass(&wc);
 }
@@ -121,7 +128,7 @@ int WINAPI WinMain(
   
   HWND hwnd = CreateWindowEx(
     0L,
-    "GDI01","Show Bitmap",
+    L"GDI01",L"Show Bitmap",
     WS_OVERLAPPEDWINDOW,
     CW_USEDEFAULT,0,CW_USEDEFAULT,0,
     HWND_DESKTOP,NULL,hInstance,NULL);
