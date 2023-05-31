@@ -161,7 +161,8 @@
     <ClCompile Include="main_12_is_empty_variant.cpp" />
     <ClCompile Include="main_13_map_class_members.cpp" />
     <ClCompile Include="main_14_extract_template_params.cpp" />
-    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp" />
+    <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp" />
+    <ClCompile Include="main_15_1_check_if_context_was_deleted.cpp" />
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp" />
     <ClCompile Include="main_17_singleton_destructor.cpp" />
     <ClCompile Include="main_18_detect_windows_11.cpp" />
