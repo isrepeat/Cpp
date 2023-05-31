@@ -69,9 +69,6 @@
     <ClCompile Include="main_14_extract_template_params.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -122,6 +119,12 @@
     </ClCompile>
     <ClCompile Include="Test Helpers\test_1_Timer_token.cpp">
       <Filter>Source Files\Test Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_15_1_check_if_context_was_deleted.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
