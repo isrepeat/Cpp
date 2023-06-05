@@ -175,7 +175,7 @@
     <ClCompile Include="main_24_future.cpp" />
     <ClCompile Include="main_25_try_lock.cpp" />
     <ClCompile Include="main_26_weak_ptr.cpp" />
-    <ClCompile Include="main_27_function_traints.cpp" />
+    <ClCompile Include="main_27_function_traits.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
