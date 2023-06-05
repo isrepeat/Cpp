@@ -126,6 +126,9 @@
     <ClCompile Include="main_15_1_check_if_context_was_deleted.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_27_function_traints.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
