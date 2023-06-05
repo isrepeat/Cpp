@@ -45,6 +45,9 @@
     <ClInclude Include="Regex.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="FunctionTraits.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
