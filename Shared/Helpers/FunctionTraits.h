@@ -3,12 +3,12 @@
 #include <type_traits>
 
 template <typename ReturnType, typename ClassType, typename... Args>
-struct function_traits_base {
+struct _FunctionTraitsBase {
     enum { arity = sizeof...(Args) };
     // arity is the number of arguments.
 
-    using return_type = ReturnType;
-    using class_type = ClassType;
+    using Ret = ReturnType;
+    using Class = ClassType;
 
     template <size_t i>
     struct arg {
@@ -21,20 +21,39 @@ struct function_traits_base {
 // Matches when T=lambda or T=Functor
 // For generic types, directly use the result of the signature of its 'operator()'
 template <typename T>
-struct function_traits : public function_traits<decltype(&T::operator())>
+struct FunctionTraits : public FunctionTraits<decltype(&T::operator())>
 {};
 
 // For Functor L-value or R-value
 template <typename R, typename C, typename... A>
-struct function_traits<R(C::*)(A...)> : public function_traits_base<R, C, A...>
+struct FunctionTraits<R(C::*)(A...)> : public _FunctionTraitsBase<R, C, A...>
 {};
 
 // For lambdas (need const)
 template <typename R, typename C, typename... A>
-struct function_traits<R(C::*)(A...) const> : public function_traits_base<R, C, A...>
+struct FunctionTraits<R(C::*)(A...) const> : public _FunctionTraitsBase<R, C, A...>
 {};
 
 // For C-style functions
 template <typename R, typename... A>
-struct function_traits<R(*)(A...)> : public function_traits_base<R, void, A...>
+struct FunctionTraits<R(*)(A...)> : public _FunctionTraitsBase<R, void, A...>
 {};
+
+
+
+//template <typename Fn, typename Rt = typename FunctionTraits<Fn>::Ret>
+//struct CallbackOperation {
+//    Rt result;
+//    template <typename ...Args>
+//    void Perform(Fn callback, Args... args) {
+//        result = callback(std::forward<Args>(args)...);
+//    }
+//};
+//
+//template <typename Fn>
+//struct CallbackOperation<Fn, void> {
+//    template <typename ...Args>
+//    void Perform(Fn callback, Args... args) {
+//        callback(std::forward<Args>(args)...);
+//    }
+//};
