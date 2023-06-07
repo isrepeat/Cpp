@@ -186,6 +186,7 @@
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
     <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
+    <ClCompile Include="QUIC context token\main_QUICClient.cpp" />
     <ClCompile Include="Static initialization fiasco\WAppConstants.cpp" />
     <ClCompile Include="Static initialization fiasco\fileB.cpp" />
     <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
@@ -201,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
+    <ClInclude Include="QUIC context token\MsQuic.h" />
     <ClInclude Include="Static initialization fiasco\StaticConstructor.h" />
     <ClInclude Include="Static initialization fiasco\WAppConstants.h" />
     <ClInclude Include="Static initialization fiasco\fileB.h" />
