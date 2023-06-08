@@ -39,6 +39,9 @@
     <ClCompile Include="main_6_invalidation_iterators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_7_RAII_Rvalue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">

@@ -1,9 +1,9 @@
-class ClassA {
-	ClassA();
+class Object {
+	Object();
 };
 
-int main() {
-	ClassA classA;
+void main() {
+	Object object;
 
-	return 0;
+	return;
 }
