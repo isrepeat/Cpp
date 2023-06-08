@@ -160,6 +160,7 @@
     <ClCompile Include="main_5_Labmda_capturing.cpp" />
     <ClCompile Include="main_6_invalidation_iterators.cpp" />
     <ClCompile Include="main_7_RAII_Rvalue.cpp" />
+    <ClCompile Include="main_8_Raw_ptrs_in_vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
