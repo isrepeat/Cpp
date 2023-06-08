@@ -158,6 +158,7 @@
     <ClCompile Include="main_3_Temporary_object.cpp" />
     <ClCompile Include="main_4_Call_class_method_on_empty_instance.cpp" />
     <ClCompile Include="main_5_Labmda_capturing.cpp" />
+    <ClCompile Include="main_6_invalidation_iterators.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
