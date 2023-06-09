@@ -7,6 +7,7 @@
 #include <thread>
 #include <sddl.h>
 #include <queue>
+
 #include "Helpers.h"
 #include "LocalPtr.h"
 
@@ -66,9 +67,9 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
 
 template <typename T = uint8_t>
-void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
+void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) { 
     DWORD cbWritten;
-    if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) {
+    if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) { // Write synchronously
         throw PipeError::WriteError;
     }
 }
@@ -87,8 +88,6 @@ std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& sto
 }
 
 
-
-
 template<typename T>
 H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
     DWORD dwSize = 0;
@@ -96,7 +95,7 @@ H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
         return nullptr;
     }
 
-    if (auto pTokenData = LocalPtr<T>(LocalAlloc(LPTR, dwSize))) {
+    if (auto pTokenData = H::LocalPtr<T>(LocalAlloc(LPTR, dwSize))) {
         if (GetTokenInformation(hToken, typeInfo, pTokenData.get(), dwSize, &dwSize)) {
             return pTokenData;
         }
@@ -107,8 +106,8 @@ H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
 
 
 // NOTE: EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
-// TODO: fix when interrupt connection -> not process "None" msg
-// TODO: remove try .. catch if was not error in future
+// TODO: Add guard for multiple calls pulbic methods and for usage in them in multithreading
+// TODO: fix when interrupt connection -> not process "None" msg (??? CHECK)
 template<typename EnumMsg, typename T = uint8_t>
 class Channel {
 public:
@@ -119,10 +118,12 @@ public:
     using ReadFunc = std::function<Reply()>;
     using WriteFunc = std::function<void(std::vector<T>&&, EnumMsg)>;
 
-    ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
-    WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
-
     Channel() = default;
+    ~Channel() {
+        StopChannel();
+        if (hNamedPipe)
+            CloseHandle(hNamedPipe);
+    }
 
     // Make security attributes to connect admin & user pipe
     void CreateForAdmin(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
@@ -150,7 +151,7 @@ public:
         if (OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken)) {
             if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
                 if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
-                    LocalPtr<WCHAR> pStr;
+                    H::LocalPtr<WCHAR> pStr;
                     if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
                         formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
                     }
@@ -251,15 +252,13 @@ public:
 
         StopSecondThreads();
     }
+
     bool IsConnected() {
         return connected;
     }
-    ~Channel() {
-        StopChannel();
-        if (hNamedPipe)
-            CloseHandle(hNamedPipe);
-    }
 
+
+    // TODO: add other mutex guard to set handlers from other thread
     void SetLoggerHandler(std::function<void(std::wstring)> handler) {
         loggerHandler = handler;
     }
@@ -273,16 +272,18 @@ public:
     }
 
 
-
     void ClearPendingMessages() {
+        std::lock_guard lk{ mx };
         pendingMessages.clear();
     }
 
     void WritePendingMessages() {
+        std::lock_guard lk{ mx };
+
         try {
             for (auto& message : pendingMessages) {
                 WriteToPipe<T>(hNamedPipe, message);
-                if (isWaitingSendingMessage && static_cast<EnumMsg>(message.back()) == waitedMessage) { // TODO: test this case
+                if (waitedMessage != EnumMsg::None && waitedMessage == static_cast<EnumMsg>(message.back())) {
                     cvFinishSendingMessage.notify_all();
                 }
             }
@@ -299,8 +300,10 @@ public:
         }
     }
 
-    // Use rvalue ref [orig data will be lost]
+    // Write synchronously
     void Write(std::vector<T>&& writeData, EnumMsg type) {
+        std::unique_lock lk{ mx };
+
         writeData.push_back(static_cast<T>(type));
         if (!connected) {
             pendingMessages.push_back(std::move(writeData));
@@ -308,8 +311,8 @@ public:
         }
 
         try {
-            WriteToPipe<T>(hNamedPipe, writeData);f
-            if (isWaitingSendingMessage && type == waitedMessage) {
+            WriteToPipe<T>(hNamedPipe, writeData); 
+            if (waitedMessage != EnumMsg::None && waitedMessage == type) {
                 cvFinishSendingMessage.notify_all();
             }
         }
@@ -326,20 +329,20 @@ public:
 
     // TODO: add logic to wait for one of several messages
     void WaitFinishSendingMessage(EnumMsg type) {
+        std::unique_lock lk{ mx };
+
         if (hNamedPipe == INVALID_HANDLE_VALUE)
             return;
 
-        std::mutex m;
-        std::unique_lock<std::mutex> lk(m);
-
         waitedMessage = type;
-        isWaitingSendingMessage = true;
         cvFinishSendingMessage.wait(lk);
-        isWaitingSendingMessage = false;
+        waitedMessage = EnumMsg::None;
     }
 
 private:
     Reply Read() {
+        std::lock_guard lk{ mx };
+
         try {
             auto readData = ReadFromPipeAsync<T>(hNamedPipe, stopSignal);
             if (readData.size() > 0) {
@@ -368,7 +371,9 @@ private:
             threadInterrupt.join();
     }
 
-    std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
+
+private:
+    std::mutex mx;
     HANDLE hNamedPipe = nullptr;
     std::thread threadChannel;
     std::thread threadConnect;
@@ -381,8 +386,10 @@ private:
     std::function<void()> connectHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;
 
-
-    EnumMsg waitedMessage = EnumMsg::None;
-    std::atomic<bool> isWaitingSendingMessage = false;
+    std::atomic<EnumMsg> waitedMessage = EnumMsg::None;
     std::condition_variable cvFinishSendingMessage;
+    std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
+
+    const ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
+    const WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
 };

@@ -167,6 +167,7 @@
     <ClInclude Include="Conversion.h" />
     <ClInclude Include="CrashInfo.h" />
     <ClInclude Include="FunctionTraits.h" />
+    <ClInclude Include="Gate.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="LocalPtr.h" />
     <ClInclude Include="Macros.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="CrashInfo.cpp" />
     <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="Gate.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="PackageProvider.cpp" />
     <ClCompile Include="Regex.cpp" />

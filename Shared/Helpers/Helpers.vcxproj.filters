@@ -57,6 +57,9 @@
     <ClInclude Include="LocalPtr.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Gate.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
