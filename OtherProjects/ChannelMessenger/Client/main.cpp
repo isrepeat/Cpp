@@ -1,4 +1,5 @@
 #include <Helpers/Channel.h>
+#include <cassert>
 #include <thread>
 
 enum class Messages {
@@ -20,7 +21,9 @@ void main() {
 				auto reply = Read();
 				switch (reply.type) {
 				case Messages::Connect: {
+					Sleep(3000);
 					Write({}, Messages::HelloFromClient);
+					BEEP(500, 500);
 					break;
 				}
 				}
@@ -29,15 +32,18 @@ void main() {
 
 	}
 	catch (PipeError err) {
-		int xxx = 9;
+		assert(false && "---> client pipe error");
 	}
 
-	auto th = std::thread([] {
-		Sleep(5'000);
-		channelClient.Write({}, Messages::Stop);
-		channelClient.WaitFinishSendingMessage(Messages::Stop);
-		int xxx = 9;
-		});
+
+	channelClient.WaitFinishSendingMessage(Messages::HelloFromClient);
+
+	//auto th = std::thread([] {
+	//	Sleep(5'000);
+	//	channelClient.Write({}, Messages::Stop);
+	//	channelClient.WaitFinishSendingMessage(Messages::Stop);
+	//	int xxx = 9;
+	//	});
 
 
 
