@@ -166,7 +166,7 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Conversion.h" />
     <ClInclude Include="CrashInfo.h" />
-    <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="FunctionTraits.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Macros.h" />
     <ClInclude Include="PackageProvider.h" />

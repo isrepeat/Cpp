@@ -161,7 +161,8 @@
     <ClCompile Include="main_12_is_empty_variant.cpp" />
     <ClCompile Include="main_13_map_class_members.cpp" />
     <ClCompile Include="main_14_extract_template_params.cpp" />
-    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp" />
+    <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp" />
+    <ClCompile Include="main_15_1_check_if_context_was_deleted.cpp" />
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp" />
     <ClCompile Include="main_17_singleton_destructor.cpp" />
     <ClCompile Include="main_18_detect_windows_11.cpp" />
@@ -174,6 +175,9 @@
     <ClCompile Include="main_24_future.cpp" />
     <ClCompile Include="main_25_try_lock.cpp" />
     <ClCompile Include="main_26_weak_ptr.cpp" />
+    <ClCompile Include="main_27_function_traits.cpp" />
+    <ClCompile Include="main_28_unique_lock.cpp" />
+    <ClCompile Include="main_29_Token.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
@@ -182,6 +186,7 @@
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
     <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
+    <ClCompile Include="QUIC context token\main_QUICClient.cpp" />
     <ClCompile Include="Static initialization fiasco\WAppConstants.cpp" />
     <ClCompile Include="Static initialization fiasco\fileB.cpp" />
     <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
@@ -197,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
+    <ClInclude Include="QUIC context token\MsQuic.h" />
     <ClInclude Include="Static initialization fiasco\StaticConstructor.h" />
     <ClInclude Include="Static initialization fiasco\WAppConstants.h" />
     <ClInclude Include="Static initialization fiasco\fileB.h" />

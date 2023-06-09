@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 namespace H {
 	class Timer {
 	public:
+		// TODO: rewrite detach with std::async. Return future and check it outside in Dtor.
 		template <typename Duration>
 		static void Once(Duration timeout, std::function<void()> callback) {
 			std::thread([=] {
@@ -20,7 +21,7 @@ namespace H {
 		template <typename Duration>
 		static bool Once(std::shared_ptr<std::function<void()>>& tokenTask, Duration timeout, std::function<void()> callback) {
 			if (tokenTask)
-				return false; // cannot rewrite token callback while it is not empty
+				return false; // cannot rewrite token callback while it not empty
 
 			tokenTask = std::make_shared<std::function<void()>>(callback);
 			std::weak_ptr<std::function<void()>> callbackWeakPtr = tokenTask;
@@ -28,12 +29,13 @@ namespace H {
 			std::thread([&tokenTask, timeout, callbackWeakPtr] {
 				std::this_thread::sleep_for(timeout);
 				if (auto lockedCallback = callbackWeakPtr.lock()) {
+					// TODO: token may deleting when you here (or you in lockedCallback())
 					(*lockedCallback)();
 					tokenTask = nullptr;
 				}
 				}).detach();
 
-			return true;
+				return true;
 		}
 
 		Timer() = default;
@@ -89,6 +91,16 @@ namespace H {
 		~MeasureTime();
 
 	private:
+		std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	};
+
+	class MeasureTimeScoped {
+	public:
+		MeasureTimeScoped(std::function<void(uint64_t dtMs)> completedCallback);
+		~MeasureTimeScoped();
+
+	private:
+		std::function<void(uint64_t dtMs)> completedCallback;
 		std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	};
 

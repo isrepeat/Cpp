@@ -11,23 +11,24 @@
 //	{
 //		routine = std::async(std::launch::async, [] {
 //			OutputDebugStringA("111 \n");
-//			Sleep(1000);
+//			Sleep(100);
+//			//throw 111;
 //			OutputDebugStringA("222 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("333 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("444 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("555 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("666 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("777 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("888 \n");
-//			Sleep(1000);
-//			OutputDebugStringA("999 \n");
-//			Sleep(1000);
+//			Sleep(100);
+//			//OutputDebugStringA("333 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("444 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("555 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("666 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("777 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("888 \n");
+//			//Sleep(100);
+//			//OutputDebugStringA("999 \n");
+//			//Sleep(100);
 //
 //			int xxx = 9;
 //			});
@@ -41,9 +42,21 @@
 //			OutputDebugStringA("aaa \n");
 //			Sleep(1000);
 //			OutputDebugStringA("bbb \n");
-//			Sleep(1000);
+//			if (routine.valid()) {
+//				if (routine.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+//					int xx = 9;
+//
+//					try {
+//						routine.get();
+//					}
+//					catch (...) {
+//						int err = 666;
+//					}
+//				}
+//			}
+//			Sleep(100);
 //			OutputDebugStringA("ccc \n");
-//			Sleep(1000);
+//			Sleep(100);
 //
 //			int xxx = 9;
 //			});

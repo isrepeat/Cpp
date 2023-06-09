@@ -22,6 +22,9 @@
     <Filter Include="Source Files\Test Helpers">
       <UniqueIdentifier>{2026a733-39ce-4290-b359-e0940c4778e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\QUIC context token">
+      <UniqueIdentifier>{c5a136de-054d-4c19-9033-86fab0ce2853}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -67,9 +70,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_14_extract_template_params.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main_15_check_if_raw_ptr_is_invalid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_16_GUID_to_string_conversion.cpp">
@@ -123,6 +123,24 @@
     <ClCompile Include="Test Helpers\test_1_Timer_token.cpp">
       <Filter>Source Files\Test Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_15_1_check_if_context_was_deleted.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_27_function_traits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_28_unique_lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_29_Token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QUIC context token\main_QUICClient.cpp">
+      <Filter>Source Files\QUIC context token</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -139,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="Static initialization fiasco\StaticConstructor.h">
       <Filter>Source Files\Static initialization fiasco</Filter>
+    </ClInclude>
+    <ClInclude Include="QUIC context token\MsQuic.h">
+      <Filter>Source Files\QUIC context token</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
