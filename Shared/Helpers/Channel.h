@@ -1,17 +1,17 @@
 #pragma once
 #include <Windows.h>
+#include <condition_variable>
 #include <functional>
 #include <string>
 #include <vector>
 #include <thread>
-#include <condition_variable>
+#include <sddl.h>
 #include <queue>
 #include "Helpers.h"
+#include "LocalPtr.h"
 
-#include <sddl.h>
 
-// TODO: add TimeoutConnection exception !!!!!!!!
-
+// TODO: add TimeoutConnection exception logic
 enum class PipeError {
     //TimeoutConnection,
     //PipeDisconnected,
@@ -61,7 +61,7 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
 
     tmpBuffer.resize(dwBytesRead / sizeof(T));
-    return std::move(tmpBuffer);
+    return tmpBuffer;
 }
 
 
@@ -83,75 +83,14 @@ std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& sto
         throw PipeError::ReadError;
     }
 
-    return std::move(tmp);
+    return tmp;
 }
 
 
 
 
-template <typename T>
-class LocalPtr {
-public:
-    //LocalRAII(int size)
-    //	: pData{ (T)LocalAlloc(LPTR, size) }
-    //{}
-
-    LocalPtr() = default;
-
-    LocalPtr(HLOCAL hPtr)
-        : pData{ (T*)hPtr }
-    {}
-    ~LocalPtr() {
-        if (pData != nullptr) {
-            LocalFree((HLOCAL)pData);
-        }
-    }
-
-    LocalPtr(const LocalPtr& x) = delete;
-    LocalPtr(LocalPtr&& other) noexcept
-        : pData{ other.pData }
-    {
-        other.pData = nullptr;
-    }
-
-    LocalPtr& operator=(const LocalPtr& other) = delete;
-    LocalPtr& operator=(LocalPtr&& other)
-    {
-        if (&other == this)
-            return *this;
-
-        if (pData != nullptr) {
-            LocalFree((HLOCAL)pData);
-        }
-
-        pData = other.pData;
-        other.pData = nullptr;
-
-        return *this;
-    }
-    T& operator*() const { return *pData; }
-    T* operator->() const { return pData; }
-
-    operator bool() {
-        return static_cast<bool>(pData);
-    }
-
-    T* get() {
-        return pData;
-    }
-
-    T** ReleaseAndGetAdressOf() {
-        pData = nullptr;
-        return &pData;
-    }
-
-private:
-    T* pData = nullptr;
-};
-
-
 template<typename T>
-LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
+H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
     DWORD dwSize = 0;
     if (!GetTokenInformation(hToken, typeInfo, NULL, 0, &dwSize) && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
         return nullptr;
@@ -167,7 +106,7 @@ LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
 }
 
 
-// EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
+// NOTE: EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
 // TODO: fix when interrupt connection -> not process "None" msg
 // TODO: remove try .. catch if was not error in future
 template<typename EnumMsg, typename T = uint8_t>
@@ -369,7 +308,7 @@ public:
         }
 
         try {
-            WriteToPipe<T>(hNamedPipe, writeData);
+            WriteToPipe<T>(hNamedPipe, writeData);f
             if (isWaitingSendingMessage && type == waitedMessage) {
                 cvFinishSendingMessage.notify_all();
             }

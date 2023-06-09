@@ -48,13 +48,13 @@
     <ClInclude Include="RegistryManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileSystem.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Macros.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="FunctionTraits.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalPtr.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
