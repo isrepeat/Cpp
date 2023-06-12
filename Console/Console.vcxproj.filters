@@ -63,7 +63,7 @@
     <ClCompile Include="main_11_enum_to_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_12_is_empty_variant.cpp">
+    <ClCompile Include="main_12_0_is_empty_variant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_13_map_class_members.cpp">
@@ -140,6 +140,9 @@
     </ClCompile>
     <ClCompile Include="QUIC context token\main_QUICClient.cpp">
       <Filter>Source Files\QUIC context token</Filter>
+    </ClCompile>
+    <ClCompile Include="main_12_1_get_variant_item.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
