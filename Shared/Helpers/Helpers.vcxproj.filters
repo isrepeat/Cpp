@@ -48,13 +48,16 @@
     <ClInclude Include="RegistryManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileSystem.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Macros.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="FunctionTraits.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalPtr.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gate.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
