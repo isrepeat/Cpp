@@ -185,7 +185,7 @@
     <ClCompile Include="main_29_Token.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
     <ClCompile Include="main_30_wait_Dtor_callback_finish.cpp" />
-    <ClCompile Include="main_31_Callback_Item.cpp" />
+    <ClCompile Include="main_31_FunctionMt.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
