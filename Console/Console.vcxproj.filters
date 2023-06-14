@@ -25,6 +25,9 @@
     <Filter Include="Source Files\[3] Test Helpers">
       <UniqueIdentifier>{2026a733-39ce-4290-b359-e0940c4778e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[5] Dtor callback finish">
+      <UniqueIdentifier>{e0de6530-d628-4799-a014-93484c895930}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -146,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp">
       <Filter>Source Files\[4] QUIC context token</Filter>
+    </ClCompile>
+    <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

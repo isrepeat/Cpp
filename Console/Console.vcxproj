@@ -197,6 +197,7 @@
     <ClCompile Include="[2] Static initialization fiasco\WAppConstants.cpp" />
     <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp" />
     <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp" />
+    <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
