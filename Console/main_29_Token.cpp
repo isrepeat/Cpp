@@ -396,25 +396,25 @@
 //	//		});
 //	//}
 //
-//	//std::weak_ptr<std::function<void()>> weak;
-//	//if (IsWeakPtrUninitialized(weak)) {
-//	//	auto lk = weak.lock();
-//	//	int xxx = 9;
-//	//}
-//	//{
-//	//	auto sh1 = std::make_shared<std::function<void()>>([] {});
-//	//	weak = sh1;
-//	//}
-//	//if (IsWeakPtrUninitialized(weak)) {
-//	//	int xxx = 9;
-//	//}
+//	std::weak_ptr<std::function<void()>> weak;
+//	if (IsWeakPtrUninitialized(weak)) {
+//		auto lk = weak.lock();
+//		int xxx = 9;
+//	}
+//	{
+//		auto sh1 = std::make_shared<std::function<void()>>([] {});
+//		weak = sh1;
+//	}
+//	if (IsWeakPtrUninitialized(weak)) {
+//		int xxx = 9;
+//	}
 //
-//	//weak = std::weak_ptr<std::function<void()>>{ };
-//	//if (IsWeakPtrUninitialized(weak)) {
-//	//	int xxx = 9;
-//	//}
-//	//auto sh2 = std::make_shared<std::function<void()>>(nullptr);
-//	//weak = sh2;
+//	weak = std::weak_ptr<std::function<void()>>{ };
+//	if (IsWeakPtrUninitialized(weak)) {
+//		int xxx = 9;
+//	}
+//	auto sh2 = std::make_shared<std::function<void()>>(nullptr);
+//	weak = sh2;
 //
 //	{
 //		Owner owner;

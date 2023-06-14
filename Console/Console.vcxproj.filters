@@ -144,6 +144,12 @@
     <ClCompile Include="main_12_1_get_variant_item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_31_Callback_Item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_30_wait_Dtor_callback_finish.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
