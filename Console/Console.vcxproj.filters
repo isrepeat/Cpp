@@ -114,7 +114,7 @@
     <ClCompile Include="main_27_function_traits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_28_unique_lock.cpp">
+    <ClCompile Include="main_28_ConcurrentQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_29_Token.cpp">

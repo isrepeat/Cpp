@@ -11,10 +11,10 @@
 //	{
 //		routine = std::async(std::launch::async, [] {
 //			OutputDebugStringA("111 \n");
-//			Sleep(100);
+//			Sleep(200);
 //			//throw 111;
 //			OutputDebugStringA("222 \n");
-//			Sleep(100);
+//			Sleep(500);
 //			//OutputDebugStringA("333 \n");
 //			//Sleep(100);
 //			//OutputDebugStringA("444 \n");
@@ -34,11 +34,16 @@
 //			});
 //	}
 //
-//	Sleep(2200);
+//	//Sleep(2200);
+//
+//	// explicitly wait to ensure that previous future lambda finished
+//	if (routine.valid())
+//		routine.get();
 //
 //	{
-//		//routine = std::async(std::launch::async, [] { // previous future destructor called which makes the current thread "Wait" for async task finish
-//		routine2 = std::async(std::launch::async, [] {
+//														// NOTE: Previous future destructor called  which makes the current thread "Wait" for async task finish.
+//		routine = std::async(std::launch::async, [] {	//		 Destructor was called after init new future, so may case when 2 lambdas executes										  
+//		//routine2 = std::async(std::launch::async, [] {
 //			OutputDebugStringA("aaa \n");
 //			Sleep(1000);
 //			OutputDebugStringA("bbb \n");
