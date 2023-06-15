@@ -214,6 +214,8 @@
     <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h" />
     <ClInclude Include="[2] Static initialization fiasco\WAppConstants.h" />
     <ClInclude Include="[4] QUIC context token\MsQuic.h" />
+    <ClInclude Include="[5] Dtor callback finish\FunctionMt.h" />
+    <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

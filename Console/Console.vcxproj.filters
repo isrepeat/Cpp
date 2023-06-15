@@ -173,5 +173,11 @@
     <ClInclude Include="[4] QUIC context token\MsQuic.h">
       <Filter>Source Files\[4] QUIC context token</Filter>
     </ClInclude>
+    <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
+    </ClInclude>
+    <ClInclude Include="[5] Dtor callback finish\FunctionMt.h">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

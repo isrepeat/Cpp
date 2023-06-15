@@ -2,209 +2,166 @@
 #include <iostream>
 #include <Windows.h>
 #include <functional>
+#include "ServerCallbacks.h"
+#include <Helpers/Time.h>
 
-template <typename T>
-bool IsWeakPtrUninitialized(const std::weak_ptr<T>& weak) {
-	using wt = std::weak_ptr<T>;
-	//bool cmp_1 = weak.owner_before(wt{});
-	//bool cmp_2 = wt{}.owner_before(weak);
-	return !weak.owner_before(wt{}) && !wt{}.owner_before(weak);
+
+ServerCallbacks CreateServerCallbacks() {
+	ServerCallbacks serverCallbacks;
+
+	serverCallbacks.connected = std::function([] {
+		Sleep(10);
+		});
+
+	serverCallbacks.adaptersChanged = std::function([] {
+		Sleep(10);
+		});
+
+	serverCallbacks.capturerChangingConfirmation = std::function([] {
+		Sleep(1000);
+		Sleep(1000);
+		return true;
+		});
+
+	serverCallbacks.frameData = std::function([] (int data) {
+		Sleep(10);
+		});
+
+	return serverCallbacks;
 }
 
-template <typename T>
-bool IsWeakPtrInitialized(const std::weak_ptr<T>& weak) {
-	using wt = std::weak_ptr<T>;;
-	return weak.owner_before(wt{}) || wt{}.owner_before(weak);
-}
 
-
-class Callback {
+class DesktopCapturer {
+	struct FirstField {
+		~FirstField() {
+			int xxx = 9;
+		}
+	};
 public:
-	Callback(std::function<void(int)> handler)
-		: handler{ handler }
-	{}
-
-	//Callback& operator=(const Callback& other) {
-	//	if (&other != this) {
-	//		//// lock both objects
-	//		//std::unique_lock<std::mutex> lock_this(mx, std::defer_lock);
-	//		//std::unique_lock<std::mutex> lock_other(other.mx, std::defer_lock);
-
-	//		//// ensure no deadlock
-	//		//std::lock(lock_this, lock_other);
-
-	//		// safely copy the data
-	//		handler = other.handler;
-	//		useToken = other.useToken;
-	//	}
-	//	return *this;
-	//}
-
-	~Callback() {
-		int xx = 9;
+	DesktopCapturer() {
+		classData.resize(1000);
+		auto xxx = classData[666];
 	}
 
-	void SetToken(std::shared_ptr<int> callerToken) {
-		this->callerToken = callerToken;
-	}
-
-	void SetCv(std::weak_ptr<std::condition_variable> callerCv) {
-		this->callerCv = callerCv;
-	}
-
-	void operator() (int arg) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		// guard based on token
-		if (IsWeakPtrInitialized(callerToken)) {
-			if (callerToken.expired())
-				return;
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		if (this->handler) {
-			this->handler(arg);
-		}
-
-		// guard based on cv wait
-		if (auto cv = callerCv.lock()) {
-			cv->notify_all(); // signal about finish callback
-		}
-	}
-
-private:
-	//std::mutex mx;
-	std::weak_ptr<int> callerToken;
-	std::weak_ptr<std::condition_variable> callerCv;
-	std::function<void(int)> handler;
-};
-
-
-
-struct ServerCallbacks {
-	Callback connect = std::function([](int) {});
-	Callback getUserInfo = std::function([](int) {});
-
-	ServerCallbacks() = default;
-	~ServerCallbacks() {
-		int xx = 9;
-	}
-
-
-	// TODO: mb use variant to set either token or cv?
-	// Set caller token to skip operator() when token expired
-	void SetToken(std::shared_ptr<int>& callerToken) {
-		connect.SetToken(callerToken);
-		getUserInfo.SetToken(callerToken);
-		useTokenGuard = true;
-	}
-
-	// Set caller cv to nitify caller when operaotr() finished
-	void SetCv(std::shared_ptr<std::condition_variable>& callerCv) {
-		connect.SetCv(callerCv);
-		getUserInfo.SetCv(callerCv);
-		useCvGuard = true;
-	}
-
-	bool IsUseTokenGuard() {
-		return useTokenGuard;
-	}
-
-	bool IsUseCvGuard() {
-		return useCvGuard;
-	}
-
-private:
-	std::atomic<bool> useTokenGuard = false;
-	std::atomic<bool> useCvGuard = false;
-};
-
-
-
-
-
-
-
-
-struct SomeValue {
-	~SomeValue() {
+	~DesktopCapturer() {
+		Stop();
 		int xxx = 9;
 	}
-};
 
-class Server {
-public:
-	Server() {
-		callbacks = std::make_shared<ServerCallbacks>();
-		callbacks->connect = std::function([](int num) {
-			Sleep(100);
-			Sleep(100);
-			Sleep(100);
-			Sleep(100);
-			});
-		callbacks->getUserInfo = std::function([](int num) {
-			Sleep(100);
-			Sleep(100);
-			Sleep(100);
-			Sleep(100);
-			});
-
-		callbacks->SetToken(tokenCallbacks);
-		//callbacks->SetCv(cvCallbacks);
+	void SetFrameHandler(std::function<void(int)> framaHandler) {
+		this->framaHandler = framaHandler;
 	}
 
-	~Server() {
-		if (callbacks->IsUseCvGuard()) {
-			std::unique_lock lk{ mxCallbacks };
-			cvCallbacks->wait(lk, [this] {
-				int count = callbacks.use_count();
-				return count <= 1; // wait if count > 1
-				});
+	void SetCapturerChangingConfirmation(std::function<bool()> capturerChangingConfirmation) {
+		this->capturerChangingConfirmation = capturerChangingConfirmation;
+	}
+
+	void Start() {
+		working = true;
+		thChannel = std::thread([this] {
+			int frameCounter = 0;
+			while (working) {
+				Sleep(1000);
+				frameCounter++;
+				if (frameCounter < 3) {
+					framaHandler(111);
+				}
+				if (frameCounter == 3) {
+					H::Timer::Once(tokenFutureCapturerChangingConfirmation, 0ms, [=] {
+						if (capturerChangingConfirmation()) { // TODO: may block this thread for a long time (so you need wait finish timer thread in ~DesktopCaptureManager)
+							auto xxx = classData[666];
+							isServiceCapturer = true;
+						}
+						});
+				}
+			}
+			});
+	}
+
+	void Stop() {
+		working = false;
+		if (thChannel.joinable())
+			thChannel.join();
+	}
+
+private:
+	FirstField firstField;
+	std::atomic<bool> working = false;
+	std::atomic<bool> isServiceCapturer = false;
+	std::thread thChannel;
+
+	std::vector<int> classData;
+
+	std::function<void(int)> framaHandler;
+	std::function<bool()> capturerChangingConfirmation;
+
+	std::unique_ptr<std::future<void>> tokenFutureCapturerChangingConfirmation;
+};
+
+
+class VncServer {
+	struct FirstField {
+		~FirstField() {
+			int xxx = 9;
 		}
+	};
+public:
+	VncServer(const ServerCallbacks& callbacks)
+		: serverCallbacks{ std::make_shared<ServerCallbacks>(callbacks) }
+	{
+		desktopCapturer.SetFrameHandler([this](int data) {
+			serverCallbacks->frameData(data);
+			});
+
+		desktopCapturer.SetCapturerChangingConfirmation([this] {
+			bool res = serverCallbacks->capturerChangingConfirmation();
+			return res;
+			});
+
+		desktopCapturer.Start();
+	}
+
+	~VncServer() {
+		//auto lk = serverCallbacks->capturerChangingConfirmation.ScopedLock();
+		//if (callbacks->IsUseCvGuard()) {
+		//	std::unique_lock lk{ mxCallbacks };
+		//	cvCallbacks->wait(lk, [this] {
+		//		int count = callbacks.use_count();
+		//		return count <= 1; // wait if count > 1
+		//		});
+		//}
 
 		int xxx = 9;
 	}
 
 
-	std::shared_ptr<ServerCallbacks> GetSharedCallbacks() {
-		return callbacks;
-	}
-
 private:
-	SomeValue someValue;
+	FirstField firstField;
 	std::mutex mxCallbacks;
 	std::shared_ptr<int> tokenCallbacks = std::make_shared<int>();
-	std::shared_ptr<ServerCallbacks> callbacks;
+	std::shared_ptr<ServerCallbacks> serverCallbacks;
 	std::shared_ptr<std::condition_variable> cvCallbacks = std::make_shared<std::condition_variable>();
+	
+	DesktopCapturer desktopCapturer;
 };
 
 
 
 void main() {
-	std::thread thInvoker;
 	std::thread thDestroyer;
-	std::unique_ptr<Server> server = std::make_unique<Server>();
+	std::unique_ptr<VncServer> vncServer = std::make_unique<VncServer>(CreateServerCallbacks());
 
-	thInvoker = std::thread([&server, shCallbacks = server->GetSharedCallbacks()]{
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		shCallbacks->connect(11);
-		});
-
-	thDestroyer = std::thread([&server] {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		server.reset();
+	thDestroyer = std::thread([&vncServer] {
+		std::this_thread::sleep_for(std::chrono::milliseconds(3500));
+		vncServer.reset();
 		});
 
 	while (true) {
 		Sleep(10);
 	}
 
-	if (thInvoker.joinable())
-		thInvoker.join();
-
 	if (thDestroyer.joinable())
 		thDestroyer.join();
-
 
 	return;
 }
