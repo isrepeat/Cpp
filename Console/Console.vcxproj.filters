@@ -153,6 +153,9 @@
     <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp">
       <Filter>Source Files\[5] Dtor callback finish</Filter>
     </ClCompile>
+    <ClCompile Include="main_32_future_exception_move_Ctor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">

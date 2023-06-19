@@ -1,4 +1,5 @@
 #pragma once
+#include <debugapi.h>
 
 #define WSTR1(x) L#x
 #define WSTR2(x) WSTR1(x)
@@ -13,3 +14,14 @@
     NO_COPY(className) \
     className(className &&) = delete; \
 	className &operator=(className &&) = delete;
+
+#ifdef _DEBUG
+#define LOG_FIELD_DESTRUCTION(ClassName)																\
+    struct ClassName##Field {																			\
+        ~ClassName##Field() {																			\
+            OutputDebugStringA("===== ~" #ClassName "Field() destroyed ===== \n");						\
+        }																								\
+    } ClassName##FieldInstance;
+#else
+#define LOG_FIELD_DESTRUCTION(ClassName) (void)(0)
+#endif
