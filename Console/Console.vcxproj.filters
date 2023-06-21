@@ -156,6 +156,12 @@
     <ClCompile Include="main_32_future_exception_move_Ctor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_34_BIOS_uniq_id.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_33_span.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
