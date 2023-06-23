@@ -74,21 +74,25 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,7 +100,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,7 +115,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,7 +147,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,12 +157,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Create process console\main_1.cpp" />
-    <ClCompile Include="Create process console\main_2.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_10_breakpoint_in_macros.cpp" />
     <ClCompile Include="main_11_enum_to_string.cpp" />
-    <ClCompile Include="main_12_is_empty_variant.cpp" />
+    <ClCompile Include="main_12_0_is_empty_variant.cpp" />
+    <ClCompile Include="main_12_1_get_variant_item.cpp" />
     <ClCompile Include="main_13_map_class_members.cpp" />
     <ClCompile Include="main_14_extract_template_params.cpp" />
     <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp" />
@@ -168,7 +171,6 @@
     <ClCompile Include="main_18_detect_windows_11.cpp" />
     <ClCompile Include="main_19_scoped_lock.cpp" />
     <ClCompile Include="main_1_constexpr_string.cpp" />
-    <ClCompile Include="main_20_GetPackageInfo.cpp" />
     <ClCompile Include="main_21_reinterpret_cast_to_array_of_structs.cpp" />
     <ClCompile Include="main_22_async_thread_catch_exception.cpp" />
     <ClCompile Include="main_23_regex_search.cpp" />
@@ -176,9 +178,15 @@
     <ClCompile Include="main_25_try_lock.cpp" />
     <ClCompile Include="main_26_weak_ptr.cpp" />
     <ClCompile Include="main_27_function_traits.cpp" />
-    <ClCompile Include="main_28_unique_lock.cpp" />
+    <ClCompile Include="main_28_ConcurrentQueue.cpp" />
     <ClCompile Include="main_29_Token.cpp" />
     <ClCompile Include="main_2_constexpr_static_assert.cpp" />
+    <ClCompile Include="main_30_wait_Dtor_callback_finish.cpp" />
+    <ClCompile Include="main_31_FunctionMt.cpp" />
+    <ClCompile Include="main_32_future_exception_move_Ctor.cpp" />
+    <ClCompile Include="main_34_BIOS_uniq_id.cpp" />
+    <ClCompile Include="main_33_span.cpp" />
+    <ClCompile Include="main_35_enum_raflection.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
@@ -186,11 +194,14 @@
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
     <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
-    <ClCompile Include="QUIC context token\main_QUICClient.cpp" />
-    <ClCompile Include="Static initialization fiasco\WAppConstants.cpp" />
-    <ClCompile Include="Static initialization fiasco\fileB.cpp" />
-    <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp" />
-    <ClCompile Include="Test Helpers\test_1_Timer_token.cpp" />
+    <ClCompile Include="[1] Create process console\main_1.cpp" />
+    <ClCompile Include="[1] Create process console\main_2.cpp" />
+    <ClCompile Include="[2] Static initialization fiasco\fileB.cpp" />
+    <ClCompile Include="[2] Static initialization fiasco\SettingsKeeper.cpp" />
+    <ClCompile Include="[2] Static initialization fiasco\WAppConstants.cpp" />
+    <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp" />
+    <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp" />
+    <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
@@ -202,11 +213,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
-    <ClInclude Include="QUIC context token\MsQuic.h" />
-    <ClInclude Include="Static initialization fiasco\StaticConstructor.h" />
-    <ClInclude Include="Static initialization fiasco\WAppConstants.h" />
-    <ClInclude Include="Static initialization fiasco\fileB.h" />
-    <ClInclude Include="Static initialization fiasco\SettingsKeeper.h" />
+    <ClInclude Include="[2] Static initialization fiasco\fileB.h" />
+    <ClInclude Include="[2] Static initialization fiasco\SettingsKeeper.h" />
+    <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h" />
+    <ClInclude Include="[2] Static initialization fiasco\WAppConstants.h" />
+    <ClInclude Include="[4] QUIC context token\MsQuic.h" />
+    <ClInclude Include="[5] Dtor callback finish\FunctionMt.h" />
+    <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

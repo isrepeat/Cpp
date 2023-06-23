@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include <chrono>
+#include <future>
 #include <functional>
 #include <condition_variable>
 
@@ -19,24 +20,19 @@ namespace H {
 		}
 
 		template <typename Duration>
-		static bool Once(std::shared_ptr<std::function<void()>>& tokenTask, Duration timeout, std::function<void()> callback) {
-			if (tokenTask)
-				return false; // cannot rewrite token callback while it not empty
+		static bool Once(std::unique_ptr<std::future<void>>& futureToken, Duration timeout, std::function<void()> callback) { // Thread safe callback call
+			if (futureToken)
+				return false; // Guard from double set. Don't init new future until previous not finished.
 
-			tokenTask = std::make_shared<std::function<void()>>(callback);
-			std::weak_ptr<std::function<void()>> callbackWeakPtr = tokenTask;
-
-			std::thread([&tokenTask, timeout, callbackWeakPtr] {
+			futureToken = std::make_unique<std::future<void>>(std::async(std::launch::async, [&futureToken, timeout, callback] {
 				std::this_thread::sleep_for(timeout);
-				if (auto lockedCallback = callbackWeakPtr.lock()) {
-					// TODO: token may deleting when you here (or you in lockedCallback())
-					(*lockedCallback)();
-					tokenTask = nullptr;
-				}
-				}).detach();
+				callback();
+				futureToken = nullptr;
+				}));
 
-				return true;
+			return true;
 		}
+
 
 		Timer() = default;
 		Timer(std::chrono::milliseconds timeout, std::function<void()> callback) {

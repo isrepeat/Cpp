@@ -13,17 +13,20 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Static initialization fiasco">
-      <UniqueIdentifier>{2d028d6d-0577-49e8-96a1-e68bcd219647}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Create process console">
+    <Filter Include="Source Files\[1] Create process console">
       <UniqueIdentifier>{b444178d-39d5-4395-8f53-767c1ed000d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Test Helpers">
+    <Filter Include="Source Files\[4] QUIC context token">
+      <UniqueIdentifier>{c5a136de-054d-4c19-9033-86fab0ce2853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\[2] Static initialization fiasco">
+      <UniqueIdentifier>{2d028d6d-0577-49e8-96a1-e68bcd219647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\[3] Test Helpers">
       <UniqueIdentifier>{2026a733-39ce-4290-b359-e0940c4778e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\QUIC context token">
-      <UniqueIdentifier>{c5a136de-054d-4c19-9033-86fab0ce2853}</UniqueIdentifier>
+    <Filter Include="Source Files\[5] Dtor callback finish">
+      <UniqueIdentifier>{e0de6530-d628-4799-a014-93484c895930}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +66,7 @@
     <ClCompile Include="main_11_enum_to_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_12_is_empty_variant.cpp">
+    <ClCompile Include="main_12_0_is_empty_variant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_13_map_class_members.cpp">
@@ -78,15 +81,6 @@
     <ClCompile Include="main_17_singleton_destructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Static initialization fiasco\WAppConstants.cpp">
-      <Filter>Source Files\Static initialization fiasco</Filter>
-    </ClCompile>
-    <ClCompile Include="Static initialization fiasco\fileB.cpp">
-      <Filter>Source Files\Static initialization fiasco</Filter>
-    </ClCompile>
-    <ClCompile Include="Static initialization fiasco\SettingsKeeper.cpp">
-      <Filter>Source Files\Static initialization fiasco</Filter>
-    </ClCompile>
     <ClCompile Include="main_18_detect_windows_11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,17 +93,8 @@
     <ClCompile Include="main_22_async_thread_catch_exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Create process console\main_1.cpp">
-      <Filter>Source Files\Create process console</Filter>
-    </ClCompile>
-    <ClCompile Include="Create process console\main_2.cpp">
-      <Filter>Source Files\Create process console</Filter>
-    </ClCompile>
     <ClCompile Include="main_23_regex_search.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main_20_GetPackageInfo.cpp">
-      <Filter>Source Files\Static initialization fiasco</Filter>
     </ClCompile>
     <ClCompile Include="main_24_future.cpp">
       <Filter>Source Files</Filter>
@@ -120,9 +105,6 @@
     <ClCompile Include="main_26_weak_ptr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Test Helpers\test_1_Timer_token.cpp">
-      <Filter>Source Files\Test Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="main_15_0_check_if_raw_ptr_is_invalid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,34 +114,82 @@
     <ClCompile Include="main_27_function_traits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_28_unique_lock.cpp">
+    <ClCompile Include="main_28_ConcurrentQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main_29_Token.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QUIC context token\main_QUICClient.cpp">
-      <Filter>Source Files\QUIC context token</Filter>
+    <ClCompile Include="main_12_1_get_variant_item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_31_FunctionMt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_30_wait_Dtor_callback_finish.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="[1] Create process console\main_1.cpp">
+      <Filter>Source Files\[1] Create process console</Filter>
+    </ClCompile>
+    <ClCompile Include="[1] Create process console\main_2.cpp">
+      <Filter>Source Files\[1] Create process console</Filter>
+    </ClCompile>
+    <ClCompile Include="[2] Static initialization fiasco\fileB.cpp">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="[2] Static initialization fiasco\SettingsKeeper.cpp">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="[2] Static initialization fiasco\WAppConstants.cpp">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+    </ClCompile>
+    <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp">
+      <Filter>Source Files\[3] Test Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp">
+      <Filter>Source Files\[4] QUIC context token</Filter>
+    </ClCompile>
+    <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
+    </ClCompile>
+    <ClCompile Include="main_32_future_exception_move_Ctor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_34_BIOS_uniq_id.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_33_span.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_35_enum_raflection.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Static initialization fiasco\WAppConstants.h">
-      <Filter>Source Files\Static initialization fiasco</Filter>
+    <ClInclude Include="[2] Static initialization fiasco\fileB.h">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
     </ClInclude>
-    <ClInclude Include="Static initialization fiasco\fileB.h">
-      <Filter>Source Files\Static initialization fiasco</Filter>
+    <ClInclude Include="[2] Static initialization fiasco\SettingsKeeper.h">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
     </ClInclude>
-    <ClInclude Include="Static initialization fiasco\SettingsKeeper.h">
-      <Filter>Source Files\Static initialization fiasco</Filter>
+    <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
     </ClInclude>
-    <ClInclude Include="Static initialization fiasco\StaticConstructor.h">
-      <Filter>Source Files\Static initialization fiasco</Filter>
+    <ClInclude Include="[2] Static initialization fiasco\WAppConstants.h">
+      <Filter>Source Files\[2] Static initialization fiasco</Filter>
     </ClInclude>
-    <ClInclude Include="QUIC context token\MsQuic.h">
-      <Filter>Source Files\QUIC context token</Filter>
+    <ClInclude Include="[4] QUIC context token\MsQuic.h">
+      <Filter>Source Files\[4] QUIC context token</Filter>
+    </ClInclude>
+    <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
+    </ClInclude>
+    <ClInclude Include="[5] Dtor callback finish\FunctionMt.h">
+      <Filter>Source Files\[5] Dtor callback finish</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
