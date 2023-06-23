@@ -186,6 +186,7 @@
     <ClCompile Include="main_32_future_exception_move_Ctor.cpp" />
     <ClCompile Include="main_34_BIOS_uniq_id.cpp" />
     <ClCompile Include="main_33_span.cpp" />
+    <ClCompile Include="main_35_enum_raflection.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
