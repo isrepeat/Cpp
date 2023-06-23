@@ -67,7 +67,7 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
 
 template <typename T = uint8_t>
-void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) { 
+void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
     DWORD cbWritten;
     if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) { // Write synchronously
         throw PipeError::WriteError;
@@ -287,7 +287,7 @@ public:
                     cvFinishSendingMessage.notify_all();
                 }
             }
-            ClearPendingMessages();
+            pendingMessages.clear();
         }
         catch (PipeError error) {
             switch (error)
@@ -311,7 +311,7 @@ public:
         }
 
         try {
-            WriteToPipe<T>(hNamedPipe, writeData); 
+            WriteToPipe<T>(hNamedPipe, writeData);
             if (waitedMessage != EnumMsg::None && waitedMessage == type) {
                 cvFinishSendingMessage.notify_all();
             }
