@@ -13,19 +13,40 @@ enum class Messages {
 };
 
 Channel<Messages> channelServer;
+std::atomic<bool> exitApp = false;
 
 void main() {
 	try {
-		channelServer.Create(L"\\\\.\\pipe\\$channelClientServer$",
+
+		channelServer.SetLoggerHandler([] (std::wstring msg) {
+			wprintf(L"[ch log] %s \n", msg.c_str());
+			});
+
+		channelServer.SetInterruptHandler([] {
+			printf("was interrupt handler \n");
+			//exitApp = true;
+			});
+
+		channelServer.CreateForAdmin(L"\\\\.\\pipe\\$channelClientServer$",
 			[](Channel<Messages>::ReadFunc Read, Channel<Messages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type) {
 				case Messages::Connect: {
+					printf("Connected with ChannelClient \n\n");
 					break;
 				}
 				case Messages::HelloFromClient: {
-					BEEP(1000, 150);
-					BEEP(1000, 150);
+					printf("---> got \"HelloFromClient\" \n\n");
+					printf("send \"HelloFromServer\" ... \n");
+					Sleep(1000);
+					Write({}, Messages::HelloFromServer);
+					break;
+				}
+				case Messages::UserRequest: {
+					printf("---> got \"UserRequest\" \n\n");
+					printf("send \"UserData\" ... \n");
+					Sleep(1000);
+					Write({}, Messages::UserData);
 					break;
 				}
 				}
@@ -34,11 +55,16 @@ void main() {
 
 	}
 	catch (PipeError err) {
-		assert(false && "---> server pipe error");
+		//assert(false && "---> server pipe error");
+		printf("was pipe error = %d \n", (int)err);
+		exitApp = true;
 	}
 
-	while (true) {
+	while (!exitApp) {
 		Sleep(10);
 	};
+
+	printf("Exit server ...");
+	Sleep(3000);
 	return;
 }
