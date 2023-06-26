@@ -1,16 +1,23 @@
 #include <Helpers/Channel.h>
+#include <inttypes.h>
 #include <cassert>
 #include <thread>
 
+// Capturer messages
 enum class Messages {
 	None,
 	Connect,
-	HelloFromClient,
-	HelloFromServer,
-	UserRequest,
-	UserData,
+	FrameConfigurationRequest,
+	FrameConfigurationData,
+	FrameRequest,
+	FrameData,
+	DesktopChanged,
+	AdapterChanged,
+	UnhandledException,
+	UserInput,
 	Stop,
 };
+
 
 Channel<Messages> channelClient;
 std::atomic<bool> exitApp = false;
@@ -26,31 +33,27 @@ void main() {
 			exitApp = true;
 			});
 
-		channelClient.Open(L"\\\\.\\pipe\\$channelClientServer$",
+		channelClient.Open(L"\\\\.\\pipe\\$channelCapturer$",
 			[](Channel<Messages>::ReadFunc Read, Channel<Messages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type) {
 				case Messages::Connect: {
 					printf("Connected with ChannelServer \n\n");
-					printf("send \"HelloFromClient\" ... \n");
 					Sleep(1000);
-					Write({}, Messages::HelloFromClient);
+					Write({}, Messages::FrameConfigurationRequest);
 					break;
 				}
-				case Messages::HelloFromServer: {
-					printf("---> got \"HelloFromServer\" \n\n");
-					printf("send \"UserRequest\" ... \n");
+
+				case Messages::FrameConfigurationData:
+					printf("--> got  \"FrameConfigurationData\" \n\n");
+					printf("send \"FrameRequest\" ... \n");
 					Sleep(1000);
-					Write({}, Messages::UserRequest);
+					Write({ (uint8_t)0 }, Messages::FrameRequest);
 					break;
-				}
-				case Messages::UserData: {
-					printf("---> got \"UserData\" \n\n");
-					//printf("send \"Stop\" ... \n");
-					printf("break connection ... \n");
-					Sleep(1000);
-					return false;
-				}
+
+				case Messages::FrameData:
+					printf("--> got  \"FrameData\" (size = %" PRId64 ") \n\n", reply.readData.size());
+					break;
 				}
 				return true;
 			});
@@ -62,8 +65,6 @@ void main() {
 		exitApp = true;
 	}
 
-
-	//channelClient.WaitFinishSendingMessage(Messages::HelloFromClient);
 
 	while (!exitApp) {
 		Sleep(10);
