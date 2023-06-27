@@ -21,4 +21,5 @@ namespace H {
 
     std::vector<RegexMatchResult> GetRegexMatches(const std::wstring& text, const std::wregex& rx);
     bool FindInsideTagWithRegex(const std::wstring& text, const std::wstring& tag, const std::wregex& innerRx);
+    bool FindInsideAnyTagWithRegex(const std::wstring& text, const std::wregex& innerRx);
 }

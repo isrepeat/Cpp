@@ -10,6 +10,7 @@
 #include <map>
 #include <queue>
 #include <utility>
+#include "../../../Shared/Helpers/Regex.h"
 
 #define TEST_WITHOUT_ARGS 1
 
@@ -19,15 +20,6 @@
 
 
 std::wstring EncodeSpecialSymbols(const std::wstring str) {
-	//static const std::map<std::wstring, std::wstring> specialSybmols = {
-	//	{ L"<",L"&lt;" },
-	//	{ L">",L"&gt;" },
-	//	{ L"&",L"&amp;" },
-	//	{ L"'",L"&apos;" },
-	//	{ L"\"",L"&quot;" },
-	//};
-
-
 	std::wstring res = std::regex_replace(str, std::wregex(L"[<]|[>]|[&]|[']|[\"]"), L"[__$&__]");
 	res = std::regex_replace(res, std::wregex(L"\\[__<__\\]"), L"&lt;");
 	res = std::regex_replace(res, std::wregex(L"\\[__>__\\]"), L"&gt;");
@@ -56,10 +48,13 @@ std::vector<std::wstring> ReadFileWithReplacedLines(const std::wstring& inputFil
 			for (auto& pair : listReplacedStrings) {
 				auto& replace = pair.first;
 				auto& replaceWith = pair.second;
-				if (line.find(pair.first) != std::wstring::npos) {
-					replaceNextLinesWithRules.push({ L"(<translation).+(translation>)", L"$1>" + pair.second + L"</$2" }); // save 1 and 2 captured group but replace all between
-					listReplacedStrings.remove(pair);
-					break;
+
+				if (line.find(pair.first) != std::wstring::npos) { // fast check
+					if (H::FindInsideAnyTagWithRegex(line, std::wregex(L"^" + pair.first + L"$"))) { // deep validation
+						replaceNextLinesWithRules.push({ L"(<translation).+(translation>)", L"$1>" + pair.second + L"</$2" }); // save 1 and 2 captured group but replace all between
+						listReplacedStrings.remove(pair);
+						break;
+					}
 				}
 			};
 		}
@@ -87,7 +82,7 @@ void WriteFile(const std::wstring& outputFilename, const std::vector<std::wstrin
 int wmain(int argc, wchar_t* argv[]) {
 #if TEST_WITHOUT_ARGS == 1
 	std::wstring originalFilename = L"rd_manager_ru.ts";
-	std::wstring outputFilename = L"out.txt";
+	std::wstring outputFilename = L"rd_manager_ru.txt";
 	std::wstring originalStringsFilename = L"OriginalStrings.txt";
 	std::wstring replacedStringsFilename = L"ReplacedStrings_ru.txt";
 #else
