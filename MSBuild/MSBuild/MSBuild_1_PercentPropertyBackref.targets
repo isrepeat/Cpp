@@ -7,7 +7,7 @@
     </ExampColl>
     <ExampColl Include="Item2">
       <Number>2</Number>
-      <Number>[2a]; %(Foo)</Number>
+      <Number>[2a]; %(Number)</Number>
     </ExampColl>
     <ExampColl Include="Item3">
       <Number>3</Number>

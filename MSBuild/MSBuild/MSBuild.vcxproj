@@ -139,7 +139,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="MSBuild.targets" />
     <None Include="MSBuild_1_PercentPropertyBackref.targets" />
+    <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -148,5 +150,5 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- Custom targets -->
-  <Import Project="$(ProjectDir)\MSBuild_1_PercentPropertyBackref.targets" />
+  <Import Project="$(ProjectDir)\MSBuild.targets" />
 </Project>
