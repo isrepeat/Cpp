@@ -1,0 +1,4 @@
+#include "resource.h"
+
+IDB_BITMAP2             BITMAP  DISCARDABLE     "BITMAP2.BMP"
+IDB_BITMAP1             BITMAP  DISCARDABLE     "BITMAP1.BMP"

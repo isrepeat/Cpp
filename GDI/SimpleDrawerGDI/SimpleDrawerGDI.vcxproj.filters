@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\GdiTutorial_1">
+      <UniqueIdentifier>{f94784b1-63d1-48dd-900d-620af0ea6225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GdiTutorial_2">
+      <UniqueIdentifier>{7a7f6bb3-5cb5-49da-89ac-a24de04129f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GdiTutorial_3">
+      <UniqueIdentifier>{00cec5b5-2df3-473c-a390-5814951952da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GdiTutorial_4">
+      <UniqueIdentifier>{a3c8c106-c4ba-4af1-a8d2-df0e882e9631}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mainHelloWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GdiTutorial_1\MAIN_1.CPP">
+      <Filter>Source Files\GdiTutorial_1</Filter>
+    </ClCompile>
+    <ClCompile Include="GdiTutorial_2\MAIN_2.CPP">
+      <Filter>Source Files\GdiTutorial_2</Filter>
+    </ClCompile>
+    <ClCompile Include="TestLayeredWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GdiTutorial_1\GDI01.RC">
+      <Filter>Source Files\GdiTutorial_1</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="GdiTutorial_2\GDI02.RC">
+      <Filter>Source Files\GdiTutorial_2</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
