@@ -6,9 +6,15 @@
 
 
 std::exception GetLastErrorException(const std::string& msg) {
-	std::vector<char> err(256, '\0');
-	sprintf_s(err.data(), err.size(), "%s Error %ld\n", msg, GetLastError());
-	return std::exception(std::string{ err.begin(), err.end() }.c_str());
+	DWORD lastError = GetLastError();
+	std::string format = "%s Error %ld\n";
+
+	std::vector<char> errMsg(2048, '\0');
+
+	std::size_t allocatedSize = sprintf_s(errMsg.data(), errMsg.size(), format.c_str(), msg.c_str(), lastError);
+	errMsg.resize(allocatedSize + 1); // Extra space for '\0';
+
+	return std::exception(std::string{ errMsg.begin(), errMsg.end() }.c_str());
 };
 
 
