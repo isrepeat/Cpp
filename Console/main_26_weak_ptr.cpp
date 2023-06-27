@@ -1,44 +1,72 @@
 //#include <Windows.h>
+//#include <functional>
+//#include <memory>
 //#include <thread>
 //#include <mutex>
-//#include <memory>
-//#include <functional>
+//
+////void main() {
+////	std::mutex mx;
+////	std::weak_ptr<std::function<void()>> callbackWeakPtr;
+////	
+////	{
+////		std::shared_ptr<std::function<void()>> token;
+////		{
+////			auto sharedPtr = std::make_shared<std::function<void()>>([] {
+////				int xx = 9;
+////				});
+////			callbackWeakPtr = sharedPtr;
+////			token = sharedPtr;
+////		}
+////
+////		
+////		{
+////			auto locked = callbackWeakPtr.lock();
+////			if (locked) {
+////				(*locked)();
+////				token = nullptr;
+////			}
+////		}
+////
+////		{
+////			auto lockedAgain = callbackWeakPtr.lock();
+////			if (lockedAgain) {
+////				(*lockedAgain)();
+////			}
+////		}
+////	}
+////
+////	//auto locked = callbackWeakPtr.lock();
+////	//if (locked) {
+////	//	(*locked)();
+////	//}
+////
+////	return;
+////}
 //
 //void main() {
-//	std::mutex mx;
-//	std::weak_ptr<std::function<void()>> callbackWeakPtr;
-//	
-//	{
-//		std::shared_ptr<std::function<void()>> token;
-//		{
-//			auto sharedPtr = std::make_shared<std::function<void()>>([] {
-//				int xx = 9;
-//				});
-//			callbackWeakPtr = sharedPtr;
-//			token = sharedPtr;
-//		}
+//	std::shared_ptr<std::function<void()>> shPtr1 = nullptr;
+//	std::shared_ptr<std::function<void()>> shPtr2 = std::make_shared<std::function<void()>>(nullptr);
 //
-//		
-//		{
-//			auto locked = callbackWeakPtr.lock();
-//			if (locked) {
-//				(*locked)();
-//				token = nullptr;
-//			}
-//		}
+//	std::weak_ptr<std::function<void()>> weakPtr1 = shPtr1;
+//	std::weak_ptr<std::function<void()>> weakPtr2 = shPtr2;
 //
-//		{
-//			auto lockedAgain = callbackWeakPtr.lock();
-//			if (lockedAgain) {
-//				(*lockedAgain)();
-//			}
-//		}
+//	if (!weakPtr1.expired()) {
+//		printf("weakPtr1 not expired \n"); // not enter
+//	}
+//	if (auto ptr1 = weakPtr1.lock()) {
+//		printf("weakPtr1 not empty \n");  // not enter
 //	}
 //
-//	//auto locked = callbackWeakPtr.lock();
-//	//if (locked) {
-//	//	(*locked)();
-//	//}
+//	if (!weakPtr2.expired()) {
+//		printf("weakPtr2 not expired \n"); // enter
+//	}
+//	if (auto ptr2 = weakPtr2.lock()) {
+//		printf("weakPtr2 not empty \n"); // enter
+//		//if (ptr2) { // will be Access violation below
+//		if (*ptr2) {
+//			(*ptr2)();
+//		}
+//	}
 //
 //	return;
 //}
