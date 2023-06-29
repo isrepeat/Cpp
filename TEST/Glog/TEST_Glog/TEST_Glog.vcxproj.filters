@@ -19,7 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="TEST_Glog.targets" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h">
