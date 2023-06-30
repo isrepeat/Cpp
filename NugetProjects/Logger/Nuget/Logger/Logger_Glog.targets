@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <GLogParentDir>$(SolutionDir)\3rdParty</GLogParentDir>
+    <GLogLibsDir>$(GLogParentDir)\glog\lib\$(PlatformShortName)</GLogLibsDir>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(GLogParentDir);
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>
+        $(GLogLibsDir)\glog.lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>
+        $(GLogLibsDir)\glog.lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='StaticLibrary'">
+    <ClCompile>
+      <PreprocessorDefinitions>__STATIC_LIBRARY__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='DynamicLibrary'">
+    <ClCompile>
+      <PreprocessorDefinitions>__DYNAMIC_LIBRARY__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <NativeDlls Include="$(GLogLibsDir)\*.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(NativeDlls)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+</Project>
