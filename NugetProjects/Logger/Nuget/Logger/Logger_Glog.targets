@@ -26,6 +26,17 @@
     </Lib>
   </ItemDefinitionGroup>
 
+  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='StaticLibrary'">
+    <ClCompile>
+      <PreprocessorDefinitions>__STATIC_LIBRARY__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='DynamicLibrary'">
+    <ClCompile>
+      <PreprocessorDefinitions>__DYNAMIC_LIBRARY__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <NativeDlls Include="$(GLogLibsDir)\*.dll" />
   </ItemGroup>
