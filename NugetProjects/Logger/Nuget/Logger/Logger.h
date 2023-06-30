@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <memory>
 
 #ifdef __MAKE_DLL__
 #define API __declspec(dllexport)
@@ -15,7 +14,7 @@ namespace google {
 }
 
 namespace LoggerCpp {
-	enum class LogSaverity {
+	enum class LogSeverity {
 		_INFO,
 		_WARNING,
 		_ERROR, // add _ to avoid conficts with ERROR from Windows.h
@@ -24,20 +23,21 @@ namespace LoggerCpp {
 
 	class LogMessage {
 	public:
-		//_LogMessage(LogSaverity saverity, const char* file, const char* function, int line);
-		LogMessage(LogSaverity saverity, const char* file, int line);
+		LogMessage(LogSeverity severity, const char* file, const char* function, int line);
 		~LogMessage();
 
 		std::ostream& Stream();
 
 	private:
 		google::LogMessage* instance;
+		const char* functionName;
 	};
-
 	
-	API void SetLogDestination(LogSaverity saverity, const std::wstring& filename, bool addTimestamp = true);
+	API void SetLogDestination(LogSeverity severity, const std::wstring& filename, bool addTimestamp = true);
+	API void SetLogDestination(const std::wstring& filename, bool addTimestamp = true);
 	API void SetLogFilenameExtension(const std::wstring& ext);
 	API void InitLogger(const char* argv0);
 }
 
-#define LOG_INFO LoggerCpp::LogMessage(LoggerCpp::LogSaverity::_INFO, __FILE__, __LINE__).Stream() << __FUNCTION__ "} "
+#define LOG_INFO  LoggerCpp::LogMessage(LoggerCpp::LogSeverity::_INFO, __FILE__, __FUNCTION__, __LINE__).Stream()
+#define LOG_ERROR LoggerCpp::LogMessage(LoggerCpp::LogSeverity::_ERROR, __FILE__, __FUNCTION__, __LINE__).Stream()

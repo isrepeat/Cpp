@@ -1,36 +1,47 @@
-//#define __MAKE_DLL__
+#define __MAKE_DLL__
 #include <glog/logging.h>
 #include <iostream>
 #include <iomanip>
 #include "Logger.h"
 #include "String.h"
 
+// Don't forget increase version according to nuget
+#define VERSION "1.0.0"
+
 namespace {
+	bool FLAG_log_without_prefix = false;
+
 	void CustomPrefix(std::ostream& s, const google::LogMessageInfo& l, void*) {
-		using namespace std;
-		s << setfill(' ') 
-			<< setw(4) << l.severity 
+		if (FLAG_log_without_prefix) {
+			// TOOD: find out how ignore next space symbol that glog lib place automatically
+			return;
+		}
+
+		s << std::left
+			<< std::setfill(' ')
+			<< std::setw(5) << l.severity
 			<< " "
-			<< setw(6) << l.thread_id
-			<< " [" 
-			<< setfill('0')
-			<< setw(2) << l.time.day() << '.'
-			<< setw(2) << 1 + l.time.month() << '.'
-			<< setw(4) << 1900 + l.time.year()
+			<< std::setw(6) << l.thread_id
+			<< " ["
+			<< std::setfill('0')
+			<< std::setw(2) << l.time.day() << '.'
+			<< std::setw(2) << 1 + l.time.month() << '.'
+			<< std::setw(4) << 1900 + l.time.year()
 			<< " "
-			<< setw(2) << l.time.hour() << ':'
-			<< setw(2) << l.time.min() << ':'
-			<< setw(2) << l.time.sec() << "."
-			<< setw(2) << l.time.usec()
-			<< setfill(' ')
+			<< std::setw(2) << l.time.hour() << ':'
+			<< std::setw(2) << l.time.min() << ':'
+			<< std::setw(2) << l.time.sec() << "."
+			<< std::setw(2) << l.time.usec()
+			<< std::setfill(' ')
 			<< "] "
 			<< "{" << l.filename << ':' << l.line_number << " "; // after this following __FUNCTION__ as designed with trailing '}'
 	}
 }
 
 namespace LoggerCpp {
-	LogMessage::LogMessage(LogSaverity saverity, const char* file, int line)
-		: instance{ new google::LogMessage(file, line, static_cast<int>(saverity)) }
+	LogMessage::LogMessage(LogSeverity severity, const char* file, const char* function, int line)
+		: instance{ new google::LogMessage(file, line, static_cast<int>(severity)) }
+		, functionName{ function }
 	{}
 
 	LogMessage::~LogMessage() {
@@ -38,11 +49,14 @@ namespace LoggerCpp {
 	}
 
 	std::ostream& LogMessage::Stream() {
-		return instance->stream();
+		if (FLAG_log_without_prefix)
+			return instance->stream();
+		else
+			return instance->stream() << functionName << "} ";
 	}
 
 
-	API void SetLogDestination(LogSaverity saverity, const std::wstring& filename, bool addTimestamp) {
+	API void SetLogDestination(LogSeverity severity, const std::wstring& filename, bool addTimestamp) {
 		std::wstring finalFilename = filename;
 		if (addTimestamp) {
 			finalFilename += L"_[";
@@ -51,7 +65,11 @@ namespace LoggerCpp {
 		else {
 			FLAGS_timestamp_in_logfile_name = false;
 		}
-		google::SetLogDestination(static_cast<int>(saverity), WStrToStr(finalFilename).c_str());
+		google::SetLogDestination(static_cast<int>(severity), WStrToStr(finalFilename).c_str());
+	}
+
+	API void SetLogDestination(const std::wstring& filename, bool addTimestamp) {
+		SetLogDestination(LogSeverity::_INFO, filename, addTimestamp);
 	}
 
 	API void SetLogFilenameExtension(const std::wstring& ext) {
@@ -63,5 +81,10 @@ namespace LoggerCpp {
 		google::InitGoogleLogging(argv0, &CustomPrefix);
 		FLAGS_log_file_header = false;
 		FLAGS_logbuflevel = -1; // this mean that INFO logs will flush every log
+
+		FLAG_log_without_prefix = true;
+		LOG_INFO << "Logger version = " << VERSION;
+		LOG_INFO << "Log line format: severity thread_id [dd.mm.yyy hh:mm:ss.uuuuuu] {filename:line	function} log_message ...\n\n";
+		FLAG_log_without_prefix = false;
 	}
 }
