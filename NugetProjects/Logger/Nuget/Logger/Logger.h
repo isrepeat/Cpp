@@ -1,11 +1,17 @@
 #pragma once
+#include <atomic>
+#include <string>
 #include <iostream>
+#include <functional>
 
-#ifdef __MAKE_DLL__
-#define API __declspec(dllexport)
+#ifdef __STATIC_LIBRARY__
+	#define API
 #else
-#define API // for static
-//#define API __declspec(dllimport) // for dll
+#ifdef __DYNAMIC_LIBRARY__
+	#define API __declspec(dllexport)
+#else
+	#define API __declspec(dllimport)
+#endif
 #endif
 
 
@@ -14,6 +20,10 @@ namespace google {
 }
 
 namespace LoggerCpp {
+	namespace FLAGS {
+		extern std::atomic<bool> log_without_prefix;
+	}
+
 	enum class LogSeverity {
 		_INFO,
 		_WARNING,
@@ -21,7 +31,35 @@ namespace LoggerCpp {
 		_FATAL
 	};
 
-	class LogMessage {
+	struct API LogMessageHeader {
+		const std::string lineFormat;
+		const std::string additoinalInfo;
+	};
+
+	struct API LogMessageTime {
+		const int year;
+		const int month;
+		const int day;
+		const int hour;
+		const int min;
+		const int sec;
+		const int usec;
+	};
+
+	struct API LogMessageInfo {
+		LogMessageInfo(const char* const severity, const char* const filename,
+			const char* const function, const int& line_number, const int& thread_id, const LogMessageTime& time);
+
+		const char* const severity;
+		const char* const filename;
+		const char* const function;
+		const int& line_number;
+		const int& thread_id;
+		const LogMessageTime& time;
+	};
+
+
+	class API LogMessage {
 	public:
 		LogMessage(LogSeverity severity, const char* file, const char* function, int line);
 		~LogMessage();
@@ -30,13 +68,14 @@ namespace LoggerCpp {
 
 	private:
 		google::LogMessage* instance;
-		const char* functionName;
 	};
-	
+
+
 	API void SetLogDestination(LogSeverity severity, const std::wstring& filename, bool addTimestamp = true);
 	API void SetLogDestination(const std::wstring& filename, bool addTimestamp = true);
 	API void SetLogFilenameExtension(const std::wstring& ext);
-	API void InitLogger(const char* argv0);
+
+	API void InitLogger(const char* argv0, std::function<void(std::ostream&, const LogMessageInfo&)> prefixCallback = nullptr, const LogMessageHeader& logHeader = {});
 }
 
 #define LOG_INFO  LoggerCpp::LogMessage(LoggerCpp::LogSeverity::_INFO, __FILE__, __FUNCTION__, __LINE__).Stream()
