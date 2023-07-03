@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -161,44 +161,13 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ItemGroup>
-    <None Include="CrashHandling.nuspec" />
-    <None Include="CrashHandling.targets" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Shared\Helpers\Helpers.vcxproj">
       <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
     </ProjectReference>
   </ItemGroup>
-  <!-- Build independent projects -->
-  <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
-    <Message Importance="High" Text="==== [CrashHandling] Build shared projects first that independent project (that use its) can be build ..." />
-    <MSBuild Projects="$(SolutionDir)\Shared\Helpers\Helpers.vcxproj" Targets="Build" />
-    <MSBuild Projects="$(SolutionDir)\Shared\ComAPI\ComAPI.vcxproj" Targets="Build" />
-    <Message Importance="High" Text="==== [CrashHandling] Build independent projects ..." />
-    <Message Importance="High" Text="==== [CrashHandling] MiniDumpWriter" />
-    <MSBuild Projects="$(ProjectDir)\..\MinidumpWriter\MinidumpWriter.vcxproj" Targets="Build" />
-  </Target>
-  <!-- Copy files for build nuget -->
-  <Target Name="AfterBuild">
-    <ItemGroup>
-      <NugetLibs Include="$(ProjectDir)\..\!VS_TMP\build\**\*.lib" />
-      <NugetDlls Include="$(ProjectDir)\..\!VS_TMP\build\**\*.dll" />
-      <NugetBins Include="$(ProjectDir)\..\!VS_TMP\build\**\*.exe" />
-      <Nuspec Include="$(ProjectDir)\CrashHandling.nuspec" />
-      <NugetTargets Include="$(ProjectDir)\CrashHandling.targets" />
-      <NugetIncludes Include="$(ProjectDir)\CrashHandling.h" />
-    </ItemGroup>
-    <Message Importance="High" Text="==== [CrashHandling] Copy libs  ..." />
-    <Copy SourceFiles="@(NugetLibs)" DestinationFolder="$(ProjectDir)\..\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [CrashHandling] Copy dlls  ..." />
-    <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\..\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [CrashHandling] Copy bin's  ..." />
-    <Copy SourceFiles="@(NugetBins)" DestinationFolder="$(ProjectDir)\..\Nuget\bin\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [CrashHandling] Copy nuspec ..." />
-    <Copy SourceFiles="@(Nuspec)" DestinationFolder="$(ProjectDir)\..\Nuget\" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [CrashHandling] Copy targets ..." />
-    <Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(ProjectDir)\..\Nuget\build\native\" SkipUnchangedFiles="true" />
-    <Message Importance="High" Text="==== [CrashHandling] Copy includes ..." />
-    <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\..\Nuget\build\native\include\$(ProjectName)\" SkipUnchangedFiles="true" />
-  </Target>
+  <ItemGroup>
+    <None Include="CrashHandling_IndependProjects.targets" />
+  </ItemGroup>
+  <!-- Custom targets -->
+  <Import Project="$(ProjectDir)\CrashHandling_IndependProjects.targets" />
 </Project>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Build independent projects -->
+  <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
+    <Message Importance="High" Text="==== [CrashHandling] Build shared projects first that independent project (MiniDumpWriter, that use its) can be build ..." />
+    <MSBuild Projects="$(SolutionDir)\Shared\Helpers\Helpers.vcxproj" Targets="Build" />
+    <MSBuild Projects="$(SolutionDir)\Shared\ComAPI\ComAPI.vcxproj" Targets="Build" />
+    
+    <Message Importance="High" Text="==== [CrashHandling] Build independent projects ..." />
+    <Message Importance="High" Text="==== [CrashHandling] MiniDumpWriter" />
+    <MSBuild Projects="$(ProjectDir)\..\MinidumpWriter\MinidumpWriter.vcxproj" Targets="Build" />
+  </Target>
+</Project>

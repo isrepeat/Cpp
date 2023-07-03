@@ -95,20 +95,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Win32'">
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Win32'">
-    <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
