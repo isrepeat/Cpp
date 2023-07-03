@@ -2,8 +2,8 @@
 
 namespace LibraryCore {
 	class TestClass {
-	//public:
-	//	TestClass();
+	public:
+		void Invoke();
 
 	private:
 		TestClass();
