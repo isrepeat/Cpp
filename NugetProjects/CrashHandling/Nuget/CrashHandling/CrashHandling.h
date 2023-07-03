@@ -3,15 +3,25 @@
 #include <functional>
 #include <Windows.h>
 
-#ifdef __MAKE_DLL__
-#define API __declspec(dllexport)
-#else
-//#define API // for static
-#define API __declspec(dllimport) // for dll
-#endif
+//#ifdef __MAKE_STATIC_LIBRARY__
+//#define API
+//#else
+//#ifdef __MAKE_DYNAMIC_LIBRARY__
+//#define API __declspec(dllexport)
+//#else
+//#define API __declspec(dllimport)
+//#endif
+//#endif
+
+#define API
 
 
 namespace CrashHandling {
+    enum class ExceptionType {
+        StructuredException,
+        UnhandledException,
+    };
+
     struct BacktraceFrame {
         std::wstring moduleName;
         std::uint32_t RVA = 0;
@@ -27,9 +37,9 @@ namespace CrashHandling {
     using Backtrace = std::vector<std::pair<std::wstring, std::vector<BacktraceFrame>>>; // use vector pair to keep insertion order
     
     struct AdditionalInfo {
-        std::wstring packageFolder;
+        std::wstring packageFolder; // TODO: mb incapsulate getting path to craeting crashReport folder in this dll?
         std::wstring appCenterId;
-        std::wstring appVersion;
+        std::wstring appVersion; // TODO: incapsulate get appPackage version in this dll
         std::wstring appUuid = L"00000000-0000-0000-0000-000000000001"; // unique client app id
         std::wstring backtrace;
         std::wstring exceptionMsg;
@@ -41,7 +51,7 @@ namespace CrashHandling {
 
     // Need comile this project with /EHa (need for Release)
 	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler);
-    API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback);
-    API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, 
+    API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*, ExceptionType)> crashCallback);
+    API void GenerateCrashReport(EXCEPTION_POINTERS* pExceptionPtrs, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter,
         const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs = {}, std::function<void(const std::wstring&)> callbackToRunProtocol = nullptr);
 }

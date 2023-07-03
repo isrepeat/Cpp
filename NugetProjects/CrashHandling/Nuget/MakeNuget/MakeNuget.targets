@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <!--Copy files for build nuget--> 
+  <!--Copy files for build nuget-->
   <Target Name="AfterBuild">
     <PropertyGroup>
       <NugetName>CrashHandling</NugetName>
     </PropertyGroup>
-
-    <!-- Build independent projects -->
-    <Target Name="BuildIndependentProjects" BeforeTargets="InitializeBuildStatus">
-      <Message Importance="High" Text="==== [$(NugetName)] Build shared projects first that independent project (that use its) can be build ..." />
-      <MSBuild Projects="$(SolutionDir)\Shared\Helpers\Helpers.vcxproj" Targets="Build" />
-      <MSBuild Projects="$(SolutionDir)\Shared\ComAPI\ComAPI.vcxproj" Targets="Build" />
-      <Message Importance="High" Text="==== [$(NugetName)] Build independent projects ..." />
-      <Message Importance="High" Text="==== [$(NugetName)] MiniDumpWriter" />
-      <MSBuild Projects="$(ProjectDir)\..\MinidumpWriter\MinidumpWriter.vcxproj" Targets="Build" />
-    </Target>
 
 
     <!-- NOTE: Separate build with diff architecture now works because we have not any refs to other project -->
@@ -47,5 +37,5 @@
     <Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(ProjectDir)\Nuget\build\native\" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(Nuspec)" DestinationFolder="$(ProjectDir)\Nuget\" SkipUnchangedFiles="true" />
     <Exec Command="$(ProjectDir)\nuget pack Nuget\$(NugetName).nuspec -OutputDirectory &quot;Output&quot;" />
-  </Target>
+  </Target> 
 </Project>

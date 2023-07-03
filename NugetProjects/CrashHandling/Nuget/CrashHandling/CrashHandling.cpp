@@ -8,14 +8,17 @@
 
 
 namespace CrashHandling {
-	std::function<void(EXCEPTION_POINTERS*)> gCrashCallback = nullptr;
+	std::function<void(EXCEPTION_POINTERS*, ExceptionType)> gCrashCallback = nullptr;
 	Channel<MiniDumpMessages> channelMinidump;
 	const uint32_t ClrException = 0xE0434352;
+	const uint32_t CppException = 0xE06D7363;
 	bool wasCrashException = false;
+	bool handledCrashException = false;
 
 
-	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep);
-	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultVectoredExceptionHandlerFirst(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultVectoredExceptionHandlerLast(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultUnhandledExceptionFilter(EXCEPTION_POINTERS* pep);
 
 
 	API Backtrace GetBacktrace(int SkipFrames) {
@@ -85,13 +88,14 @@ namespace CrashHandling {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback) {
+	API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*, ExceptionType)> crashCallback) {
 		gCrashCallback = crashCallback;
-		AddVectoredExceptionHandler(1, DefaultUnhandledExceptionFilterFirst); // additional guard for cathing c++ exception within clr environment
-		AddVectoredExceptionHandler(0, DefaultUnhandledExceptionFilterLast);
+		AddVectoredExceptionHandler(1, DefaultVectoredExceptionHandlerFirst); // additional guard for cathing c++ exception within clr environment
+		AddVectoredExceptionHandler(0, DefaultVectoredExceptionHandlerLast);
+		SetUnhandledExceptionFilter(&DefaultUnhandledExceptionFilter);
 	}
 
-	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, 
+	API void GenerateCrashReport(EXCEPTION_POINTERS* pExceptionPtrs, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter,
 		const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs, std::function<void(const std::wstring&)> callbackToRunProtocol) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
@@ -136,7 +140,7 @@ namespace CrashHandling {
 
 					auto crashInfo = std::make_shared<CrashInfo>();
 					crashInfo->threadId = threadId;
-					FillCrashInfoWithExceptionPointers(crashInfo, pep);
+					FillCrashInfoWithExceptionPointers(crashInfo, pExceptionPtrs);
 					auto serializedData = SerializeCrashInfo(crashInfo);
 					Write(std::move(serializedData), MiniDumpMessages::ExceptionInfo);
 					break;
@@ -153,9 +157,8 @@ namespace CrashHandling {
 		}
 	}
 
-
-	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep) {
-		switch (pep->ExceptionRecord->ExceptionCode) {
+	LONG WINAPI DefaultVectoredExceptionHandlerFirst(EXCEPTION_POINTERS* pExceptionPtrs) {
+		switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
 		case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -170,19 +173,34 @@ namespace CrashHandling {
 		case EXCEPTION_INT_OVERFLOW:
 			wasCrashException = true;
 			break;
+
+		case ClrException: {
+			int xxx = 9;
+			break;
+		}
+		case CppException: {
+			int xxx = 9;
+			break;
+		}
 		}
 
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 
-	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep) {
-		static bool handledCrashException = false;
-		if (handledCrashException)
+	LONG WINAPI DefaultVectoredExceptionHandlerLast(EXCEPTION_POINTERS* pExceptionPtrs) {
+		//static bool handledCrashException = false;
+		//if (handledCrashException)
+		//	return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+
+		if (handledCrashException) {
+			printf("DefaultVectoredExceptionHandlerLast() crash exception already handled, ignore ... \n");
 			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+		}
+
 
 		std::wstring exceptionMsg;
-		switch (pep->ExceptionRecord->ExceptionCode) {
+		switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
 		case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -207,15 +225,82 @@ namespace CrashHandling {
 			}
 		}
 
+		case CppException: {
+			if (wasCrashException) {
+				break;
+			}
+			else {
+				return EXCEPTION_CONTINUE_SEARCH;
+			}
+		}
+
 		default:
 			return EXCEPTION_CONTINUE_SEARCH;
 		}
 
+		printf("DefaultVectoredExceptionHandlerLast() call crash callback ...\n");
 		handledCrashException = true;
 		if (gCrashCallback) {
-			gCrashCallback(pep);
+			gCrashCallback(pExceptionPtrs, ExceptionType::StructuredException);
 			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
 		}
 		exit(0);
+	}
+
+	LONG WINAPI DefaultUnhandledExceptionFilter(EXCEPTION_POINTERS* pExceptionPtrs) {
+		if (handledCrashException) {
+			printf("DefaultUnhandledExceptionFilter() crash exception already handled, ignore ... \n");
+			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+		}
+		//switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
+		//case EXCEPTION_ACCESS_VIOLATION:
+		//case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+		//case EXCEPTION_DATATYPE_MISALIGNMENT:
+		//case EXCEPTION_FLT_DENORMAL_OPERAND:
+		//case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+		//case EXCEPTION_FLT_INEXACT_RESULT:
+		//case EXCEPTION_FLT_INVALID_OPERATION:
+		//case EXCEPTION_FLT_OVERFLOW:
+		//case EXCEPTION_FLT_STACK_CHECK:
+		//case EXCEPTION_ILLEGAL_INSTRUCTION:
+		//case EXCEPTION_IN_PAGE_ERROR:
+		//case EXCEPTION_INT_OVERFLOW: {
+		//	int xxx = 9;
+		//	//Beep(2000, 1000);
+		//	MessageBoxA(NULL, (LPCSTR)"Structured exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		//	break;
+		//}
+
+		//case ClrException: {
+		//	int xxx = 9;
+		//	MessageBoxA(NULL, (LPCSTR)"CLR exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		//	//Beep(1000, 500);
+		//	//Beep(1000, 500);
+		//	break;
+		//}
+		//case CppException: {
+		//	MessageBoxA(NULL, (LPCSTR)"Cpp exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		//	int xxx = 9;
+		//	//Beep(400, 200);
+		//	//Beep(400, 200);
+		//	//Beep(400, 200);
+		//	break;
+		//}
+		//}
+
+		// Do something, for example generate error report
+		//MessageBoxA(NULL, (LPCSTR)"Caught unhandled exception ...", (LPCSTR)"Unhandled exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		
+		//..
+		printf("DefaultUnhandledExceptionFilter() call crash callback ...\n");
+		handledCrashException = true;
+		if (gCrashCallback) {
+			gCrashCallback(pExceptionPtrs, ExceptionType::UnhandledException);
+			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
+		}
+		exit(0);
+
+		// Execute default exception handler next
+		return EXCEPTION_EXECUTE_HANDLER;
 	}
 }

@@ -15,7 +15,7 @@
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
-#define VERSION L"1.1.15"
+#define VERSION L"1.1.16"
 
 // NOTE: use uint8_t (instead whar_t) to be able send serialized structs
 Channel<MiniDumpMessages> channelMinidump;
