@@ -27,26 +27,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -73,22 +73,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
+    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -161,6 +165,9 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Shared\ComAPI\ComAPI.vcxproj">
+      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Shared\Helpers\Helpers.vcxproj">
       <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
     </ProjectReference>

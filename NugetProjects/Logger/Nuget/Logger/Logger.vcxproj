@@ -73,25 +73,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!NUGET_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
