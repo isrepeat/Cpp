@@ -30,7 +30,7 @@
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy dlls  ..." />
     <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [CrashHandling] Copy bins  ..." />
-    <Copy SourceFiles="@(NugetBins)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NugetBins)" DestinationFolder="$(ProjectDir)\Nuget\bin\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy includes ..." />
     <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\Nuget\build\native\include\$(NugetName)\" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy targets and nuspec ..." />

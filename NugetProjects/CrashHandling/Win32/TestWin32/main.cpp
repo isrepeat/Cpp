@@ -1,9 +1,11 @@
-//#include <CrashHandling/CrashHandling.h>
-#include "../../Nuget/CrashHandling/CrashHandling.h"
-#include "../../../../Shared/ComAPI/ComAPI.h";
-#include "../../../../Shared/Helpers/Helpers.h";
-#include "../../../../Shared/Helpers/RegistryManager.h";
-#include "../../../../Shared/Helpers/PackageProvider.h";
+#ifdef CRASH_HANDLING_NUGET
+#include <CrashHandling/CrashHandling.h>
+#else
+#include "../../Nuget/CrashHandling/CrashHandling.h" // used as static library
+#endif
+
+//#include <ComAPI/ComAPI.h>;
+//#include <Helpers/Helpers.h>
 #include <Windows.h>
 #include <thread>
 
@@ -66,12 +68,12 @@ void Foo() {
 	int* ptr = new int{ 1 };
 	delete ptr;
 
-	//*ptr = 17;
+	*ptr = 17; // Test access violation
 	
 	
 	//__try
 	//{
-		throw 111;
+		throw 111; // Test custom unhandled exception
 	//}
 	//__except (MyUnhandledExceptionFilter(GetExceptionInformation()))
 	//{
@@ -151,11 +153,10 @@ int main() {
 		auto backtraceStr = CrashHandling::BacktraceToString(backtrace);
 
 		CrashHandling::AdditionalInfo additionalInfo = {
-		//ComApi::GetPackageFolder(),
-		H::ExePathW(),
 		L"6d890ba7-55d1-49e7-9f78-1625e0f3b4f9", // TRD
 		//L"444512e9-b730-4691-a924-2032c785df35", // Restore Files
-		L"1.0.0.99",
+		//L"1.0.0.99",
+		L"",
 		L"11000000-0000-0000-0000-000000000001",
 		backtraceStr,
 		exceptionMsg

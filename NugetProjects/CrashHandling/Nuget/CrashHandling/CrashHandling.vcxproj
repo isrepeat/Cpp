@@ -173,8 +173,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CrashHandling_IndependProjects.targets" />
+    <None Include="CrashHandling_Internal.targets" />
   </ItemGroup>
   <!-- Custom targets -->
-  <Import Project="$(ProjectDir)\CrashHandling_IndependProjects.targets" />
+  <Import Project="$(ProjectDir)\CrashHandling_Internal.targets" />
 </Project>

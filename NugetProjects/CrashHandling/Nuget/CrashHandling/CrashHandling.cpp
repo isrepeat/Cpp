@@ -1,8 +1,10 @@
 #include "CrashHandling.h"
 #include "MiniDumpMessages.h"
-#include "../../../../Shared/Helpers/Helpers.h"
-#include "../../../../Shared/Helpers/Channel.h"
-#include "../../../../Shared/Helpers/CrashInfo.h"
+#include <ComAPI/ComAPI.h>
+#include <Helpers/Helpers.h>
+#include <Helpers/PackageProvider.h>
+#include <Helpers/Channel.h>
+#include <Helpers/CrashInfo.h>
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
@@ -21,7 +23,7 @@ namespace CrashHandling {
 	LONG WINAPI DefaultUnhandledExceptionFilter(EXCEPTION_POINTERS* pep);
 
 
-	API Backtrace GetBacktrace(int SkipFrames) {
+	CRASH_HANDLING_API Backtrace GetBacktrace(int SkipFrames) {
 		constexpr int TRACE_MAX_STACK_FRAMES = 99;
 		void* stack[TRACE_MAX_STACK_FRAMES];
 		ULONG hash;
@@ -68,7 +70,7 @@ namespace CrashHandling {
 		return backtrace;
 	}
 
-	API std::wstring BacktraceToString(const Backtrace& backtrace) {
+	CRASH_HANDLING_API std::wstring BacktraceToString(const Backtrace& backtrace) {
 		std::wstring backtraceStr;
 
 		for (auto& [modulename, backtraceFrames] : backtrace) {
@@ -84,18 +86,18 @@ namespace CrashHandling {
 	}
 
 
-	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
+	CRASH_HANDLING_API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*, ExceptionType)> crashCallback) {
+	CRASH_HANDLING_API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*, ExceptionType)> crashCallback) {
 		gCrashCallback = crashCallback;
 		AddVectoredExceptionHandler(1, DefaultVectoredExceptionHandlerFirst); // additional guard for cathing c++ exception within clr environment
 		AddVectoredExceptionHandler(0, DefaultVectoredExceptionHandlerLast);
 		SetUnhandledExceptionFilter(&DefaultUnhandledExceptionFilter);
 	}
 
-	API void GenerateCrashReport(EXCEPTION_POINTERS* pExceptionPtrs, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter,
+	CRASH_HANDLING_API void GenerateCrashReport(EXCEPTION_POINTERS* pExceptionPtrs, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter,
 		const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs, std::function<void(const std::wstring&)> callbackToRunProtocol) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
@@ -114,13 +116,19 @@ namespace CrashHandling {
 			H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
 		}
 
+		std::wstring packageFolder = H::PackageProvider::IsRunningUnderPackage() ? ComApi::GetPackageFolder() : H::ExePathW();
+
+		if (additionalInfo.appVersion.empty()) {
+			const_cast<AdditionalInfo&>(additionalInfo).appVersion = H::PackageProvider::GetPackageVersion();
+		}
+
 		try {
 			channelMinidump.Open(additionalInfo.channelName, [=](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
 				auto reply = Read();
 				switch (reply.type)
 				{
 				case MiniDumpMessages::Connect: {
-					std::string strData = H::WStrToStr(additionalInfo.packageFolder);
+					std::string strData = H::WStrToStr(packageFolder);
 					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
 
 					strData = H::WStrToStr(additionalInfo.appCenterId);
@@ -189,15 +197,10 @@ namespace CrashHandling {
 
 
 	LONG WINAPI DefaultVectoredExceptionHandlerLast(EXCEPTION_POINTERS* pExceptionPtrs) {
-		//static bool handledCrashException = false;
-		//if (handledCrashException)
-		//	return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
-
 		if (handledCrashException) {
 			printf("DefaultVectoredExceptionHandlerLast() crash exception already handled, ignore ... \n");
 			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
 		}
-
 
 		std::wstring exceptionMsg;
 		switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
@@ -244,6 +247,7 @@ namespace CrashHandling {
 			gCrashCallback(pExceptionPtrs, ExceptionType::StructuredException);
 			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
 		}
+		channelMinidump.StopChannel();
 		exit(0);
 	}
 
@@ -252,55 +256,14 @@ namespace CrashHandling {
 			printf("DefaultUnhandledExceptionFilter() crash exception already handled, ignore ... \n");
 			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
 		}
-		//switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
-		//case EXCEPTION_ACCESS_VIOLATION:
-		//case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-		//case EXCEPTION_DATATYPE_MISALIGNMENT:
-		//case EXCEPTION_FLT_DENORMAL_OPERAND:
-		//case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-		//case EXCEPTION_FLT_INEXACT_RESULT:
-		//case EXCEPTION_FLT_INVALID_OPERATION:
-		//case EXCEPTION_FLT_OVERFLOW:
-		//case EXCEPTION_FLT_STACK_CHECK:
-		//case EXCEPTION_ILLEGAL_INSTRUCTION:
-		//case EXCEPTION_IN_PAGE_ERROR:
-		//case EXCEPTION_INT_OVERFLOW: {
-		//	int xxx = 9;
-		//	//Beep(2000, 1000);
-		//	MessageBoxA(NULL, (LPCSTR)"Structured exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
-		//	break;
-		//}
-
-		//case ClrException: {
-		//	int xxx = 9;
-		//	MessageBoxA(NULL, (LPCSTR)"CLR exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
-		//	//Beep(1000, 500);
-		//	//Beep(1000, 500);
-		//	break;
-		//}
-		//case CppException: {
-		//	MessageBoxA(NULL, (LPCSTR)"Cpp exception ...", (LPCSTR)"unhandel exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
-		//	int xxx = 9;
-		//	//Beep(400, 200);
-		//	//Beep(400, 200);
-		//	//Beep(400, 200);
-		//	break;
-		//}
-		//}
-
-		// Do something, for example generate error report
-		//MessageBoxA(NULL, (LPCSTR)"Caught unhandled exception ...", (LPCSTR)"Unhandled exception filter", MB_ICONINFORMATION | MB_DEFBUTTON2);
 		
-		//..
 		printf("DefaultUnhandledExceptionFilter() call crash callback ...\n");
 		handledCrashException = true;
 		if (gCrashCallback) {
 			gCrashCallback(pExceptionPtrs, ExceptionType::UnhandledException);
 			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
 		}
+		channelMinidump.StopChannel();
 		exit(0);
-
-		// Execute default exception handler next
-		return EXCEPTION_EXECUTE_HANDLER;
 	}
 }
