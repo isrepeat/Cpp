@@ -6,16 +6,16 @@
 #include <string>
 #include <memory>
 #include "AppCenter.h"
+#include <Helpers/Helpers.h>
+#include <Helpers/Channel.h>
+#include <Helpers/CrashInfo.h>
+#include <Helpers/FileSystem.h>
+#include <Helpers/RegistryManager.h>
 #include "../CrashHandling/MiniDumpMessages.h"
-#include "../../../../Shared/Helpers/Helpers.h"
-#include "../../../../Shared/Helpers/Channel.h"
-#include "../../../../Shared/Helpers/CrashInfo.h"
-#include "../../../../Shared/Helpers/FileSystem.h"
-#include "../../../../Shared/Helpers/RegistryManager.h"
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
-#define VERSION L"1.1.15"
+#define VERSION L"1.1.16"
 
 // NOTE: use uint8_t (instead whar_t) to be able send serialized structs
 Channel<MiniDumpMessages> channelMinidump;

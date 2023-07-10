@@ -3,8 +3,8 @@
 
 namespace LibraryCLR {
 	public ref class TestClassCLR {
-	//public:
-	//	TestClassCLR();
+	public:
+		void InvokeCLR();
 
 	private:
 		TestClassCLR();

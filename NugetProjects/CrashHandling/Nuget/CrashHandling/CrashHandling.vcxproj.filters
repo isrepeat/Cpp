@@ -20,11 +20,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CrashHandling.targets">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="CrashHandling.nuspec">
-      <Filter>Source Files</Filter>
-    </None>
+    <None Include="CrashHandling_Internal.targets" />
   </ItemGroup>
 </Project>

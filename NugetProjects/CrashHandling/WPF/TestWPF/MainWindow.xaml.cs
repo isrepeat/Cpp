@@ -27,6 +27,7 @@
 
             //var instance = new LibraryCLR.TestClassCLR();
             LibraryCLR.TestClassCLR.GetInstance();
+            LibraryCLR.TestClassCLR.GetInstance().InvokeCLR();
         }
     }
 }
