@@ -12,6 +12,8 @@ public:
 	}
 	~Base() {
 		Sleep(1);
+		NotifyAboutStop();
+		WaitingFinishThreads();
 	}
 
 	// IThread
@@ -44,6 +46,8 @@ public:
 	}
 	~ChildOne() {
 		Sleep(1);
+		NotifyAboutStop();
+		WaitingFinishThreads();
 	}
 
 	// IThread
@@ -71,7 +75,10 @@ public:
 	}
 	~ChildTwo() {
 		Sleep(1);
+		NotifyAboutStop();
+		WaitingFinishThreads();
 	}
+
 
 private:
 	LOG_FIELD_DESTRUCTION(ChildTwo);
@@ -91,6 +98,8 @@ public:
 	}
 	~ChildThree() {
 		Sleep(1);
+		NotifyAboutStop();
+		WaitingFinishThreads();
 	}
 
 	// IThread
@@ -117,7 +126,7 @@ class Object {
 public:
 	Object() {
 		instance = std::make_shared<ChildThree>();
-		threadsFinishHelper.Register(instance);
+		//threadsFinishHelper.Register(instance);
 	}
 	~Object() {
 		Sleep(1);

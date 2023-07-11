@@ -24,7 +24,9 @@ private:
 };
 
 
-// Interface to manage lifetime internal class threads outside (use with ThreadsFinishHelper)
+// Interface to manage lifetime internal class threads outside
+// - Use it with ThreadsFinishHelper. 
+// - You can call NotifyAboutStop & WaitingFinishThreads in target class desctructor explicitly to guarantee that all threads will finished.
 class IThread {
 public:
 	virtual void NotifyAboutStop() = 0;
@@ -32,7 +34,7 @@ public:
 	virtual ~IThread() = default;
 };
 
-// TODO: purge expired ptr when register and add mutex guard for it
+
 // Must be the last field of the class
 class ThreadsFinishHelper {
 public:
@@ -56,6 +58,7 @@ public:
 		stopped = true;
 	}
 
+	// TODO: Add mutex guard for Register() and purge expired ptrs there
 	void Register(std::weak_ptr<IThread> threadClass) {
 		threadsClassesWeak.push_back(threadClass);
 	}
