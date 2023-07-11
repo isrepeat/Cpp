@@ -24,6 +24,9 @@
     <Filter Include="Source Files\[5] Dtor callback finish">
       <UniqueIdentifier>{e0de6530-d628-4799-a014-93484c895930}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[6] Future wrapper">
+      <UniqueIdentifier>{26d22de7-4e3f-40b3-a213-832fc01a2064}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -164,6 +167,12 @@
     <ClCompile Include="main_36_ThreadFinishHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="[6] Future wrapper\FutureWrapper.cpp">
+      <Filter>Source Files\[6] Future wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp">
+      <Filter>Source Files\[6] Future wrapper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -192,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="main_36_ThreadFinishHelper.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="[6] Future wrapper\FutureWrapper.h">
+      <Filter>Source Files\[6] Future wrapper</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

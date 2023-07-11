@@ -203,6 +203,8 @@
     <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp" />
     <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp" />
     <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp" />
+    <ClCompile Include="[6] Future wrapper\FutureWrapper.cpp" />
+    <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
@@ -222,6 +224,7 @@
     <ClInclude Include="[4] QUIC context token\MsQuic.h" />
     <ClInclude Include="[5] Dtor callback finish\FunctionMt.h" />
     <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
+    <ClInclude Include="[6] Future wrapper\FutureWrapper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
