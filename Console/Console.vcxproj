@@ -187,6 +187,7 @@
     <ClCompile Include="main_34_BIOS_uniq_id.cpp" />
     <ClCompile Include="main_33_span.cpp" />
     <ClCompile Include="main_35_enum_raflection.cpp" />
+    <ClCompile Include="main_36_ThreadFinishHelper.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
@@ -213,6 +214,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
+    <ClInclude Include="main_36_ThreadFinishHelper.h" />
     <ClInclude Include="[2] Static initialization fiasco\fileB.h" />
     <ClInclude Include="[2] Static initialization fiasco\SettingsKeeper.h" />
     <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h" />

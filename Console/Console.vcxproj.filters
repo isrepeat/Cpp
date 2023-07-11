@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Source Files\[1] Create process console">
       <UniqueIdentifier>{b444178d-39d5-4395-8f53-767c1ed000d1}</UniqueIdentifier>
     </Filter>
@@ -165,6 +161,9 @@
     <ClCompile Include="main_35_enum_raflection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_36_ThreadFinishHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -190,6 +189,9 @@
     </ClInclude>
     <ClInclude Include="[5] Dtor callback finish\FunctionMt.h">
       <Filter>Source Files\[5] Dtor callback finish</Filter>
+    </ClInclude>
+    <ClInclude Include="main_36_ThreadFinishHelper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
