@@ -27,6 +27,9 @@
     <Filter Include="Source Files\[6] Future wrapper">
       <UniqueIdentifier>{26d22de7-4e3f-40b3-a213-832fc01a2064}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[7] Print Variants">
+      <UniqueIdentifier>{6e1a7fca-e4e2-481a-b824-344427823559}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -173,6 +176,12 @@
     <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp">
       <Filter>Source Files\[6] Future wrapper</Filter>
     </ClCompile>
+    <ClCompile Include="[7] Print Variants\main_37_Printer.cpp">
+      <Filter>Source Files\[7] Print Variants</Filter>
+    </ClCompile>
+    <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp">
+      <Filter>Source Files\[7] Print Variants</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -204,6 +213,9 @@
     </ClInclude>
     <ClInclude Include="[6] Future wrapper\FutureWrapper.h">
       <Filter>Source Files\[6] Future wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="[7] Print Variants\main_37_Printer.h">
+      <Filter>Source Files\[7] Print Variants</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

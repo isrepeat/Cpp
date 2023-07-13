@@ -205,6 +205,8 @@
     <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp" />
     <ClCompile Include="[6] Future wrapper\FutureWrapper.cpp" />
     <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp" />
+    <ClCompile Include="[7] Print Variants\main_37_Printer.cpp" />
+    <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
@@ -225,6 +227,7 @@
     <ClInclude Include="[5] Dtor callback finish\FunctionMt.h" />
     <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
     <ClInclude Include="[6] Future wrapper\FutureWrapper.h" />
+    <ClInclude Include="[7] Print Variants\main_37_Printer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
