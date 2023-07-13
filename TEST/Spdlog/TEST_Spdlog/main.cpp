@@ -1,26 +1,9 @@
-//
-// Copyright(c) 2015 Gabi Melman.
-// Distributed under the MIT License (http://opensource.org/licenses/MIT)
-
-// spdlog usage example
-
 #include <Windows.h>
 #include <cstdio>
 #include <chrono>
-
 #include "spdlog/spdlog.h"
 #include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
-//#include "spdlog/cfg/env.h"  // support for loading levels from the environment variable
-//#include "spdlog/fmt/ostr.h" // support for user defined types
-
-//struct Temp {
-//    Temp() {
-//        auto logger = spdlog::default_logger();
-//        SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, "my logger debug msg {:d}", 1488);
-//    }
-//    ~Temp() = default;
-//};
 
 
 void foo() {
@@ -28,14 +11,15 @@ void foo() {
     //SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, "my logger debug msg {:d}", 1488);
     spdlog::set_pattern("[%L] [%t] %d.%m.%Y %H:%M:%S:%e {%s:%# %!} %v");
     SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, "my logger debug msg = {:d}", 1);
-    SPDLOG_LOGGER_CALL(logger, spdlog::level::info, "my logger debug msg = {:d}", 2);
+    SPDLOG_LOGGER_CALL(logger, spdlog::level::info, "my logger info msg = {:d}", 2);
     //spdlog::set_pattern("%+");
+    logger->log(spdlog::level::info, "my logger info msg again");
     logger->log(spdlog::source_loc{ __FILE__, __LINE__, __FUNCTION__ }, spdlog::level::warn, "my logger debug msg 3");
     logger->log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, "my logger debug msg 4");
 }
 
-int main(int, char* [])
-{
+
+void TestBasic() {
     try {
         //// pass the spdlog::file_event_handlers to file sinks for open/close log file notifications
         //spdlog::file_event_handlers handlers;
@@ -86,6 +70,7 @@ int main(int, char* [])
 
         spdlog::set_default_logger(my_logger);
         spdlog::set_level(spdlog::level::trace);
+        spdlog::flush_on(spdlog::level::trace);
         spdlog::trace("Trace msg");
         spdlog::debug("Debug msg");
         spdlog::info("Info msg");
@@ -110,13 +95,6 @@ int main(int, char* [])
         //spdlog::dump_backtrace(); // log them now!
 
 
-
-
- 
-
-
-
-
         //auto formatter = spdlog::details::make_unique<spdlog::pattern_formatter>();
         //formatter->add_flag<my_formatter_flag>('*').set_pattern("[%n] [%*] [%^%l%$] %v");
         //// set the new formatter using spdlog::set_formatter(formatter) or logger->set_formatter(formatter)
@@ -125,7 +103,7 @@ int main(int, char* [])
 
         // Flush all *registered* loggers using a worker thread every 3 seconds.
         // note: registered loggers *must* be thread safe for this to work correctly!
-        spdlog::flush_every(std::chrono::seconds(3));
+        spdlog::flush_every(std::chrono::seconds(10));
 
         // Apply some function on all registered loggers
         spdlog::apply_all([&](std::shared_ptr<spdlog::logger> l) { l->info("End of example."); });
@@ -139,8 +117,66 @@ int main(int, char* [])
     catch (const spdlog::spdlog_ex& ex)
     {
         std::printf("Log initialization failed: %s\n", ex.what());
-        return 1;
+        return;
     }
 
     int xxx = 9;
+}
+
+
+
+
+struct MyVector {
+    int x;
+    int y;
+};
+
+template<>
+struct fmt::formatter<MyVector> : formatter<std::string>
+{
+    auto format(MyVector my, format_context& ctx) const -> decltype(ctx.out())
+    {
+        //return format_to(ctx.out(), "[MyVector x={0}, y={1}]", my.x, my.y);
+
+        auto newCtx = format_to(ctx.out(), "[MyVector x={0}]", my.x);
+        //newCtx++;
+        return format_to(newCtx, " ... [y={0}]", my.y);
+    }
+};
+
+void TestFormatted() {
+    auto my_logger = spdlog::basic_logger_mt("logger_1", "logs/custom_formatted_logs.txt", true);
+    spdlog::set_default_logger(my_logger);
+    spdlog::set_level(spdlog::level::trace);
+    spdlog::flush_on(spdlog::level::trace);
+    spdlog::set_pattern("[%L] [%t] %d.%m.%Y %H:%M:%S:%e {%s:%# %!} %v");
+    my_logger->log(spdlog::source_loc{ __FILE__, __LINE__, __FUNCTION__ }, spdlog::level::debug, "start ...");
+    SPDLOG_LOGGER_CALL(my_logger, spdlog::level::debug, "my type = {}", MyVector{ 9, 11 });
+    SPDLOG_LOGGER_CALL(my_logger, spdlog::level::debug, "my type = {}", MyVector{ 14,88 });
+    SPDLOG_LOGGER_CALL(my_logger, spdlog::level::debug, "end");
+}
+
+
+
+struct X {
+    int data;
+};
+
+#include "Logger.h"
+void TestWrapperLogger() {
+    Logger logger("logs/wrapper-log.txt");
+
+    //logger.info("Hello");
+
+    //logger.logAny("abcd", X{2}, 123);
+    //logger.logVariant("{0} ... {1}", 123, 3.14);
+    logger.logVariant("{1} ... {0}", 123, 456);
+}
+
+
+
+void main(int, char* []) {
+    //TestBasic();
+    //TestFormatted();
+    TestWrapperLogger();
 }
