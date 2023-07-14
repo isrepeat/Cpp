@@ -15,7 +15,7 @@ void foo() {
     //spdlog::set_pattern("%+");
     logger->log(spdlog::level::info, "my logger info msg again");
     logger->log(spdlog::source_loc{ __FILE__, __LINE__, __FUNCTION__ }, spdlog::level::warn, "my logger debug msg 3");
-    logger->log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, "my logger debug msg 4");
+    logger->log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, "my logger debug msg 4", 3242);
 }
 
 
@@ -164,13 +164,19 @@ struct X {
 
 #include "Logger.h"
 void TestWrapperLogger() {
-    Logger logger("logs/wrapper-log.txt");
+    Logger::CreateInstance("logs/wrapper-log.txt");
 
-    //logger.info("Hello");
 
-    //logger.logAny("abcd", X{2}, 123);
-    //logger.logVariant("{0} ... {1}", 123, 3.14);
-    logger.logVariant("{1} ... {0}", 123, 456);
+    //Logger logger("logs/wrapper-log.txt");
+
+    std::string myStr = "Hello";
+    
+    LOG_INFO("Hi ...");
+    LOG_INFO("{1} ... {0} = {2}", L"World", myStr, 1488);
+
+    //logger.logVariant("{0} ... {1}", myStr, 456);
+    //logger.logVariant("{3} ... {1} ... {0} ... {2}", "World", 456, 3.14f, L"Привет");
+    //logger.logVariant("", 123, 456);
 }
 
 
