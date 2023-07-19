@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -150,9 +150,16 @@
     <None Include="MSBuild.targets" />
     <None Include="MSBuild_1_PercentPropertyBackref.targets" />
     <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
+    <None Include="MSBuild_3_ExcludeFromCompile.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MyClass.cpp" />
+    <ClCompile Include="SubDir\SubClass.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyClass.h" />
+    <ClInclude Include="SubDir\SubClass.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,15 +5,33 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\Sub directory">
+      <UniqueIdentifier>{fdb722e3-bc11-4476-9ac6-f69afc2da06c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="MSBuild_1_PercentPropertyBackref.targets" />
     <None Include="MSBuild.targets" />
     <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
+    <None Include="MSBuild_3_ExcludeFromCompile.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SubDir\SubClass.cpp">
+      <Filter>Source Files\Sub directory</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyClass.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SubDir\SubClass.h">
+      <Filter>Source Files\Sub directory</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
