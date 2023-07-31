@@ -182,6 +182,9 @@
     <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp">
       <Filter>Source Files\[7] Print Variants</Filter>
     </ClCompile>
+    <ClCompile Include="main_38_ppl_tasks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
