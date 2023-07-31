@@ -189,6 +189,7 @@
     <ClCompile Include="main_35_enum_raflection.cpp" />
     <ClCompile Include="main_36_ThreadFinishHelper.cpp" />
     <ClCompile Include="main_38_ppl_tasks.cpp" />
+    <ClCompile Include="main_39_max_element_by_common_field.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
