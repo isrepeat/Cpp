@@ -1,4 +1,4 @@
-#include "Logger.h"
+#include "LoggerWrapper.h"
 //#include <Helpers/Helpers.h>
 #include <iostream>
 #include <spdlog/spdlog.h>
