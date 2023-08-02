@@ -160,13 +160,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LoggerWrapper.cpp" />
+    <ClCompile Include="LogHelpers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_2_LogHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TEST_Spdlog_Include.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoggerWrapper.h" />
+    <ClInclude Include="LogHelpers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
