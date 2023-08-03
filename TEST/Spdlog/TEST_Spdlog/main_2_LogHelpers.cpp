@@ -116,9 +116,11 @@ void TestLogHelper() {
     auto pointer = std::make_unique<int>(0);
     pointer.reset();
 
+    unsigned int hr = 0x80070EF5L;
+
     LOG_INFO(L"Start ...");
     LOG_INFO_D("op 1 {}", (bool)pointer);
-    LOG_INFO("op 2");
+    LOG_INFO_D("op 2 hex = {:#08x}", hr);
     LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
     LOG_ERROR("End");
     return;
@@ -128,6 +130,6 @@ void TestLogHelper() {
 
 void main(int, char* []) {
     //TestLoggsWithDifferentPatters();
-    TestDoubleLoggerInit();
-    //TestLogHelper();
+    //TestDoubleLoggerInit();
+    TestLogHelper();
 }
