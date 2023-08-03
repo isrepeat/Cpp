@@ -1,6 +1,7 @@
 #include "LogHelpers.h"
 #include <filesystem>
 #include <cassert>
+#include <set>
 
 namespace {
     const uintmax_t maxSizeLogFile = 1 * 1024 * 1024; // 1 MB (~ 10'000 rows)
@@ -43,15 +44,25 @@ namespace lg {
     }
 
     // CHECK: how it works if call multi times with same and diff logfile pathes?
-    void DefaultLoggers::Init(const std::wstring& logFilePath, bool truncate) {
-        assert(!spdlog::get("default_logger") && " ---> 'default_logger' already inited");
-        assert(!spdlog::get("default_raw_logger") && " ---> 'default_raw_logger' already inited");
-        assert(!spdlog::get("default_time_logger") && " ---> 'default_time_logger' already inited");
-        assert(!spdlog::get("default_debug_logger") && " ---> 'default_debug_logger' already inited");
+    void DefaultLoggers::Init(const std::wstring& logFilePath, bool truncate, bool appendNewSessionMsg) {
+#ifdef _DEBUG
+        static std::set<std::wstring> initedLoggers;
+        if (initedLoggers.count(logFilePath) > 0) {
+            assert(false && " ---> the logger on this path has already been initialized");
+        }
+        else {
+            initedLoggers.insert(logFilePath);
+        }
+#endif
 
-        if (std::filesystem::exists(logFilePath) && std::filesystem::file_size(logFilePath) > maxSizeLogFile) {
+        if (!std::filesystem::exists(logFilePath)) {
+            appendNewSessionMsg = false; // don't append at first created log file
+        }
+        else if (std::filesystem::file_size(logFilePath) > maxSizeLogFile) {
+            appendNewSessionMsg = false; // don't append if file recreatted again
             truncate = true;
         }
+
         auto& _this = GetInstance();
 
         _this.fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
@@ -83,8 +94,11 @@ namespace lg {
         _this.debugLogger->set_level(spdlog::level::trace);
         _this.debugLogger->flush_on(spdlog::level::trace);
 #endif
-        _this.rawLogger->info("\n");
-        _this.timeLogger->info("New session started");
+
+        if (appendNewSessionMsg) {
+            _this.rawLogger->info("\n");
+            _this.timeLogger->info("New session started");
+        }
     }
 
     std::shared_ptr<spdlog::logger> DefaultLoggers::Logger() {
