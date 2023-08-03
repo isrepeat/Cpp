@@ -188,6 +188,9 @@
     <ClCompile Include="main_39_max_element_by_common_field.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_40_filesystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
