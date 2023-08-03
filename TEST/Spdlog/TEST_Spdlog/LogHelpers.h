@@ -31,7 +31,10 @@ namespace lg {
         std::shared_ptr<spdlog::logger> logger;
         std::shared_ptr<spdlog::logger> rawLogger;
         std::shared_ptr<spdlog::logger> timeLogger;
+
         std::shared_ptr<spdlog::sinks::basic_file_sink_mt> fileSink;
+        std::shared_ptr<spdlog::sinks::basic_file_sink_mt> fileSinkRaw;
+        std::shared_ptr<spdlog::sinks::basic_file_sink_mt> fileSinkTime;
 
 #ifdef _DEBUG
         std::shared_ptr<spdlog::logger> debugLogger;

@@ -3,7 +3,7 @@
 #include <cassert>
 
 namespace {
-    const uintmax_t maxSizeLogFile = 5 * 1024 * 1024; // 5 MB
+    const uintmax_t maxSizeLogFile = 1 * 1024 * 1024; // 1 MB (~ 10'000 rows)
 }
 
 namespace lg {
@@ -58,18 +58,23 @@ namespace lg {
         _this.fileSink->set_pattern(patterns.at(Pattern::Default));
         _this.fileSink->set_level(spdlog::level::trace);
 
+        _this.fileSinkRaw = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
+        _this.fileSinkRaw->set_pattern(patterns.at(Pattern::Raw));
+        _this.fileSinkRaw->set_level(spdlog::level::trace);
+
+        _this.fileSinkTime = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
+        _this.fileSinkTime->set_pattern(patterns.at(Pattern::Time));
+        _this.fileSinkTime->set_level(spdlog::level::trace);
 
         _this.logger = std::make_shared<spdlog::logger>("default_logger", spdlog::sinks_init_list{ _this.fileSink });
         _this.logger->set_level(spdlog::level::trace);
         _this.logger->flush_on(spdlog::level::trace);
 
-        _this.rawLogger = std::make_shared<spdlog::logger>("default_raw_logger", spdlog::sinks_init_list{ _this.fileSink });
-        _this.rawLogger->set_pattern(patterns.at(Pattern::Raw)); // force override fileSink pattern
+        _this.rawLogger = std::make_shared<spdlog::logger>("default_raw_logger", spdlog::sinks_init_list{ _this.fileSinkRaw });
         _this.rawLogger->set_level(spdlog::level::trace);
         _this.rawLogger->flush_on(spdlog::level::trace);
 
-        _this.timeLogger = std::make_shared<spdlog::logger>("default_time_logger", spdlog::sinks_init_list{ _this.fileSink });
-        _this.timeLogger->set_pattern(patterns.at(Pattern::Time)); // force override fileSink pattern
+        _this.timeLogger = std::make_shared<spdlog::logger>("default_time_logger", spdlog::sinks_init_list{ _this.fileSinkTime });
         _this.timeLogger->set_level(spdlog::level::trace);
         _this.timeLogger->flush_on(spdlog::level::trace);
 
