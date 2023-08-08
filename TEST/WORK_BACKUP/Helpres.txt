@@ -1,0 +1,60 @@
+// GCC:
+- add the path where find libraries 
+export LD_LIBRARY_PATH=/home/isrepeat/WORK/C++/<folder>:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/isrepeat/WORK/C++/3rdParty/MsQuic/release:$LD_LIBRARY_PATH
+
+// Qt:
+<path>\qmake -tp vc <path>\myproject.pro
+d:\Qt\5.15.2\msvc2019_64\bin\qmake -tp vc d:\WORK\TEST\CV\VadimChystikov\blackjack\blackjack.pro
+
+// Git:
+git reflog
+git reset --hard HEAD@{N}
+git archive -o changes.zip HEAD $(git diff --name-only HEAD^) // HEAD(or HEAD^) - изменения с последнего/предпоследнего комита
+
+git rm -r --cached <file>
+
+
+// VS:
+find: "[.]{2}[\\/](.*)"
+find: "[.]{2}[\\/][.]{2}[\\/]Shared[\\/](.*)"
+find: "[.]{2}[\\/][.]{2}[\\/][.]{2}[\\/]Shared[\\/](.*)"
+replace: <$1>
+
+// Recover mp4:
+recover_mp4 <normal.mp4> --analyze
+
+[Wild.mp4]
+Now run the following command to start recovering:
+recover_mp4.exe corrupted_file result.h264 result.aac --ext
+
+Then use ffmpeg to mux the final file:
+ffmpeg.exe -r 30.000 -i result.h264 -i result.aac -bsf:a aac_adtstoasc -c:v copy -c:a copy result.mp4
+
+[Go pro]
+Now run the following command to start recovering:
+recover_mp4.exe corrupted_file result.h264 result.aac --ambarella
+
+Then use ffmpeg to mux the final file:
+ffmpeg.exe -r 60000/1001 -i result.h264 -i result.aac -bsf:a aac_adtstoasc -c:v copy -c:a copy result.mp4
+
+
+void PromotionService::UserPurchasesResponse() {
+    auto data = requestManager->GetResponse();
+    WriteDebug("response = %s", data.constData());
+    
+    bool isSubscriptionActive = false;
+    auto subscriptions = QJsonDocument::fromJson(std::move(data)).array();
+    
+    for (auto subscriptionItem : subscriptions) {
+        auto subscription = subscriptionItem.toObject();
+        if (subscription["isSubscriptionActive"].toBool()) {
+            isSubscriptionActive = true;
+            break;
+        }
+    }
+
+    if (!isSubscriptionActive) {
+        GetInAppPurchases();
+    }
+}
