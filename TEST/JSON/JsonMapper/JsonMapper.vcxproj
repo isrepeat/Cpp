@@ -19,9 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="JsonMapper_1_1.cpp" />
-    <ClCompile Include="JsonMapper_1_2.cpp" />
-    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="main_2_ParseArray.cpp" />
+    <ClCompile Include="main_3_JsonStruct_SimpleMapper.cpp" />
+    <ClCompile Include="main_1_CustomMapper.cpp" />
+    <ClCompile Include="Printer.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp20</LanguageStandard>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp20</LanguageStandard>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp20</LanguageStandard>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Printer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
