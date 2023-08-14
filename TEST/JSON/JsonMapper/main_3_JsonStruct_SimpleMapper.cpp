@@ -1,123 +1,12 @@
+//#define WIN32_LEAN_AND_MEAN
 #include <map>
 #include <array>
 #include <string>
+#include <thread>
 #include <utility>
+//#include <Windows.h>
 #include <json_struct/json_struct.h>
 #include "Printer.h"
-
-//template<typename T>
-//struct Vec3
-//{
-//    T data[3];
-//};
-
-//Nested types are fully supported and the limitation of the data structures
-//that can be expressed is limited by C++
-//namespace JS
-//{
-//    template<typename T>
-//    struct TypeHandler<Vec3<T>>
-//    {
-//        static inline Error to(Vec3<T>& to_type, ParseContext& context)
-//        {
-//            return TypeHandler<T[3]>::to(to_type.data, context);
-//        }
-//
-//        static inline void from(const Vec3<T>& from_type, Token& token, Serializer& serializer)
-//        {
-//            return TypeHandler<T[3]>::from(from_type.data, token, serializer);
-//        }
-//    };
-//}
-
-//struct InnerJsonData
-//{
-//    int key;
-//    double value;
-//    JS_OBJ(key, value);
-//};
-
-//const char json[] = R"json(
-//{
-//    "key" : "value",
-//    "vec" : [
-//        { "key" : 4, "value": 1.0 },
-//        { "key" : 5, "value": 2.0 },
-//        { "key" : 6, "value": 3.0 }
-//    ]
-//}
-//)json";
-
-
-//namespace JS
-//{
-//    template<typename T>
-//    struct TypeHandler<Vec3<T>>
-//    {
-//        static inline Error to(Vec3<T>& to_type, ParseContext& context)
-//        {
-//            return TypeHandler<T[3]>::to(to_type.data, context);
-//        }
-//
-//        static inline void from(const Vec3<T>& from_type, Token& token, Serializer& serializer)
-//        {
-//            return TypeHandler<T[3]>::from(from_type.data, token, serializer);
-//        }
-//    };
-//}
-
-//template<std::size_t N, class T>
-//constexpr std::size_t countof(T(&)[N]) { return N; }
-//
-
-
-//template<std::size_t N>
-//constexpr const char* JsKey(const char key[N]) {
-//    if (N != 0) {
-//        //key[0] = 
-//    }
-//}
-//
-//#define JS_KEY(key)
-
-
-
-
-
-//struct InnerJsonData
-//{
-//    std::string key;
-//    double value;
-//    JS_OBJ(key, value);
-//};
-//
-//const char json[] = R"json(
-//{
-//  "Key" : "wow",
-//  "vec" : [
-//    { "key" : 4, "value": 1.0 },
-//    { "key" : 5, "value": 2.0 },
-//    { "key" : 6, "value": 3.0 }
-//  ]
-//}
-//)json";
-//
-////std::string myKey;
-//const char myKey[] = "asdasda";
-//
-//struct JsonData
-//{
-//    std::string key = "hi";
-//    //Vec3<InnerJsonData> vec;
-//    InnerJsonData vec[3];
-//
-//    JS_OBJECT(JS_MEMBER_WITH_NAME(key, myKey),
-//              JS_MEMBER(vec));
-//};
-
-
-
-
 
 
 struct Purchase {
@@ -125,28 +14,70 @@ struct Purchase {
     float price;
     std::string name = "...";
 
-    JS_OBJ(id, price, name);
+    //JS_OBJ(id, price, name);
+    JS_OBJECT(
+        JS_MEMBER_ALIASES(id, "Id"),
+        JS_MEMBER_ALIASES(name, "Name"),
+        JS_MEMBER_ALIASES(price, "Price")
+        );
 };
 
+
+struct Picture {
+    std::vector<uint8_t> imageData = { 16, 32 };
+};
+
+
+namespace JS
+{
+    template<>
+    struct TypeHandler<Picture>
+    {
+        static inline Error to(Picture& to_type, ParseContext& context)
+        {
+            //There exists a TypeHandler for T[N] already, so all we have to do is unwrap the
+            //data and call the other TypeHandler specialisation
+            //return TypeHandler<std::vector<uint8_t>>::to(to_type.imageData, context);
+            
+            auto error = JS::Error::NoError;
+
+            std::string bytes;
+            error = TypeHandler<std::string>::to(bytes, context);
+            
+            if (error != JS::Error::NoError) {
+                return error;
+            }
+            
+            to_type.imageData = std::vector<uint8_t>(bytes.begin(), bytes.end());
+            return error;
+        }
+
+        static inline void from(const Picture& from_type, Token& token, Serializer& serializer)
+        {
+            //return TypeHandler<std::vector<uint8_t>>::from(from_type.imageData, token, serializer);
+
+            auto bytes = std::string(from_type.imageData.begin(), from_type.imageData.end());
+            return TypeHandler<std::string>::from(bytes, token, serializer);
+        }
+    };
+}
+
+
+
+
 struct Person {
+    //Purchase purchases[4];
+    std::vector<Purchase> purchases;
     std::string firstName = "First Name";
     std::string secondName = "Second Name";
-    //Purchase purchase;
-
-    void Print(int padding = 0) {
-        //printf((std::string{} +
-        //    scalarFormat(padding, "firstName", ",") +
-        //    scalarFormat(padding, "secondName", ",")
-        //    filed("purchases")
-        //    ).c_str(),
-        //    firstName.c_str(),
-        //    secondName.c_str()
-        //);
-    }
+    //std::vector<uint8_t> userPicture{ 11, 22, 33, 44 };
+    Picture userPicture;
 
     JS_OBJECT(
-        JS_MEMBER_WITH_NAME(firstName, secondName)
-        //,JS_MEMBER(vec)
+        JS_MEMBER_ALIASES(purchases, "Purchases"),
+        JS_MEMBER_ALIASES(firstName, "FirstName"),
+        JS_MEMBER_ALIASES(secondName, "SecondName"),
+        JS_MEMBER_ALIASES(userPicture, "UserPicture")
     );
 };
 
@@ -155,7 +86,7 @@ struct Person {
 void TestParseScalars() {
     const char jsonPerson[] = R"json(
     {
-        "firstName": "Alexandr",
+        "FirstName": "Alexandr",
         "secondName": "Bondarenko"
     }
     )json";
@@ -164,73 +95,64 @@ void TestParseScalars() {
     {
         "firstName": "Alexandr",
         "secondName": "Bondarenko",
+        "purchase": { 
+            "id": 1011,
+            "name": "1 month",
+            "price": 6.99
+        }
+    }
+    )json";
+
+    const char jsonPersonPurchases[] = R"json(
+    {
+        "firstName": "Alexandr",
+        "secondName": "Bondarenko",
         "purchases": [
-        { "id": 1011, "price": 6.99, "name": "1 month" },
-        { "id": 1044, "price": 14.99, "name": "6 month" },
-        { "id": 1077, "price": 21.65, "name": "12 month" },
-        ]
+            { "id": 1011, "price": 6.99, "name": "1 month" },
+            { "id": 1044, "price": 14.99, "name": "6 month" },
+            { "id": 1077, "price": 21.65, "name": "12 month" }
+        ],
+        "userPicture": "\x10 €ÿ€@ \x10"
     }
     )json";
 
 
-    //Person preson;
+    Person person;
+    printf("Person [src]: \n%s", JS::serializeStruct(person).c_str());
+
     //JS::ParseContext parseContext(jsonPerson);
-    ////JS::ParseContext parseContext(jsonPersonPurchase);
+    //JS::ParseContext parseContext(jsonPersonPurchase);
+    JS::ParseContext parseContext(jsonPersonPurchases);
 
-    //if (parseContext.parseTo(preson) != JS::Error::NoError) {
-    //    std::string errorStr = parseContext.makeErrorString();
-    //    fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
-    //    return;
-    //}
+    if (parseContext.parseTo(person) != JS::Error::NoError) {
+        std::string errorStr = parseContext.makeErrorString();
+        fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
+        return;
+    }
 
-
-    
-
+    printf("\n");
+    printf("\n");
+    printf("Person [parsed]: \n%s", JS::serializeStruct(person).c_str());
 }
 
 
 
     
 int main() {
-    //TestParseScalars();
     
+    std::vector<uint8_t> vec{ 16, 32, 128, 255, 128, 64, 32, 16 };
+    auto vecToStr = std::string(vec.begin(), vec.end());
+    
+    std::string str = "\x10 €ÿ€@ \x10"; // 16 32 64 128 255 128 64 32 16
+    auto strToVec = std::vector<uint8_t>(str.begin(), str.end());
 
-    Js::TestPrintJson();
-
-
-
-        
-    ////int value[findValue(map_items, 10)];
-
-    //JsonData dataStruct;
-    //JS::ParseContext parseContext(json);
-    //if (parseContext.parseTo(dataStruct) != JS::Error::NoError)
-    //{
-    //    std::string errorStr = parseContext.makeErrorString();
-    //    fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
-    //    return -1;
-    //}
-
-    ////fprintf(stdout, "Key is: %s, number is %d - %f, %d - %f, %d - %f\n",
-    ////    dataStruct.key.c_str(),
-    ////    dataStruct.vec.data[0].key,
-    ////    dataStruct.vec.data[0].value,
-    ////    dataStruct.vec.data[1].key,
-    ////    dataStruct.vec.data[1].value,
-    ////    dataStruct.vec.data[2].key,
-    ////    dataStruct.vec.data[2].value);
-
-    //fprintf(stdout, "Key is: %s, number is %s - %f, %d - %f, %d - %f\n",
-    //    dataStruct.key.c_str(),
-    //    dataStruct.vec[0].key.c_str(),
-    //    dataStruct.vec[0].value,
-    //    dataStruct.vec[1].key,
-    //    dataStruct.vec[1].value,
-    //    dataStruct.vec[2].key,
-    //    dataStruct.vec[2].value);
+    TestParseScalars();
+    
+    //Js::TestPrintJson();
 
 
-
-    system("pause");
+    printf("\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds{8'000});
+    //system("pause");
     return 0;
 }
