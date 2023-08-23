@@ -6,30 +6,6 @@
 //#include <mutex>
 //
 //
-//class Interface {
-//public:
-//	Interface() = default;
-//	virtual ~Interface() = default;
-//
-//	virtual void Foo() = 0;
-//};
-//
-//class A : public Interface {
-//public:
-//	A() {};
-//
-//	void Foo() {}
-//};
-//
-//
-//class B : public Interface {
-//public:
-//	B() {};
-//
-//	void Foo() {}
-//};
-//
-//
 //// NOTE: "T" must have a common(base) type(interface)
 //template <typename... Types>
 //bool IsEmptyVariantOfPointers(const std::variant<std::unique_ptr<Types>...>& variant) {
@@ -55,40 +31,148 @@
 //	}
 //}
 //
-////std::unique_ptr<int>& foo() {
-////	static std::unique_ptr<int> emptyPoiner = nullptr;
-////	return emptyPoiner;
-////};
+//namespace H {
+//	struct EmptyStruct {};
+//	using NullVariantArg = std::shared_ptr<EmptyStruct>;
+//	const NullVariantArg nullVariantArg = nullptr;
+//}
 //
-//std::condition_variable cvVncClientCreation;
+//
+//
+//
+//struct IVncServer {
+//	virtual void StartListening() = 0;
+//	virtual ~IVncServer() = default;
+//};
+//
+//
+//struct IVncClient {
+//	virtual void Render() = 0;
+//	virtual ~IVncClient() = default;
+//};
+//
+//
+//struct VncClient : IVncClient {
+//	VncClient() = default;
+//	~VncClient() {
+//		int xx = 9;
+//	};
+//
+//	void Render() override {
+//	}
+//};
+//
+//
+//struct VncServer : IVncServer {
+//	VncServer() = default;
+//	~VncServer() {
+//		int xx = 9;
+//	};
+//
+//	void StartListening() override {
+//	}
+//};
+//
+//
+////std::variant<H::NullVariantArg, std::unique_ptr<IVncClient>, std::unique_ptr<IVncServer>> vncComponent;
+//std::variant<std::unique_ptr<IVncClient>, std::unique_ptr<IVncServer>> vncComponent;
+//
+//
+//enum class VncType {
+//	None,
+//	Client,
+//	Server,
+//};
+//
+//template <typename... T>
+//bool IsEmptyVariantOfPointers(const std::variant<std::unique_ptr<T>...>& variant) {
+//	bool emptyVariant = true;
+//	std::visit([&emptyVariant](auto&& arg) {
+//		emptyVariant = arg == nullptr;
+//		}, variant);
+//
+//	return emptyVariant;
+//}
+//
+//
+//VncType GetVncComponentType() {
+//	if (IsEmptyVariantOfPointers(vncComponent))
+//		return VncType::None;
+//
+//	if (std::holds_alternative<std::unique_ptr<IVncClient>>(vncComponent)) {
+//		return VncType::Client;
+//	}
+//	else if (std::holds_alternative<std::unique_ptr<IVncServer>>(vncComponent)) {
+//		return VncType::Server;
+//	}
+//}
+//
 //
 //int main() {
-//	std::variant<std::unique_ptr<A>, std::unique_ptr<B>> variant;
+//	{
+//		//if (std::holds_alternative<H::NullVariantArg>(vncComponent)) {
+//		//	int xxx = 9;
+//		//}
+//		//else 
+//		if (std::holds_alternative<std::unique_ptr<IVncClient>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else if (std::holds_alternative<std::unique_ptr<IVncServer>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else {
+//			int xxx = 9;
+//		}
+//		vncComponent.index();
+//		//std::get<>
 //
-//	//auto& varEmpty = std::get<std::unique_ptr<B>>(variant);
-//	//if (!varEmpty) {
-//	//	int xxx = 9;
-//	//}
-//
-//	
-//
-//	if (auto& ptr = GetVariantItem<A>(variant)) {
+//		auto vncType = GetVncComponentType();
+//		//auto isEmpty = IsEmptyVariantOfPointers(vncComponent);
 //		int xxx = 9;
 //	}
 //
-//	
-//	variant = std::make_unique<B>();
-//	
-//	auto& var = std::get<std::unique_ptr<B>>(variant);
-//	var.reset();
+//	vncComponent = std::make_unique<VncServer>();
 //
-//	if (!var) {
+//	{
+//		//if (std::holds_alternative<H::NullVariantArg>(vncComponent)) {
+//		//	int xxx = 9;
+//		//}
+//		//else 
+//		if (std::holds_alternative<std::unique_ptr<IVncClient>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else if (std::holds_alternative<std::unique_ptr<IVncServer>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else {
+//			int xxx = 9;
+//		}
+//		auto vncType = GetVncComponentType();
+//		//auto isEmpty = IsEmptyVariantOfPointers(vncComponent);
 //		int xxx = 9;
 //	}
 //
-//	auto& varReset = std::get<std::unique_ptr<B>>(variant);
+//	std::visit([](auto&& arg) {
+//		arg.reset();
+//		}, vncComponent);
+//	//vncComponent = H::nullVariantArg;
 //
-//	if (!varReset) {
+//	{
+//		//if (std::holds_alternative<H::NullVariantArg>(vncComponent)) {
+//		//	int xxx = 9;
+//		//}
+//		//else 
+//		if (std::holds_alternative<std::unique_ptr<IVncClient>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else if (std::holds_alternative<std::unique_ptr<IVncServer>>(vncComponent)) {
+//			int xxx = 9;
+//		}
+//		else {
+//			int xxx = 9;
+//		}
+//		auto vncType = GetVncComponentType();
+//		//auto isEmpty = IsEmptyVariantOfPointers(vncComponent);
 //		int xxx = 9;
 //	}
 //

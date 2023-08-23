@@ -130,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -188,7 +188,11 @@
     <ClCompile Include="main_33_span.cpp" />
     <ClCompile Include="main_35_enum_raflection.cpp" />
     <ClCompile Include="main_36_ThreadFinishHelper.cpp" />
+    <ClCompile Include="main_38_ppl_tasks.cpp" />
+    <ClCompile Include="main_39_max_element_by_common_field.cpp" />
     <ClCompile Include="main_3_template_Vargs_to_array.cpp" />
+    <ClCompile Include="main_40_filesystem.cpp" />
+    <ClCompile Include="main_41_remove_const_from_struct_members.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
