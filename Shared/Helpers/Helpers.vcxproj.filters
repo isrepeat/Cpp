@@ -69,6 +69,9 @@
     <ClInclude Include="Passkey.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Filesystem.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">

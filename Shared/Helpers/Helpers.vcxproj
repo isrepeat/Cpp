@@ -166,6 +166,7 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Conversion.h" />
     <ClInclude Include="CrashInfo.h" />
+    <ClInclude Include="Filesystem.hpp" />
     <ClInclude Include="FunctionTraits.h" />
     <ClInclude Include="Gate.h" />
     <ClInclude Include="Passkey.h" />
