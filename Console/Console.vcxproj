@@ -211,6 +211,10 @@
     <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp" />
     <ClCompile Include="[7] Print Variants\main_37_Printer.cpp" />
     <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp" />
+    <ClCompile Include="[8] Token singleton\main_42_fileC.cpp" />
+    <ClCompile Include="[8] Token singleton\main_42_fileB.cpp" />
+    <ClCompile Include="[8] Token singleton\main_42_main.cpp" />
+    <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
@@ -232,6 +236,9 @@
     <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
     <ClInclude Include="[6] Future wrapper\FutureWrapper.h" />
     <ClInclude Include="[7] Print Variants\main_37_Printer.h" />
+    <ClInclude Include="[8] Token singleton\main_42_fileC.h" />
+    <ClInclude Include="[8] Token singleton\main_42_fileB.h" />
+    <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
