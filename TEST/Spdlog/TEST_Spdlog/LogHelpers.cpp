@@ -1,10 +1,14 @@
 #include "LogHelpers.h"
-#include <filesystem>
+#include <Helpers/Filesystem.hpp>
+#include <fstream>
 #include <cassert>
 #include <set>
 
+
+
 namespace {
-    const uintmax_t maxSizeLogFile = 1 * 1024 * 1024; // 1 MB (~ 10'000 rows)
+    //const uintmax_t maxSizeLogFile = 1 * 1024 * 1024; // 1 MB (~ 10'000 rows)
+    const uintmax_t maxSizeLogFile = 10 * 1024; // 10 KB (~ 100 rows)
 }
 
 namespace lg {
@@ -58,9 +62,18 @@ namespace lg {
         if (!std::filesystem::exists(logFilePath)) {
             appendNewSessionMsg = false; // don't append at first created log file
         }
-        else if (std::filesystem::file_size(logFilePath) > maxSizeLogFile) {
-            appendNewSessionMsg = false; // don't append if file recreatted again
-            truncate = true;
+        else {
+            auto filesize1 = H::FS::Filesize(logFilePath);
+            auto filesize2 = std::filesystem::file_size(logFilePath);
+            if (!truncate && std::filesystem::file_size(logFilePath) > maxSizeLogFile) {
+                H::FS::RemoveBytesFromStart(logFilePath, maxSizeLogFile / 2, [] (std::ofstream& file) {
+                    std::string header = "... [truncated] \n\n";
+                    file.write(header.data(), header.size());
+                    });
+                int xxx = 9;
+                //appendNewSessionMsg = false; // don't append if file recreatted again
+                //truncate = true;
+            }
         }
 
         auto& _this = GetInstance();
