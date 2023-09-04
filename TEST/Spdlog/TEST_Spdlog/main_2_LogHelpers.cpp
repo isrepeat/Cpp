@@ -1,6 +1,7 @@
 #include "LogHelpers.h"
 #include "spdlog/sinks/dist_sink.h"
 // free falgs 'j', 'k', 'q', 'w'
+#include <Helpers/Filesystem.hpp>
 
 class custom_test_flag : public spdlog::custom_flag_formatter {
 public:
@@ -118,11 +119,16 @@ void TestLogHelper() {
 
     unsigned int hr = 0x80070EF5L;
 
-    LOG_INFO(L"Start ...");
+    LOG_DEBUG(L"Start ...");
     LOG_INFO_D("op 1 {}", (bool)pointer);
     LOG_INFO_D("op 2 hex = {:#08x}", hr);
     LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
-    LOG_ERROR("End");
+    LOG_RAW("------------");
+    for (int i = 0; i < 100; i++) {
+        LOG_ERROR("Some error = {}", i);
+    }
+    LOG_RAW("------------");
+    LOG_DEBUG("End");
     return;
 }
 
