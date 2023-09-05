@@ -8,8 +8,10 @@
     <ClCompile>
       <AdditionalIncludeDirectories>
         $(MSBuildThisFileDirectory)include;
+        $(MSBuildThisFileDirectory)include\Logger;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LOGGER_NUGET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>
@@ -26,7 +28,7 @@
   </ItemDefinitionGroup>
   
   <ItemGroup>
-    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\*.dll" />
+    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\**\*.dll" />
   </ItemGroup>
 
 

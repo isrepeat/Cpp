@@ -74,25 +74,29 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
-    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\Shared;$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <PublicIncludeDirectories>$(ProjectDir);</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
-    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\Shared;$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <PublicIncludeDirectories>$(ProjectDir);</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
-    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <PublicIncludeDirectories>$(ProjectDir);</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\..\!NUGET_TMP\build\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(ProjectDir)\..\!NUGET_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
-    <IncludePath>$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\Shared;$(SolutionDir)\Shared;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <PublicIncludeDirectories>$(ProjectDir);</PublicIncludeDirectories>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +134,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +149,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,19 +159,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Logger_Glog.targets" />
+    <None Include="Logger_Internal.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h" />
-    <ClInclude Include="String.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="String.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- Custom targets -->
-  <Import Project="$(ProjectDir)\Logger_Glog.targets" />
+  <Import Project="$(ProjectDir)\Logger_Internal.targets" />
 </Project>
