@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+    <!--<ExcludedDir>D:\WORK\C++\S_I_M_P_L_E\Cpp\MSBuild\MSBuild\SubFolder</ExcludedDir>-->
+    <!--<ExcludedDir>$(ProjectDir)\SubDir</ExcludedDir>-->
+    <IncludedDir>$(ProjectDir)</IncludedDir>
+    
+    <!-- NOTE: GetDirectoryName() removed all after last slash (included slash). 
+                 So to ensure that passed property it is directory we add extra \ to get last name of it directory full path. -->
+    <!--<ExcludedDirName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($(ExcludedDir)\))))</ExcludedDirName>-->
+    <IncludedDirName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($(IncludedDir)\))))</IncludedDirName>
+    
+    <!-- NOTE: Use $ at end regex to ensure that we exclude all items in current folder but not exclude in sub folders -->
+    <!--<ExcludedDirFromBuildRegEx>$(ExcludedDirName)\\$</ExcludedDirFromBuildRegEx>-->
+    <IncludedDirToBuildRegEx>$(IncludedDirName)\\$</IncludedDirToBuildRegEx>
+  </PropertyGroup>
+
+
+  
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+
+  <Target Name="RemoveNonPlatformItems" BeforeTargets="Build">
+    <ItemGroup>
+      <ClCompile>
+        <!--<ExcludedFromBuild Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(Directory), '$(ExcludedDirFromBuildRegEx)'))">TRUE</ExcludedFromBuild>-->
+        <ExcludedFromBuild Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(Directory), '$(IncludedDirToBuildRegEx)'))">false</ExcludedFromBuild>
+      </ClCompile>
+    </ItemGroup>
+    
+     <Message Importance="High" Text = "ClCompile corrected"/>
+  </Target>
+
+
+
+  <Target Name="Build">
+    
+    <!--<PropertyGroup>
+      <RootFolder>$([System.IO.Path]::GetDirectoryName($(ProjectDir)))</RootFolder>
+      <ProjectDirFolderName>$([System.IO.Path]::GetFileName($(ProjectDir)))</ProjectDirFolderName>
+    </PropertyGroup>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text="RootFolder: '$(RootFolder)'" />
+    <Message Importance="High" Text="ProjectDirFolderName: '$(ProjectDirFolderName)'" />-->
+
+
+
+    <!--<Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text="ProjectDir: '$(ProjectDir)'" />
+    <Message Importance="High" Text="ExcludedDir: '$(ExcludedDir)'" />
+    <Message Importance="High" Text="ExcludedDirName: '$(ExcludedDirName)'" />
+    <Message Importance="High" Text="ExcludedDirFromBuildRegEx: '$(ExcludedDirFromBuildRegEx)'" />-->
+
+
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text="ProjectDir: '$(ProjectDir)'" />
+    <Message Importance="High" Text="IncludedDir: '$(IncludedDir)'" />
+    <Message Importance="High" Text="IncludedDirName: '$(IncludedDirName)'" />
+    <Message Importance="High" Text="IncludedDirToBuildRegEx: '$(IncludedDirToBuildRegEx)'" />
+
+
+    <!--<Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text="SubfolderFullPaths:" />
+    <Message Importance="High" Text = "%(SubfolderFullPaths.Identity)"/>
+
+
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text="SubfolderNames:" />
+    <Message Importance="High" Text = "%(SubfolderNames.Identity)"/>-->
+
+    <!--<Message Importance="High" Text = "CLCompile file: %(ClCompile.Identity) ... Excluded from build = %(ExcludedFromBuild)"/>-->
+
+    
+    <!--
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "Escaped project dir = $(EscapedProjectDir)"/>
+    <Message Importance="High" Text = "Excluded dir = $(ExcludedDir)"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "CLCompile Identity:"/>
+    <Message Importance="High" Text = "%(ClCompile.Identity)  ==> [ExcludedFromBuild = %(ExcludedFromBuild)]"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "CLCompile Directory:"/>
+    <Message Importance="High" Text = "%(ClCompile.Directory)  ==> [ExcludedFromBuild = %(ExcludedFromBuild)]"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "CLCompile RelativeDir:"/>
+    <Message Importance="High" Text = "%(ClCompile.RelativeDir)  ==> [ExcludedFromBuild = %(ExcludedFromBuild)]"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    -->
+
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "Included dir = $(IncludedDir)"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "CLCompile Identity:"/>
+    <Message Importance="High" Text = "%(ClCompile.Identity)  ==> [ExcludedFromBuild = %(ExcludedFromBuild)]"/>
+    <Message Importance="High" Text=  "$(NewLine)" />
+  </Target>
+</Project>
