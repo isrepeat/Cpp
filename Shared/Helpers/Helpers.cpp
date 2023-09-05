@@ -1,9 +1,11 @@
 #include "Helpers.h"
 #include "System.h"
+//#include "Logger.h"
 #include <Shlobj.h>
 #include <codecvt>
 #include <locale>
 #include <shellapi.h>
+#include <filesystem>
 #include <regex>
 
 
@@ -18,21 +20,6 @@ namespace H {
             }
         }
 
-
-        std::wstring RemoveExtFromFilenameW(std::wstring filename) {
-            int n = filename.rfind(L".");
-            if (n == std::wstring::npos)
-                return filename;
-
-            return filename.substr(0, n); // include last slash
-        }
-        std::string RemoveExtFromFilenameA(std::string filename) {
-            int n = filename.rfind(".");
-            if (n == std::string::npos)
-                return filename;
-
-            return filename.substr(0, n);
-        }
         std::wstring GetFilenameFromPathW(std::wstring filePath) {
             int n = filePath.rfind(L"\\");
             if (n == std::wstring::npos)
@@ -48,22 +35,52 @@ namespace H {
             return filePath.substr(n + 1);
         }
 
-        std::wstring GetPathToFileW(std::wstring filePath) {
-            int n = filePath.rfind(L"\\");
-            if (n == std::wstring::npos)
-                return L"";
+        std::vector<std::wstring> GetAllLogicalDrives()
+        {
+            std::wstring disks;
+            auto endSize = GetLogicalDriveStringsW(0, nullptr);
+            disks.resize(endSize);
+            GetLogicalDriveStringsW(disks.size(), const_cast<wchar_t*>(disks.c_str()));
 
-            return filePath.substr(0, n + 1); // include last slash
+            auto result = std::vector<std::wstring>();
+            std::size_t currentLen = 0;
+            for (std::size_t i = 0; i < endSize; ++i) {
+                if (disks.c_str()[i] == L'\0' && currentLen > 0) {
+                    result.push_back(disks.substr(i - currentLen, currentLen));
+                    currentLen = 0;
+                    continue;
+                }
+                ++currentLen;
+            }
+            return result;
         }
 
-        std::string GetPathToFileA(std::string filePath) {
-            int n = filePath.rfind("\\");
-            if (n == std::string::npos)
-                return "";
+        void CopyFirstItem(const std::wstring& fromDir, const std::wstring& toDir, const std::wstring& prefix) {
+            if (!std::filesystem::exists(toDir)) {
+                std::filesystem::create_directory(toDir);
+            }
 
-            return filePath.substr(0, n + 1);
+            auto it = std::filesystem::directory_iterator(fromDir);
+            const auto& entryPath = it->path();
+            std::filesystem::copy(entryPath, toDir + L"\\" + prefix + entryPath.filename().wstring(), std::filesystem::copy_options::overwrite_existing);
         }
-    }
+
+        void CopyDirContentTo(const std::wstring& fromDir, const std::wstring& toDir) {
+            if (!std::filesystem::exists(fromDir)) {
+                assert(false && " ---> fromDir not exist");
+                //LOG_ERROR_D("fromDir not exist");
+                return;
+            }
+
+            if (!std::filesystem::exists(toDir)) {
+                std::filesystem::create_directory(toDir);
+            }
+
+            // NOTE: if you also want to copy subfolder add flag std::filesystem::copy_options::recursive
+            std::filesystem::copy(fromDir, toDir, std::filesystem::copy_options::overwrite_existing);
+        }
+    } // namespace FS
+
 
     std::vector<std::string> split(std::string str, const std::string& delim) {
         std::vector<std::string> result;
@@ -88,6 +105,7 @@ namespace H {
         result.push_back(str);
         return result;
     }
+
 
     std::wstring CreateStringParams(const std::vector<std::pair<std::wstring, std::wstring>>& params) {
         std::wstring stringParams = L"";
@@ -145,7 +163,7 @@ namespace H {
         int counter = 0;
         for (auto& item : ParseArgsFromString(str)) {
             if (IsEven(counter++)) {
-                result.push_back({item, L""});
+                result.push_back({ item, L"" });
             }
             else {
                 result.back().second = item;
@@ -155,9 +173,18 @@ namespace H {
         return result;
     }
 
+
     std::wstring ReplaceSubStr(std::wstring src, const std::wstring& subStr, const std::wstring& newStr) {
         // TODO: handle case when subStr not found in src (or subStr > src)
         return src.replace(src.find(subStr), subStr.length(), newStr);
+    }
+
+    std::wstring WrapInQuotes(const std::wstring& str) {
+        return L"\"" + str + L"\"";
+    }
+
+    std::string WrapInQuotes(const std::string& str) {
+        return "\"" + str + "\"";
     }
 
 
@@ -190,6 +217,7 @@ namespace H {
         return std::string{ vec.begin(), vec.end() }.c_str(); // .c_str() remove trailing '\0'
     }
 
+
     std::wstring ExeFullnameW() {
         wchar_t buffer[MAX_PATH] = { 0 };
         GetModuleFileNameW(NULL, buffer, MAX_PATH);
@@ -214,6 +242,7 @@ namespace H {
         return std::string{ buffer }.substr(0, pos);
     }
 
+
     std::wstring GetAppDataPath() {
         wchar_t* path = nullptr;
         auto hr = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
@@ -223,7 +252,6 @@ namespace H {
 
         return result;
     }
-
 
     std::wstring GetKnownFolder(GUID knownFolderGUID) {
         std::wstring result = L"";
@@ -235,7 +263,7 @@ namespace H {
             knownFolderGUID == FOLDERID_LocalPictures ||
             knownFolderGUID == FOLDERID_LocalDocuments ||
             knownFolderGUID == FOLDERID_LocalAppData ||
-            knownFolderGUID == FOLDERID_LocalAppDataLow ||
+            knownFolderGUID == FOLDERID_LocalAppDataLow || 
             knownFolderGUID == FOLDERID_Profile ||
             knownFolderGUID == FOLDERID_Downloads ||
             knownFolderGUID == FOLDERID_AppsFolder ||
@@ -249,8 +277,8 @@ namespace H {
         {
             hr = SHGetKnownFolderPath(knownFolderGUID, 0, NULL, &path);
         }
-
-
+        
+        
         if (path != nullptr) {
             H::System::ThrowIfFailed(hr);
             result = std::wstring(path);
@@ -260,11 +288,13 @@ namespace H {
         return result;
     }
 
+
+
     std::wstring GetLastErrorAsString() {
         //Get the error message ID, if any.
         DWORD errorMessageID = ::GetLastError();
         if (errorMessageID == 0) {
-            return std::wstring(); //No error message has been recorded
+            return L""; //No error message has been recorded
         }
 
         LPWSTR messageBuffer = nullptr;
@@ -273,7 +303,6 @@ namespace H {
         //The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
         size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL, errorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPWSTR)&messageBuffer, 0, NULL);
-            //NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
 
         //Copy the error message into a std::string.
         std::wstring message(messageBuffer, size);
@@ -283,6 +312,7 @@ namespace H {
 
         return message;
     }
+
 
 
     BOOL IsWow64(HANDLE process) {
@@ -363,7 +393,7 @@ namespace H {
 
         bMore = Module32First(hSnapshot, &me);
         for (; bMore; bMore = Module32Next(hSnapshot, &me)) {
-            OutputDebugStringW((L"---------- module = " + std::wstring{ me.szModule } + L" ... exePath = " + std::wstring{ me.szExePath } + L"\n").c_str());
+            OutputDebugStringW((L"---------- module = "+std::wstring{ me.szModule } + L" ... exePath = "+ std::wstring{ me.szExePath } + L"\n").c_str());
             if (!_tcsicmp(me.szModule, szDllname.c_str()) || !_tcsicmp(me.szExePath, szDllname.c_str()))
             {
                 CloseHandle(hSnapshot);
