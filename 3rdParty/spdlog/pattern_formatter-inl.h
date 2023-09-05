@@ -12,7 +12,6 @@
 #include <spdlog/details/os.h>
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/formatter.h>
-
 #include <algorithm>
 #include <array>
 #include <chrono>
