@@ -14,6 +14,7 @@
     <None Include="MSBuild.targets" />
     <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
     <None Include="MSBuild_3_ExcludeFromCompile.targets" />
+    <None Include="MSBuild_4_PublicIncludeDirectories.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
