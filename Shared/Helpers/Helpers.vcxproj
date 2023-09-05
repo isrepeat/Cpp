@@ -185,7 +185,6 @@
     <ClInclude Include="IpTranslator.h" />
     <ClInclude Include="LocalPtr.hpp" />
     <ClInclude Include="ObjectLocker.h" />
-    <ClInclude Include="Passkey.h" />
     <ClInclude Include="Passkey.hpp" />
     <ClInclude Include="Rational.h" />
     <ClInclude Include="Scope.h" />
