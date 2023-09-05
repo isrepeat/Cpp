@@ -6,7 +6,6 @@
       <NugetName>Logger</NugetName>
     </PropertyGroup>
     
-
     <!-- NOTE: Separate build with diff architecture now works because we have not any refs to other project -->
     <Message Importance="High" Text="==== [$(NugetName)] build x86 debug/release ..." />
     <MSBuild Projects="$(ProjectDir)\..\$(NugetName)\$(NugetName).vcxproj" Targets="Build" Properties="Platform=Win32; Configuration=Debug"/>
@@ -17,9 +16,10 @@
     <MSBuild Projects="$(ProjectDir)\..\$(NugetName)\$(NugetName).vcxproj" Targets="Build" Properties="Platform=x64; Configuration=Release"/>
 
     <ItemGroup>
-      <NugetLibs Include="$(ProjectDir)\..\!NUGET_TMP\build\**\*.lib" />
+      <NugetLibs Include="$(ProjectDir)\..\!NUGET_TMP\build\**\*.lib" />  
       <NugetDlls Include="$(ProjectDir)\..\!NUGET_TMP\build\**\*.dll" />
-      <NugetIncludes Include="$(ProjectDir)\..\$(NugetName)\Logger.h" />
+      <NugetIncludes Include="$(ProjectDir)\..\$(NugetName)\**\*.h" />
+      <NugetIncludes Include="$(ProjectDir)\..\$(NugetName)\**\*.hpp" />
       <NugetTargets Include="$(ProjectDir)\$(NugetName).targets" />
       <Nuspec Include="$(ProjectDir)\$(NugetName).nuspec" />
     </ItemGroup>
@@ -29,10 +29,10 @@
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy dlls  ..." />
     <Copy SourceFiles="@(NugetDlls)" DestinationFolder="$(ProjectDir)\Nuget\lib\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy includes ..." />
-    <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\Nuget\build\native\include\$(NugetName)\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NugetIncludes)" DestinationFolder="$(ProjectDir)\Nuget\build\native\include\$(NugetName)\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] Copy targets and nuspec ..." />
     <Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(ProjectDir)\Nuget\build\native\" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(Nuspec)" DestinationFolder="$(ProjectDir)\Nuget\" SkipUnchangedFiles="true" />
-    <Exec Command="$(ProjectDir)\nuget pack Nuget\$(NugetName).nuspec -OutputDirectory &quot;Output&quot;" />
+    <Exec Command="$(SolutionDir)\Tools\nuget pack &quot;$(ProjectDir)\Nuget\$(NugetName).nuspec&quot; -OutputDirectory &quot;Output&quot;" />
   </Target>
 </Project>

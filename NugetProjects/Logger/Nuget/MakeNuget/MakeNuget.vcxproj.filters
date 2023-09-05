@@ -4,5 +4,6 @@
     <None Include="Logger.nuspec" />
     <None Include="Logger.targets" />
     <None Include="MakeNuget.targets" />
+    <None Include="Upload.bat" />
   </ItemGroup>
 </Project>

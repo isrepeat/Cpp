@@ -66,10 +66,82 @@
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Passkey.h">
+    <ClInclude Include="Filesystem.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Filesystem.hpp">
+    <ClInclude Include="Bimap.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BIOS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Concurrency.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConcurrentQueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Container.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoUniquePtr.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FunctionTraits.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GetAddressOf.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HWindows.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IpTranslator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalPtr.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectLocker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Passkey.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rational.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Signal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemDataProvider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadSafeObject.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadWaiter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TokenSingleton.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UniqueHandle.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,5 +179,34 @@
     <ClCompile Include="Gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BIOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Concurrency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Conversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IpTranslator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectLocker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UniqueHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Filesystem.inl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

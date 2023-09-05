@@ -164,7 +164,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets" Condition="Exists('..\..\..\packages\CrashHandling.1.0.5\build\native\CrashHandling.targets')" />
-    <Import Project="..\..\..\..\packages\Logger.1.0.0\build\native\Logger.targets" Condition="Exists('..\..\..\..\packages\Logger.1.0.0\build\native\Logger.targets')" />
+    <Import Project="..\..\..\..\packages\Logger.1.1.2\build\native\Logger.targets" Condition="Exists('..\..\..\..\packages\Logger.1.1.2\build\native\Logger.targets')" />
   </ImportGroup>
   <!-- Copy project dependencies to package -->
   <ItemGroup>
@@ -188,6 +188,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Logger.1.0.0\build\native\Logger.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Logger.1.0.0\build\native\Logger.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Logger.1.1.2\build\native\Logger.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Logger.1.1.2\build\native\Logger.targets'))" />
   </Target>
 </Project>

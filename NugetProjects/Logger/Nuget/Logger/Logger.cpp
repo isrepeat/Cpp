@@ -1,142 +1,178 @@
-#include <glog/logging.h>
-#include <iostream>
-#include <iomanip>
-#include <mutex>
 #include "Logger.h"
-#include "String.h"
+#include <Helpers/TokenSingleton.hpp>
+#include <Helpers/Filesystem.inl>
+#include <cassert>
+#include <set>
 
 
-namespace LoggerCpp {
-	namespace FLAGS {
-		std::atomic<bool> log_without_prefix = false;
-	}
+// TODO: add support logging wstr and str at one time
+namespace {
+    const uintmax_t maxSizeLogFile = 1 * 1024 * 1024; // 1 MB (~ 10'000 rows)
+}
 
-	// static global definitions
-	namespace {
-		struct AdditionalLogContext {
-			const char* functionName;
-		};
+namespace lg {
+    enum class Pattern {
+        Default,
+        Debug,
+        Time,
+        Raw,
+    };
 
-		struct SharedLogMessageContext {
-			std::mutex mx;
-			AdditionalLogContext* context = nullptr;
-		};
-		SharedLogMessageContext* const sharedLogMessageContext = new SharedLogMessageContext; // define as global pointer to avoid destruction order problem on exit program
-
-
-		std::function<void(std::ostream&, const LogMessageInfo&)> customPrefixCallback = nullptr;
-
-		void PrefixCallback(std::ostream& s, const google::LogMessageInfo& l, void*) {
-			if (FLAGS::log_without_prefix) {
-				// TOOD: find out how ignore next space symbol that glog lib place automatically
-				return;
-			}
-
-			auto functionName = sharedLogMessageContext->context->functionName;
-
-			if (customPrefixCallback) {
-				customPrefixCallback(s, LogMessageInfo{
-						l.severity,
-						l.filename,
-						functionName,
-						l.line_number,
-						l.thread_id,
-						LogMessageTime{ l.time.year(), l.time.month(), l.time.day(), l.time.year(), l.time.month(), l.time.day() }
-					});
-			}
-			else {
-				s << std::left
-					<< std::setfill(' ')
-					<< std::setw(5) << l.severity
-					<< " "
-					<< std::setw(6) << l.thread_id
-					<< " ["
-					<< std::right
-					<< std::setfill('0')
-					<< std::setw(2) << l.time.day() << '.'
-					<< std::setw(2) << 1 + l.time.month() << '.'
-					<< std::setw(4) << 1900 + l.time.year()
-					<< " "
-					<< std::setw(2) << l.time.hour() << ':'
-					<< std::setw(2) << l.time.min() << ':'
-					<< std::setw(2) << l.time.sec() << "."
-					<< std::setw(2) << l.time.usec()
-					<< std::setfill(' ')
-					<< "] "
-					<< "{" << l.filename << ':' << l.line_number << " " << functionName << "}";
-			}
-		}
-	} // static global definitions
+    const std::unordered_map<Pattern, std::string> patterns = {
+        {Pattern::Default, "[%l] [%t] %d.%m.%Y %H:%M:%S:%e {%s:%# %!} %v"},
+        {Pattern::Debug, "[dbg] [%t] {%s:%# %!} %v"},
+        {Pattern::Time, "%d.%m.%Y %H:%M:%S:%e %v"},
+        {Pattern::Raw, "%v"},
+    };
 
 
-	LogMessageInfo::LogMessageInfo(const char* const severity, const char* const filename,
-		const char* const function, const int& line_number, const int& thread_id, const LogMessageTime& time)
-		: severity{ severity }
-		, filename{ filename }
-		, function{ function }
-		, line_number{ line_number }
-		, thread_id{ thread_id }
-		, time{ time }
-	{}
-
-	LogMessage::LogMessage(LogSeverity severity, const char* file, const char* function, int line)  {
-		std::unique_lock<std::mutex> lk{ sharedLogMessageContext->mx };
-		auto additionalLogContext = AdditionalLogContext{ function };
-		sharedLogMessageContext->context = &additionalLogContext;
-		instance = new google::LogMessage(file, line, static_cast<int>(severity)); // PrefixCallback called here internal
-	}
-
-	LogMessage::~LogMessage() {	
-		delete instance;
-	}
-
-	std::ostream& LogMessage::Stream() {
-		return instance->stream();
-	}
 
 
-	API void SetLogDestination(LogSeverity severity, const std::wstring& filename, bool addTimestamp) {
-		std::wstring finalFilename = filename;
-		if (addTimestamp) {
-			finalFilename += L"_[";
-			FLAGS_timestamp_in_logfile_name = true;
-		}
-		else {
-			FLAGS_timestamp_in_logfile_name = false;
-		}
-		google::SetLogDestination(static_cast<int>(severity), WStrToStr(finalFilename).c_str());
-	}
+    struct DefaultLoggers::UnscopedData {
+        UnscopedData()
+            : defaultSink{ std::make_shared<spdlog::sinks::msvc_sink_mt>() }
+            , defaultLogger{ std::make_shared<spdlog::logger>("default_logger", spdlog::sinks_init_list{ defaultSink }) }
+        {
+            // CHECK: mb need set defaultSink level/patter before init defaultLogger?
+            defaultSink->set_level(spdlog::level::trace);
+            defaultSink->set_pattern(patterns.at(Pattern::Debug));
+            defaultLogger->set_level(spdlog::level::trace);
+            defaultLogger->flush_on(spdlog::level::trace);
+        }
+        ~UnscopedData() {
+            assert(false && "Unexpected call Dtor");
+        }
 
-	API void SetLogDestination(const std::wstring& filename, bool addTimestamp) {
-		SetLogDestination(LogSeverity::_INFO, filename, addTimestamp);
-	}
+        const std::shared_ptr<spdlog::logger> DefaultLogger() const {
+            return defaultLogger;
+        }
+        
+    private:
+        const std::shared_ptr<spdlog::sinks::msvc_sink_mt> defaultSink;
+        const std::shared_ptr<spdlog::logger> defaultLogger;
+    };
 
-	API void SetLogFilenameExtension(const std::wstring& ext) {
-		std::wstring finalExtension = FLAGS_timestamp_in_logfile_name ? L"]"+ext : ext;
-		google::SetLogFilenameExtension(WStrToStr(finalExtension).c_str());
-	}
 
 
-	API void InitLogger(const char* argv0, std::function<void(std::ostream&, const LogMessageInfo&)> prefixCallback, const LogMessageHeader& logHeader) {
-		customPrefixCallback = prefixCallback;
-		google::InitGoogleLogging(argv0, &PrefixCallback);
+    DefaultLoggers::DefaultLoggers()
+#ifdef _DEBUG
+        : debugSink{ std::make_shared<spdlog::sinks::msvc_sink_mt>() }
+#endif
+    {
+#ifdef _DEBUG
+        debugSink->set_level(spdlog::level::trace);
+        debugSink->set_pattern(patterns.at(Pattern::Debug));
+#endif
+        TokenSingleton<DefaultLoggers>::SetToken(Passkey<DefaultLoggers>{}, this->token);
+    }
 
-		FLAGS_log_file_header = false;
-		FLAGS_logbuflevel = -1; // this mean that INFO logs will flush every log
 
-		FLAGS::log_without_prefix = true;
-		LOG_INFO << "----------------------------------------------------------------------------------------------------";
-		if (!logHeader.additoinalInfo.empty()) {
-			LOG_INFO << logHeader.additoinalInfo;
-		}
-		if (!logHeader.lineFormat.empty()) {
-			LOG_INFO << logHeader.lineFormat;
-		}
-		else {
-			LOG_INFO << "Log line format: severity thread_id [dd.mm.yyy hh:mm:ss.uuuuuu] {filename:line function} log_message";
-		}
-		LOG_INFO << "----------------------------------------------------------------------------------------------------";
-		LOG_INFO << "\n";
-		FLAGS::log_without_prefix = false;
-	}
+    DefaultLoggers& DefaultLoggers::GetInstance() {
+        static DefaultLoggers instance;
+        return instance;
+    }
+
+    void DefaultLoggers::Init(const std::wstring& logFilePath, bool truncate, bool appendNewSessionMsg) {
+#ifdef _DEBUG
+        static std::set<std::wstring> initedLoggers;
+        if (initedLoggers.count(logFilePath) > 0) {
+            assert(false && " ---> the logger on this path has already been initialized");
+        }
+        else {
+            initedLoggers.insert(logFilePath);
+        }
+#endif
+
+        if (!std::filesystem::exists(logFilePath)) {
+            appendNewSessionMsg = false; // don't append new session message at first created log file
+        }
+        else {
+            if (!truncate && std::filesystem::file_size(logFilePath) > maxSizeLogFile) {
+                H::FS::RemoveBytesFromStart(logFilePath, maxSizeLogFile / 2, [](std::ofstream& file) {
+                    std::string header = "... [truncated] \n\n";
+                    file.write(header.data(), header.size());
+                    });
+            }
+        }
+
+        auto& _this = GetInstance();
+
+        _this.fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
+        _this.fileSink->set_pattern(patterns.at(Pattern::Default));
+        _this.fileSink->set_level(spdlog::level::trace);
+
+        _this.fileSinkRaw = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
+        _this.fileSinkRaw->set_pattern(patterns.at(Pattern::Raw));
+        _this.fileSinkRaw->set_level(spdlog::level::trace);
+
+        _this.fileSinkTime = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, truncate);
+        _this.fileSinkTime->set_pattern(patterns.at(Pattern::Time));
+        _this.fileSinkTime->set_level(spdlog::level::trace);
+
+        _this.logger = std::make_shared<spdlog::logger>("logger", spdlog::sinks_init_list{ _this.fileSink });
+        _this.logger->set_level(spdlog::level::trace);
+        _this.logger->flush_on(spdlog::level::trace);
+
+        _this.rawLogger = std::make_shared<spdlog::logger>("raw_logger", spdlog::sinks_init_list{ _this.fileSinkRaw });
+        _this.rawLogger->set_level(spdlog::level::trace);
+        _this.rawLogger->flush_on(spdlog::level::trace);
+
+        _this.timeLogger = std::make_shared<spdlog::logger>("time_logger", spdlog::sinks_init_list{ _this.fileSinkTime });
+        _this.timeLogger->set_level(spdlog::level::trace);
+        _this.timeLogger->flush_on(spdlog::level::trace);
+
+#ifdef _DEBUG
+        _this.debugLogger = std::make_shared<spdlog::logger>("debug_logger", spdlog::sinks_init_list{ _this.debugSink, _this.fileSink });
+        _this.debugLogger->set_level(spdlog::level::trace);
+        _this.debugLogger->flush_on(spdlog::level::trace);
+#endif
+
+        if (appendNewSessionMsg) {
+            _this.rawLogger->info("\n");
+            // whitespaces are selected by design
+            _this.rawLogger->info("==========================================================================================================");
+            _this.timeLogger->info("                        New session started");
+            _this.rawLogger->info("==========================================================================================================");
+        }
+    }
+
+    std::shared_ptr<spdlog::logger> DefaultLoggers::Logger() {
+        auto& _this = GetInstance(); // ensure that token set
+
+        if (TokenSingleton<DefaultLoggers>::IsExpired() || !_this.logger) {
+            return TokenSingleton<DefaultLoggers>::GetData().DefaultLogger();
+        }
+        return GetInstance().logger;
+    }
+
+    std::shared_ptr<spdlog::logger> DefaultLoggers::RawLogger() {
+        auto& _this = GetInstance();
+
+        if (TokenSingleton<DefaultLoggers>::IsExpired() || !_this.rawLogger) {
+            return TokenSingleton<DefaultLoggers>::GetData().DefaultLogger();
+        }
+        return GetInstance().rawLogger;
+    }
+
+    std::shared_ptr<spdlog::logger> DefaultLoggers::TimeLogger() {
+        auto& _this = GetInstance();
+
+        if (TokenSingleton<DefaultLoggers>::IsExpired() || !_this.timeLogger) {
+            return TokenSingleton<DefaultLoggers>::GetData().DefaultLogger();
+        }
+        return GetInstance().timeLogger;
+    }
+
+    std::shared_ptr<spdlog::logger> DefaultLoggers::DebugLogger() {
+#ifdef _DEBUG
+        auto& _this = GetInstance();
+
+        if (TokenSingleton<DefaultLoggers>::IsExpired() || !_this.debugLogger) {
+            return TokenSingleton<DefaultLoggers>::GetData().DefaultLogger();
+        }
+        return GetInstance().debugLogger;
+#else
+        return Logger();
+#endif
+    }
 }

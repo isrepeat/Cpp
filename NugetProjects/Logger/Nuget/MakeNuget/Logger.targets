@@ -2,14 +2,25 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <LoggerLibrary>$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\Logger.lib</LoggerLibrary>
+    <LoggerIncludes>
+      $(MSBuildThisFileDirectory)include;
+      $(MSBuildThisFileDirectory)include\Logger
+    </LoggerIncludes>
+    <PublicIncludeDirectories>
+      $(LoggerIncludes);
+      $(PublicIncludeDirectories)
+    </PublicIncludeDirectories>
   </PropertyGroup>
 
+  
   <ItemDefinitionGroup>
     <ClCompile>
+      <!-- TODO: rewrite spdlog includes to remove "include\Logger" here -->
       <AdditionalIncludeDirectories>
-        $(MSBuildThisFileDirectory)include;
+        $(LoggerIncludes);
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LOGGER_NUGET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>
@@ -25,8 +36,9 @@
     </Lib>
   </ItemDefinitionGroup>
   
+  
   <ItemGroup>
-    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\*.dll" />
+    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\**\*.dll" />
   </ItemGroup>
 
 

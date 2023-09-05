@@ -30,8 +30,8 @@ namespace H {
 		std::string format;
 		switch (timeFormat) {
 		case TimeFormat::None:
-			format = "%Y%m%d%H%M%S";
-			break;
+			 format = "%Y%m%d%H%M%S";
+			 break;
 		case TimeFormat::Ymdhms_with_separators:
 			format = "%Y-%m-%dT%H:%M:%SZ";
 			break;

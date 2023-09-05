@@ -1,15 +1,16 @@
 #include "System.h"
+//#include "Logger.h"
+
 
 namespace H {
     namespace System {
         ComException::ComException(HRESULT hr, const std::wstring& message)
             : std::exception(H::WStrToStr(message).c_str())
-            , errorMessage{ message }
-            , errorCode{ hr }
+            , errorMessage{message}
+            , errorCode{hr}
         {
+            //LOG_ERROR_D("Com exception = [{:#08x}] {}", static_cast<unsigned int>(hr), H::WStrToStr(message));
         }
-
-        ComException::~ComException() = default; // declare in cpp explicitly to allow compile unique_ptr with pimpl
 
         std::wstring ComException::ErrorMessage() const {
             return errorMessage;
