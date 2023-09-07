@@ -180,6 +180,7 @@
     <ClInclude Include="FunctionTraits.hpp" />
     <ClInclude Include="Gate.h" />
     <ClInclude Include="GetAddressOf.h" />
+    <ClInclude Include="HLogger.h" />
     <ClInclude Include="HWindows.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="IpTranslator.h" />
@@ -231,8 +232,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Filesystem.inl" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\3rdParty\MagicEnum\MagicEnum.vcxproj">
+      <Project>{618d9e1a-89c8-48ff-9a90-a7ed5ed2ea2c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\Logger.1.1.4\build\native\Logger.targets" Condition="Exists('..\..\packages\Logger.1.1.4\build\native\Logger.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Logger.1.1.4\build\native\Logger.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Logger.1.1.4\build\native\Logger.targets'))" />
+  </Target>
 </Project>

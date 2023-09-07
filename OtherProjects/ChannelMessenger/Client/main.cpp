@@ -1,3 +1,4 @@
+#include <MagicEnum/MagicEnum.h>
 #include <Helpers/Channel.h>
 #include <cassert>
 #include <thread>
@@ -17,12 +18,7 @@ std::atomic<bool> exitApp = false;
 
 void main() {
 	try {
-		channelClient.SetLoggerHandler([](std::wstring msg) {
-			wprintf(L"[ch log] %s \n", msg.c_str());
-			});
-
 		channelClient.SetInterruptHandler([] {
-			printf("was interrupt handler \n");
 			exitApp = true;
 			});
 
@@ -57,8 +53,7 @@ void main() {
 
 	}
 	catch (PipeError err) {
-		//assert(false && "---> client pipe error");
-		printf("was pipe error = %d \n", (int)err);
+		LOG_ERROR_D("pipe error = {}", magic_enum::enum_name(err));
 		exitApp = true;
 	}
 

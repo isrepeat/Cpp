@@ -144,6 +144,9 @@
     <ClInclude Include="UniqueHandle.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="HLogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp">
@@ -208,5 +211,6 @@
     <None Include="Filesystem.inl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

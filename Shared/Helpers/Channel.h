@@ -1,6 +1,6 @@
 #pragma once
 #include "HWindows.h"
-//#include <MagicEnum/MagicEnum.h>
+#include <MagicEnum/MagicEnum.h>
 
 #include <condition_variable>
 #include <functional>
@@ -11,29 +11,10 @@
 #include <queue>
 
 #include "Thread.h"
-//#include "Logger.h"
+#include "HLogger.h"
 #include "Helpers.h"
 #include "LocalPtr.hpp"
 
-
-#define LogDebugWithFullClassNameA(...)
-#define LogDebugWithFullClassNameW(...)
-
-#define LogWarningWithFullClassNameA(...)
-#define LogWarningWithFullClassNameW(...)
-
-#define LogErrorWithFullClassNameA(...)
-#define LogErrorWithFullClassNameW(...)
-
-#define LOG_FUNCTION_ENTER(...)
-
-#define LOG_DEBUG(...)
-#define LOG_ERROR(...)
-
-#define LOG_DEBUG_D(...)
-#define LOG_ERROR_D(...)
-
-#define LogLastError
 
 
 enum class PipeConnectionStatus {
@@ -169,7 +150,7 @@ H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
 // TODO: fix when interrupt connection -> not process "None" msg (??? CHECK)
 template<typename EnumMsg, typename T = uint8_t>
 class Channel {
-    //CLASS_FULLNAME_LOGGING_INLINE_IMPLEMENTATION(Channel);
+    CLASS_FULLNAME_LOGGING_INLINE_IMPLEMENTATION(Channel);
 
 public:
     struct Reply {
