@@ -164,7 +164,7 @@ int main() {
 
 		additionalInfo.backtrace = backtraceStr;
 		additionalInfo.exceptionMsg = exceptionMsg;
-		CrashHandling::GenerateCrashReport(pExceptionPtrs, additionalInfo, L"test-minidumpwriter", { {L"-debug", L""} });
+		CrashHandling::GenerateCrashReport(pExceptionPtrs, additionalInfo, L"trd-minidumpwriter", { {L"-debug", L""} });
 		});
 
 	//auto th = std::thread([] {

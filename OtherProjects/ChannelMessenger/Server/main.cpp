@@ -1,15 +1,15 @@
 #include <MagicEnum/MagicEnum.h>
 #include <Helpers/Channel.h>
+#include <Helpers/HLogger.h>
 #include <cassert>
 #include <thread>
 
 enum class Messages {
 	None,
 	Connect,
-	HelloFromClient,
-	HelloFromServer,
-	UserRequest,
-	UserData,
+	FrameRequest,
+	FrameData,
+	UserInput,
 	Stop,
 };
 
@@ -17,8 +17,10 @@ Channel<Messages> channelServer;
 std::atomic<bool> exitApp = false;
 
 void main() {
-	try {
+	lg::DefaultLoggers::Init(H::ExePathW() + L"\\Logs\\ServerLogs.log");
+	LOG_DEBUG("Start server");
 
+	try {
 		channelServer.SetInterruptHandler([] {
 			//exitApp = true;
 			});
@@ -28,21 +30,20 @@ void main() {
 				auto reply = Read();
 				switch (reply.type) {
 				case Messages::Connect: {
-					printf("Connected with ChannelClient \n\n");
+					LOG_DEBUG("[Connect] Connected with ChannelClient");
 					break;
 				}
-				case Messages::HelloFromClient: {
-					printf("---> got \"HelloFromClient\" \n\n");
-					printf("send \"HelloFromServer\" ... \n");
-					Sleep(1000);
-					Write({}, Messages::HelloFromServer);
+				case Messages::FrameRequest: {
+					////LOG_DEBUG("[FrameRequest]");
+					//std::vector<uint8_t> message(300*1024); // 300 KB
+					//for (int i = 0; i < message.size(); i++) {
+					//	message[i] = i;
+					//}
+					//Write({ message.begin(), message.end() }, Messages::FrameData);
 					break;
 				}
-				case Messages::UserRequest: {
-					printf("---> got \"UserRequest\" \n\n");
-					printf("send \"UserData\" ... \n");
-					Sleep(1000);
-					Write({}, Messages::UserData);
+				case Messages::UserInput: {
+					//LOG_DEBUG("[UserInput] action");
 					break;
 				}
 				}
@@ -55,11 +56,30 @@ void main() {
 		exitApp = true;
 	}
 
+
+	auto thFrameData = std::thread([] {
+		while (!exitApp) {
+			if (channelServer.IsConnected()) {
+				//std::unique_lock lk{ mx };
+				std::vector<uint8_t> message(300 * 1024); // 300 KB
+				for (int i = 0; i < message.size(); i++) {
+					message[i] = i;
+				}
+				channelServer.Write({ message.begin(), message.end() }, Messages::FrameData);
+			}
+		}
+		});
+
+
 	while (!exitApp) {
 		Sleep(10);
 	};
 
-	printf("Exit server ...");
-	Sleep(3000);
+	if (thFrameData.joinable()) {
+		thFrameData.join();
+	}
+
+	LOG_DEBUG("Exit server");
+	//Sleep(3000);
 	return;
 }
