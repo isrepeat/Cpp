@@ -4,5 +4,6 @@
   <!--<Import Project="$(ProjectDir)\MSBuild_1_PercentPropertyBackref.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_2_ItemDefenitionGroup.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_3_ExcludeFromCompile.targets" />-->
-  <Import Project="$(ProjectDir)\MSBuild_4_PublicIncludeDirectories.targets" />
+  <!--<Import Project="$(ProjectDir)\MSBuild_4_PublicIncludeDirectories.targets" />-->
+  <Import Project="$(ProjectDir)\MSBuild_5_RebuildAdminTasks.targets" />
 </Project>
