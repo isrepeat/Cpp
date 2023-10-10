@@ -153,7 +153,15 @@
   <ItemGroup>
     <None Include="MSBuild_Project_A.targets" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+
+
+  <PropertyGroup>
+    <PublicIncludeDirectories>Hello_World;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+  </PropertyGroup>
 </Project>

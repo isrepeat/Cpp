@@ -6,4 +6,5 @@
       <PreprocessorDefinitions>AAAA__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  
 </Project>

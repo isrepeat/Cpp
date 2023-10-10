@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MSBuild_Project_A\MSBuild_Project_A.vcxproj">
+      <Project>{c18d53a4-a516-44af-8142-e7e001b96006}</Project>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--<Target Name="RefProjects" BeforeTargets="InitializeBuildStatus">
+    <Message Importance="High" Text = "ProjRef = @(ProjectReference)"/>
+  </Target>-->
+  
+
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+    <!--<RegExLocale>Betta.proj$</RegExLocale>-->
+    <RegExProj>(_A|Helpers)</RegExProj>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <In>agent0076</In>
+    <Out>$([System.Text.RegularExpressions.Regex]::Match($(In), `[1-9]\d*`))</Out>
+  </PropertyGroup>
+
+
+
+
+  <ItemGroup>
+    <!--<MyItem Include="$(ProjectDir)\..\Helpers.vcxproj" />-->
+    <MyItem Include="$(ProjectDir)\..\MSBuild_Project_A.vcxproj" />
+    <!--<MyItem Include="$(ProjectDir)\..\MSBuild_Project_B.vcxproj" />-->
+    <!--<MyItem Include="$(ProjectDir)\..\MSBuild_Project_C.vcxproj" />-->
+    <!--<MyItem Include="$(ProjectDir)\..\MSBuild_Project_D.vcxproj" />-->
+
+    <!--<MyItem Include="One" />
+    <MyItem Include="Two" />
+    <MyItem Include="Three" />
+    <MyItem Include="Four" />-->
+    
+
+    <!--<MyItemWithMethadata Include="%(MyItem.Identity)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(Filename), $(RegExProj)))">-->
+    <MyItemWithMethadata Include="@(MyItem->'%(Identity)')">
+      <!--<MyItemWithMethadata Include="@(MyItem->'%(Filename)')" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(@(MyItem->'%(Filename)'), $(RegExProj)))">-->
+      <!--<MyItemWithMethadata Include="@(MyItem)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(@(MyItem->'%(Identity)'), $(RegExProj)))">-->
+      <!--<MyItemWithMethadata Include="@(MyItem->'%(Identity)')" Condition="'@(MyItem->'%(Identity)')' == 'Two'">-->
+      <!--<MyItemWithMethadata Include="@(MyItem->'%(Identity)')">-->
+      <!--<FoundProject Condition="'%(Filename)' == 'Two' or '%(Filename)' == 'Four'">%(Filename)</FoundProject>-->
+      <!--<FoundProject>$([System.Text.RegularExpressions.Regex]::Match(%(Filename), `$(RegExLocale)`).Groups[0].Value)</FoundProject>-->
+      <FoundProject>$([System.Text.RegularExpressions.Regex]::Match(%(Identity), `$(RegExProj)`).Groups[0].Value)</FoundProject>
+    </MyItemWithMethadata>
+  </ItemGroup>
+
+  
+  
+  <PropertyGroup>
+    <MyTargets>@(MyItem->'%(Filename)')</MyTargets>
+  </PropertyGroup>
+  
+  <Import Project="$(ProjectDir)\..\MSBuild_Project_A\MSBuild_Project_A.targets" />
+
+
+  <Target Name="RefProject" BeforeTargets="PrepareForBuild">
+    <Message Importance="High" Text = "PublicIncludeDirectories = $(PublicIncludeDirectories)"/>
+    <Message Importance="High" Text = "PreprocessorDefinitions = %(ClCompile.PreprocessorDefinitions)"/>
+    <!--<Message Importance="High" Text = "MyItem = %(MyItem.Identity)"/>
+    <Message Importance="High" Text = "$(NewLine)"/>
+    <Message Importance="High" Text = "MyItemWithMethadata = %(MyItemWithMethadata.Identity)"/>
+    <Message Importance="High" Text = "$(NewLine)"/>
+    <Message Importance="High" Text = "FoundItem = %(MyItemWithMethadata.FoundProject)"/>
+    <Message Importance="High" Text = "$(NewLine)"/>-->
+  </Target>
+</Project>
