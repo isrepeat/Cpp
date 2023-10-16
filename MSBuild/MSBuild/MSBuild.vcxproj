@@ -154,6 +154,7 @@
     <None Include="MSBuild_4_PublicIncludeDirectories.targets" />
     <None Include="MSBuild_5_RebuildAdminTasks.targets" />
     <None Include="MSBuild_6_DynamicImport.targets" />
+    <None Include="MSBuild_7_Conditions.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -173,5 +174,6 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- Custom targets -->
-  <Import Project="$(ProjectDir)\MSBuild.targets" /> <!-- NOTE: must be placed at the end of file to success resolving properties and avoid overriding  --> 
+  <Import Project="$(ProjectDir)\MSBuild.targets" />
+  <!-- NOTE: must be placed at the end of file to success resolving properties and avoid overriding  -->
 </Project>
