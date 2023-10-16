@@ -24,7 +24,14 @@
 //}
 //
 //
+//void TestPathToFile() {
+//    std::wstring filename = L"D:\\WORK\\TEST\\AAA\\BBB\\foo.txt";
+//    std::wstring folder = std::filesystem::path(filename).parent_path();
+//    return;
+//}
+//
 //void main() {
-//    TestCopyDirectoryContentToAnotherDirectory();
+//    //TestCopyDirectoryContentToAnotherDirectory();
+//    TestPathToFile();
 //    return;
 //}
