@@ -1,32 +1,7 @@
 #include "LogHelpers.h"
-#include "spdlog/sinks/dist_sink.h"
+#include <spdlog/sinks/dist_sink.h>
 // free falgs 'j', 'k', 'q', 'w'
 #include <Helpers/Filesystem.hpp>
-
-class custom_test_flag : public spdlog::custom_flag_formatter {
-public:
-    explicit custom_test_flag(std::string txt)
-        : some_txt{ std::move(txt) }
-    {}
-
-    void format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) override
-    {
-        some_txt = std::string(padinfo_.width_, ' ') + some_txt;
-        dest.append(some_txt.data(), some_txt.data() + some_txt.size());
-    }
-
-    spdlog::details::padding_info get_padding_info()
-    {
-        return padinfo_;
-    }
-
-    std::string some_txt;
-
-    std::unique_ptr<custom_flag_formatter> clone() const override
-    {
-        return spdlog::details::make_unique<custom_test_flag>(some_txt);
-    }
-};
 
 
 void TestLoggsWithDifferentPatters() {
@@ -133,9 +108,147 @@ void TestLogHelper() {
 }
 
 
+class custom_test_flag : public spdlog::custom_flag_formatter {
+public:
+    explicit custom_test_flag(std::function<std::wstring()> fn)
+        : fn{ fn }
+    {}
+
+    void format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) override {
+        std::wstring className = std::wstring(padinfo_.width_, ' ') + fn();
+        dest.append(className.data(), className.data() + className.size());
+    }
+
+    spdlog::details::padding_info get_padding_info() {
+        return padinfo_;
+    }
+
+    std::unique_ptr<custom_flag_formatter> clone() const override {
+        return spdlog::details::make_unique<custom_test_flag>(fn);
+    }
+
+private:
+    std::function<std::wstring()> fn;
+};
+
+
+template <typename T>
+struct StringDeductor {
+    template <typename A> StringDeductor(A) {}
+    using type = T;
+};
+
+// user-defined deduction guides:
+StringDeductor(const char*)->StringDeductor<char>;
+StringDeductor(const wchar_t*)->StringDeductor<wchar_t>;
+StringDeductor(std::string)->StringDeductor<char>;
+StringDeductor(std::wstring)->StringDeductor<wchar_t>;
+StringDeductor(std::string_view)->StringDeductor<char>;
+StringDeductor(std::wstring_view)->StringDeductor<wchar_t>;
+
+
+class CustomLogger {
+public:
+    CustomLogger()
+        : dbgSink{ std::make_shared<spdlog::sinks::msvc_sink_mt>() }
+    {
+        dbgSink->set_level(spdlog::level::trace);
+        dbgSink->set_pattern("[dbg sink 1] [%t] {%s:%# %!} %v");
+
+        prefixLambda = [this] {
+            return logCtx;
+            };
+
+        auto formatter = std::make_unique<spdlog::pattern_formatter>();
+        formatter->add_flag<custom_test_flag>('q', prefixLambda).set_pattern("[%t] {%s:%# %!}%q %v");
+        dbgSink->set_formatter(std::move(formatter));
+
+        debugLogger = std::make_shared<spdlog::logger>("debug_logger_1", spdlog::sinks_init_list{ dbgSink });
+        debugLogger->set_level(spdlog::level::trace);
+        debugLogger->flush_on(spdlog::level::trace);
+    }
+
+    std::shared_ptr<spdlog::logger> DebugLogger() {
+        return debugLogger;
+    }
+
+    //// Use _impl to deduct T in std::basic_string<T>
+    //template<typename TClass, typename T, typename... Args>
+    //static void Log_impl(
+    //    TClass* classPtr,
+    //    std::shared_ptr<spdlog::logger> logger,
+    //    spdlog::source_loc location, spdlog::level::level_enum level, std::basic_string<T> format, Args&&... args)
+    //{
+    //    if constexpr (has_member(std::remove_reference_t<decltype(std::declval<TClass>())>, __ClassFullnameLogging)) {
+    //        if constexpr (std::is_same_v<T, char>) {
+    //            (logger)->log(location, level, "[{}] " + format, classPtr->GetFullClassNameA(), std::forward<Args&&>(args)...);
+    //        }
+    //        else {
+    //            (logger)->log(location, level, L"[{}] " + format, classPtr->GetFullClassNameW(), std::forward<Args&&>(args)...);
+    //        }
+    //        return;
+    //    }
+    //    (logger)->log(location, level, format, std::forward<Args&&>(args)...);
+    //}
+
+    template<typename T, typename... Args>
+    void Log(std::shared_ptr<spdlog::logger> logger, spdlog::source_loc location, spdlog::level::level_enum level,
+        fmt::basic_format_string<T, std::type_identity_t<Args>...> format, Args&&... args)
+    {
+        //using T = typename decltype(StringDeductor(format))::type;
+        //Log_impl<TClass, T, Args...>(classPtr, logger, location, level, format, std::forward<Args&&>(args)...);
+        logCtx = L" [Hello]";
+        (logger)->log(location, level, format, std::forward<Args&&>(args)...);
+    }
+
+private:
+    std::shared_ptr<spdlog::sinks::msvc_sink_mt> dbgSink;
+    std::shared_ptr<spdlog::logger> debugLogger;
+
+    std::function<std::wstring()> prefixLambda = nullptr;
+    std::wstring logCtx = L"";
+};
+
+#define LOG_CTX spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}
+
+
+template<typename T>
+void foo_impl(std::basic_format_string<T> format) {
+}
+
+template<typename TFormat>
+void foo(TFormat format) {
+    foo_impl<char>(format);
+}
+
+void bar_impl(std::basic_format_string<char> fmt) {
+}
+void bar(const char* str) {
+    //bar_impl(str);
+}
+
+void TestLogWithCustomFlags() {
+    //foo_impl<char>("");
+    foo("");
+    //bar_impl<char>("", 1);
+
+    const char text[] = "abcd";
+    std::basic_format_string<char> bfstr1("text");
+    std::basic_format_string<char> bfstr2(bfstr1);
+    //std::basic_string_view<char> bsview(text);
+
+    CustomLogger myLogger;
+    myLogger.Log<char>(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "Start ... {}", 1234);
+    //myLogger.Log(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "action = {}", 1);
+    //myLogger.Log(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "action = {}", 2);
+
+    return;
+}
+
 
 void main(int, char* []) {
     //TestLoggsWithDifferentPatters();
     //TestDoubleLoggerInit();
-    TestLogHelper();
+    //TestLogHelper();
+    TestLogWithCustomFlags();
 }
