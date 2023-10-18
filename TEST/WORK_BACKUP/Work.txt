@@ -4,6 +4,10 @@
 // TeamRemoteDesktop:
 sc stop TRDService & sc delete TRDService
 
+// MF:
+cd <traget.exe path>
+mftrace.exe VideoTranscoder.exe -o MF_Trace.txt
+
 // Git:
 git reflog
 git reset --hard HEAD@{N}
@@ -45,12 +49,33 @@ replace: <$1>
 - add the path where find libraries 
 export LD_LIBRARY_PATH=/home/isrepeat/WORK/C++/<folder>:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/home/isrepeat/WORK/C++/3rdParty/MsQuic/release:$LD_LIBRARY_PATH
+**********
+   TFS
+**********
+// dct tfs server:
+http://tfsdct.com:8080/tfs
+
+// dct nugets server:
+http://nuget.dct.ua/v3/index.json
+
+PAT (13.10.2023 for 30 days):
+z3cyxtdaiveissrlsjwfdwiunvmjqr6fnxbtxgialsqj36orl52a
+
+fiirruwwvmtinqj4vntbakqaggeamx45kqwx77fxuvmsqsj3va2a
+
+Chaikovsky
+r5uaksit53jn323ejypxxvtogczwg6y6pv4ag6mzaivanmmonf5q
 
 **********
   Other
 **********
 [TeamRemoteDesktop]
 - Укажи в чате чтоб проверили случай когда TRDService установлен, но выключен в ручную и сможет ли приложение его переинсталить
+
+Леха - 0664536699
+Юрий кв. - 0503253320
+Елена кв. - 0503442081
+
 
 5167 8032 4187 1990
 40820810355170854113
@@ -59,6 +84,10 @@ SABRRU2P
 Ира скайп - live:.cid.4f57f9920944c440
 Office PIN: 2376
 353@04#dct
+
+Qt Acc:
+isrepeat@gmail.com
+Bondarenko1234
 
 [Пт]
 [Чт]
@@ -129,26 +158,555 @@ Office PIN: 2376
 ****************
   Daily scope
 ****************
-[Сб]
-// Посмотри парсинг JSON в кастомный обьект
-// Try StretchBlt to global cursor avoid qt api
-VideoCutterExpress
-- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/6316)
 LibreOffice:
 - Task orig 2.5 compl 4 remain 2.5 (http://tfsdct.com:8080/tfs/MetroApp/LibreOffice/_workitems/edit/69040)
 ScreenRecorder:
 - Bug orig 3.5 compl 4.5 remain 3.5 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/72564)
 
 
-// ЗАПОЛНИ ДОГОВОР
-// ЗАПОЛНИ ДОГОВОР
-// ЗАПОЛНИ ДОГОВОР
-// Присоеденись к офисному компу и чекни torrent (http://tfsdct.com:8080/tfs/MetroApp/Torrent/_workitems/edit/58329)
+// *** ЗАПОЛНИ ДОГОВОР *** \\\
+// Синхронизируй CppLibraries и Cpp git через Shared Helpers
+// Проверь какое поведение если в насторйках FullAccess но вручную остановить TRDService
 
-// ЗАПОЛНИ ДОГОВОР
 
-// ИЗМЕНИ ПОЛЯ В EXEL чтоб ссылки были не активны !!!!!
 
+[Пт]
+[Чт]
+TeamRemoteDesktop:
+- Bug orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14167)
+
+VideoCutterExpress:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13845)
+
+ScreenRecorder:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/74420)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 compl 24 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835
+- Bug orig 4 compl 9 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13231)
+
+ISO Creator:
+- Task orig 2.5 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74906/)
+
+[Вт]
+TeamRemoteDesktop:
+- Task orig 3 compl 23 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14271)
+
+UtilityHelpersLib:
+- Task orig 3 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1889/)
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 1 compl 3 remain 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14247)
+- Task orig 3 compl 18.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+- Bug orig 3 compl 9 reamin 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13231)
+
+
+
+
+[Пт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 compl 13.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+- Bug orig 4 compl 9 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13231)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14173)
+
+
+
+[Чт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 compl 10.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+- Task orig 3 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/19/)
+
+VideoCutterExpress:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13845)
+
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14172)
+
+VideoCutterExpress:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13845)
+
+ScreenRecorder:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/74420)
+
+[Вт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14172)
+
+ISO Creator:
+- Bug orig 3 compl 2 remain 3  (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74862)
+
+CppLibraries:
+- Task orig 2 compl 3 remain 2 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1809/)
+
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14172)
+
+ISO Creator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74862)
+
+CppLibraries:
+- Task orig 2 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1809/)
+- Task orig 2.5 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1808/)
+
+
+[Пт]
+Добрый день
+ISO Creator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74862)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74864)
+
+CppLibraries:
+- Task orig 2.5 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/18)
+
+
+
+[Чт]
+// Перенеси ISO creator на гит
+// Check logs - Connected only if same network
+Добрый день
+ISO Creator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74862)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74864)
+- Task orig 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74513/)
+
+TeamRemoteDesktop:
+- Task orig 3 compl 2.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 4 compl 2.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14009)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14010)
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+
+[Вт]
+// Добавь перемещение из папки пакета в то место куда нужно сохранять
+все Привет. Может кто из разработчиков UWP сталкивался со случаем когда пользователь должен выбрать через FileSavePicker файл, но нам нужно сохранить несколько файлов рядом с ним. В моем случае это относится к ISO Creator где для определенных дисков нужно сохранять не 1 файл disc.iso а 
+Добрый день
+ISO Creator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74865)
+- Bug orig 1.5 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74873)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74862)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74864)
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 2.5 compl 8.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+
+
+
+
+CppLibraries:
+- Task orig 3 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/17)
+
+
+
+
+[Пт]
+// *** КУПИ КРЕСЛО *** \\\
+Добрый день
+CppLibraries:
+- Fix CDLib & Logger nuget .props for copying .dll (1.5h)
+
+ISOCreator:
+- Bug orig 3 compl 5.5 remain 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74777)
+
+TeamRemoteDesktop:
+- Bug orig 4 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14009)
+- Bug orig 1.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/14007)
+
+
+[Чт]
+Добрый день
+ISOCreator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74777)
+- Task orig 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74512)
+
+TeamRemoteDesktop:
+- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13880) 
+
+
+[Ср]
+Добрый день
+ISOCreator:
+- Bug orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74777)
+- Task orig 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74512)
+
+CppLibraries:
+- Task orig 3 compl 3.5 remain 1.5 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/15)
+- Task orig 3 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/16)
+
+[Вт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 commpl 2.5 remain 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13768)
+- Task orig 2.5 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1587)
+
+CppLibraries:
+- Task orig 3 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/15)
+- Task orig 3 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/16)
+
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3 comlp 4 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13848)
+- Bug orig 3 compl 22 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13589)
+- Bug orig 4 compl 6.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13231)
+
+
+
+[Пт]
+// Доделай TeamRemoteDesktop
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13768)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13879)
+
+ISOCreator:
+- Task orig 2 compl 4 remain 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74595/)
+
+ScreenRecorder:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/74420)
+
+
+[Чт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13768)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13879)
+- Bug roig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13848)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13768)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13879)
+
+ScreenRecorder:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/74420)
+
+ISO Creator:
+- Bug orig 2.5 compl 14.5 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+[Вт]
+Добрый день
+ISO Creator:
+- Task orig 2 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_workitems/edit/14)
+- Task orig 2 compl 2 remain 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74595/)
+- Task orig 3 compl 7 reamin 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74594/)
+- Bug orig 2.5 compl 14.5 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+[Пн]
+// Напиши Елена про коменданта
+Добрый деньISO Creator:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74619/)
+- Task orig 3 compl 7 reamin 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74594/)
+- Task orig 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74595/)
+- Bug orig 2.5 compl 14.5 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+
+
+
+[Пт]
+Добрый день
+ISO Creator:
+- Bug orig 2.5 compl 14.5 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74594)
+- Task orig 2 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74595)
+
+[Чт]
+Добрый день
+ISO Creator:
+- Bug orig 2.5 compl 6.5 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74511)
+
+TeamRemoteDesktop:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13835)
+
+
+
+
+[Ср]
+// Submit TRD 1.2.4.0 for test
+Добрый день
+ISO Creator:
+- Bug orig 2.5 compl 4.5 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+- Task orig 4 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74510)
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74511)
+
+
+
+
+
+[Вт]
+Добрый день
+ISO Creator:
+- Bug orig 2.5 compl 3 remain 3 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+TeamRemoteDesktop:
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13767)
+
+ScreenRecorder:
+- Task orig 3 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/74420)
+
+
+[Пн]
+Добрый день
+ISO Creator:
+- Bug orig 2.5 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+TeamRemoteDesktop:
+- Bug orig 3 compl 14.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13767)
+
+
+
+
+[Пт]
+// Пусть проверят иконку курсора I-beam и тд и краш при FullAccess !!!
+Добрый день
+ISO Creator:
+- Bug orig 2.5 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+VideoCutterExpress:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13770)
+
+TeamRemoteDesktop:
+- Bug orig 3 compl 10.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+
+
+
+[Чт]
+// Пусть проверят иконку курсора I-beam и тд и краш при FullAccess !!!
+Добрый день
+ISO Creator:
+- Bug orig 2.5 (http://tfsdct.com:8080/tfs/MetroApp/ISO%20Creator/_workitems/edit/74382/)
+
+VideoCutterExpress:
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13771/)
+- Task orig 2.5 (http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_workitems/edit/1586/)
+
+TeamRemoteDesktop:
+- Bug orig 3 compl 10.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+
+[Ср]
+Добрый день
+VideoCutterExpress:
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/13771/)
+- Task orig 3 compl 3 remain 2 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_queries/edit/13769/)
+
+TeamRemoteDesktop:
+- Bug orig 3 compl 5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+
+[Вт]
+Добрый день
+Cpp Libraries:
+- Task orig 2 (http://tfsdct.com:8080/tfs/Research/CppLibraries/_queries/edit/12/)
+
+VideoCutterExpress:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_queries/edit/13769/)
+
+TeamRemoteDesktop:
+- Bug orig 3 compl 5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+
+[Пн]
+Добрый день
+VideoCutterExpress:
+- Task orig 3 compl 1 remain 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/7068)
+
+
+TeamRemoteDesktop:
+- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13449)
+
+
+
+
+
+
+[Пт]
+Добрый день
+ScreenRecorder:
+- Task orig 5 compl 19.5 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+VideoCutterExpress:
+- Task orig 3 compl 1 remain 3 (http://tfsdct.com:8080/tfs/UWP/Video%20Cutter%20Express/_workitems/edit/7068)
+
+TeamRemoteDesktop:
+- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13449)
+
+
+
+[Чт]
+Добрый день
+ScreenRecorder:
+- Task orig 5 compl 12 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+TeamRemoteDesktop:
+- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13449)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 compl 4 remain 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13517)
+- Task orig 5 compl 3 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13657)
+- Task orig 1.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13668)
+- Task orig 1.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13584)
+
+[Вт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13517)
+- Task orig 5 compl 3 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13657)
+
+ScreenRecorder:
+- Task orig 5 compl 12 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Resolve confilcts "Subscriptions" pull reqeust and merge to dev (1h)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13667)
+- Task orig 1.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13668)
+
+ScreenRecorder:
+- Task orig 5 compl 12 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+
+
+
+[Пт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 2 compl 4 remain 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13666)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13658)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13667)
+- Resolve confilcts "Subscriptions" pull reqeust and merge to dev (0.75h)
+
+[Чт]
+Добрый день
+Trainnes:
+- Code review (0.75h)
+
+TeamRemoteDesktop:
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13665)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13666)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13667)
+
+
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3 compl 12.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13589)
+- Task orig 5 compl 2 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13657)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13658)
+
+[Вт]
+// Напиши Фрололву про Кирила
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3 compl 7 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13589)
+- Task orig 5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13657)
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Remove TRD Configuration classes to shared project to be accessible in independent instances (3h)
+- Bug orig 3 compl 2.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13589)
+
+ScreenRecorder:
+- Task orig orig 5 compl 9 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+[Пт]
+// ************ НАЛОГИ ************
+- Напиши в чате TRD про дизайн окна отмены подписок и дай задание кирилу
+- Надо добавить в .net сервер сообщение canceledConnection в RabbitMQ.
+- Так же нужно разобратся почему иногда не приходит connection msg из .net rabbit mq, например после пропадания инета бывает не сразу сообщения приходят.
+
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13574)
+- Bug orig 3 compl 4 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+- Bug orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13589)
+
+[Чт]
+Добрый день
+TeamRemoteDesktop:
+- Register qt types to new Json parser and fix parse empty array and object (3h)
+- Bug orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13574)
+- Bug orig 3 compl 4 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3(http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13588/)
+- Bug orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13574)
+- Bug orig 3 compl 4 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13325)
+
+
+[Вт]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3(http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13588/)
+- Bug orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13574)
+- Task orig 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13586)
+
+
+ScreenRecorder:
+- Task orig orig 5 compl 9 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+[Пн]
+Добрый день
+TeamRemoteDesktop:
+- Bug orig 3 compl 8.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/10423)
+- Task orig 4 compl 8 remain 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13115)
+
+ScreenRecorder:
+- Task orig orig 5 compl 9 remain 4 (http://tfsdct.com:8080/tfs/MetroApp/Audio%20and%20Video%20Recorder/_workitems/edit/73399)
+
+[Пт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3 compl 8.5 remain 3 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/10423)
+- Task orig 4 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13115)
+
+Trainees:
+- review code (0.7h)
+
+[Чт]
+Добрый день
+TeamRemoteDesktop:
+- Task orig 3..5 compl 5 remain 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13515)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13448)
+- Task orig 4 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13115)
+
+[Ср]
+Добрый день
+TeamRemoteDesktop:
+- Rewrite PopUpMessage class as Singleton to solve static destruction problem when animation not finished (2.5h)
+- Task orig 2 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13448)
+- Task orig 3.5 (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/13515)
 
 [Вт]
 Добрый день
