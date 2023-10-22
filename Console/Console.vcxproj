@@ -197,6 +197,7 @@
     <ClCompile Include="main_44_Context_token.cpp" />
     <ClCompile Include="main_44_Context_token_2.cpp" />
     <ClCompile Include="main_45_string_view_concatenate.cpp" />
+    <ClCompile Include="main_46_format.cpp" />
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
