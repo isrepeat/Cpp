@@ -172,31 +172,11 @@ public:
         return debugLogger;
     }
 
-    //// Use _impl to deduct T in std::basic_string<T>
-    //template<typename TClass, typename T, typename... Args>
-    //static void Log_impl(
-    //    TClass* classPtr,
-    //    std::shared_ptr<spdlog::logger> logger,
-    //    spdlog::source_loc location, spdlog::level::level_enum level, std::basic_string<T> format, Args&&... args)
-    //{
-    //    if constexpr (has_member(std::remove_reference_t<decltype(std::declval<TClass>())>, __ClassFullnameLogging)) {
-    //        if constexpr (std::is_same_v<T, char>) {
-    //            (logger)->log(location, level, "[{}] " + format, classPtr->GetFullClassNameA(), std::forward<Args&&>(args)...);
-    //        }
-    //        else {
-    //            (logger)->log(location, level, L"[{}] " + format, classPtr->GetFullClassNameW(), std::forward<Args&&>(args)...);
-    //        }
-    //        return;
-    //    }
-    //    (logger)->log(location, level, format, std::forward<Args&&>(args)...);
-    //}
 
     template<typename T, typename... Args>
     void Log(std::shared_ptr<spdlog::logger> logger, spdlog::source_loc location, spdlog::level::level_enum level,
         fmt::basic_format_string<T, std::type_identity_t<Args>...> format, Args&&... args)
     {
-        //using T = typename decltype(StringDeductor(format))::type;
-        //Log_impl<TClass, T, Args...>(classPtr, logger, location, level, format, std::forward<Args&&>(args)...);
         logCtx = L" [Hello]";
         (logger)->log(location, level, format, std::forward<Args&&>(args)...);
     }
@@ -211,36 +191,66 @@ private:
 
 #define LOG_CTX spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}
 
-
-template<typename T>
-void foo_impl(std::basic_format_string<T> format) {
-}
-
-template<typename TFormat>
-void foo(TFormat format) {
-    foo_impl<char>(format);
-}
-
-void bar_impl(std::basic_format_string<char> fmt) {
-}
-void bar(const char* str) {
-    //bar_impl(str);
-}
-
 void TestLogWithCustomFlags() {
-    //foo_impl<char>("");
-    foo("");
-    //bar_impl<char>("", 1);
-
-    const char text[] = "abcd";
-    std::basic_format_string<char> bfstr1("text");
-    std::basic_format_string<char> bfstr2(bfstr1);
-    //std::basic_string_view<char> bsview(text);
-
     CustomLogger myLogger;
     myLogger.Log<char>(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "Start ... {}", 1234);
-    //myLogger.Log(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "action = {}", 1);
-    //myLogger.Log(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "action = {}", 2);
+    return;
+}
+
+
+
+
+struct MyString {
+    MyString(const char* str, const wchar_t* wstr) 
+        : str{ str }
+        , wstr{ wstr }
+    {}
+
+    std::string GetStr() const {
+        return str;
+    }
+    std::wstring GetWStr() const {
+        return wstr;
+    }
+
+private:
+    std::string str;
+    std::wstring wstr;
+};
+
+#define MAKE_MySring(str) MyString{str, L""#str}
+
+
+template<>
+struct fmt::formatter<MyString, char> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const MyString& myString, format_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "{}", myString.GetStr());
+    }
+};
+
+template<>
+struct fmt::formatter<MyString, wchar_t> {
+    constexpr auto parse(wformat_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const MyString& myString, wformat_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), L"{}", myString.GetWStr());
+    }
+};
+
+
+
+void TestLogCustomType() {
+    CustomLogger myLogger;
+    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_str = {}", MAKE_MySring("Hello World"));
+    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_mix = {}", MAKE_MySring("Привет World"));
+    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, L"MyString_wstr = {}", MAKE_MySring("Привет Мир"));
+
+    //lg::DefaultLoggers::Init(L"logs/main-Log.txt");
+    //LOG_WARNING_D("test Hello = {}", "Привет World");
 
     return;
 }
@@ -250,5 +260,6 @@ void main(int, char* []) {
     //TestLoggsWithDifferentPatters();
     //TestDoubleLoggerInit();
     //TestLogHelper();
-    TestLogWithCustomFlags();
+    //TestLogWithCustomFlags();
+    TestLogCustomType();
 }
