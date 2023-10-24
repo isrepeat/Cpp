@@ -4,23 +4,23 @@
 #include <chrono>
 #include <mutex>
 
-//#define LogDebugWithFullClassNameA(...)
-//#define LogDebugWithFullClassNameW(...)
-//
-//#define LogWarningWithFullClassNameA(...)
-//#define LogWarningWithFullClassNameW(...)
-//
-//#define LogErrorWithFullClassNameA(...)
-//#define LogErrorWithFullClassNameW(...)
-//
-//#define LOG_FUNCTION_ENTER(...)
-//
+#define LogDebugWithFullClassNameA(...)
+#define LogDebugWithFullClassNameW(...)
+
+#define LogWarningWithFullClassNameA(...)
+#define LogWarningWithFullClassNameW(...)
+
+#define LogErrorWithFullClassNameA(...)
+#define LogErrorWithFullClassNameW(...)
+
+#define LOG_FUNCTION_ENTER(...)
+
 //#define LOG_DEBUG(...)
 //#define LOG_ERROR(...)
 //
 //#define LOG_DEBUG_D(...)
 //#define LOG_ERROR_D(...)
-//
+
 //#define LogLastError
 
 #if NEW_CHANNEL == 2

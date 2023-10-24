@@ -4,6 +4,10 @@
 #include <cassert>
 #include <thread>
 
+//#pragma comment(linker, "/STACK:16777216") // 16 * 1024 * 1024 [16 MB]
+//#pragma comment(linker, "/STACK:524288") // 512 * 1024 [0.5 MB]
+#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
+
 enum class Messages {
 	None,
 	Connect,

@@ -18,6 +18,25 @@
 #include "LocalPtr.h"
 
 
+#define LogDebugWithFullClassNameA(...)
+#define LogDebugWithFullClassNameW(...)
+
+#define LogWarningWithFullClassNameA(...)
+#define LogWarningWithFullClassNameW(...)
+
+#define LogErrorWithFullClassNameA(...)
+#define LogErrorWithFullClassNameW(...)
+
+#define LOG_FUNCTION_ENTER(...)
+
+//#define LOG_DEBUG(...)
+//#define LOG_ERROR(...)
+//
+//#define LOG_DEBUG_D(...)
+//#define LOG_ERROR_D(...)
+
+//#define LogLastError
+
 enum class PipeConnectionStatus {
     Error,
     Stopped,
@@ -103,7 +122,8 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
     case StatusIO::Completed:
         if (dwBytesRead == 0) {
-            throw std::exception("Zero data was read");
+            //throw std::exception("Zero data was read");
+            return std::vector<T>{};
         }
     }
 
@@ -121,6 +141,8 @@ void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
     bool completed = false;
     do {
         if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) { // Write synchronously
+            auto err = H::GetLastErrorAsString();
+            LogLastError;
             throw PipeError::WriteError;
         }
 
@@ -572,8 +594,8 @@ private:
     std::atomic<bool> connected = false;
     std::atomic<bool> stopSignal = false;
     std::atomic<bool> closeChannel = false;
-    //std::function<void(std::wstring)> loggerHandler = [](std::wstring) {};
-    std::function<void(std::wstring)> loggerHandler;
+    std::function<void(std::wstring)> loggerHandler = [](std::wstring) {};
+    //std::function<void(std::wstring)> loggerHandler;
     std::function<void()> interruptHandler = []() {};
     std::function<void()> connectHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;

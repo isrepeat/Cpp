@@ -5,6 +5,10 @@
 #include <cassert>
 #include <thread>
 
+//#pragma comment(linker, "/STACK:16777216") // 16 * 1024 * 1024 [16 MB]
+//#pragma comment(linker, "/STACK:524288") // 512 * 1024 [0.5 MB]
+#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
+
 void RegisterCrashHandler();
 
 
@@ -78,10 +82,15 @@ void main() {
 		while (!exitApp) {
 			//std::unique_lock lk{ mx };
 			//std::vector<uint8_t> message = { 1 };
-			//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 			
+			//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 			std::vector<uint8_t> message = { 0,1,2,3,4 };
 			//uint8_t* data = new uint8_t[5]{ 0,1,2,3,4 };
+
+			//std::vector<uint8_t> message(1033);
+			//for (int i = 0; i < message.size(); i++) {
+			//	message[i] = i;
+			//}
 
 			int aa = 1;
 			int bb = 2;
