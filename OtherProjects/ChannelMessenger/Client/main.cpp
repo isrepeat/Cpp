@@ -7,7 +7,7 @@
 
 //#pragma comment(linker, "/STACK:16777216") // 16 * 1024 * 1024 [16 MB]
 //#pragma comment(linker, "/STACK:524288") // 512 * 1024 [0.5 MB]
-#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
+//#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
 
 void RegisterCrashHandler();
 
@@ -48,6 +48,7 @@ void main() {
 				//	break;
 				//}
 				//}
+				//Sleep(2'000);
 				return true;
 			});
 
@@ -84,7 +85,7 @@ void main() {
 			//std::vector<uint8_t> message = { 1 };
 			
 			//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-			std::vector<uint8_t> message = { 0,1,2,3,4 };
+			//std::vector<uint8_t> message = { 0,1,2,3,4 };
 			//uint8_t* data = new uint8_t[5]{ 0,1,2,3,4 };
 
 			//std::vector<uint8_t> message(1033);
@@ -94,11 +95,13 @@ void main() {
 
 			int aa = 1;
 			int bb = 2;
-			//channelClient.Write({ 0,1,2,3,4 }, Messages::UserInput);
+			//channelClient.Write(message, Messages::UserInput);
+			channelClient.Write({ 0,1,2,3,4 }, Messages::UserInput);
+			//channelClient.Write({ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }, Messages::UserInput);
 			//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
 			//channelClient.Write(std::move(message), Messages::UserInput);
-
-			channelClient.Write(message, Messages::UserInput);
+			//channelClient.Write(message, Messages::UserInput);
+			// 
 			//channelClient.Write(g_message, Messages::UserInput);
 			//channelClient.Write2(data, 5, Messages::UserInput);			
 			int cc = aa + bb;

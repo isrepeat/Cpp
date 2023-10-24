@@ -197,18 +197,6 @@
     <ClCompile Include="main_41_remove_const_from_struct_members.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="[8] Token singleton\main_42_fileC.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClCompile>
-    <ClCompile Include="[8] Token singleton\main_42_fileB.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClCompile>
-    <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClCompile>
-    <ClCompile Include="[8] Token singleton\main_42_main.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -243,15 +231,6 @@
     </ClInclude>
     <ClInclude Include="[7] Print Variants\main_37_Printer.h">
       <Filter>Source Files\[7] Print Variants</Filter>
-    </ClInclude>
-    <ClInclude Include="[8] Token singleton\main_42_fileC.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClInclude>
-    <ClInclude Include="[8] Token singleton\main_42_fileB.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
-    </ClInclude>
-    <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

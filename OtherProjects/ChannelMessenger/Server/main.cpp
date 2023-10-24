@@ -6,7 +6,7 @@
 
 //#pragma comment(linker, "/STACK:16777216") // 16 * 1024 * 1024 [16 MB]
 //#pragma comment(linker, "/STACK:524288") // 512 * 1024 [0.5 MB]
-#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
+//#pragma comment(linker, "/STACK:1024") // 1024 [1 KB]
 
 enum class Messages {
 	None,
@@ -16,6 +16,8 @@ enum class Messages {
 	UserInput,
 	Stop,
 };
+
+int g_iteration = 0;
 
 Channel<Messages> channelServer;
 std::atomic<bool> exitApp = false;
@@ -60,16 +62,35 @@ void main() {
 		exitApp = true;
 	}
 
+	std::vector<uint8_t> message_out{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
-	auto thFrameData = std::thread([] {
+	auto thFrameData = std::thread([&message_out] {
 		while (!exitApp) {
 			if (channelServer.IsConnected()) {
 				//std::unique_lock lk{ mx };
-				std::vector<uint8_t> message(300 * 1024); // 300 KB
-				for (int i = 0; i < message.size(); i++) {
-					message[i] = i;
-				}
-				channelServer.Write({ message.begin(), message.end() }, Messages::FrameData);
+				//std::vector<uint8_t> message = message_out;
+				std::vector<uint8_t> message{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+				//std::vector<uint8_t> message{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
+				//std::vector<uint8_t> message2{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
+				//std::vector<uint8_t> message(100 * 1024 * 1024);
+				//std::vector<uint8_t> message(15);
+				//for (int i = 0; i < message.size(); i++) {
+				//	message[i] = i;
+				//}
+
+				int tmp1 = 1;
+				int tmp2 = 1;
+				int tmp3 = 1;
+				//channelServer.Write({}, Messages::FrameData);
+				channelServer.Write({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, Messages::FrameData);
+				//channelServer.Write(message, Messages::FrameData);
+				//channelServer.Write({ message.begin(), message.end() }, Messages::FrameData);
+				//channelServer.Write(std::move(std::vector<uint8_t>{ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }), Messages::FrameData);
+				//channelServer.Write(std::move(message), Messages::FrameData);
+				//Sleep(1);
+				int tmp4 = 1;
+				int tmp5 = 1;
+				g_iteration++;
 			}
 		}
 		});
