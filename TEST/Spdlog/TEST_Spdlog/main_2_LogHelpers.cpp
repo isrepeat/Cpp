@@ -2,6 +2,7 @@
 #include <spdlog/sinks/dist_sink.h>
 // free falgs 'j', 'k', 'q', 'w'
 #include <Helpers/Filesystem.hpp>
+#include <Helpers/Helpers.h>
 
 
 void TestLoggsWithDifferentPatters() {
@@ -74,14 +75,14 @@ void TestLoggsWithDifferentPatters() {
 
 void TestDoubleLoggerInit() {
     lg::DefaultLoggers::Init(L"logs/main-Log.txt");
-    LOG_INFO(L"Start ...");
-    LOG_INFO_D("op 1 {}", false);
+    //LOG_INFO(L"Start ...");
+    //LOG_INFO_D("op 1 {}", false);
 
-    lg::DefaultLoggers::Init(L"logs/main-Log.txt");
+    //lg::DefaultLoggers::Init(L"logs/main-Log.txt");
 
-    LOG_INFO("op 2");
-    LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
-    LOG_ERROR("End");
+    //LOG_INFO("op 2");
+    //LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
+    //LOG_ERROR("End");
 
     return;
 }
@@ -94,16 +95,16 @@ void TestLogHelper() {
 
     unsigned int hr = 0x80070EF5L;
 
-    LOG_DEBUG(L"Start ...");
-    LOG_INFO_D("op 1 {}", (bool)pointer);
-    LOG_INFO_D("op 2 hex = {:#08x}", hr);
-    LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
-    LOG_RAW("------------");
-    for (int i = 0; i < 100; i++) {
-        LOG_ERROR("Some error = {}", i);
-    }
-    LOG_RAW("------------");
-    LOG_DEBUG("End");
+    //LOG_DEBUG(L"Start ...");
+    //LOG_INFO_D("op 1 {}", (bool)pointer);
+    //LOG_INFO_D("op 2 hex = {:#08x}", hr);
+    //LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
+    //LOG_RAW("------------");
+    //for (int i = 0; i < 100; i++) {
+    //    LOG_ERROR("Some error = {}", i);
+    //}
+    //LOG_RAW("------------");
+    //LOG_DEBUG("End");
     return;
 }
 
@@ -243,14 +244,31 @@ struct fmt::formatter<MyString, wchar_t> {
 
 
 
-void TestLogCustomType() {
-    CustomLogger myLogger;
-    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_str = {}", MAKE_MySring("Hello World"));
-    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_mix = {}", MAKE_MySring("Привет World"));
-    myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, L"MyString_wstr = {}", MAKE_MySring("Привет Мир"));
 
-    //lg::DefaultLoggers::Init(L"logs/main-Log.txt");
-    //LOG_WARNING_D("test Hello = {}", "Привет World");
+template<>
+struct fmt::formatter<std::wstring, char> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const std::wstring& wstr, format_context& ctx) -> decltype(ctx.out()) {
+        //return fmt::format_to(ctx.out(), "{}", H::WStrToStr(wstr, CP_ACP));
+        return ctx.out();
+    }
+};
+
+
+void TestLogCustomType() {
+    //CustomLogger myLogger;
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_str = {}", MAKE_MySring("Hello World"));
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_mix = {}", MAKE_MySring("Привет World"));
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, L"MyString_wstr = {}", MAKE_MySring("Привет Мир"));
+
+    lg::DefaultLoggers::Init(L"logs/НоваяПапка/main-Log.txt");
+    //LOG_WARNING_D("RawString = {}", "Hello World");
+    LOG_WARNING_D(L"Тестовый Code = {}", std::wstring(L"Привет World"));
+    //LOG_WARNING_D("RawString_mix_acp = {}", H::WStrToStr(L"Привет World", CP_ACP));
+    //LOG_WARNING_D("RawString_mix_utf8 = {}", H::WStrToStr(L"Привет World", CP_UTF8));
+    //LOG_WARNING_D(L"RawWString_mix = {}", L"Привет World");
 
     return;
 }
