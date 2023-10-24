@@ -1,32 +1,8 @@
 #include "LogHelpers.h"
-#include "spdlog/sinks/dist_sink.h"
+#include <spdlog/sinks/dist_sink.h>
 // free falgs 'j', 'k', 'q', 'w'
 #include <Helpers/Filesystem.hpp>
-
-class custom_test_flag : public spdlog::custom_flag_formatter {
-public:
-    explicit custom_test_flag(std::string txt)
-        : some_txt{ std::move(txt) }
-    {}
-
-    void format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) override
-    {
-        some_txt = std::string(padinfo_.width_, ' ') + some_txt;
-        dest.append(some_txt.data(), some_txt.data() + some_txt.size());
-    }
-
-    spdlog::details::padding_info get_padding_info()
-    {
-        return padinfo_;
-    }
-
-    std::string some_txt;
-
-    std::unique_ptr<custom_flag_formatter> clone() const override
-    {
-        return spdlog::details::make_unique<custom_test_flag>(some_txt);
-    }
-};
+#include <Helpers/Helpers.h>
 
 
 void TestLoggsWithDifferentPatters() {
@@ -99,14 +75,14 @@ void TestLoggsWithDifferentPatters() {
 
 void TestDoubleLoggerInit() {
     lg::DefaultLoggers::Init(L"logs/main-Log.txt");
-    LOG_INFO(L"Start ...");
-    LOG_INFO_D("op 1 {}", false);
+    //LOG_INFO(L"Start ...");
+    //LOG_INFO_D("op 1 {}", false);
 
-    lg::DefaultLoggers::Init(L"logs/main-Log.txt");
+    //lg::DefaultLoggers::Init(L"logs/main-Log.txt");
 
-    LOG_INFO("op 2");
-    LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
-    LOG_ERROR("End");
+    //LOG_INFO("op 2");
+    //LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
+    //LOG_ERROR("End");
 
     return;
 }
@@ -119,23 +95,189 @@ void TestLogHelper() {
 
     unsigned int hr = 0x80070EF5L;
 
-    LOG_DEBUG(L"Start ...");
-    LOG_INFO_D("op 1 {}", (bool)pointer);
-    LOG_INFO_D("op 2 hex = {:#08x}", hr);
-    LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
-    LOG_RAW("------------");
-    for (int i = 0; i < 100; i++) {
-        LOG_ERROR("Some error = {}", i);
+    //LOG_DEBUG(L"Start ...");
+    //LOG_INFO_D("op 1 {}", (bool)pointer);
+    //LOG_INFO_D("op 2 hex = {:#08x}", hr);
+    //LOG_WARNING_D(L"op 3 = {}", std::wstring(L"Привет"));
+    //LOG_RAW("------------");
+    //for (int i = 0; i < 100; i++) {
+    //    LOG_ERROR("Some error = {}", i);
+    //}
+    //LOG_RAW("------------");
+    //LOG_DEBUG("End");
+    return;
+}
+
+
+class custom_test_flag : public spdlog::custom_flag_formatter {
+public:
+    explicit custom_test_flag(std::function<std::wstring()> fn)
+        : fn{ fn }
+    {}
+
+    void format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) override {
+        std::wstring className = std::wstring(padinfo_.width_, ' ') + fn();
+        dest.append(className.data(), className.data() + className.size());
     }
-    LOG_RAW("------------");
-    LOG_DEBUG("End");
+
+    spdlog::details::padding_info get_padding_info() {
+        return padinfo_;
+    }
+
+    std::unique_ptr<custom_flag_formatter> clone() const override {
+        return spdlog::details::make_unique<custom_test_flag>(fn);
+    }
+
+private:
+    std::function<std::wstring()> fn;
+};
+
+
+template <typename T>
+struct StringDeductor {
+    template <typename A> StringDeductor(A) {}
+    using type = T;
+};
+
+// user-defined deduction guides:
+StringDeductor(const char*)->StringDeductor<char>;
+StringDeductor(const wchar_t*)->StringDeductor<wchar_t>;
+StringDeductor(std::string)->StringDeductor<char>;
+StringDeductor(std::wstring)->StringDeductor<wchar_t>;
+StringDeductor(std::string_view)->StringDeductor<char>;
+StringDeductor(std::wstring_view)->StringDeductor<wchar_t>;
+
+
+class CustomLogger {
+public:
+    CustomLogger()
+        : dbgSink{ std::make_shared<spdlog::sinks::msvc_sink_mt>() }
+    {
+        dbgSink->set_level(spdlog::level::trace);
+        dbgSink->set_pattern("[dbg sink 1] [%t] {%s:%# %!} %v");
+
+        prefixLambda = [this] {
+            return logCtx;
+            };
+
+        auto formatter = std::make_unique<spdlog::pattern_formatter>();
+        formatter->add_flag<custom_test_flag>('q', prefixLambda).set_pattern("[%t] {%s:%# %!}%q %v");
+        dbgSink->set_formatter(std::move(formatter));
+
+        debugLogger = std::make_shared<spdlog::logger>("debug_logger_1", spdlog::sinks_init_list{ dbgSink });
+        debugLogger->set_level(spdlog::level::trace);
+        debugLogger->flush_on(spdlog::level::trace);
+    }
+
+    std::shared_ptr<spdlog::logger> DebugLogger() {
+        return debugLogger;
+    }
+
+
+    template<typename T, typename... Args>
+    void Log(std::shared_ptr<spdlog::logger> logger, spdlog::source_loc location, spdlog::level::level_enum level,
+        fmt::basic_format_string<T, std::type_identity_t<Args>...> format, Args&&... args)
+    {
+        logCtx = L" [Hello]";
+        (logger)->log(location, level, format, std::forward<Args&&>(args)...);
+    }
+
+private:
+    std::shared_ptr<spdlog::sinks::msvc_sink_mt> dbgSink;
+    std::shared_ptr<spdlog::logger> debugLogger;
+
+    std::function<std::wstring()> prefixLambda = nullptr;
+    std::wstring logCtx = L"";
+};
+
+#define LOG_CTX spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}
+
+void TestLogWithCustomFlags() {
+    CustomLogger myLogger;
+    myLogger.Log<char>(myLogger.DebugLogger(), LOG_CTX, spdlog::level::debug, "Start ... {}", 1234);
     return;
 }
 
 
 
+
+struct MyString {
+    MyString(const char* str, const wchar_t* wstr) 
+        : str{ str }
+        , wstr{ wstr }
+    {}
+
+    std::string GetStr() const {
+        return str;
+    }
+    std::wstring GetWStr() const {
+        return wstr;
+    }
+
+private:
+    std::string str;
+    std::wstring wstr;
+};
+
+#define MAKE_MySring(str) MyString{str, L""#str}
+
+
+template<>
+struct fmt::formatter<MyString, char> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const MyString& myString, format_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "{}", myString.GetStr());
+    }
+};
+
+template<>
+struct fmt::formatter<MyString, wchar_t> {
+    constexpr auto parse(wformat_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const MyString& myString, wformat_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), L"{}", myString.GetWStr());
+    }
+};
+
+
+
+
+template<>
+struct fmt::formatter<std::wstring, char> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const std::wstring& wstr, format_context& ctx) -> decltype(ctx.out()) {
+        //return fmt::format_to(ctx.out(), "{}", H::WStrToStr(wstr, CP_ACP));
+        return ctx.out();
+    }
+};
+
+
+void TestLogCustomType() {
+    //CustomLogger myLogger;
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_str = {}", MAKE_MySring("Hello World"));
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, "MyString_mix = {}", MAKE_MySring("Привет World"));
+    //myLogger.DebugLogger()->log(LOG_CTX, spdlog::level::debug, L"MyString_wstr = {}", MAKE_MySring("Привет Мир"));
+
+    lg::DefaultLoggers::Init(L"logs/НоваяПапка/main-Log.txt");
+    //LOG_WARNING_D("RawString = {}", "Hello World");
+    LOG_WARNING_D(L"Тестовый Code = {}", std::wstring(L"Привет World"));
+    //LOG_WARNING_D("RawString_mix_acp = {}", H::WStrToStr(L"Привет World", CP_ACP));
+    //LOG_WARNING_D("RawString_mix_utf8 = {}", H::WStrToStr(L"Привет World", CP_UTF8));
+    //LOG_WARNING_D(L"RawWString_mix = {}", L"Привет World");
+
+    return;
+}
+
+
 void main(int, char* []) {
     //TestLoggsWithDifferentPatters();
     //TestDoubleLoggerInit();
-    TestLogHelper();
+    //TestLogHelper();
+    //TestLogWithCustomFlags();
+    TestLogCustomType();
 }

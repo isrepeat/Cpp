@@ -176,7 +176,7 @@ public:
         log(level::critical, fmt, std::forward<Args>(args)...);
     }
 
-#ifdef SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#if defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT)
     template<typename... Args>
     void log(source_loc loc, level::level_enum lvl, wformat_string_t<Args...> fmt, Args &&... args)
     {
@@ -259,7 +259,7 @@ public:
     {
         log(level::critical, fmt, std::forward<Args>(args)...);
     }
-#endif
+#endif // defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT)
 
     template<typename T>
     void trace(const T &msg)
@@ -380,7 +380,7 @@ protected:
         SPDLOG_LOGGER_CATCH(loc)
     }
 
-#ifdef SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#if defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT)
     template<typename... Args>
     void log_(source_loc loc, level::level_enum lvl, wstring_view_t fmt, Args &&... args)
     {
@@ -398,13 +398,17 @@ protected:
                 std::back_inserter(wbuf), fmt, fmt_lib::make_format_args<fmt_lib::wformat_context>(std::forward<Args>(args)...));
 
             memory_buf_t buf;
+#if defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT)
             details::os::wstr_to_utf8buf(wstring_view_t(wbuf.data(), wbuf.size()), buf);
+#else
+            details::os::wstr_to_ansi_buf(wstring_view_t(wbuf.data(), wbuf.size()), buf);
+#endif
             details::log_msg log_msg(loc, name_, lvl, string_view_t(buf.data(), buf.size()));
             log_it_(log_msg, log_enabled, traceback_enabled);
         }
         SPDLOG_LOGGER_CATCH(loc)
     }
-#endif // SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#endif // defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT)
 
     // log the given message (if the given log level is high enough),
     // and save backtrace (if backtrace is enabled).

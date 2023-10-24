@@ -536,6 +536,45 @@ SPDLOG_INLINE void utf8_to_wstrbuf(string_view_t str, wmemory_buf_t &target)
 }
 #endif // (defined(SPDLOG_WCHAR_TO_UTF8_SUPPORT) || defined(SPDLOG_WCHAR_FILENAMES)) && defined(_WIN32)
 
+
+#if defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT) && defined(_WIN32)
+SPDLOG_INLINE void wstr_to_ansi_buf(wstring_view_t wstr, memory_buf_t& target)
+{
+    if (wstr.size() > static_cast<size_t>((std::numeric_limits<int>::max)()) / 2 - 1)
+    {
+        throw_spdlog_ex("UTF-16 string is too big to be converted to UTF-8");
+    }
+
+    int wstr_size = static_cast<int>(wstr.size());
+    if (wstr_size == 0)
+    {
+        target.resize(0);
+        return;
+    }
+
+    int result_size = static_cast<int>(target.capacity());
+    if ((wstr_size + 1) * 2 > result_size)
+    {
+        result_size = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), wstr_size, NULL, 0, NULL, NULL);
+    }
+
+    if (result_size > 0)
+    {
+        target.resize(result_size);
+        result_size = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), wstr_size, target.data(), result_size, NULL, NULL);
+
+        if (result_size > 0)
+        {
+            target.resize(result_size);
+            return;
+        }
+    }
+
+    throw_spdlog_ex(fmt_lib::format("WideCharToMultiByte failed. Last error: {}", ::GetLastError()));
+}
+#endif // defined(SPDLOG_WCHAR_TO_ANSI_SUPPORT) && defined(_WIN32)
+
+
 // return true on success
 static SPDLOG_INLINE bool mkdir_(const filename_t &path)
 {

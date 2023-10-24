@@ -1,7 +1,8 @@
 #pragma once
 // Need compile with /Zc:preprocessor to support __VA_OPT__
 // Define these macros before first include spdlog headers
-#define SPDLOG_WCHAR_TO_UTF8_SUPPORT 
+//#define SPDLOG_WCHAR_TO_UTF8_SUPPORT 
+#define SPDLOG_WCHAR_TO_ANSI_SUPPORT 
 #define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>

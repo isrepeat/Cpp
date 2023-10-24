@@ -221,6 +221,9 @@
     <ClCompile Include="main_45_string_view_concatenate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_46_format.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">

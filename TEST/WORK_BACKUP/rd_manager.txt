@@ -23,6 +23,10 @@ zxcvbn098765$
 testdctua10@gmail.com
 QWErty12345
 
+4242 4242 4242 4242
+02 25
+123
+
 
 --Machine-Prod-Old--
 20.55.20.152
