@@ -12,6 +12,7 @@
 #include <thread>
 #include <sddl.h>
 #include <queue>
+#include <span>
 
 #include "Thread.h"
 #include "HLogger.h"
@@ -112,6 +113,7 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
 template <typename T = uint8_t>
 void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
+//void WriteToPipe(HANDLE hNamedPipe, std::span<T> writeData) {
     DWORD cbWritten;
     do {
         if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) { // Write synchronously
@@ -157,13 +159,18 @@ class Channel {
     CLASS_FULLNAME_LOGGING_INLINE_IMPLEMENTATION(Channel);
 
 public:
-    struct Reply {
-        std::vector<T> readData;
+    struct Message {
         EnumMsg type;
+        std::vector<T> msgData;
     };
-    using ReadFunc = std::function<Reply()>;
-    //using WriteFunc = std::function<void(std::vector<T>, EnumMsg)>;
-    //using WriteFunc = std::function<void(std::vector<T>&, EnumMsg)>;
+
+    //struct Message {
+    //    EnumMsg type;
+    //    int msgSize;
+    //    uint8_t* msgData;
+    //};
+
+    using ReadFunc = std::function<Message()>;
     using WriteFunc = std::function<void(std::vector<T>&&, EnumMsg)>;
 
     Channel() = default;
@@ -321,6 +328,7 @@ public:
         pendingMessages.clear();
     }
 
+
     void WritePendingMessages() {
         LOG_DEBUG("WritePendingMessages() ...");
         std::lock_guard lk{ mxWrite };
@@ -344,9 +352,6 @@ public:
         }
     }
 
-    // Write synchronously
-    //void Write(std::vector<T> writeData, EnumMsg type) {
-    //void Write(std::vector<T>& writeData, EnumMsg type) {
     void Write(std::vector<T>&& writeData, EnumMsg type) {
         std::unique_lock lk{ mxWrite };
 
@@ -360,8 +365,9 @@ public:
         else {
             writeData.back() = (static_cast<T>(type));
         }
+
         if (!connected) {
-            pendingMessages.push_back(std::move(writeData));
+            //pendingMessages.push_back(std::move(writeData));
             return;
         }
 
@@ -381,6 +387,70 @@ public:
             stopSignal = true;
         }
     }
+
+    //void WritePendingMessages() {
+    //    LOG_DEBUG("WritePendingMessages() ...");
+    //    std::lock_guard lk{ mxWrite };
+    //    try {
+    //        for (auto& message : pendingMessages) {
+    //            auto ptrMessage = reinterpret_cast<uint8_t*>(&message);
+    //            auto spanMessage = std::span<uint8_t>(ptrMessage, sizeof(Message));
+
+    //            WriteToPipe<T>(hNamedPipe, spanMessage);
+    //            if (waitedMessage != EnumMsg::None && waitedMessage == message.type) {
+    //                cvFinishSendingMessage.notify_all();
+    //            }
+    //        }
+    //        pendingMessages.clear();
+    //    }
+    //    catch (PipeError error) {
+    //        switch (error)
+    //        {
+    //        case PipeError::WriteError:
+    //            LOG_ERROR_D("Write error! Stop channel.");
+    //            break;
+    //        };
+    //        stopSignal = true;
+    //    }
+    //}
+
+    //// Write synchronously
+    //void Write(std::vector<T>&& writeData, EnumMsg type) {
+    //    std::unique_lock lk{ mxWrite };
+    //    
+    //    try {
+    //        uint8_t* storage = new uint8_t[sizeof(Message) + writeData.size()]{};
+    //        Message* message = reinterpret_cast<Message*>(storage);
+    //        message->type = type;
+    //        message->msgSize = writeData.size();
+    //        message->msgData = storage + sizeof(Message);
+    //        std::copy(writeData.begin(), writeData.end(), storage + sizeof(Message));
+
+
+    //        if (!connected) {
+    //            //pendingMessages.push_back(std::move(*message));
+    //            return;
+    //        }
+
+    //        auto spanMessage = std::span<uint8_t>(storage, sizeof(Message) + writeData.size());
+
+    //        WriteToPipe<T>(hNamedPipe, spanMessage);
+    //        if (waitedMessage != EnumMsg::None && waitedMessage == type) {
+    //            cvFinishSendingMessage.notify_all();
+    //        }
+
+    //        delete[] storage;
+    //    }
+    //    catch (PipeError error) {
+    //        switch (error)
+    //        {
+    //        case PipeError::WriteError:
+    //            LOG_ERROR_D("Write error! Stop channel.");
+    //            break;
+    //        };
+    //        stopSignal = true;
+    //    }
+    //}
 
     // TODO: add logic to wait for one of several messages
     void WaitFinishSendingMessage(EnumMsg type) {
@@ -405,9 +475,8 @@ private:
             connectHandler();
             });
 
-        //std::vector<T> emptyData;
-        //Write(emptyData, EnumMsg::Connect);
-        Write({}, EnumMsg::Connect);
+
+        //Write({}, EnumMsg::Connect);
 
         while (!stopSignal) {
             if (listenHandler(bindedReadFunc, bindedWriteFunc) == false) {
@@ -424,13 +493,13 @@ private:
         connected = false; // if we here pipe not connected
     }
 
-    Reply Read() {
+    Message Read() {
         try {
             auto readData = ReadFromPipeAsync<T>(hNamedPipe, stopSignal);
             if (readData.size() > 0) {
                 EnumMsg type = static_cast<EnumMsg>(readData.back());
                 readData.pop_back();
-                return Reply{ std::move(readData), type };
+                return Message{ type, std::move(readData) };
             }
         }
         catch (PipeError error) {
@@ -444,6 +513,35 @@ private:
         }
         return {};
     }
+
+    //Message Read() {
+    //    try {
+    //        auto readData = ReadFromPipeAsync<T>(hNamedPipe, stopSignal);
+    //        if (readData.size() > 0) {
+    //            //EnumMsg type = static_cast<EnumMsg>(readData.back());
+    //            //readData.pop_back();
+    //            //return Message{ std::move(readData), type };
+    //            
+    //            Message message;
+    //            auto ptrMessage = reinterpret_cast<uint8_t*>(&message);
+    //            std::copy(readData.begin(), readData.end(), ptrMessage);
+    //            message.msgData = readData.data() + sizeof(Message);
+
+    //            return message;
+    //            //return *reinterpret_cast<Message*>(readData.data());
+    //        }
+    //    }
+    //    catch (PipeError error) {
+    //        switch (error)
+    //        {
+    //        case PipeError::ReadError:
+    //            LOG_ERROR_D("Write error! Stop channel.");
+    //            break;
+    //        };
+    //        stopSignal = true;
+    //    }
+    //    return {};
+    //}
 
     void StopSecondThreads() {
         if (threadConnect.joinable())
@@ -466,6 +564,7 @@ private:
     std::function<void()> connectHandler = []() {};
     std::function<void()> interruptHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;
+    //std::vector<Message> pendingMessages;
 
     std::atomic<EnumMsg> waitedMessage = EnumMsg::None;
     std::condition_variable cvFinishSendingMessage;
