@@ -1,8 +1,14 @@
-#define LOG_FUNCTION_ENTER_READ(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
-#define LOG_DEBUG_READ(...) LOG_DEBUG(__VA_ARGS__)
+//#define LOG_FUNCTION_ENTER_READ(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+//#define LOG_DEBUG_READ(...) LOG_DEBUG(__VA_ARGS__)
+//
+//#define LOG_FUNCTION_ENTER_WRITE(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+//#define LOG_DEBUG_WRITE(...) LOG_DEBUG(__VA_ARGS__)
 
-#define LOG_FUNCTION_ENTER_WRITE(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
-#define LOG_DEBUG_WRITE(...) LOG_DEBUG(__VA_ARGS__)
+#define LOG_FUNCTION_ENTER_READ(...)
+#define LOG_DEBUG_READ(...)
+
+#define LOG_FUNCTION_ENTER_WRITE(...)
+#define LOG_DEBUG_WRITE(...)
 
 #include <Helpers/Channel.h>
 #include <Helpers/HLogger.h>
@@ -31,6 +37,7 @@ Channel<Messages> channelClient;
 std::atomic<bool> exitApp = false;
 std::mutex mx;
 
+int g_iteration = 0;
 
 void main() {
 	RegisterCrashHandler();
@@ -47,17 +54,17 @@ void main() {
 
 		channelClient.Open(L"\\\\.\\pipe\\$channelClientServer$",
 			[](Channel<Messages>::Msg_t message, Channel<Messages>::WriteFunc Write) {
-				switch (message->type) {
-				case Messages::Connect: {
-					LOG_DEBUG("[Connect]");
-					Write({}, Messages::FrameRequest);
-					break;
-				}
-				case Messages::FrameData: {
-					LOG_DEBUG("[FrameData] payload {}", H::BytesRangeToHexString(message->payload, 0, message->payload.size()));
-					break;
-				}
-				}
+				//switch (message->type) {
+				//case Messages::Connect: {
+				//	LOG_DEBUG("[Connect]");
+				//	Write({}, Messages::FrameRequest);
+				//	break;
+				//}
+				//case Messages::FrameData: {
+				//	LOG_DEBUG("[FrameData] payload {}", H::BytesRangeToHexString(message->payload, 0, message->payload.size()));
+				//	break;
+				//}
+				//}
 				return true;
 			});
 
@@ -71,56 +78,67 @@ void main() {
 
 	auto thFrameRequest = std::thread([] {
 		//while (!exitApp) {
-		//	//std::unique_lock lk{ mx };
-		//	//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-		//	channelClient.Write({}, Messages::FrameRequest);
+		////	//std::unique_lock lk{ mx };
+		////	//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+		////	channelClient.Write({}, Messages::FrameRequest);
 
 
-		//	////std::vector<uint8_t> message(300 * 1024); // 10 KB
-		//	////for (int i = 0; i < message.size(); i++) {
-		//	////	message[i] = i;
-		//	////}
-		//	//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
+		////	////std::vector<uint8_t> message(300 * 1024); // 10 KB
+		////	////for (int i = 0; i < message.size(); i++) {
+		////	////	message[i] = i;
+		////	////}
+		////	//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
+		//	//std::vector<uint8_t> v1 = { 1,2,3,4,5,6,7,8 };
+		//	//std::vector<uint8_t> v2 = { 1,2,3,4,5,6,7,8 };
+		//	//std::vector<uint8_t> v3 = { 1,2,3,4,5,6,7,8 };
 		//}
 		});
 
 	Sleep(100);
 	
-	std::vector<uint8_t> g_message = { 0,1,2,3,4 };
+	std::vector<uint8_t> g_message = { 0,1,2,3,4,5,6,7,8 };
 
 	auto thUserInput = std::thread([&g_message] {
-		//while (!exitApp) {
-		//	//std::unique_lock lk{ mx };
-		//	//std::vector<uint8_t> message = { 1 };
-		//	
-		//	//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-		//	//std::vector<uint8_t> message = { 0,1,2,3,4 };
-		//	//uint8_t* data = new uint8_t[5]{ 0,1,2,3,4 };
+		while (!exitApp) {
+			//std::unique_lock lk{ mx };
+			//std::vector<uint8_t> message = { 1 };
+			
+			//std::vector<uint8_t> message = { 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+			//std::vector<uint8_t> message = { 0,1,2,3,4 };
+			//uint8_t* data = new uint8_t[5]{ 0,1,2,3,4 };
 
-		//	//std::vector<uint8_t> message(1033);
-		//	//for (int i = 0; i < message.size(); i++) {
-		//	//	message[i] = i;
-		//	//}
+			//std::vector<uint8_t> message(1033);
+			//for (int i = 0; i < message.size(); i++) {
+			//	message[i] = i;
+			//}
 
-		//	int aa = 1;
-		//	int bb = 2;
-		//	//channelClient.Write(message, Messages::UserInput);
+			int aa = 1;
+			int bb = 2;
+			//channelClient.Write(message, Messages::UserInput);
 
-		//	//channelClient.Write(Channel<Messages>::WriteMessage{ Messages::UserInput, {0,1,2,3,4} });
-		//	channelClient.Write({ 0,1,2,3,4,5,6,7,8 }, Messages::UserInput);
+			//{
+			//	std::vector<uint8_t> v1 = { 1,2,3,4,5,6,7,8 };
+			//	std::vector<uint8_t> v2 = { 1,2,3,4,5,6,7,8 };
+			//	std::vector<uint8_t> v3 = { 1,2,3,4,5,6,7,8 };
+			//}
 
-		//	//channelClient.Write({ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }, Messages::UserInput);
-		//	//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
-		//	//channelClient.Write(std::move(message), Messages::UserInput);
-		//	//channelClient.Write(message, Messages::UserInput);
-		//	// 
-		//	//channelClient.Write(g_message, Messages::UserInput);
-		//	//channelClient.Write2(data, 5, Messages::UserInput);			
-		//	int cc = aa + bb;
-		//	int dd = 1 - cc;
-		//	//channelClient.Write({}, Messages::UserInput);
-		//	//Sleep(10);
-		//}
+			//channelClient.Write(Channel<Messages>::WriteMessage{ Messages::UserInput, {0,1,2,3,4} });
+			channelClient.Write({ 1,2,3,4,5,6,7,8 }, Messages::UserInput);
+			//channelClient.Write({}, Messages::UserInput);
+
+			//channelClient.Write({ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }, Messages::UserInput);
+			//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
+			//channelClient.Write(std::move(message), Messages::UserInput);
+			//channelClient.Write(message, Messages::UserInput);
+			// 
+			//channelClient.Write(g_message, Messages::UserInput);
+			//channelClient.Write2(data, 5, Messages::UserInput);			
+			int cc = aa + bb;
+			int dd = 1 - cc;
+			//channelClient.Write({}, Messages::UserInput);
+			//Sleep(1);
+			g_iteration++;
+		}
 		});
 
 

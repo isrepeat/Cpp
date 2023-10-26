@@ -38,7 +38,7 @@
 #endif
 
 
-#define BUFFER_PIPE 24
+#define BUFFER_PIPE 512
 
 namespace H {
     std::string BytesRangeToHexString(std::span<uint8_t> bytes, int idxStart, int count);
@@ -141,6 +141,74 @@ void ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop, std::vector<T>& 
 }
 
 
+template<typename T = uint8_t>
+void WriteFileAsync(HANDLE hFile, const std::atomic<bool>& stop, std::span<T> writeData) {
+    enum StatusIO {
+        Error,
+        Stopped,
+        Completed,
+    };
+    StatusIO status;
+
+    DWORD cbWritten = 0;
+    OVERLAPPED stOverlapped = { 0 };
+    
+    if (WriteFile(hFile, writeData.data(), writeData.size() * sizeof(T), &cbWritten, &stOverlapped)) {
+        // WriteFile completed synchronously ...
+        status = StatusIO::Completed;
+    }
+    else {
+        auto lastErrorReadFile = GetLastError();
+        switch (lastErrorReadFile) {
+        case ERROR_IO_PENDING:
+            while (true) {
+                // Check break conditions in while scope (if we chek it after while may be status conflicts)
+                if (stop) {
+                    status = StatusIO::Stopped;
+                    break;
+                }
+
+                if (GetOverlappedResult(hFile, &stOverlapped, &cbWritten, FALSE)) {
+                    // ReadFile operation completed
+                    status = StatusIO::Completed;
+                    break;
+                }
+                else {
+                    // pending ...
+                    auto lastErrorGetOverlappedResult = GetLastError();
+                    if (lastErrorGetOverlappedResult != ERROR_IO_INCOMPLETE) {
+                        // remote side was closed or smth else
+                        status = StatusIO::Error;
+                        LogLastError;
+                        break;
+                    }
+                }
+            }
+            break;
+
+        default:
+            LogLastError;
+            status = StatusIO::Error;
+        }
+    }
+
+    switch (status) {
+    case StatusIO::Error:
+        throw std::exception("WriteFile error");
+        break;
+
+    case StatusIO::Stopped:
+        throw std::exception("Was stopped signal");
+        break;
+
+    case StatusIO::Completed: // mb unreachable
+        if (cbWritten == 0) {
+            throw std::exception("Zero bytes written");
+        }
+    }
+}
+
+
 template <typename T = uint8_t>
 //void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
 void WriteToPipe(HANDLE hNamedPipe, std::span<T> writeData) {
@@ -155,6 +223,7 @@ void WriteToPipe(HANDLE hNamedPipe, std::span<T> writeData) {
     } while (cbWritten < writeData.size() * sizeof(T));
 }
 
+
 template <typename T = uint8_t>
 void ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop, std::vector<T>& outBuffer) {
     try {
@@ -162,6 +231,19 @@ void ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop, std::ve
     }
     catch (...) {
         throw PipeError::ReadError;
+    }
+}
+
+template <typename T = uint8_t>
+void WriteToPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop, std::span<T> writeData) {
+    if (writeData.empty())
+        return;
+
+    try {
+        return WriteFileAsync<T>(hNamedPipe, stop, writeData);
+    }
+    catch (...) {
+        throw PipeError::WriteError;
     }
 }
 
@@ -208,13 +290,9 @@ public:
         MessageDescriptor descriptor;
         Message message;
         uint32_t processedBytes = 0;
-        //bool sizeWasRead = false;
-        //bool typeWasRead = false;
-        //bool payloadWasRead = false;
     };
 
 
-    //using ReadFunc = std::function<Message()>;
     using Msg_t = std::shared_ptr<Message>;
     using WriteFunc = std::function<void(std::vector<T>&&, EnumMsg)>;
 
@@ -227,15 +305,8 @@ public:
 
     ~Channel() {
         LOG_FUNCTION_ENTER("~Channel()");
-        //if (messagesQueue->IsWorking()) { // If the owner of this class not use ThreadsFinishHelper so finish threads manually
-            NotifyAboutStop();
-            WaitingFinishThreads();
-        //}
-
-        //StopChannel();
-        //if (hNamedPipe) {
-        //    CloseHandle(hNamedPipe);
-        //}
+        NotifyAboutStop();
+        WaitingFinishThreads();
     }
 
     // Make security attributes to connect admin & user pipe
@@ -437,11 +508,14 @@ public:
             std::memcpy(&messageSizeBuffer, &messageSize, sizeof(uint32_t));
             std::memcpy(&messageTypeBuffer, &messageType, sizeof(uint32_t));
 
-            WriteToPipe<T>(hNamedPipe, messageSizeBuffer);
+            //WriteToPipe<T>(hNamedPipe, messageSizeBuffer);
+            WriteToPipeAsync<T>(hNamedPipe, stopSignal, messageSizeBuffer);
             LOG_DEBUG_WRITE("write size = {} '{}'", messageSize, H::BytesRangeToHexString(messageSizeBuffer, 0, 4));
-            WriteToPipe<T>(hNamedPipe, messageTypeBuffer);
+            //WriteToPipe<T>(hNamedPipe, messageTypeBuffer);
+            WriteToPipeAsync<T>(hNamedPipe, stopSignal, messageTypeBuffer);
             LOG_DEBUG_WRITE("write type = {} '{}'", messageType, H::BytesRangeToHexString(messageTypeBuffer, 0, 4));
-            WriteToPipe<T>(hNamedPipe, writeData);
+            //WriteToPipe<T>(hNamedPipe, writeData);
+            WriteToPipeAsync<T>(hNamedPipe, stopSignal, writeData);
             int countPayloadBytes = messageSize < 20 ? messageSize : 20;
             LOG_DEBUG_WRITE("write payload = {} '{}'", messageSize, H::BytesRangeToHexString(writeData, 0, countPayloadBytes));
 
@@ -529,13 +603,6 @@ private:
                 LOG_DEBUG_READ("readStreamBuffer [size = {}, cap = {}]", readStreamBuffer.size(), readStreamBuffer.capacity());
                 
                 uint32_t processedBytes = 0;
-
-                //if (readMessages.size() > 0) {
-                //    LOG_DEBUG_READ("Finish parse last previous message");
-                //    if (!ParseMessage(readStreamBuffer, processedBytes, readMessages.back())) { // Finish parse last previous message
-                //        continue; // need more data (descriptor not read)
-                //    }
-                //}
 
                 while (processedBytes < readStreamBuffer.size()) {
                     if (!ParseMessage(readStreamBuffer, processedBytes, messageInternal)) {
