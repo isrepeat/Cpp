@@ -1,8 +1,8 @@
 #define LOG_FUNCTION_ENTER_READ(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
 #define LOG_DEBUG_READ(...) LOG_DEBUG(__VA_ARGS__)
 
-#define LOG_FUNCTION_ENTER_WRITE(...)
-#define LOG_DEBUG_WRITE(...)
+#define LOG_FUNCTION_ENTER_WRITE(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+#define LOG_DEBUG_WRITE(...) LOG_DEBUG(__VA_ARGS__)
 
 #include <Helpers/Channel.h>
 #include <Helpers/HLogger.h>

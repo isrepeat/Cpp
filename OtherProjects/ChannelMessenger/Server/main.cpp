@@ -1,5 +1,5 @@
-#define LOG_FUNCTION_ENTER_READ(...)
-#define LOG_DEBUG_READ(...)
+#define LOG_FUNCTION_ENTER_READ(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+#define LOG_DEBUG_READ(...) LOG_DEBUG(__VA_ARGS__)
 
 #define LOG_FUNCTION_ENTER_WRITE(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
 #define LOG_DEBUG_WRITE(...) LOG_DEBUG(__VA_ARGS__)
@@ -34,7 +34,7 @@ void main() {
 
 	try {
 		channelServer.SetInterruptHandler([] {
-			//exitApp = true;
+			exitApp = true;
 			});
 
 		channelServer.Create(L"\\\\.\\pipe\\$channelClientServer$",
@@ -46,7 +46,7 @@ void main() {
 				}
 				case Messages::FrameRequest: {
 					LOG_DEBUG("[FrameRequest]");
-					Write({1,2,3,4,5,6,7}, Messages::FrameData);
+					Write({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 }, Messages::FrameData);
 					break;
 				}
 				case Messages::UserInput: {

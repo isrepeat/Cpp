@@ -6,6 +6,15 @@
 
 namespace H {
 	std::string BytesRangeToHexString(std::span<uint8_t> bytes, int idxStart, int count) {
+		if (bytes.empty())
+			return "";
+
+		if (idxStart >= bytes.size())
+			return "";
+
+		if (idxStart + count > bytes.size())
+			return "";
+
 		std::string bytesStr(count * 3, '\0'); // 2 char, 1 space
 
 		std::span<char> spanBytesStr = bytesStr;
@@ -14,10 +23,12 @@ namespace H {
 
 		for (int i = 0; i < count; i++) {
 			it = H::HexByte(bytes[idxStart + i], it, itEnd);
-			*it++ = ' ';
+			if (i < count - 1) {
+				*it++ = ' ';
+			}
 		}
 
-		bytesStr.back() = '\0'; // replace last space to null
+		//bytesStr.back() = '\0'; // replace last space to null
 		return bytesStr;
 	}
 }
