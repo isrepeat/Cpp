@@ -4,6 +4,24 @@
 #include <chrono>
 #include <mutex>
 
+namespace H {
+	std::string BytesRangeToHexString(std::span<uint8_t> bytes, int idxStart, int count) {
+		std::string bytesStr(count * 3, '\0'); // 2 char, 1 space
+
+		std::span<char> spanBytesStr = bytesStr;
+		auto it = spanBytesStr.begin();
+		const auto itEnd = spanBytesStr.end();
+
+		for (int i = 0; i < count; i++) {
+			it = H::HexByte(bytes[idxStart + i], it, itEnd);
+			*it++ = ' ';
+		}
+
+		bytesStr.back() = '\0'; // replace last space to null
+		return bytesStr;
+	}
+}
+
 
 #if NEW_CHANNEL == 2
 // TODO: rewrite this without blocking current thread

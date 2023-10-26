@@ -14,11 +14,13 @@
 #include <queue>
 #include <span>
 
+
 #include "Thread.h"
 #include "HLogger.h"
 #include "Helpers.h"
-#include "Conversion.h"
 #include "LocalPtr.hpp"
+#include "Conversion.h"
+#include "ConcurrentQueue.h"
 
 
 #if !defined(LOG_FUNCTION_ENTER_READ)
@@ -36,7 +38,11 @@
 #endif
 
 
-#define PIPE_BUFFER 24
+#define BUFFER_PIPE 24
+
+namespace H {
+    std::string BytesRangeToHexString(std::span<uint8_t> bytes, int idxStart, int count);
+}
 
 
 enum class PipeConnectionStatus {
@@ -58,7 +64,7 @@ PipeConnectionStatus WaitOpenPipe(OUT HANDLE& hPipe, const std::wstring& pipeNam
 // TODO: move to file system helpers
 // TODO: rewrite this without blocking current thread
 template<typename T = uint8_t>
-std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
+void ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop, std::vector<T>& outBuffer) {
     enum StatusIO {
         Error,
         Stopped,
@@ -68,9 +74,13 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
 
     DWORD dwBytesRead = 0;
     OVERLAPPED stOverlapped = { 0 };
-    std::vector<T> tmpBuffer(1024 * 1024 * 2); // NOTE: for simplicity we can use max buffer size ... 2 MB
 
-    if (ReadFile(hFile, tmpBuffer.data(), tmpBuffer.size() * sizeof(T), &dwBytesRead, &stOverlapped)) {
+    auto outBufferPresize = outBuffer.size();
+    if (outBuffer.capacity() < outBufferPresize + BUFFER_PIPE) {
+        outBuffer.reserve(outBufferPresize + BUFFER_PIPE);
+    }
+
+    if (ReadFile(hFile, outBuffer.data() + outBufferPresize, BUFFER_PIPE * sizeof(T), &dwBytesRead, &stOverlapped)) {
         // ReadFile completed synchronously ...
         status = StatusIO::Completed;
     }
@@ -100,7 +110,6 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
                         break;
                     }
                 }
-                Sleep(1); // TODO: for capturing frame use less delay (CHECK)
             }
             break;
 
@@ -120,13 +129,12 @@ std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
         break;
 
     case StatusIO::Completed:
-        if (dwBytesRead == 0) {
+        if (outBufferPresize + dwBytesRead == 0) {
             throw std::exception("Zero data was read");
         }
     }
 
-    tmpBuffer.resize(dwBytesRead / sizeof(T)); // truncate
-    return tmpBuffer;
+    outBuffer.resize((outBufferPresize + dwBytesRead) / sizeof(T)); // truncate
 }
 
 
@@ -142,14 +150,13 @@ void WriteToPipe(HANDLE hNamedPipe, std::span<T> writeData) {
 }
 
 template <typename T = uint8_t>
-std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop) {
+void ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop, std::vector<T>& outBuffer) {
     try {
-        return ReadFileAsync<T>(hNamedPipe, stop);
+        return ReadFileAsync<T>(hNamedPipe, stop, outBuffer);
     }
     catch (...) {
         throw PipeError::ReadError;
     }
-
 }
 
 
@@ -175,10 +182,16 @@ H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
 // TODO: Add guard for multiple calls pulbic methods and for usage in them in multithreading
 // TODO: fix when interrupt connection -> not process "None" msg (??? CHECK)
 template<typename EnumMsg, typename T = uint8_t>
-class Channel {
+class Channel : public H::IThread {
     CLASS_FULLNAME_LOGGING_INLINE_IMPLEMENTATION(Channel);
 
 public:
+#pragma pack(push, 1)
+    struct MessageDescriptor {
+        uint32_t size = 0;
+        uint32_t type = 0;
+    };
+#pragma pack(pop)
 
     struct Message {
         EnumMsg type;
@@ -186,56 +199,40 @@ public:
     };
 
     struct MessageInternal {
-        bool sizeWasRead = false;
-        bool typeWasRead = false;
-        bool payloadWasRead = false;
-        uint32_t size = 0;
+        MessageDescriptor descriptor;
         Message message;
+        uint32_t processedBytes = 0;
+        //bool sizeWasRead = false;
+        //bool typeWasRead = false;
+        //bool payloadWasRead = false;
     };
 
 
-    //struct ReadMessage {
-    //    EnumMsg type;
-    //    std::vector<T> msgData;
-    //};
-
-    //struct WriteMessage {
-    //    WriteMessage(EnumMsg type, std::vector<T>&& msgData)
-    //        : type{ type }ss
-    //        , msgData(msgData.size() + 10)
-    //    {
-    //        this->msgData = std::move(msgData);
-    //        this->msgData[msgData.size()] = static_cast<T>(type);
-    //        int xxx = 9;
-    //    }
-
-    //    EnumMsg GetType() const {
-    //        return type;
-    //    }
-
-    //    const std::vector<T>& GetMsg() const {
-    //        return msgData;
-    //    }
-
-    //private:
-    //    EnumMsg type;
-    //    std::vector<T> msgData;
-    //};
-
-    using ReadFunc = std::function<Message()>;
+    //using ReadFunc = std::function<Message()>;
+    using Msg_t = std::shared_ptr<Message>;
     using WriteFunc = std::function<void(std::vector<T>&&, EnumMsg)>;
-    //using WriteFunc = std::function<void(const std::vector<T>&, EnumMsg)>;
 
-    Channel() = default;
+    Channel() 
+        : messagesQueue{ std::make_shared<H::ConcurrentQueue<Msg_t>>() }
+    {
+        LOG_FUNCTION_ENTER("Channel()");
+    }
+
     ~Channel() {
-        StopChannel();
-        if (hNamedPipe) {
-            CloseHandle(hNamedPipe);
-        }
+        LOG_FUNCTION_ENTER("~Channel()");
+        //if (messagesQueue->IsWorking()) { // If the owner of this class not use ThreadsFinishHelper so finish threads manually
+            NotifyAboutStop();
+            WaitingFinishThreads();
+        //}
+
+        //StopChannel();
+        //if (hNamedPipe) {
+        //    CloseHandle(hNamedPipe);
+        //}
     }
 
     // Make security attributes to connect admin & user pipe
-    void CreateForAdmin(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+    void CreateForAdmin(const std::wstring& pipeName, std::function<bool(Msg_t, WriteFunc)> listenHandler, int timeout = 0) {
         LOG_DEBUG(L"CreateForAdmin(pipeName = {}, ...) ...", pipeName);
 
         auto pSecurityDescriptor = std::make_unique<SECURITY_DESCRIPTOR>();
@@ -247,7 +244,7 @@ public:
     }
 
     // Make security attributes to connect UWP & desktop apps
-    void CreateForUWP(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, HANDLE hProcessUWP, int timeout = 0) {
+    void CreateForUWP(const std::wstring& pipeName, std::function<bool(Msg_t, WriteFunc)> listenHandler, HANDLE hProcessUWP, int timeout = 0) {
         LOG_DEBUG(L"CreateForUWP(pipeName = {}, ...) ...", pipeName);
 
         pSecurityAttributes = std::make_unique<SECURITY_ATTRIBUTES>(SECURITY_ATTRIBUTES{ sizeof(SECURITY_ATTRIBUTES), NULL, FALSE });
@@ -279,7 +276,7 @@ public:
         Create(formattedPipeName, listenHandler, timeout);
     }
 
-    void Create(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+    void Create(const std::wstring& pipeName, std::function<bool(Msg_t, WriteFunc)> listenHandler, int timeout = 0) {
         LOG_DEBUG(L"Create(pipeName = {}, listenHandler, timeout = {}) ...", pipeName, timeout);
 
         hNamedPipe = CreateNamedPipeW(
@@ -287,11 +284,13 @@ public:
             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
             PIPE_UNLIMITED_INSTANCES,
-            24, 24, 5000, pSecurityAttributes.get());
+            BUFFER_PIPE * sizeof(T), BUFFER_PIPE * sizeof(T), 5000, pSecurityAttributes.get());
 
         if (hNamedPipe == INVALID_HANDLE_VALUE) {
             throw PipeError::InvalidHandle;
         }
+
+        //std::shared_ptr<H::ConcurrentQueue<Msg_t>> messagesQueueCopy = messagesQueue;
 
         closeChannel = false;
         threadChannel = std::thread([this, listenHandler, timeout, pipeName] {
@@ -323,7 +322,7 @@ public:
 
 
 
-    void Open(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 10'000) {
+    void Open(const std::wstring& pipeName, std::function<bool(Msg_t, WriteFunc)> listenHandler, int timeout = 10'000) {
         LOG_DEBUG("Open() ...");
 
         closeChannel = false;
@@ -341,6 +340,7 @@ public:
             break;
         }
 
+        //auto messagesQueueCopy = messagesQueue;
         threadChannel = std::thread([this, listenHandler, pipeName] {
             //LOG_THREAD(pipeName + L" Open thread");
             ListenRoutine(listenHandler);
@@ -348,23 +348,30 @@ public:
     }
 
 
-    void StopChannel() {
-        LOG_DEBUG("StopChannel() ...");
-
+    /* ------------------------------------ */
+    /*			 IThread methods			*/
+    /* ------------------------------------ */
+    void NotifyAboutStop() override {
         connected = false;
         stopSignal = true;
         closeChannel = true;
+    }
 
+    void WaitingFinishThreads() override {
         if (threadChannel.joinable()) // wait finish channel thread where init interrupt thread 
             threadChannel.join();
 
         StopSecondThreads();
+
+        if (hNamedPipe) {
+            CloseHandle(hNamedPipe);
+        }
     }
+
 
     bool IsConnected() {
         return connected;
     }
-
 
     void SetInterruptHandler(std::function<void()> handler) {
         interruptHandler = handler;
@@ -373,7 +380,6 @@ public:
     void SetConnectHandler(std::function<void()> handler) {
         connectHandler = handler;
     }
-
 
     void ClearPendingMessages() {
         LOG_DEBUG("ClearPendingMessages() ...");
@@ -406,32 +412,6 @@ public:
     }
 
 
-    //void Write(const WriteMessage& message) {
-    //    std::unique_lock lk{ mxWrite };
-
-    //    if (!connected) {
-    //        //pendingMessages.push_back(std::move(writeData));
-    //        return;
-    //    }
-
-    //    try {
-    //        WriteToPipe<T>(hNamedPipe, message.GetMsg());
-    //        if (waitedMessage != EnumMsg::None && waitedMessage == message.GetType()) {
-    //            cvFinishSendingMessage.notify_all();
-    //        }
-    //    }
-    //    catch (PipeError error) {
-    //        switch (error)
-    //        {
-    //        case PipeError::WriteError:
-    //            LOG_ERROR_D("Write error! Stop channel.");
-    //            break;
-    //        };
-    //        stopSignal = true;
-    //    }
-    //}
-
-
     void Write(std::vector<T>&& writeData, EnumMsg type) {
         std::unique_lock lk{ mxWrite };
         LOG_FUNCTION_ENTER_WRITE("Write(writeData, type)");
@@ -451,12 +431,12 @@ public:
             std::memcpy(&messageTypeBuffer, &messageType, sizeof(uint32_t));
 
             WriteToPipe<T>(hNamedPipe, messageSizeBuffer);
-            LOG_DEBUG_WRITE("write size = {} '{}'", messageSize, BytesRangeToHexString(messageSizeBuffer, 0, 4));
+            LOG_DEBUG_WRITE("write size = {} '{}'", messageSize, H::BytesRangeToHexString(messageSizeBuffer, 0, 4));
             WriteToPipe<T>(hNamedPipe, messageTypeBuffer);
-            LOG_DEBUG_WRITE("write type = {} '{}'", messageType, BytesRangeToHexString(messageTypeBuffer, 0, 4));
+            LOG_DEBUG_WRITE("write type = {} '{}'", messageType, H::BytesRangeToHexString(messageTypeBuffer, 0, 4));
             WriteToPipe<T>(hNamedPipe, writeData);
             int countPayloadBytes = messageSize < 20 ? messageSize : 20;
-            LOG_DEBUG_WRITE("write payload = {} '{}'", messageSize, BytesRangeToHexString(writeData, 0, countPayloadBytes));
+            LOG_DEBUG_WRITE("write payload = {} '{}'", messageSize, H::BytesRangeToHexString(writeData, 0, countPayloadBytes));
 
             if (waitedMessage != EnumMsg::None && waitedMessage == type) {
                 cvFinishSendingMessage.notify_all();
@@ -487,7 +467,8 @@ public:
     }
 
 private:
-    void ListenRoutine(std::function<bool(ReadFunc, WriteFunc)> listenHandler) {
+    //void ListenRoutine(std::function<bool(Msg_t, WriteFunc)> listenHandler, std::shared_ptr<H::ConcurrentQueue<Msg_t>> messagesQueue) {
+    void ListenRoutine(std::function<bool(Msg_t, WriteFunc)> listenHandler) {
         LOG_DEBUG("ListenRoutine() ...");
 
         connected = true;
@@ -497,12 +478,17 @@ private:
             connectHandler();
             });
 
-
         //Write({}, EnumMsg::Connect);
 
-        while (!stopSignal) {
-            if (listenHandler(bindedReadFunc, bindedWriteFunc) == false) {
-                stopSignal = true;
+        threadRead = std::thread([this] {
+            ReadRoutine();
+            });
+
+        while (!stopSignal && messagesQueue->IsWorking()) {
+            if (auto msg = messagesQueue->Pop()) {
+                if (listenHandler(msg, bindedWriteFunc) == false) {
+                    stopSignal = true;
+                }
             }
         }
         LOG_DEBUG("stopSignal = true");
@@ -515,33 +501,45 @@ private:
         connected = false; // if we here pipe not connected
     }
 
-    Message Read() {
-        LOG_FUNCTION_ENTER_READ("Read()");
+    //void ReadRoutine(std::shared_ptr<H::ConcurrentQueue<Msg_t>> messagesQueue) {
+    void ReadRoutine() {
+        LOG_FUNCTION_ENTER_READ("ReadRoutine()");
         try {
-            bool haveAtLeastOneCompletedMessage = false;
-            do {
-                auto readBuffer = ReadFromPipeAsync<T>(hNamedPipe, stopSignal);
+            while (!stopSignal) {
+                LOG_FUNCTION_ENTER_READ("ReadRoutine():: iteration");
+
+                if (readStreamBuffer.size() > 0) {
+                    LOG_DEBUG_READ("[before] readStreamBuffer [size = {}, cap = {}]", readStreamBuffer.size(), readStreamBuffer.capacity(),
+                        H::BytesRangeToHexString(readStreamBuffer, 0, readStreamBuffer.size()));
+                }
+
+                ReadFromPipeAsync<T>(hNamedPipe, stopSignal, readStreamBuffer);
+                LOG_DEBUG_READ("readStreamBuffer [size = {}, cap = {}]", readStreamBuffer.size(), readStreamBuffer.capacity());
+                
                 uint32_t processedBytes = 0;
-                LOG_DEBUG_READ("readBuffer size = {}", readBuffer.size());
 
-                if (readMessages.size() > 0) {
-                    LOG_DEBUG_READ("Finish parse last previous message");
-                    ParseMessage(readBuffer, processedBytes, readMessages.back()); // Finish parse last previous message
-                }
-                while (readBuffer.size() > processedBytes) {
+                //if (readMessages.size() > 0) {
+                //    LOG_DEBUG_READ("Finish parse last previous message");
+                //    if (!ParseMessage(readStreamBuffer, processedBytes, readMessages.back())) { // Finish parse last previous message
+                //        continue; // need more data (descriptor not read)
+                //    }
+                //}
+
+                while (readStreamBuffer.size() > processedBytes) {
                     MessageInternal messageInternal;
-                    ParseMessage(readBuffer, processedBytes, messageInternal);
-                    readMessages.push(std::move(messageInternal));
+                    if (!ParseMessage(readStreamBuffer, processedBytes, messageInternal)) {
+                        break; // need more data to read descriptor (keep bytes in readStreamBuffer)
+                    }
+                    if (messageInternal.processedBytes == sizeof(MessageDescriptor) + messageInternal.descriptor.size) { // if message completed
+                        messagesQueue->Push(std::make_shared<Message>(Message{
+                            .type = static_cast<EnumMsg>(messageInternal.descriptor.type),
+                            .payload = std::move(messageInternal.message.payload)
+                            }));
+                    }
                 }
-                if (readMessages.size() > 0) {
-                    auto& msg = readMessages.front();
-                    haveAtLeastOneCompletedMessage = msg.sizeWasRead && msg.typeWasRead && msg.payloadWasRead;
-                }
-            } while (!haveAtLeastOneCompletedMessage);
 
-            auto firstInternalMessage = std::move(readMessages.front());
-            readMessages.pop();
-            return firstInternalMessage.message;
+                readStreamBuffer.clear(); // can clear buffer because payload was saved/moved in messagesQueue
+            }
         }
         catch (PipeError error) {
             switch (error)
@@ -552,54 +550,66 @@ private:
             };
             stopSignal = true;
         }
-        return {};
-    }
-
-    void ParseMessage(const std::vector<T>& readBuffer, uint32_t& processedBytes, MessageInternal& messageInternal) {
-        LOG_FUNCTION_ENTER_READ("ParseMessage(readBuffer [{}], processedBytes = {}, messageInternal)", readBuffer.size(), processedBytes);
-
-        if (!messageInternal.sizeWasRead && readBuffer.size() > processedBytes) {
-            messageInternal.size = *reinterpret_cast<const uint32_t*>(readBuffer.data() + processedBytes);
-            LOG_DEBUG_READ("msg size = {} '{}'", messageInternal.size, BytesRangeToHexString(const_cast<std::vector<T>&>(readBuffer), processedBytes, 4));
-            processedBytes += sizeof(uint32_t);
-            messageInternal.sizeWasRead = true;
-        }
-        if (!messageInternal.typeWasRead && readBuffer.size() > processedBytes) {
-            auto type = *reinterpret_cast<const uint32_t*>(readBuffer.data() + processedBytes);
-            LOG_DEBUG_READ("msg type = {} '{}'", type, BytesRangeToHexString(const_cast<std::vector<T>&>(readBuffer), processedBytes, 4));
-            messageInternal.message.type = static_cast<EnumMsg>(type);
-            processedBytes += sizeof(uint32_t);
-            messageInternal.typeWasRead = true;
-        }
-        if (!messageInternal.payloadWasRead && readBuffer.size() > processedBytes) {
-            int countPayloadBytes = messageInternal.size < (readBuffer.size() - processedBytes) ? messageInternal.size : (readBuffer.size() - processedBytes);
-            LOG_DEBUG_READ("msg payload [start = {}, end = {}] '{}'", processedBytes, processedBytes + messageInternal.size, BytesRangeToHexString(const_cast<std::vector<T>&>(readBuffer), processedBytes, countPayloadBytes));
-            messageInternal.message.payload.insert(messageInternal.message.payload.end(), readBuffer.begin() + processedBytes, readBuffer.begin() + processedBytes + messageInternal.size);
-            processedBytes += messageInternal.size;
-            messageInternal.payloadWasRead = true;
-        }
     }
 
 
-    std::string BytesRangeToHexString(std::span<T> bytes, int idxStart, int count) {
-        std::string bytesStr(count * 3, '\0'); // 2 char, 1 space
-
-        std::span<char> spanBytesStr = bytesStr;
-        auto it = spanBytesStr.begin();
-        const auto itEnd = spanBytesStr.end();
-
-        for (int i = 0; i < count; i++) {
-            it = H::HexByte(bytes[idxStart + i], it, itEnd);
-            *it++ = ' ';
+    bool ParseMessage(std::vector<T>& readStreamBuffer, uint32_t& totalProcessedBytes, MessageInternal& messageInternal) {
+        LOG_FUNCTION_ENTER_READ("ParseMessage(readStreamBuffer [{}], processedBytes = {}, messageInternal)", readStreamBuffer.size(), totalProcessedBytes);
+        {
+            auto restStreamBytes = readStreamBuffer.size() - totalProcessedBytes;
+            if (restStreamBytes < sizeof(MessageDescriptor)) {
+                LOG_DEBUG_READ("restStreamBytes < sizeof(MessageDescriptor) !!!");
+                readStreamBuffer.erase(readStreamBuffer.begin(), readStreamBuffer.begin() + totalProcessedBytes);
+                totalProcessedBytes = 0; // force reset to avoid side effect at next call
+                return false;
+            }
         }
 
-        return bytesStr;
+        bool descriptorWasRead = messageInternal.processedBytes >= sizeof(MessageDescriptor);
+        bool payloadWasRead = messageInternal.processedBytes == sizeof(MessageDescriptor) + messageInternal.descriptor.size;
+
+        if (!descriptorWasRead) {
+            messageInternal.descriptor = *reinterpret_cast<MessageDescriptor*>(readStreamBuffer.data() + totalProcessedBytes);
+            messageInternal.processedBytes += sizeof(MessageDescriptor);
+            totalProcessedBytes += sizeof(MessageDescriptor);
+
+            LOG_DEBUG_READ("msg desc = [s = {}, t = {}] '{}'", messageInternal.descriptor.size, messageInternal.descriptor.type,
+                H::BytesRangeToHexString(readStreamBuffer, totalProcessedBytes, sizeof(MessageDescriptor)));
+        }
+
+        if (!payloadWasRead) {
+            auto remainingPayloadBytes = messageInternal.descriptor.size - messageInternal.message.payload.size();
+            auto restStreamBytes = readStreamBuffer.size() - totalProcessedBytes;
+            auto startIt = messageInternal.message.payload.begin() + totalProcessedBytes;
+            auto endIt = startIt;
+
+            if (restStreamBytes <= remainingPayloadBytes) {
+                endIt += restStreamBytes;
+            }
+            else {
+                endIt += remainingPayloadBytes;
+            }
+
+            int countPayloadBytes = static_cast<int>(endIt - startIt);
+            int countPayloadBytesLimitted = std::min(countPayloadBytes, 20);
+            LOG_DEBUG_READ("msg payload [rem = {}] [start = {}, end = {}] '{}'", remainingPayloadBytes, totalProcessedBytes, totalProcessedBytes + countPayloadBytes,
+                H::BytesRangeToHexString(readStreamBuffer, totalProcessedBytes, countPayloadBytesLimitted));
+
+            messageInternal.message.payload.insert(messageInternal.message.payload.end(), startIt, endIt);
+        }
+
+        return true;
     }
+
+
 
 
     void StopSecondThreads() {
         if (threadConnect.joinable())
             threadConnect.join();
+
+        if (threadRead.joinable())
+            threadRead.join();
 
         if (threadInterrupt.joinable())
             threadInterrupt.join();
@@ -609,6 +619,7 @@ private:
 private:
     std::mutex mxWrite;
     HANDLE hNamedPipe = nullptr;
+    std::thread threadRead;
     std::thread threadChannel;
     std::thread threadConnect;
     std::thread threadInterrupt;
@@ -619,14 +630,77 @@ private:
     std::function<void()> interruptHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;
     std::queue<MessageInternal> readMessages;
+    std::vector<T> readStreamBuffer;
 
     std::atomic<EnumMsg> waitedMessage = EnumMsg::None;
     std::condition_variable cvFinishSendingMessage;
     std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
 
-    const ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
+    //const ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
     const WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
+
+    //std::future<void> messagesQueueRoutine;
+    std::shared_ptr<H::ConcurrentQueue<Msg_t>> messagesQueue;
 };
+
+// BUFFER_PIPE = 28
+
+
+// target msg = 05 00 00 00 | 02 00 00 00 | 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E
+
+//  [4]
+// [ 05 00 00 00 || x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19 x20 x21 x22 x23 x24
+// 
+//  [28]
+//  02 00 00 00 ] 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00 00 00 ] 01 02
+// 
+//  [28]
+//  03 04 05 06 07 08 09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00 00 00 ] 01 02 03 04 05 06 07 08
+//
+//  [28]
+//  09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00 00 00 ] 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E
+
+//  [28]
+// [ 05 00 00 00 | 02 00 00 00 ] 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00
+
+//  [28]
+//  00 00 ] 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00 00 00 ] 01 02 03 04
+
+//  [28]
+//  05 06 07 08 09 0A 0B 0C 0D 0E [ 05 00 00 00 | 02 00 00 00 ] 01 02 03 04 05 06 07 08 09 0A
+
+// ....
+
+    //void ParseMessage(const std::vector<T>& readStreamBuffer, uint32_t& processedBytes, MessageInternal& messageInternal) {
+    //    LOG_FUNCTION_ENTER_READ("ParseMessage(readStreamBuffer [{}], processedBytes = {}, messageInternal)", readStreamBuffer.size(), processedBytes);
+
+    //    bool sizeWasRead = messageInternal.processedBytes > 1 * sizeof(uint32_t); // 4 bytes processed
+    //    bool typeWasRead = messageInternal.processedBytes > 2 * sizeof(uint32_t); // 8 bytes processed
+    //    bool payloadWasRead = sizeWasRead && typeWasRead && messageInternal.processedBytes == 2 * sizeof(uint32_t) + messageInternal.size;
+
+    //    if (!sizeWasRead && readStreamBuffer.size() > processedBytes) {
+    //        messageInternal.size = *reinterpret_cast<const uint32_t*>(readStreamBuffer.data() + processedBytes);
+    //        LOG_DEBUG_READ("msg size = {} '{}'", messageInternal.size, BytesRangeToHexString(const_cast<std::vector<T>&>(readStreamBuffer), processedBytes, 4));
+    //        messageInternal.processedBytes += sizeof(uint32_t);
+    //        processedBytes += sizeof(uint32_t);
+    //    }
+    //    if (!typeWasRead && readStreamBuffer.size() > processedBytes) {
+    //        auto type = *reinterpret_cast<const uint32_t*>(readStreamBuffer.data() + processedBytes);
+    //        LOG_DEBUG_READ("msg type = {} '{}'", type, BytesRangeToHexString(const_cast<std::vector<T>&>(readStreamBuffer), processedBytes, 4));
+    //        messageInternal.message.type = static_cast<EnumMsg>(type);
+    //        messageInternal.processedBytes += sizeof(uint32_t);
+    //        processedBytes += sizeof(uint32_t);
+    //    }
+    //    if (!payloadWasRead && readStreamBuffer.size() > processedBytes) {
+    //        int countPayloadBytes = messageInternal.size < (readStreamBuffer.size() - processedBytes) ? messageInternal.size : (readStreamBuffer.size() - processedBytes);
+    //        LOG_DEBUG_READ("msg payload [start = {}, end = {}] '{}'", processedBytes, processedBytes + messageInternal.size, BytesRangeToHexString(const_cast<std::vector<T>&>(readBuffer), processedBytes, countPayloadBytes));
+    //        messageInternal.message.payload.insert(messageInternal.message.payload.end(), readStreamBuffer.begin() + processedBytes, readStreamBuffer.begin() + processedBytes + messageInternal.size);
+    //        messageInternal.processedBytes += readStreamBuffer.size() - readStreamBuffer.size();
+    //        processedBytes += messageInternal.size;
+    //    }
+    //}
+
+
 #elif NEW_CHANNEL == 1
 #include "HWindows.h"
 #include <MagicEnum/MagicEnum.h>
