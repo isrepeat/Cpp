@@ -96,40 +96,9 @@ PipeConnectionStatus WaitOpenPipe(OUT HANDLE& hPipe, const std::wstring& pipeNam
 	return PipeConnectionStatus::Error; // this place in the code should never be reached
 }
 #elif NEW_CHANNEL == 1
-#define LogDebugWithFullClassNameA(...)
-#define LogDebugWithFullClassNameW(...)
-
-#define LogWarningWithFullClassNameA(...)
-#define LogWarningWithFullClassNameW(...)
-
-#define LogErrorWithFullClassNameA(...)
-#define LogErrorWithFullClassNameW(...)
-
-#define LOG_FUNCTION_ENTER(...)
-
-//#define LOG_DEBUG(...)
-//#define LOG_ERROR(...)
-//
-//#define LOG_DEBUG_D(...)
-//#define LOG_ERROR_D(...)
-
-//#define LogLastError
-
-std::exception GetLastErrorException(const std::string& msg) {
-	DWORD lastError = GetLastError();
-	std::string format = "%s Error %ld\n";
-
-	std::vector<char> errMsg(2048, '\0');
-
-	std::size_t allocatedSize = sprintf_s(errMsg.data(), errMsg.size(), format.c_str(), msg.c_str(), lastError);
-	errMsg.resize(allocatedSize + 1); // Extra space for '\0';
-
-	return std::exception(std::string{ errMsg.begin(), errMsg.end() }.c_str());
-};
-
 // TODO: rewrite this without blocking current thread
 PipeConnectionStatus WaitConnectPipe(IN HANDLE hPipe, const std::atomic<bool>& stop, int timeout) {
-	LOG_FUNCTION_ENTER("WaitConnectPipe(timeout = {}) ...", timeout);
+	LOG_FUNCTION_ENTER("WaitConnectPipe(timeout = {})", timeout);
 
 	H::Timer timer;
 	std::atomic<bool> timeoutSignal = false;
@@ -189,7 +158,7 @@ PipeConnectionStatus WaitConnectPipe(IN HANDLE hPipe, const std::atomic<bool>& s
 
 
 PipeConnectionStatus WaitOpenPipe(OUT HANDLE& hPipe, const std::wstring& pipeName, const std::atomic<bool>& stop, int timeout) {
-	LOG_FUNCTION_ENTER("WaitOpenPipe(timeout = {}) ...", timeout);
+	LOG_FUNCTION_ENTER("WaitOpenPipe(timeout = {})", timeout);
 
 	H::Timer timer;
 	std::atomic<bool> timeoutSignal = false;

@@ -1,3 +1,9 @@
+#define LOG_FUNCTION_ENTER_READ(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+#define LOG_DEBUG_READ(...) LOG_DEBUG(__VA_ARGS__)
+
+#define LOG_FUNCTION_ENTER_WRITE(...)
+#define LOG_DEBUG_WRITE(...)
+
 #include <CrashHandling/CrashHandling.h>
 #include <MagicEnum/MagicEnum.h>
 #include <Helpers/Channel.h>
@@ -96,7 +102,10 @@ void main() {
 			int aa = 1;
 			int bb = 2;
 			//channelClient.Write(message, Messages::UserInput);
-			channelClient.Write({ 0,1,2,3,4 }, Messages::UserInput);
+
+			//channelClient.Write(Channel<Messages>::WriteMessage{ Messages::UserInput, {0,1,2,3,4} });
+			channelClient.Write({ 0,1,2,3,4,5,6,7,8 }, Messages::UserInput);
+
 			//channelClient.Write({ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }, Messages::UserInput);
 			//channelClient.Write({ message.begin(), message.end() }, Messages::UserInput);
 			//channelClient.Write(std::move(message), Messages::UserInput);

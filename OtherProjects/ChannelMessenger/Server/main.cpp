@@ -1,3 +1,9 @@
+#define LOG_FUNCTION_ENTER_READ(...)
+#define LOG_DEBUG_READ(...)
+
+#define LOG_FUNCTION_ENTER_WRITE(...) LOG_FUNCTION_ENTER(__VA_ARGS__)
+#define LOG_DEBUG_WRITE(...) LOG_DEBUG(__VA_ARGS__)
+
 #include <MagicEnum/MagicEnum.h>
 #include <Helpers/Channel.h>
 #include <Helpers/HLogger.h>
@@ -69,11 +75,11 @@ void main() {
 			if (channelServer.IsConnected()) {
 				//std::unique_lock lk{ mx };
 				//std::vector<uint8_t> message = message_out;
-				std::vector<uint8_t> message{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+				//std::vector<uint8_t> message{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 				//std::vector<uint8_t> message{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
 				//std::vector<uint8_t> message2{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
 				//std::vector<uint8_t> message(100 * 1024 * 1024);
-				//std::vector<uint8_t> message(15);
+				//std::vector<uint8_t> message(1024 * 100);
 				//for (int i = 0; i < message.size(); i++) {
 				//	message[i] = i;
 				//}
@@ -82,7 +88,13 @@ void main() {
 				int tmp2 = 1;
 				int tmp3 = 1;
 				//channelServer.Write({}, Messages::FrameData);
+				//std::vector<uint8_t> tmpMessage = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+				//std::vector<uint8_t> tmpMessage2 = std::move(tmpMessage);
+				//channelServer.Write(std::move(tmpMessage2), Messages::FrameData);
+
+				//channelServer.Write(Channel<Messages>::WriteMessage{ Messages::FrameData, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} });
 				channelServer.Write({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }, Messages::FrameData);
+
 				//channelServer.Write(message, Messages::FrameData);
 				//channelServer.Write({ message.begin(), message.end() }, Messages::FrameData);
 				//channelServer.Write(std::move(std::vector<uint8_t>{ 1,2,3,4,5,6,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 }), Messages::FrameData);
