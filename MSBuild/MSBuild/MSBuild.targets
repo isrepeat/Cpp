@@ -7,5 +7,6 @@
   <!--<Import Project="$(ProjectDir)\MSBuild_4_PublicIncludeDirectories.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_5_RebuildAdminTasks.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_6_DynamicImport.targets" />-->
-  <Import Project="$(ProjectDir)\MSBuild_7_Conditions.targets" />
+  <!--<Import Project="$(ProjectDir)\MSBuild_7_Conditions.targets" />-->
+  <Import Project="$(ProjectDir)\MSBuild_8_Replace.targets" />
 </Project>

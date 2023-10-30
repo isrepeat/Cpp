@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Tab>%09</Tab>
+    <NewLine>%0D%0A</NewLine>
+    <RegExOut>(.*)\\?Win32\\(.*)</RegExOut>
+  </PropertyGroup>
+ 
+  <Target Name="Build">
+    <ItemGroup>
+      <!--
+      <SrcFiles Include="Main\x64\One.txt" />
+      <SrcFiles Include="Main\x64\Two.txt" />
+      <SrcFiles Include="Main\Win32\Three.txt" />
+      <SrcFiles Include="Main\Win32\Four.pdf" />
+      <SrcFiles Include="Main\x64\Five.pdf" />
+      -->
+      <SrcFiles Include="$(ProjectDir)\**\*.test" />
+    </ItemGroup>
+
+     <!-- Rename 'Win32' ==> 'x86' and 'Main' ==> 'Root' -->
+    <ItemGroup>
+      <OutputFiles_1 Include="@(SrcFiles->'%(Identity)')" />
+      <OutputFiles_2 Include="@(SrcFiles->Replace('Win32','[x86]'))">
+        <!-- some orig %(RecursiveDir) dissaspear if string replaced in it -->
+        <SavedRecursiveDir>%(RecursiveDir)</SavedRecursiveDir>
+      </OutputFiles_2>
+      <OutputFiles_2_new Include="@(OutputFiles_2->Replace('Main','[Root]'))" />
+        
+      <OutputFiles_3 Include="@(SrcFiles->'%(Identity)')">
+        <OriginalFileName>%(SrcFiles.Identity)</OriginalFileName>
+        <ModifiedFileName>$(OriginalFileName.Replace('Five','[xxx]'))</ModifiedFileName>
+      </OutputFiles_3>
+      
+      <OutputFiles_4 Include="@(SrcFiles->'%(Identity)')">
+        <Renamed>@(SrcFiles->Replace('Win32','[x86]'))</Renamed>
+      </OutputFiles_4>
+        
+      <!--<OutputFiles_5 Include="@(SrcFiles->'%(Identity)')" />-->
+      <OutputFiles_5 Include="$(ProjectDir)\**\*.test" />
+    </ItemGroup>
+    <ItemGroup>
+      <OutputFiles_5>
+        <Identity_new>$([System.Text.RegularExpressions.Regex]::Replace('%(Identity)', $(RegExOut), '$1\[x86]\$2' ))</Identity_new>
+        <RecursiveDir_new>$([System.Text.RegularExpressions.Regex]::Replace('%(RecursiveDir)', $(RegExOut), '$1\[x86]\$2' ))</RecursiveDir_new>
+      </OutputFiles_5>
+    </ItemGroup>
+    
+    <!--<PropertyGroup>
+      <OriginalFileName>%(SrcFiles.Identity)</OriginalFileName>
+      <ModifiedFileName>$(OriginalFileName.Replace('Five','XXX'))</ModifiedFileName>
+    </PropertyGroup>-->
+    
+    
+    <Message Importance="High" Text="SrcFiles:"/>
+    <Message Importance="High" Text="%(SrcFiles.Identity) ==> %(SrcFiles.RecursiveDir)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  
+    <Message Importance="High" Text="OutputFiles_1:"/>
+    <Message Importance="High" Text="@(OutputFiles_1) ==> %(OutputFiles_1.Identity) ==> %(OutputFiles_1.RecursiveDir)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  
+    <Message Importance="High" Text="OutputFiles_2:"/>
+    <Message Importance="High" Text="@(OutputFiles_2) ==> %(OutputFiles_2.Identity) ==> %(OutputFiles_2.SavedRecursiveDir)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  
+    <Message Importance="High" Text="OutputFiles_2_new:"/>
+    <Message Importance="High" Text="@(OutputFiles_2_new) ==> %(OutputFiles_2_new.Identity) ==> %(OutputFiles_2_new.RecursiveDir)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+
+    <!--<Message Importance="High" Text="OriginalFileName:"/>
+    <Message Importance="High" Text="$(OriginalFileName) ==> $(ModifiedFileName)"/>
+    <Message Importance="High" Text="$(NewLine)"/>-->
+    
+    <Message Importance="High" Text="OutputFiles_3:"/>
+    <Message Importance="High" Text="@(OutputFiles_3) ==> %(OutputFiles_3.Identity) ==> %(OutputFiles_3.OriginalFileName) ==> %(OutputFiles_3.ModifiedFileName)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  
+    <Message Importance="High" Text="OutputFiles_4:"/>
+    <Message Importance="High" Text="@(OutputFiles_4) ==> %(OutputFiles_4.Identity) ==> %(OutputFiles_4.Renamed)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  
+    <Message Importance="High" Text="OutputFiles_5:"/>
+    <Message Importance="High" Text="@(OutputFiles_5) ==> %(Identity) ==> %(RecursiveDir)%(Filename)%(Extension)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="@(OutputFiles_5) ==> %(Identity_new) ==> %(RecursiveDir_new)%(Filename)%(Extension)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  </Target>
+</Project>
