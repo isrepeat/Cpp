@@ -1,121 +1,244 @@
-//#include <Windows.h>
-//#include <iostream>
-//#include <cassert>
-//#include <string>
-//
-//
-////template <typename C, typename ...Args>
-////class singleton
-////{
-////private:
-////    singleton() {
-////        int xx = 9;
-////    };
-////    static C* m_instance;
-////
-////public:
-////    ~singleton()
-////    {
-////        delete m_instance;
-////        m_instance = nullptr;
-////    }
-////    static C& instance(Args...args)
-////    {
-////        if (m_instance == nullptr)
-////            m_instance = new C(args...);
-////        return *m_instance;
-////    }
-////};
-////
-////template <typename C, typename ...Args>
-////C* singleton<C, Args...>::m_instance = nullptr;
-//
-//
-////class Singleton {
-////private:
-////    Singleton() = default;
-////    static Singleton& GetInstanceOwn() {
-////        static Singleton instance;
-////        return instance;
-////    }
-////
-////public:
-////    ~Singleton() {
-////        int xx = 9;
-////        //delete m_instance;
-////        //m_instance = nullptr;
-////    }
-////
-////    static Temp& CreateInstance(float param1) {
-////        auto& singleton = Singleton::GetInstanceOwn();
-////        assert(!singleton.m_instance);
-////        if (singleton.m_instance == nullptr) {
-////            //singleton.m_instance = new Temp(param1);
-////            singleton.m_instance = std::make_unique<Temp>(param1);
-////        }
-////        return *singleton.m_instance;
-////    }
-////
-////    static Temp& GetInstance() {
-////        auto& singleton = Singleton::GetInstanceOwn();
-////        assert(singleton.m_instance);
-////        return *singleton.m_instance;
-////    }
-////
-////private:
-////    //Temp* m_instance = nullptr;
-////    std::unique_ptr<Temp> m_instance = nullptr;
-////};
-//
-//
-//class Temp {
-//public:
-//    Temp(float param1) : data{ param1 } {
-//        int xxx = 9;
-//    }
-//    ~Temp() {
-//        int xxx = 9;
-//    }
-//private:
-//    float data;
-//};
-//
-//
-//template <typename C, typename ...Args>
-//class Singleton {
-//private:
-//    Singleton() = default;
-//    static Singleton& GetOwnInstance() {
-//        static Singleton instance;
-//        return instance;
-//    }
-//
-//public:
-//    ~Singleton() = default;
-//
-//    static C& CreateInstance(Args... args) {
-//        auto& singleton = Singleton::GetOwnInstance();
-//        if (singleton.m_instance == nullptr) {
-//            singleton.m_instance = std::make_unique<C>(args...);
-//        }
-//        return *singleton.m_instance;
-//    }
-//
-//    static C& GetInstance() {
-//        assert(Singleton::GetOwnInstance().m_instance);
-//        return *Singleton::GetOwnInstance().m_instance;
-//    }
-//
-//private:
-//    std::unique_ptr<C> m_instance = nullptr;
-//};
-//
-//using TempSingleton = Singleton<Temp, float>;
-//
-//
-//int main() {
-//    Temp& a = TempSingleton::CreateInstance(3.14f);
-//    Temp& b = TempSingleton::GetInstance();
-//    Sleep(1000);
-//	return 0;
-//}
+#include <Windows.h>
+#include <iostream>
+#include <cassert>
+#include <string>
+#include <memory>
+#include <mutex>
+
+
+template <typename TClass, typename T = void*>
+class _Singleton {
+public:
+    // Call this in constructors of singletons classes (to ensure that TClass destroy after all of them)
+    static void InitSingleton() {
+        GetInstance();
+    }
+
+    // Work with public Ctor without args
+    static TClass& GetInstance() {
+        static TClass instance;
+        return instance;
+    }
+
+private:
+    friend TClass;
+    _Singleton() = default;
+    ~_Singleton() = default;
+
+private:
+    T m_instance;
+};
+
+
+template <typename C>
+class Singleton : public _Singleton<Singleton<C>, std::unique_ptr<C>> {
+private:
+    using _MyBase = _Singleton<Singleton<C>, std::unique_ptr<C>>;
+
+public:
+    using Instance_t = C&;
+
+    Singleton() = default;
+    ~Singleton() {
+        int xx = 9;
+    };
+
+    template <typename ...Args>
+    static Instance_t CreateInstance(Args... args) {
+        auto& _this = _MyBase::GetInstance();
+        std::unique_lock lk{ _this.mx };
+        if (_this.m_instance == nullptr) {
+            _this.m_instance = std::make_unique<C>(args...);
+        }
+        return *_this.m_instance;
+    }
+
+    static Instance_t GetInstance() {
+        assert(_MyBase::GetInstance().m_instance);
+        return *_MyBase::GetInstance().m_instance;
+    }
+
+private:
+    std::mutex mx;
+};
+
+
+
+template <typename C>
+class SingletonShared : public _Singleton<SingletonShared<C>, std::shared_ptr<C>> {
+private:
+    using _MyBase = _Singleton<SingletonShared<C>, std::shared_ptr<C>>;
+
+public:
+    using Instance_t = std::shared_ptr<C>;
+
+    SingletonShared() = default;
+    ~SingletonShared() {
+        int xx = 9;
+    };
+
+    template <typename ...Args>
+    static Instance_t CreateInstance(Args... args) {
+        auto& _this = _MyBase::GetInstance();
+        std::unique_lock lk{ _this.mx };
+        if (_this.m_instance == nullptr) {
+            _this.m_instance = std::make_shared<C>(args...);
+        }
+        return _this.m_instance;
+    }
+
+    static Instance_t GetInstance() {
+        assert(_MyBase::GetInstance().m_instance);
+        return _MyBase::GetInstance().m_instance;
+    }
+
+private:
+    std::mutex mx;
+};
+
+
+template <typename C>
+class SingletonUnscoped : public _Singleton<SingletonUnscoped<C>, C*> {
+private:
+    using _MyBase = _Singleton<SingletonUnscoped<C>, C*>;
+
+public:
+    using Instance_t = C*;
+
+    SingletonUnscoped() = default;
+    ~SingletonUnscoped() {
+        int xx = 9;
+    };
+
+    template <typename ...Args>
+    static Instance_t CreateInstance(Args... args) {
+        auto& _this = _MyBase::GetInstance();
+        std::unique_lock lk{ _this.mx };
+        if (_this.m_instance == nullptr) {
+            _this.m_instance = new C(args...);
+        }
+        return _this.m_instance;
+    }
+
+    static Instance_t GetInstance() {
+        assert(_MyBase::GetInstance().m_instance);
+        return _MyBase::GetInstance().m_instance;
+    }
+
+private:
+    std::mutex mx;
+};
+
+
+
+class Temp {
+public:
+    Temp(int param1, float param2) 
+        : param1{ param1 } 
+        , param2{ param2 }
+    {
+        int xxx = 9;
+    }
+    ~Temp() {
+        int xxx = 9;
+    }
+
+    float GetParam2() {
+        return param2;
+    }
+
+private:
+    int param1;
+    float param2;
+};
+
+
+class TempS : public _Singleton<class TempS> {
+private:
+    using _MyBase = _Singleton<TempS>;
+    friend _MyBase;
+
+    TempS()
+        : param1{ 123 }
+        , param2{ 9.11f }
+    {
+        int xxx = 9;
+    }
+
+public:
+    ~TempS() {
+        int xxx = 9;
+    }
+
+    static TempS& GetInstance() {
+        return _MyBase::GetInstance();
+    }
+
+    float GetParam2() {
+        return param2;
+    }
+
+private:
+    std::mutex ms;
+    int param1;
+    float param2;
+};
+
+
+
+//using TempSingleton = Singleton<Temp>;
+using TempSingleton = SingletonShared<Temp>;
+//using TempSingleton = SingletonUnscoped<Temp>;
+
+
+
+
+class Application {
+    Application() {
+        TempS::InitSingleton();
+        TempSingleton::InitSingleton();
+    }
+public:
+    ~Application() {
+        float xx = TempSingleton::GetInstance()->GetParam2();
+        float yy = TempS::GetInstance().GetParam2();
+        int zz = 9;
+    }
+
+    static Application& GetInstance() {
+        static Application instance;
+        return instance;
+    }
+};
+
+
+class Application_2 {
+    Application_2() {
+        TempS::InitSingleton();
+        TempSingleton::InitSingleton();
+    }
+public:
+    ~Application_2() {
+        float xx = TempSingleton::GetInstance()->GetParam2();
+        float yy = TempS::GetInstance().GetParam2();
+        int zz = 9;
+    }
+
+    static Application_2& GetInstance() {
+        static Application_2 instance;
+        return instance;
+    }
+};
+
+
+int main() {
+    Application::GetInstance();
+    Application_2::GetInstance();
+
+    TempSingleton::Instance_t a = TempSingleton::CreateInstance(111, 3.14f);
+    TempSingleton::Instance_t b = TempSingleton::GetInstance();
+
+    TempS& c = TempS::GetInstance();
+
+	return 0;
+}
