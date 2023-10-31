@@ -15,6 +15,10 @@
     <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
     <None Include="MSBuild_3_ExcludeFromCompile.targets" />
     <None Include="MSBuild_4_PublicIncludeDirectories.targets" />
+    <None Include="MSBuild_5_RebuildAdminTasks.targets" />
+    <None Include="MSBuild_6_DynamicImport.targets" />
+    <None Include="MSBuild_7_Conditions.targets" />
+    <None Include="MSBuild_8_Replace.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
