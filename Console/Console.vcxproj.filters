@@ -233,6 +233,9 @@
     <ClCompile Include="[9] DVD API\main_47_WMI.cpp">
       <Filter>Source Files\[9] DVD API</Filter>
     </ClCompile>
+    <ClCompile Include="[9] DVD API\main_47_IMAPI.cpp">
+      <Filter>Source Files\[9] DVD API</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -276,6 +279,15 @@
     </ClInclude>
     <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h">
       <Filter>Source Files\[8] Token singleton</Filter>
+    </ClInclude>
+    <ClInclude Include="[9] DVD API\DiscMaster.h">
+      <Filter>Source Files\[9] DVD API</Filter>
+    </ClInclude>
+    <ClInclude Include="[9] DVD API\main_47_Utils.h">
+      <Filter>Source Files\[9] DVD API</Filter>
+    </ClInclude>
+    <ClInclude Include="[9] DVD API\DiscRecorder.h">
+      <Filter>Source Files\[9] DVD API</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
