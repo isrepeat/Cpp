@@ -33,6 +33,9 @@
     <Filter Include="Source Files\[8] Token singleton">
       <UniqueIdentifier>{486b08d5-c8a7-454e-97b2-4eab786ed8a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[9] DVD API">
+      <UniqueIdentifier>{c4566087-8244-4cbf-abd6-a066850249e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -223,6 +226,12 @@
     </ClCompile>
     <ClCompile Include="main_46_format.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="[9] DVD API\main_47_Vds.cpp">
+      <Filter>Source Files\[9] DVD API</Filter>
+    </ClCompile>
+    <ClCompile Include="[9] DVD API\main_47_WMI.cpp">
+      <Filter>Source Files\[9] DVD API</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -220,6 +220,8 @@
     <ClCompile Include="[8] Token singleton\main_42_fileB.cpp" />
     <ClCompile Include="[8] Token singleton\main_42_main.cpp" />
     <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp" />
+    <ClCompile Include="[9] DVD API\main_47_Vds.cpp" />
+    <ClCompile Include="[9] DVD API\main_47_WMI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
