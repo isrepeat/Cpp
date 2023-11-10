@@ -7,6 +7,7 @@
 #include <shellapi.h>
 #include <filesystem>
 #include <regex>
+#include <cassert>
 
 
 namespace H {
