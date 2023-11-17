@@ -220,6 +220,9 @@
     <ClCompile Include="[8] Token singleton\main_42_fileB.cpp" />
     <ClCompile Include="[8] Token singleton\main_42_main.cpp" />
     <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp" />
+    <ClCompile Include="[9] DVD API\main_47_IMAPI.cpp" />
+    <ClCompile Include="[9] DVD API\main_47_Vds.cpp" />
+    <ClCompile Include="[9] DVD API\main_47_WMI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
@@ -244,6 +247,9 @@
     <ClInclude Include="[8] Token singleton\main_42_fileC.h" />
     <ClInclude Include="[8] Token singleton\main_42_fileB.h" />
     <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h" />
+    <ClInclude Include="[9] DVD API\DiscMaster.h" />
+    <ClInclude Include="[9] DVD API\DiscRecorder.h" />
+    <ClInclude Include="[9] DVD API\main_47_Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
