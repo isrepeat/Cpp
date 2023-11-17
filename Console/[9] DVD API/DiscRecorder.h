@@ -33,6 +33,9 @@ public:
 		return activeVolumePathName;
 	}
 
+	wchar_t GetActiveVolumeDriveLetter() const {
+		return PathGetDriveNumberW(activeVolumePathName.c_str());
+	}
 
 private:
 	std::filesystem::path GetActiveVolumePathName() {

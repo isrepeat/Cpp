@@ -49,7 +49,7 @@ void TestGetDiskSizeViaIMAPI_2() {
 	wprintf(L"Get size via IMAPI 2:\n");
 	for (auto& discRecorder : discRecroders) {
 		auto activeVolumePath = discRecorder.GetActiveVolumePath().root_name().wstring();
-		wprintf(L"[Info for \"%s\"] \n", activeVolumePath.c_str());
+		wprintf(L"[Info for \"%s\" ('%c')] \n", activeVolumePath.c_str(), discRecorder.GetActiveVolumeDriveLetter());
 
 		Microsoft::WRL::ComPtr<IDiscFormat2Data> dataWriter;
 		hr = CoCreateInstance(__uuidof(MsftDiscFormat2Data), nullptr, CLSCTX_ALL, IID_PPV_ARGS(dataWriter.GetAddressOf()));
