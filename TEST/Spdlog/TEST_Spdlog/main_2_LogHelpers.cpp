@@ -3,6 +3,7 @@
 // free falgs 'j', 'k', 'q', 'w'
 #include <Helpers/Filesystem.hpp>
 #include <Helpers/Helpers.h>
+#include <filesystem>
 
 
 void TestLoggsWithDifferentPatters() {
@@ -243,16 +244,23 @@ struct fmt::formatter<MyString, wchar_t> {
 };
 
 
-
-
 template<>
-struct fmt::formatter<std::wstring, char> {
+struct fmt::formatter<std::filesystem::path, char> {
     constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
         return ctx.end();
     }
-    auto format(const std::wstring& wstr, format_context& ctx) -> decltype(ctx.out()) {
-        //return fmt::format_to(ctx.out(), "{}", H::WStrToStr(wstr, CP_ACP));
-        return ctx.out();
+    auto format(const std::filesystem::path& path, format_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "{}", path.string());
+    }
+};
+
+template<>
+struct fmt::formatter<std::filesystem::path, wchar_t> {
+    constexpr auto parse(wformat_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+    auto format(const std::filesystem::path& path, wformat_context& ctx) -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), L"{}", path.wstring());
     }
 };
 
@@ -265,10 +273,20 @@ void TestLogCustomType() {
 
     lg::DefaultLoggers::Init(L"logs/НоваяПапка/main-Log.txt");
     //LOG_WARNING_D("RawString = {}", "Hello World");
-    LOG_WARNING_D(L"Тестовый Code = {}", std::wstring(L"Привет World"));
+    //LOG_WARNING_D(L"Тестовый Code = {}", std::wstring(L"Привет World"));
     //LOG_WARNING_D("RawString_mix_acp = {}", H::WStrToStr(L"Привет World", CP_ACP));
     //LOG_WARNING_D("RawString_mix_utf8 = {}", H::WStrToStr(L"Привет World", CP_UTF8));
     //LOG_WARNING_D(L"RawWString_mix = {}", L"Привет World");
+
+    auto fsItem = std::filesystem::path("D:\\AAA\\BBB\\CCC\\file.txt");
+
+    LOG_DEBUG_D(L"Filesystem item = {}", fsItem);
+    LOG_DEBUG_D(L"* root_name = {}", fsItem.root_name());
+    LOG_DEBUG_D("* root_directory = {}", fsItem.root_directory());
+    LOG_DEBUG_D("* root_path = {}", fsItem.root_path());
+    LOG_DEBUG_D(L"* parent_path = {}", fsItem.parent_path());
+    LOG_DEBUG_D(L"* relative_path = {}", fsItem.relative_path());
+    LOG_DEBUG_D("* filename = {}", fsItem.filename());
 
     return;
 }
