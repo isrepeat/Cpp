@@ -236,6 +236,9 @@
     <ClCompile Include="[9] DVD API\main_47_IMAPI.cpp">
       <Filter>Source Files\[9] DVD API</Filter>
     </ClCompile>
+    <ClCompile Include="main_48_stdout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">

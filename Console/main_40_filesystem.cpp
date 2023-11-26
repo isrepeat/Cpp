@@ -211,43 +211,41 @@
 //
 //
 //
-//
-//
-//struct DiscFileItem {
+//struct MappedFileItem {
 //    std::filesystem::path localPath;
-//    std::filesystem::path discPath;
+//    std::filesystem::path mappedPath;
 //};
 //
-//class DiscFilesCollection : public IFilesCollection {
+//class MappedFilesCollection : public IFilesCollection {
 //public:
 //    enum class Format {
 //        Default,
-//        RelativeDiscPath,
+//        RelativeMappedPath,
 //    };
 //
-//    DiscFilesCollection(wchar_t discLetter, Format format = Format::Default)
+//    MappedFilesCollection(std::filesystem::path mappedRootPath, Format format = Format::Default)
 //        : totalSize{ 0 }
 //        , format{ format }
-//        , discRootPath{ discLetter + std::wstring(L":\\") }
+//        , mappedRootPath{ mappedRootPath }
 //    {}
-//    DiscFilesCollection(DiscFilesCollection&) = default;
+//    MappedFilesCollection(MappedFilesCollection&) = default;
 //
 //    // After copying, internally calls Complete()
-//    DiscFilesCollection& operator=(const DiscFilesCollection& other) {
+//    MappedFilesCollection& operator=(const MappedFilesCollection& other) {
 //        if (this != &other) {
 //            dirs = other.dirs;
 //            files = other.files;
 //            totalSize = other.totalSize;
-//            discRootPath = other.discRootPath;
+//            mappedRootPath = other.mappedRootPath;
 //            Complete();
 //        }
 //        return *this;
 //    }
 //
-//    const std::vector<DiscFileItem>& GetDirs() const {
+//    const std::vector<MappedFileItem>& GetDirs() const {
 //        return dirs;
 //    }
-//    const std::vector<DiscFileItem>& GetFiles() const {
+//    const std::vector<MappedFileItem>& GetFiles() const {
 //        return files;
 //    }
 //    const uint64_t GetSize() const {
@@ -262,39 +260,39 @@
 //    }
 //
 //    void HandlePathItem(const PathItem& pathItem) override {
-//        DiscFileItem discFileItem;
+//        MappedFileItem mappedFileItem;
 //
 //        switch (pathItem.type) {
 //        case PathItem::Type::File:
 //        case PathItem::Type::Directory:
-//            discFileItem = { pathItem.mainItem, discRootPath / pathItem.mainItem.filename() };
+//            mappedFileItem = { pathItem.mainItem, mappedRootPath / pathItem.mainItem.filename() };
 //            break;
 //        case PathItem::Type::RecursiveEntry: {
 //            // Cut mainItem path part from recursiveItem (recursiveItem is a child item of mainItem)
 //            auto relativePathToMainItem = pathItem.recursiveItem.wstring().substr(pathItem.mainItem.wstring().size() + 1); // +1 - skip slash
-//            discFileItem = { pathItem.recursiveItem, discRootPath / pathItem.mainItem.filename() / relativePathToMainItem };
+//            mappedFileItem = { pathItem.recursiveItem, mappedRootPath / pathItem.mainItem.filename() / relativePathToMainItem };
 //            break;
 //        }
 //        }
 //
 //        switch (pathItem.ExpandType()) {
 //        case PathItem::Type::File:
-//            files.push_back(std::move(discFileItem));
+//            files.push_back(std::move(mappedFileItem));
 //            totalSize += std::filesystem::file_size(pathItem.mainItem);
 //            break;
 //        case PathItem::Type::Directory:
-//            dirs.push_back(std::move(discFileItem));
+//            dirs.push_back(std::move(mappedFileItem));
 //            break;
 //        }
 //    }
 //
 //    void Complete() override {
-//        if (format == Format::RelativeDiscPath) { // remove root path
+//        if (format == Format::RelativeMappedPath) { // remove root path
 //            for (auto& dir : dirs) {
-//                dir.discPath = dir.discPath.relative_path();
+//                dir.mappedPath = dir.mappedPath.relative_path();
 //            }
 //            for (auto& file : files) {
-//                file.discPath = file.discPath.relative_path();
+//                file.mappedPath = file.mappedPath.relative_path();
 //            }
 //        }
 //    }
@@ -302,10 +300,11 @@
 //private:
 //    uint64_t totalSize;
 //    const Format format;
-//    std::filesystem::path discRootPath;
-//    std::vector<DiscFileItem> dirs;
-//    std::vector<DiscFileItem> files;
+//    std::filesystem::path mappedRootPath;
+//    std::vector<MappedFileItem> dirs;
+//    std::vector<MappedFileItem> files;
 //};
+//
 //
 //
 //
@@ -317,13 +316,12 @@
 //    auto relPath = tmpPath.relative_path();
 //    auto filename = tmpPath.filename();
 //
-//
-//    //auto xx = rootPath.re
-//
 //    std::vector<std::filesystem::path> fileList = {
-//        L"D:\\black.png",
-//        L"D:\\DiskDir_2",
-//        L"C:\\TORRENT_TMP\\Hello",
+//        L"C:\\TORRENT_TMP\\Hello\\sockets.pdf",
+//        L"C:\\TORRENT_TMP\\Hello\\Folder_C",
+//        L"D:\\WORK\\TEST\\TeamRemoteDesktop\\Clipboard\\Sender\\Atribute_Perspective_(62).png",
+//        L"D:\\WORK\\TEST\\TeamRemoteDesktop\\Clipboard\\Sender\\Folder_D",
+//        //L"D:\\black.png",
 //    };
 //
 //    auto filesCollection_implicit = FilesObserver::GetFilesCollection(fileList);
@@ -331,8 +329,9 @@
 //    FilesCollection filesCollection_explicit;
 //    FilesObserver::GetFilesCollection(fileList, filesCollection_explicit);
 //
-//    DiscFilesCollection discFilesCollection_explicit('H');
-//    FilesObserver::GetFilesCollection(fileList, discFilesCollection_explicit);
+//    //MappedFilesCollection mappedFilesCollection_explicit("X:\\ROOT");
+//    MappedFilesCollection mappedFilesCollection_explicit("X:\\");
+//    FilesObserver::GetFilesCollection(fileList, mappedFilesCollection_explicit);
 //
 //    return;
 //}
@@ -341,8 +340,8 @@
 //void main() {
 //    //TestCopyDirectoryContentToAnotherDirectory();
 //    //TestPathToFile();
-//    TestVolumeInfo();
-//    //TestFilesCollection();
+//    //TestVolumeInfo();
+//    TestFilesCollection();
 //
 //    return;
 //}
