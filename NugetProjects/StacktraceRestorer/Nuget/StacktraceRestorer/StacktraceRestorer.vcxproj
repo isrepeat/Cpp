@@ -74,28 +74,28 @@
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>$(ProjectDir)DIA_SDK\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!VS_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <LibraryPath>$(ProjectDir)DIA_SDK\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>$(ProjectDir)DIA_SDK\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!VS_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <LibraryPath>$(ProjectDir)DIA_SDK\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>$(ProjectDir)DIA_SDK\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!VS_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <LibraryPath>$(ProjectDir)DIA_SDK\lib\amd64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>$(ProjectDir)DIA_SDK\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <OutDir>$(ProjectDir)\..\!VS_TMP\build\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(ProjectDir)\..\!VS_TMP\intermedia\$(Platform)\$(Configuration)</IntDir>
+    <IntDir>$(ProjectDir)\..\!VS_TMP\Intermediate\$(Platform)\$(Configuration)</IntDir>
     <LibraryPath>$(ProjectDir)DIA_SDK\lib\amd64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -182,7 +182,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  
   <!-- Copy ms_dia dlls to output and rename -->
   <Target Name="AfterBuild">
     <ItemGroup Condition="'$(Platform)'=='Win32'">
@@ -191,7 +190,6 @@
     <ItemGroup Condition="'$(Platform)'=='x64'">
       <MsdiaDll Include="$(ProjectDir)\..\StacktraceRestorer\DIA_SDK\bin\amd64\*.dll" />
     </ItemGroup>
-
     <Message Importance="High" Text="==== [StacktraceRestorer] Copy and rename msdia dlls  ..." />
     <Copy SourceFiles="@(MsdiaDll)" DestinationFiles="@(MsdiaDll->'$(OutDir)\%(Filename)_$(PlatformShortName)%(Extension)')" />
   </Target>

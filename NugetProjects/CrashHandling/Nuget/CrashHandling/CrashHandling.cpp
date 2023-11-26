@@ -1,24 +1,29 @@
 #include "CrashHandling.h"
 #include "MiniDumpMessages.h"
-#include "../../../../Shared/Helpers/Helpers.h"
-#include "../../../../Shared/Helpers/Channel.h"
-#include "../../../../Shared/Helpers/CrashInfo.h"
+#include <ComAPI/ComAPI.h>
+#include <Helpers/Helpers.h>
+#include <Helpers/PackageProvider.h>
+#include <Helpers/Channel.h>
+#include <Helpers/CrashInfo.h>
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
 
 namespace CrashHandling {
-	std::function<void(EXCEPTION_POINTERS*)> gCrashCallback = nullptr;
+	std::function<void(EXCEPTION_POINTERS*, ExceptionType)> gCrashCallback = nullptr;
 	Channel<MiniDumpMessages> channelMinidump;
 	const uint32_t ClrException = 0xE0434352;
+	const uint32_t CppException = 0xE06D7363;
 	bool wasCrashException = false;
+	bool handledCrashException = false;
 
 
-	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep);
-	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultVectoredExceptionHandlerFirst(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultVectoredExceptionHandlerLast(EXCEPTION_POINTERS* pep);
+	LONG WINAPI DefaultUnhandledExceptionFilter(EXCEPTION_POINTERS* pep);
 
 
-	API Backtrace GetBacktrace(int SkipFrames) {
+	CRASH_HANDLING_API Backtrace GetBacktrace(int SkipFrames) {
 		constexpr int TRACE_MAX_STACK_FRAMES = 99;
 		void* stack[TRACE_MAX_STACK_FRAMES];
 		ULONG hash;
@@ -65,7 +70,7 @@ namespace CrashHandling {
 		return backtrace;
 	}
 
-	API std::wstring BacktraceToString(const Backtrace& backtrace) {
+	CRASH_HANDLING_API std::wstring BacktraceToString(const Backtrace& backtrace) {
 		std::wstring backtraceStr;
 
 		for (auto& [modulename, backtraceFrames] : backtrace) {
@@ -81,17 +86,19 @@ namespace CrashHandling {
 	}
 
 
-	API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
+	CRASH_HANDLING_API void RegisterVectorHandler(PVECTORED_EXCEPTION_HANDLER handler) {
 		AddVectoredExceptionHandler(0, handler);
 	}
 
-	API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*)> crashCallback) {
+	CRASH_HANDLING_API void RegisterDefaultCrashHandler(std::function<void(EXCEPTION_POINTERS*, ExceptionType)> crashCallback) {
 		gCrashCallback = crashCallback;
-		AddVectoredExceptionHandler(1, DefaultUnhandledExceptionFilterFirst); // additional guard for cathing c++ exception within clr environment
-		AddVectoredExceptionHandler(0, DefaultUnhandledExceptionFilterLast);
+		AddVectoredExceptionHandler(1, DefaultVectoredExceptionHandlerFirst); // additional guard for cathing c++ exception within clr environment
+		AddVectoredExceptionHandler(0, DefaultVectoredExceptionHandlerLast);
+		SetUnhandledExceptionFilter(&DefaultUnhandledExceptionFilter);
 	}
 
-	API void GenerateCrashReport(EXCEPTION_POINTERS* pep, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter, const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs) {
+	CRASH_HANDLING_API void GenerateCrashReport(EXCEPTION_POINTERS* pExceptionPtrs, const AdditionalInfo& additionalInfo, const std::wstring& runProtocolMinidumpWriter,
+		const std::vector<std::pair<std::wstring, std::wstring>>& commandArgs, std::function<void(const std::wstring&)> callbackToRunProtocol) {
 		auto processId = GetCurrentProcessId();
 		auto threadId = GetCurrentThreadId();
 
@@ -99,8 +106,21 @@ namespace CrashHandling {
 			{L"-processId", std::to_wstring(processId)},
 		};
 		params.insert(params.end(), commandArgs.begin(), commandArgs.end());
-		std::wstring protcolWithParams = L"/c start " + runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
-		H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
+
+		if (callbackToRunProtocol) {
+			std::wstring protcolWithParams = runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
+			callbackToRunProtocol(protcolWithParams);
+		}
+		else {
+			std::wstring protcolWithParams = L"/c start " + runProtocolMinidumpWriter + L":\"" + H::CreateStringParams(params) + L"\"";
+			H::ExecuteCommandLine(protcolWithParams, false, SW_HIDE);
+		}
+
+		std::wstring packageFolder = H::PackageProvider::IsRunningUnderPackage() ? ComApi::GetPackageFolder() : H::ExePathW();
+
+		if (additionalInfo.appVersion.empty()) {
+			const_cast<AdditionalInfo&>(additionalInfo).appVersion = H::PackageProvider::GetPackageVersion();
+		}
 
 		try {
 			channelMinidump.Open(additionalInfo.channelName, [=](Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write) {
@@ -108,7 +128,7 @@ namespace CrashHandling {
 				switch (reply.type)
 				{
 				case MiniDumpMessages::Connect: {
-					std::string strData = H::WStrToStr(additionalInfo.packageFolder);
+					std::string strData = H::WStrToStr(packageFolder);
 					Write({ strData.begin(), strData.end() }, MiniDumpMessages::PackageFolder);
 
 					strData = H::WStrToStr(additionalInfo.appCenterId);
@@ -128,7 +148,7 @@ namespace CrashHandling {
 
 					auto crashInfo = std::make_shared<CrashInfo>();
 					crashInfo->threadId = threadId;
-					FillCrashInfoWithExceptionPointers(crashInfo, pep);
+					FillCrashInfoWithExceptionPointers(crashInfo, pExceptionPtrs);
 					auto serializedData = SerializeCrashInfo(crashInfo);
 					Write(std::move(serializedData), MiniDumpMessages::ExceptionInfo);
 					break;
@@ -145,9 +165,8 @@ namespace CrashHandling {
 		}
 	}
 
-
-	LONG __stdcall DefaultUnhandledExceptionFilterFirst(EXCEPTION_POINTERS* pep) {
-		switch (pep->ExceptionRecord->ExceptionCode) {
+	LONG WINAPI DefaultVectoredExceptionHandlerFirst(EXCEPTION_POINTERS* pExceptionPtrs) {
+		switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
 		case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -162,19 +181,29 @@ namespace CrashHandling {
 		case EXCEPTION_INT_OVERFLOW:
 			wasCrashException = true;
 			break;
+
+		case ClrException: {
+			int xxx = 9;
+			break;
+		}
+		case CppException: {
+			int xxx = 9;
+			break;
+		}
 		}
 
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 
-	LONG __stdcall DefaultUnhandledExceptionFilterLast(EXCEPTION_POINTERS* pep) {
-		static bool handledCrashException = false;
-		if (handledCrashException)
+	LONG WINAPI DefaultVectoredExceptionHandlerLast(EXCEPTION_POINTERS* pExceptionPtrs) {
+		if (handledCrashException) {
+			printf("DefaultVectoredExceptionHandlerLast() crash exception already handled, ignore ... \n");
 			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+		}
 
 		std::wstring exceptionMsg;
-		switch (pep->ExceptionRecord->ExceptionCode) {
+		switch (pExceptionPtrs->ExceptionRecord->ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION:
 		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
 		case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -199,15 +228,42 @@ namespace CrashHandling {
 			}
 		}
 
+		case CppException: {
+			if (wasCrashException) {
+				break;
+			}
+			else {
+				return EXCEPTION_CONTINUE_SEARCH;
+			}
+		}
+
 		default:
 			return EXCEPTION_CONTINUE_SEARCH;
 		}
 
+		printf("DefaultVectoredExceptionHandlerLast() call crash callback ...\n");
 		handledCrashException = true;
 		if (gCrashCallback) {
-			gCrashCallback(pep);
+			gCrashCallback(pExceptionPtrs, ExceptionType::StructuredException);
 			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
 		}
+		channelMinidump.StopChannel();
+		exit(0);
+	}
+
+	LONG WINAPI DefaultUnhandledExceptionFilter(EXCEPTION_POINTERS* pExceptionPtrs) {
+		if (handledCrashException) {
+			printf("DefaultUnhandledExceptionFilter() crash exception already handled, ignore ... \n");
+			return EXCEPTION_CONTINUE_SEARCH; // ignore next exception
+		}
+		
+		printf("DefaultUnhandledExceptionFilter() call crash callback ...\n");
+		handledCrashException = true;
+		if (gCrashCallback) {
+			gCrashCallback(pExceptionPtrs, ExceptionType::UnhandledException);
+			std::this_thread::sleep_for(std::chrono::milliseconds(7'000));
+		}
+		channelMinidump.StopChannel();
 		exit(0);
 	}
 }

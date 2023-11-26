@@ -6,14 +6,16 @@
 #include <string>
 #include <memory>
 #include "AppCenter.h"
-#include "../../../../Shared/Helpers/Helpers.h"
-#include "../../../../Shared/Helpers/Channel.h"
-#include "../../../../Shared/Helpers/CrashInfo.h"
+#include <Helpers/Helpers.h>
+#include <Helpers/Channel.h>
+#include <Helpers/CrashInfo.h>
+#include <Helpers/FileSystem.h>
+#include <Helpers/RegistryManager.h>
 #include "../CrashHandling/MiniDumpMessages.h"
 #include <dbghelp.h>
 #pragma comment (lib, "dbghelp.lib" )
 
-#define VERSION L"1.1.7"
+#define VERSION L"1.1.16"
 
 // NOTE: use uint8_t (instead whar_t) to be able send serialized structs
 Channel<MiniDumpMessages> channelMinidump;
@@ -25,8 +27,8 @@ QString appVersion;
 QString backtrace;
 QString appUuid;
 
-void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path);
 bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write, HANDLE hProcess);
+void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path);
 
 template<typename Ret>
 Ret Convert(const std::wstring& str) {
@@ -150,6 +152,24 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	Sleep(sleepAtStart);
 
+	QObject::connect(&AppCenter::GetInstance(), &AppCenter::ReportSendingStatus, [] (bool success) {
+		if (success) {
+			printf("Report sent successful !!! \n");
+			MessageBoxA(NULL, (LPCSTR)"Report sent successful", (LPCSTR)"Crash report", MB_ICONINFORMATION | MB_DEFBUTTON2);
+		}
+		else {
+			printf("Report not sent !!! \n");
+			MessageBoxA(NULL, (LPCSTR)"Report not sent", (LPCSTR)"Crash report", MB_ICONWARNING | MB_DEFBUTTON2);
+		}
+
+		Sleep(5'000); // wait some time to user can read message
+
+		if (debug) {
+			Sleep(10'000); // wait some time to developer can read console output
+		}
+		qApp->exit();
+		});
+
 	try {
 		if (HANDLE hProcess = OpenProcess(processAccessFlags, FALSE, processId)) {
 			if (isUWP) {
@@ -163,7 +183,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	catch (PipeError err) {
 		wprintf(L"\n");
-		printf("channelApplication error = %d \n", static_cast<int>(err));
+		wprintf(L"channelApplication error = %d \n", static_cast<int>(err));
 	}
 	catch (...) {
 		wprintf(L"\n");
@@ -171,46 +191,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 
-	printf("\n");
-	printf("infinity loop ... \n");
+	wprintf(L"\n");
+	wprintf(L"infinity loop ... \n");
 
 	return app.exec();
 }
 
-
-void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path) {
-	if (!std::filesystem::exists(path))
-		std::filesystem::create_directories(path);
-
-	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
-		MINIDUMP_EXCEPTION_INFORMATION mdei;
-		mdei.ThreadId = crashInfo->threadId;
-		mdei.ExceptionPointers = &crashInfo->exceptionPointers;
-		mdei.ClientPointers = FALSE;
-
-		if (mdei.ExceptionPointers == NULL) {
-			wprintf(L"ExceptionPointers == 0 \n");
-		}
-
-		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
-
-		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != NULL) ? &mdei : NULL, NULL, NULL);
-
-		if (!rv) {
-			wprintf(L"MiniDumpWriteDump failed. [%u] %s \n", GetLastError(), H::GetLastErrorAsString().c_str());
-		}
-		else {
-			//WriteDebug(L"Minidump created");
-		}
-
-		CloseHandle(hFile);
-	}
-	else {
-		//WriteDebug(L"CreateFile failed. Error: %u", GetLastError());
-	}
-}
 
 bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<MiniDumpMessages>::WriteFunc Write, HANDLE hProcess) {
 	auto reply = Read();
@@ -274,7 +260,10 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 		GenerateMiniDump(crashInfo, hProcess, processId, crashReportFolder);
 		
 		printf("[PIPE] dump created! \n");
-		Write({}, MiniDumpMessages::DumpCreated); // now crahing process may be closed
+		Write({}, MiniDumpMessages::DumpCreated); // now crashing process may be closed
+
+		auto productName = H::StrToWStr(H::RegistryManager::GetRegValue(HKey::LocalMachine, "HARDWARE\\DESCRIPTION\\System\\BIOS", "SystemProductName"));
+		H::FileSystem::WriteFile(crashReportFolder + L"\\" + appUuid.toStdWString() + L"_" + productName, {});
 
 		QList attachmentDirs{
 			QDir{QString::fromStdWString(crashReportFolder)},
@@ -283,15 +272,43 @@ bool ChannelListenerHandler(Channel<MiniDumpMessages>::ReadFunc Read, Channel<Mi
 		printf("[PIPE] send report to App Center ... \n");
 		AppCenter::GetInstance().SetApplicationData(appCenterId, appUuid, appVersion);
 		AppCenter::GetInstance().SendCrashReport(exceptionMessage, {}, backtrace, attachmentDirs);
-		
-		printf("[PIPE] report sent! \n");
-		if (debug) {
-			Sleep(10'000);
-		}
-
-		qApp->exit();
 		break;
 	}
 	}
 	return true;
+}
+
+
+void GenerateMiniDump(std::shared_ptr<CrashInfo> crashInfo, HANDLE hProcess, int processId, std::wstring path) {
+	if (!std::filesystem::exists(path))
+		std::filesystem::create_directories(path);
+
+	HANDLE hFile = CreateFile((path + L"\\MiniDump.dmp").c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
+		MINIDUMP_EXCEPTION_INFORMATION mdei;
+		mdei.ThreadId = crashInfo->threadId;
+		mdei.ExceptionPointers = &crashInfo->exceptionPointers;
+		mdei.ClientPointers = FALSE;
+
+		if (mdei.ExceptionPointers == NULL) {
+			wprintf(L"ExceptionPointers == 0 \n");
+		}
+
+		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
+
+		BOOL rv = MiniDumpWriteDump(hProcess, processId, hFile, mdt, (mdei.ExceptionPointers != NULL) ? &mdei : NULL, NULL, NULL);
+
+		if (!rv) {
+			wprintf(L"MiniDumpWriteDump failed. [%u] %s \n", GetLastError(), H::GetLastErrorAsString().c_str());
+		}
+		else {
+			//WriteDebug(L"Minidump created");
+		}
+
+		CloseHandle(hFile);
+	}
+	else {
+		//WriteDebug(L"CreateFile failed. Error: %u", GetLastError());
+	}
 }

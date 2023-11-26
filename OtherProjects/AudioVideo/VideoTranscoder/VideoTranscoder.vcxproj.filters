@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\AudioCodec">
+      <UniqueIdentifier>{dfe0d579-9fb8-47e2-8e3d-49a9da7b0ea4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VideoCodec">
+      <UniqueIdentifier>{c39b615c-f34f-4eed-9c2f-94d2848bf8ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MediaFormat">
+      <UniqueIdentifier>{ef0b0c96-ab48-4aaa-8e10-d33b4a3c3793}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkMerger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaTypeCreator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioCodecCompressedSettings.cpp">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioCodecSettings.cpp">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="IVideoCodecSettings.cpp">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoCodecSettings.cpp">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoCodecSimpleSettings.cpp">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFormat.cpp">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFormatCodecs.cpp">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFormatCodecsEnumerator.cpp">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFormatCodecsSupport.cpp">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFormatFactory.cpp">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioCodecLosslessSettings.cpp">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClCompile>
+    <ClCompile Include="IAudioCodecSettings.cpp">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ChunkMerger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTypeCreator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MFInclude.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MFLibs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICloneable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioCodecType.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioCodecBasicSettings.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioCodecBitrateSettings.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioCodecCompressedSettings.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="IAudioCodecSettings.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="IVideoCodecSettings.h">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoCodecBasicSettings.h">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoCodecSimpleSettings.h">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoCodecType.h">
+      <Filter>Source Files\VideoCodec</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaFormat.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaFormatCodecs.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaFormatCodecsEnumerator.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaFormatCodecsSupport.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaFormatFactory.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaContainerType.h">
+      <Filter>Source Files\MediaFormat</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioCodecLosslessSettings.h">
+      <Filter>Source Files\AudioCodec</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

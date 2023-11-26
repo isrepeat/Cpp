@@ -3,15 +3,27 @@
 #include <Windows.h>
 
 namespace H {
-
-	MeasureTime::MeasureTime() 
-		: start(std::chrono::high_resolution_clock::now()) 
+	MeasureTime::MeasureTime()
+		: start(std::chrono::high_resolution_clock::now())
 	{
 	}
 	MeasureTime::~MeasureTime() {
 		auto stop = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = stop - start;
 		OutputDebugStringA((std::stringstream() << "[elapsed time = " << duration.count() * 1000 << "ms] \n").str().c_str());
+	}
+
+	MeasureTimeScoped::MeasureTimeScoped(std::function<void(uint64_t dtMs)> completedCallback)
+		: start{ std::chrono::high_resolution_clock::now() }
+		, completedCallback{ completedCallback }
+	{
+	}
+	MeasureTimeScoped::~MeasureTimeScoped() {
+		if (completedCallback) {
+			auto stop = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> duration = stop - start; // different in seconds
+			completedCallback(duration.count() * 1000);
+		}
 	}
 
 	std::string GetTimeNow(TimeFormat timeFormat) {

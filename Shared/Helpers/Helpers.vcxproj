@@ -84,6 +84,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)\3rdParty;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -96,7 +97,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,7 +115,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,23 +164,73 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Bimap.hpp" />
+    <ClInclude Include="BIOS.h" />
     <ClInclude Include="Channel.h" />
+    <ClInclude Include="Concurrency.h" />
+    <ClInclude Include="ConcurrentQueue.h" />
+    <ClInclude Include="Container.hpp" />
     <ClInclude Include="Conversion.h" />
+    <ClInclude Include="CoUniquePtr.h" />
     <ClInclude Include="CrashInfo.h" />
+    <ClInclude Include="Event.hpp" />
+    <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="Filesystem.hpp" />
+    <ClInclude Include="FunctionTraits.h" />
+    <ClInclude Include="FunctionTraits.hpp" />
+    <ClInclude Include="Gate.h" />
+    <ClInclude Include="GetAddressOf.h" />
+    <ClInclude Include="HWindows.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="IpTranslator.h" />
+    <ClInclude Include="LocalPtr.hpp" />
+    <ClInclude Include="ObjectLocker.h" />
+    <ClInclude Include="Passkey.hpp" />
+    <ClInclude Include="Rational.h" />
+    <ClInclude Include="Scope.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="LocalPtr.h" />
+    <ClInclude Include="Macros.h" />
     <ClInclude Include="PackageProvider.h" />
+    <ClInclude Include="Regex.h" />
+    <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="Signal.h" />
+    <ClInclude Include="Singleton.h" />
+    <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="String.h" />
     <ClInclude Include="System.h" />
+    <ClInclude Include="SystemDataProvider.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="ThreadSafeObject.hpp" />
+    <ClInclude Include="ThreadWaiter.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="TokenSingleton.hpp" />
+    <ClInclude Include="UniqueHandle.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BIOS.cpp" />
     <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="Concurrency.cpp" />
+    <ClCompile Include="Conversion.cpp" />
     <ClCompile Include="CrashInfo.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="Gate.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="IpTranslator.cpp" />
+    <ClCompile Include="ObjectLocker.cpp" />
     <ClCompile Include="PackageProvider.cpp" />
+    <ClCompile Include="Regex.cpp" />
+    <ClCompile Include="RegistryManager.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="System.cpp" />
+    <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="UniqueHandle.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Filesystem.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

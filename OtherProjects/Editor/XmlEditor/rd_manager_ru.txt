@@ -1,0 +1,941 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="ru_RU">
+<context>
+    <name>AccentColorPicker</name>
+    <message>
+        <location filename="AccentColorPicker.ui" line="14"/>
+        <source>AccentColorPicker</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ButtonWithBottomBorder</name>
+    <message>
+        <location filename="ButtonWithBottomBorder.ui" line="20"/>
+        <source>ButtonWithBottomBorder</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ButtonWithPrice</name>
+    <message>
+        <location filename="ButtonWithPrice.ui" line="32"/>
+        <source>ButtonWithPrice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ButtonWithPrice.ui" line="131"/>
+        <source>$13.37</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ButtonWithPrice.ui" line="157"/>
+        <source>GET NOW / 1 Mounth</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ButtonsPanel</name>
+    <message>
+        <location filename="ButtonsPanel.ui" line="20"/>
+        <source>ButtonsPanel</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ColorButton</name>
+    <message>
+        <location filename="ColorButton.ui" line="14"/>
+        <source>ColorButton</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ConnectedUserItem</name>
+    <message>
+        <location filename="ConnectedUserItem.ui" line="26"/>
+        <source>ConnectedUserItem</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="ConnectedUserItem.cpp" line="66"/>
+        <source>Disconnect user</source>
+        <translation>Отключить пользователя</translation>
+    </message>
+</context>
+<context>
+    <name>ConnectionsDataWindow</name>
+    <message>
+        <location filename="ConnectionsDataWindow.ui" line="14"/>
+        <source>ConnectionsDataWindow</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="ConnectionsDataWindow.ui" line="168"/>
+        <source>Team Remote Desktop</source>
+        <oldsource>Remote Desktop Manager</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ConnectionsDataWindow.ui" line="354"/>
+        <source>List of connections</source>
+        <translation>Список подключений</translation>
+    </message>
+    <message>
+        <source>Hide</source>
+        <translation type="vanished">Спрятать</translation>
+    </message>
+    <message>
+        <source>Close connection</source>
+        <translation type="vanished">Прервать соединение</translation>
+    </message>
+</context>
+<context>
+    <name>CustomCheckbox</name>
+    <message>
+        <location filename="CustomCheckbox.ui" line="14"/>
+        <source>CustomCheckbox</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>FramelessWindow</name>
+    <message>
+        <location filename="framelesswindow.ui" line="190"/>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="framelesswindow.ui" line="237"/>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="framelesswindow.cpp" line="585"/>
+        <source>&amp;Restore</source>
+        <translation>&amp;Восстановить</translation>
+    </message>
+    <message>
+        <location filename="framelesswindow.cpp" line="586"/>
+        <source>&amp;Quit</source>
+        <translation>&amp;Выйти</translation>
+    </message>
+    <message>
+        <location filename="framelesswindow.cpp" line="583"/>
+        <source>Close</source>
+        <translation>Закрыть соединение</translation>
+    </message>
+    <message>
+        <location filename="framelesswindow.cpp" line="584"/>
+        <source>Minimize</source>
+        <translation>Уменьшить</translation>
+    </message>
+</context>
+<context>
+    <name>InformationDialog</name>
+    <message>
+        <location filename="InformationDialog.ui" line="32"/>
+        <source>InformationDialog</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="InformationDialog.ui" line="96"/>
+        <source>Authentication</source>
+        <translation>Аутентификация</translation>
+    </message>
+    <message>
+        <location filename="InformationDialog.ui" line="239"/>
+        <source>Ok</source>
+        <translation>ОК</translation>
+    </message>
+    <message>
+        <location filename="InformationDialog.ui" line="275"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>LabelWithButton</name>
+    <message>
+        <location filename="LabelWithButton.ui" line="32"/>
+        <source>LabelWithButton</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hello</source>
+        <translation type="vanished">Привет</translation>
+    </message>
+</context>
+<context>
+    <name>LoadingAnimation</name>
+    <message>
+        <location filename="LoadingAnimation.ui" line="16"/>
+        <source>LoadingAnimation</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>MonitorSelectionButton</name>
+    <message>
+        <location filename="MonitorSelectionButton.ui" line="32"/>
+        <source>MonitorSelectionButton</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="MonitorSelectionButton.ui" line="140"/>
+        <source>...</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="MonitorSelectionButton.cpp" line="48"/>
+        <source>Monitor %1</source>
+        <translation>Монитор %1</translation>
+    </message>
+    <message>
+        <source>Monik %1</source>
+        <translation type="vanished">Моник %1</translation>
+    </message>
+</context>
+<context>
+    <name>OutlinedEditableCombobox</name>
+    <message>
+        <location filename="OutlinedEditableCombobox.ui" line="14"/>
+        <source>OutlinedEditableCombobox</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>PasswordRequiestDialog</name>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="26"/>
+        <source>PasswordRequiestDialog</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="75"/>
+        <source>Authentication</source>
+        <translation>Аутентификация</translation>
+    </message>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="122"/>
+        <source>Please enter the password that is 
+displayed on your partner’s computer</source>
+        <translation>Пожалуйста, введите пароль, который отображается на компьютере вашего партнера</translation>
+    </message>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="173"/>
+        <source>Password:</source>
+        <translation>Пароль:</translation>
+    </message>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="327"/>
+        <source>Log on</source>
+        <translation>Войти в систему</translation>
+    </message>
+    <message>
+        <location filename="PasswordRequiestDialog.ui" line="352"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>Prototype</name>
+    <message>
+        <source>Remote control</source>
+        <translation type="vanished">Дистанционное управление</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation type="vanished">Настройки</translation>
+    </message>
+    <message>
+        <source>Ready to connect</source>
+        <translation type="vanished">Готовы к подключению</translation>
+    </message>
+    <message>
+        <source>Authentication...</source>
+        <translation type="vanished">Аутентификация...</translation>
+    </message>
+    <message>
+        <source>text_1</source>
+        <translation type="vanished">привет текст 1</translation>
+    </message>
+    <message>
+        <source>Connection...</source>
+        <translation type="vanished">Соединение...</translation>
+    </message>
+    <message>
+        <source>Not ready. Please check your connect</source>
+        <translation type="vanished">Не готов. Пожалуйста, проверьте ваше соединение</translation>
+    </message>
+    <message>
+        <source>Confirmation</source>
+        <translation type="vanished">Подтверждение</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to disconnect the session with %1?</source>
+        <translation type="vanished">Вы уверены, что хотите отключить сеанс с %1?</translation>
+    </message>
+    <message>
+        <source>Your user ID was entered incorrectly. Try to enter your user ID again.</source>
+        <oldsource>Your user ID was entered incorrectly. Try to enter your password again.</oldsource>
+        <translation type="vanished">Ваш идентификатор пользователя был введен неверно. Попробуйте снова ввести свой идентификатор пользователя.</translation>
+    </message>
+    <message>
+        <source>Your password was entered incorrectly. Try to enter your password again.</source>
+        <translation type="vanished">Ваш пароль был введен неверно. Попробуйте еще раз ввести свой пароль.</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="vanished">Версия</translation>
+    </message>
+    <message>
+        <source>Update now</source>
+        <translation type="vanished">Обновить сейчас</translation>
+    </message>
+    <message>
+        <source>Filesystem</source>
+        <translation type="vanished">Файловая система</translation>
+    </message>
+    <message>
+        <source>Added to clipboard</source>
+        <translation type="vanished">Добавлено в буфер обмена</translation>
+    </message>
+    <message>
+        <source>Purchase canceled</source>
+        <translation type="vanished">Покупка отменена</translation>
+    </message>
+    <message>
+        <source>Purchase successful</source>
+        <translation type="vanished">Покупка успешна</translation>
+    </message>
+    <message>
+        <source>are already exist. Replace it?</source>
+        <translation type="vanished">уже существует. Заменить?</translation>
+    </message>
+    <message>
+        <source>You must update to the latest version.</source>
+        <oldsource>You must update to the latest version</oldsource>
+        <translation type="vanished">Вы должны обновиться до последней версии.</translation>
+    </message>
+    <message>
+        <source>Not access to capture remote screen. May be running an application that requires administrator rights.</source>
+        <translation type="vanished">Нет доступа для захвата удаленного экрана. Возможно, запущено приложение, требующее прав администратора.</translation>
+    </message>
+    <message>
+        <source>New version available for download.</source>
+        <translation type="vanished">Новая версия доступна для скачивания.</translation>
+    </message>
+    <message>
+        <source>Remote user have older incompatible version.</source>
+        <translation type="vanished">У удаленного пользователя более старая несовместимая версия.</translation>
+    </message>
+    <message>
+        <source>Remote user is not responding. Close connection?</source>
+        <oldsource>Remote user does not respond, are you sure to close connection?</oldsource>
+        <translation type="vanished">Удаленный пользователь не отвечает. Закрыть соединение?</translation>
+    </message>
+    <message>
+        <source>Error notification</source>
+        <translation type="vanished">Уведомление об ошибке</translation>
+    </message>
+    <message>
+        <source>Active session with %1 (%2)</source>
+        <translation type="vanished">Активная сессия с %1 (%2)</translation>
+    </message>
+    <message>
+        <source>Server not response. Try later.</source>
+        <translation type="vanished">Сервер не отвечает. Попробуйте позже.</translation>
+    </message>
+    <message>
+        <source>You cannot connect to yourself</source>
+        <translation type="vanished">Вы не можете подключиться к себе</translation>
+    </message>
+    <message>
+        <source>User not response</source>
+        <translation type="vanished">Пользователь не отвечает</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation type="vanished">Обновить</translation>
+    </message>
+    <message>
+        <source>Hello</source>
+        <translation type="obsolete">Привет</translation>
+    </message>
+</context>
+<context>
+    <name>PrototypeClass</name>
+    <message>
+        <location filename="Prototype.ui" line="87"/>
+        <source>Prototype</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Prototype.ui" line="349"/>
+        <source>Not ready. Please check your connect</source>
+        <translation>Не готов. Пожалуйста, проверьте ваше соединение</translation>
+    </message>
+    <message>
+        <location filename="Prototype.ui" line="419"/>
+        <source></source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>PurchaseWindow</name>
+    <message>
+        <location filename="PurchaseWindow.ui" line="32"/>
+        <source>PurchaseWindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="PurchaseWindow.ui" line="141"/>
+        <source></source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="PurchaseWindow.ui" line="227"/>
+        <source>Enjoy full-scale Team Remote Desktop functionality!  Manage, administer, monitor, and configure computers anywhere, anytime easily, conveniently, and quickly. You will not be disappointed! </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="PurchaseWindow.ui" line="427"/>
+        <source>I agree to the</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="PurchaseWindow.ui" line="474"/>
+        <source>Terms of Use</source>
+        <translation>Условия использования</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteCarDesktop</name>
+    <message>
+        <location filename="RemoteDesktop.ui" line="14"/>
+        <source>Remote Car</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="RemoteDesktop.ui" line="24"/>
+        <source>TextLabel</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>RemoteControlPage</name>
+    <message>
+        <location filename="RemoteControlPage.ui" line="30"/>
+        <source>RemoteControlPage</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Allow remote control</source>
+        <translation type="vanished">Разрешить удаленное управление</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="100"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Allow remote control&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>Разрешить удаленное управление</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="154"/>
+        <source>Your ID:</source>
+        <translation>Ваш ID:</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="301"/>
+        <source>Password:</source>
+        <translation>Пароль:</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="414"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:100%&quot;&gt;Control remote computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>Управлять компьютером удаленно</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Control remote computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="vanished">Управлять компьютером удаленно</translation>
+    </message>
+    <message>
+        <source>Control remote computer</source>
+        <translation type="vanished">Управлять компьютером удаленно</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="451"/>
+        <source>Partner ID:</source>
+        <translation>ID Партнёра:</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.ui" line="520"/>
+        <location filename="RemoteControlPage.cpp" line="195"/>
+        <location filename="RemoteControlPage.cpp" line="225"/>
+        <source>Connect</source>
+        <translation>Подключиться</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.cpp" line="194"/>
+        <source>Share</source>
+        <translation>Поделиться</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.cpp" line="196"/>
+        <source>Copy ID</source>
+        <oldsource>Copy1</oldsource>
+        <translation>Копировать ID</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.cpp" line="197"/>
+        <source>Copy ID and password</source>
+        <translation>Копировать ID и пароль</translation>
+    </message>
+    <message>
+        <source>Copy2</source>
+        <translation type="vanished">Привет</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.cpp" line="198"/>
+        <source>Copy password</source>
+        <oldsource>copy password</oldsource>
+        <translation>Копировать пароль</translation>
+    </message>
+    <message>
+        <source>Foo</source>
+        <translation type="vanished">12345</translation>
+    </message>
+    <message>
+        <source>Vasya</source>
+        <translation type="vanished">Вася</translation>
+    </message>
+    <message>
+        <location filename="RemoteControlPage.cpp" line="195"/>
+        <location filename="RemoteControlPage.cpp" line="225"/>
+        <source>Disconnect</source>
+        <translation>Отключить</translation>
+    </message>
+    <message>
+        <source>Hello</source>
+        <translation type="vanished">Привет</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteDesktopWindow</name>
+    <message>
+        <location filename="RemoteDesktopWindow.ui" line="20"/>
+        <source>RemoteDesktopWindow</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Confirmation</source>
+        <translation type="vanished">Подтверждение</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to disconnect the session with %1?</source>
+        <translation type="vanished">Вы уверены, что хотите отключить сеанс с %1?</translation>
+    </message>
+</context>
+<context>
+    <name>ReplaceDialog</name>
+    <message>
+        <location filename="ReplaceDialog.ui" line="32"/>
+        <source>InformationDialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="96"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="157"/>
+        <source>aaaaaaaaaaaaaaaaaaaaa bbbbbbbbb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="244"/>
+        <source>Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="280"/>
+        <source>Replace All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="323"/>
+        <source>Skip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="359"/>
+        <source>Skip All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ReplaceDialog.ui" line="397"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>SessionControlPanel</name>
+    <message>
+        <location filename="SessionControlPanel.ui" line="32"/>
+        <source>SessionControlPanel</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="SessionControlPanel.cpp" line="149"/>
+        <source>Hide</source>
+        <translation>Спрятать</translation>
+    </message>
+    <message>
+        <location filename="SessionControlPanel.cpp" line="150"/>
+        <source>Minimize</source>
+        <translation>Уменьшить</translation>
+    </message>
+    <message>
+        <location filename="SessionControlPanel.cpp" line="150"/>
+        <source>Maximize</source>
+        <translation>Развернуть</translation>
+    </message>
+    <message>
+        <source>Enable remote hotkeys</source>
+        <translation type="vanished">Включить удаленные горячие клавиши</translation>
+    </message>
+    <message>
+        <source>Disable remote hotkeys</source>
+        <translation type="vanished">Отключить удаленные горячие клавиши</translation>
+    </message>
+    <message>
+        <location filename="SessionControlPanel.cpp" line="151"/>
+        <source>Close connection</source>
+        <translation>Прервать соединение</translation>
+    </message>
+    <message>
+        <source>Activate remote hotkeys</source>
+        <translation type="vanished">Активировать удаленные горячие клавиши</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="vanished">Закрыть соединение</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsPage</name>
+    <message>
+        <location filename="SettingsPage.ui" line="14"/>
+        <source>SettingsPage</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="166"/>
+        <source>Language:</source>
+        <translation>Язык:</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="244"/>
+        <source>Application theme:</source>
+        <translation>Тема приложения:</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="322"/>
+        <source>Accent color:</source>
+        <translation>Акцентный цвет:</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="414"/>
+        <source>Your display name:</source>
+        <translation>Ваше отображаемое имя:</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="585"/>
+        <source>Enter your name</source>
+        <translation>Введите ваше имя</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="631"/>
+        <source>Access control:</source>
+        <translation>Контроль доступа:</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="744"/>
+        <source>Start with Windows</source>
+        <translation>Запускать автоматически при запуске Windows</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="813"/>
+        <source>Use keyboard shortcuts</source>
+        <translation>Использовать комбинации клавиш</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="882"/>
+        <source>Capture secure desktops</source>
+        <oldsource>Capture different desktops</oldsource>
+        <translation>Захватывать защищенные рабочие столы</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1021"/>
+        <source></source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1485"/>
+        <source>Team Remote Desktop</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1533"/>
+        <source>Version %1</source>
+        <translation>Версия %1</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1668"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Это приложение позволяет пользователям получить удаленный доступ к другому компьютеру, расположенному в любой точке мира, и использовать его, как если бы вы были там. Компьютеры могут быть доступны на краткосрочной основе для таких сценариев, как специальная удаленная поддержка, или на более долгосрочной основе для удаленного доступа к вашим приложениям и файлам.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1869"/>
+        <source>Send logs</source>
+        <translation>Отправить логи</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod, urna non vehicula dignissim, nulla sem consequat quam, id dictum nisl ligula a nulla. Nunc a nisl iaculis, commodo ligula id, dignissim orci.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod, urna non vehicula dignissim, nulla sem consequat quam, id dictum nisl ligula a nulla. Nunc a nisl iaculis, commodo ligula id, dignissim orci.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</oldsource>
+        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Это приложение позволяет пользователям получить удаленный доступ к другому компьютеру, расположенному в любой точке мира, и использовать его, как если бы вы были там. Компьютеры могут быть доступны на краткосрочной основе для таких сценариев, как специальная удаленная поддержка, или на более долгосрочной основе для удаленного доступа к вашим приложениям и файлам.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>App description ...</source>
+        <translation type="vanished">Это приложение позволяет пользователям получить удаленный доступ к другому компьютеру, расположенному в любой точке мира, и использовать его, как если бы вы были там. Компьютеры могут быть доступны на краткосрочной основе для таких сценариев, как специальная удаленная поддержка, или на более долгосрочной основе для удаленного доступа к вашим приложениям и файлам.</translation>
+    </message>
+    <message>
+        <source>Version 1.1.0.1</source>
+        <translation type="vanished">Версия %1</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1579"/>
+        <source>Published by Company name</source>
+        <translation>Издатель: Yellow Elephant Productions</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1612"/>
+        <source>Disributed by Some Store</source>
+        <translation>Распространяется в Microsoft Store</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod, urna non vehicula dignissim, nulla sem consequat quam, id dictum nisl ligula a nulla. Nunc a nisl iaculis, commodo ligula id, dignissim orci.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</source>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot;line-height:80%&quot;&gt;Это приложение позволяет пользователям получить удаленный доступ к другому компьютеру, расположенному в любой точке мира, и использовать его, как если бы вы были там. Компьютеры могут быть доступны на краткосрочной основе для таких сценариев, как специальная удаленная поддержка, или на более долгосрочной основе для удаленного доступа к вашим приложениям и файлам.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1741"/>
+        <source>Share app</source>
+        <translation>Поделиться приложением</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1773"/>
+        <source>Send feedback</source>
+        <translation>Отправить отзыв</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1805"/>
+        <source>More apps</source>
+        <translation>Больше приложений</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.ui" line="1837"/>
+        <source>Privacy policy</source>
+        <translation>Политика конфиденциальности</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="81"/>
+        <source>Share message</source>
+        <oldsource>Share</oldsource>
+        <translation>Попробуйте это быстрое и простое в использовании приложение для удаленного доступа к другому компьютеру, расположенному в любой точке мира</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Spanish</source>
+        <translation>Español</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>English</source>
+        <translation>English</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>French</source>
+        <translation>Français</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Portuguese</source>
+        <translation>Português</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Russian</source>
+        <translation>Русский</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Ukrainian</source>
+        <translation>Українська</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Deutsch</source>
+        <translation>Deutsch</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>Chinese(traditional)</source>
+        <translation>中文 - 中国</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="463"/>
+        <source>System</source>
+        <translation>По умолчанию</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="464"/>
+        <source>Chinese(simplified)</source>
+        <translation>中文 - 香港特別行政區</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="464"/>
+        <source>Italian</source>
+        <translation>Italiano</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="464"/>
+        <source>Japanese</source>
+        <translation>日本語</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="464"/>
+        <source>Korean</source>
+        <translation>한국어</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="464"/>
+        <source>Hindi</source>
+        <translation>हिन्दी</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="462"/>
+        <source>Dark</source>
+        <translation>Темная</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="462"/>
+        <source>Light</source>
+        <translation>Светая</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="462"/>
+        <source>Use system settings</source>
+        <translation>Использовать системные настройки</translation>
+    </message>
+    <message>
+        <location filename="SettingsPage.cpp" line="461"/>
+        <source>Full access</source>
+        <translation>Полный доступ</translation>
+    </message>
+    <message>
+        <source>Sign Out</source>
+        <translation type="vanished">Выйти из системы</translation>
+    </message>
+    <message>
+        <source>Subscribe</source>
+        <translation type="vanished">Подписаться</translation>
+    </message>
+    <message>
+        <source>Subscription</source>
+        <translation type="vanished">Подписка</translation>
+    </message>
+    <message>
+        <source>Change Account</source>
+        <translation type="vanished">Смена аккаунта</translation>
+    </message>
+    <message>
+        <source>Subscription Information:</source>
+        <translation type="vanished">Информация о подписке:</translation>
+    </message>
+    <message>
+        <source>Cancel subscription renewal</source>
+        <translation type="vanished">Отменить продление подписки</translation>
+    </message>
+    <message>
+        <source>You don&apos;t have a subscription yet</source>
+        <translation type="vanished">У вас еще нет подписки</translation>
+    </message>
+    <message>
+        <source>%1 every %2 days</source>
+        <translation type="vanished">%1 каждые %2&#xa0;дней</translation>
+    </message>
+    <message>
+        <source>Validity period of your subscription:</source>
+        <translation type="vanished">Срок действия вашей подписки:</translation>
+    </message>
+    <message>
+        <source>Your subscription has been terminated</source>
+        <translation type="vanished">Ваша подписка прекращена</translation>
+    </message>
+    <message>
+        <source>Would you like to see possible subscriptions?</source>
+        <translation type="vanished">Хотите посмотреть возможные подписки?</translation>
+    </message>
+</context>
+<context>
+    <name>Translator</name>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="61"/>
+        <source>About</source>
+        <translation>О приложении</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="62"/>
+        <source>General</source>
+        <translation>Общее</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="63"/>
+        <source>Settings</source>
+        <translation>Настройки</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="64"/>
+        <source>Continue</source>
+        <translation>Продолжить</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="65"/>
+        <source>Information</source>
+        <translation>Информация</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="66"/>
+        <source>Personal data</source>
+        <translation>Личные данные</translation>
+    </message>
+    <message>
+        <location filename="TranslatedStrings.cpp" line="67"/>
+        <source>Remote control</source>
+        <translation>Дистанционное управление</translation>
+    </message>
+</context>
+<context>
+    <name>WebViewWindow</name>
+    <message>
+        <location filename="WebViewWindow.ui" line="20"/>
+        <source>Authorization</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>

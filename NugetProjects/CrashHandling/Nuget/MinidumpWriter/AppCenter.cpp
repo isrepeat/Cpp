@@ -6,8 +6,9 @@
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QEventLoop>
-#include "../../../../Shared/Helpers/Time.h"
 #include "../../../../Shared/ComAPI/ComAPI.h"
+#include "../../../../Shared/Helpers/Time.h"
+#include "../../../../Shared/Helpers/RegistryManager.h"
 
 
 
@@ -32,13 +33,13 @@ AppCenter::AppCenter(QObject* parent)
     : manager(new QNetworkAccessManager(parent))
     , appLaunchTimestamp{ H::GetTimeNow(H::TimeFormat::Ymdhms_with_separators).c_str() }
 {
-    connect(this, &AppCenter::Send, this, [this](QJsonObject payload) {
+    connect(this, &AppCenter::SendInternal, this, [this](QJsonObject payload) {
         QNetworkRequest request(QString{ "https://in.appcenter.ms/logs?Api-Version=1.0.0" });
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
         request.setRawHeader("app-secret", appSecret.toUtf8());
         request.setRawHeader("install-id", instId.toUtf8());
 
-        
+        bool successSending = false;
         for (int attempts = 0; attempts < 4; attempts++) {
             QEventLoop loop;
             // no need delete reply manually its lifetime managed by this->manager
@@ -54,6 +55,7 @@ AppCenter::AppCenter(QObject* parent)
             if (reply->error() == QNetworkReply::NoError) {
                 QString contents = QString::fromUtf8(reply->readAll());
                 qDebug() << "AppCenter OK: " << contents;
+                successSending = true;
                 break;
             }
             else {
@@ -61,6 +63,7 @@ AppCenter::AppCenter(QObject* parent)
                 qDebug() << "AppCenter FAIL: " << err;
             }
         }
+        emit ReportSendingStatus(successSending);
         }, Qt::DirectConnection);
 }
 
@@ -77,6 +80,7 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
         return; // we try send crash report before initialized AppCenter ...
 
     auto windowsVersion = QString::fromStdWString(ComApi::WindowsVersion());
+    auto productName = QString::fromStdString(H::RegistryManager::GetRegValue(HKey::LocalMachine, "HARDWARE\\DESCRIPTION\\System\\BIOS", "SystemProductName"));
 
     QJsonArray frames;
     for (auto& stackFrame : stackFrames) {
@@ -100,11 +104,12 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
         {"appBuild", "1"},
         {"sdkName", "appcenter.custom"},
         {"sdkVersion", "1.0.0"},
+        {"model", productName},
         {"osName", "Windows"},
         {"osVersion", windowsVersion},
         {"locale", "en-US"},
     };
-    //logs["userId"] = "ClientGUID";
+    logs["userId"] = instId;
     logs["exception"] = QJsonObject{
         {"type", "Cpp.RuntimeException"},
         {"message", QString("[%1] %2").arg(stacktraceHash).arg(exceptionMessage)},
@@ -141,6 +146,7 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
                    {"appBuild", "1"},
                    {"sdkName", "appcenter.custom"},
                    {"sdkVersion", "1.0.0"},
+                   {"model", productName},
                    {"osName", "Windows"},
                    {"osVersion", windowsVersion},
                    {"locale", "en-US"},
@@ -154,5 +160,5 @@ void AppCenter::SendCrashReport(const QString& exceptionMessage, QList<StackFram
     QJsonObject payload;
     payload["logs"] = logsArray;
 
-    emit Send(payload);
+    emit SendInternal(payload);
 }

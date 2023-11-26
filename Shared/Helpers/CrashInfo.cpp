@@ -1,16 +1,16 @@
 #include "CrashInfo.h"
 #include <cassert>
 
-void FillCrashInfoWithExceptionPointers(std::shared_ptr<CrashInfo> crashInfo, EXCEPTION_POINTERS* exceptionPointers)
+void FillCrashInfoWithExceptionPointers(std::shared_ptr<CrashInfo> crashInfo, EXCEPTION_POINTERS* pExceptionPtrs)
 {
     // De-referencing creates a copy
-    crashInfo->exceptionPointers = *exceptionPointers;
-    crashInfo->contextRecord = *(exceptionPointers->ContextRecord);
+    crashInfo->exceptionPointers = *pExceptionPtrs;
+    crashInfo->contextRecord = *(pExceptionPtrs->ContextRecord);
     //crashInfo.threadId = threadId;
 
     int indexOfExceptionRecord = 0;
     crashInfo->numberOfExceptionRecords = 0;
-    EXCEPTION_RECORD* exceptionRecord = exceptionPointers->ExceptionRecord;
+    EXCEPTION_RECORD* exceptionRecord = pExceptionPtrs->ExceptionRecord;
 
     while (exceptionRecord != 0)
     {

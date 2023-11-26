@@ -9,7 +9,7 @@
   <Identity
     Name="6dd6c115-05f3-4d03-92bb-dd185a4f0faf"
     Publisher="CN=isrepeat"
-    Version="1.0.4.0" />
+    Version="1.0.5.0" />
 
   <Properties>
     <DisplayName>PackageConsole</DisplayName>
@@ -32,15 +32,9 @@
       EntryPoint="$targetentrypoint$">
 
       <Extensions>
-        <!--<desktop:Extension Category="windows.fullTrustProcess" Executable="MiniDumpWriter.exe">
-          <desktop:FullTrustProcess>
-            <desktop:ParameterGroup GroupId="TestParams" Parameters="-isUWP"/>
-          </desktop:FullTrustProcess>
-        </desktop:Extension>-->
-
-        <!--<uap:Extension Category="windows.protocol" Executable="MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap:Extension Category="windows.protocol" Executable="TestWin32\MinidumpWriter.exe" EntryPoint="Windows.FullTrustApplication">
           <uap:Protocol Name="test-minidumpwriter" />
-        </uap:Extension>-->
+        </uap:Extension>
       </Extensions>
 
       <uap:VisualElements

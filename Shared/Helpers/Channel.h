@@ -1,163 +1,160 @@
 #pragma once
-#include <Windows.h>
+#include "HWindows.h"
+//#include <MagicEnum/MagicEnum.h>
+
+#include <condition_variable>
 #include <functional>
 #include <string>
 #include <vector>
 #include <thread>
-#include <condition_variable>
-#include <queue>
-#include "Helpers.h"
-
 #include <sddl.h>
+#include <queue>
 
-// TODO: add TimeoutConnection exception !!!!!!!!
+#include "Thread.h"
+//#include "Logger.h"
+#include "Helpers.h"
+#include "LocalPtr.hpp"
+
+
+#define LogDebugWithFullClassNameA(...)
+#define LogDebugWithFullClassNameW(...)
+
+#define LogWarningWithFullClassNameA(...)
+#define LogWarningWithFullClassNameW(...)
+
+#define LogErrorWithFullClassNameA(...)
+#define LogErrorWithFullClassNameW(...)
+
+#define LOG_FUNCTION_ENTER(...)
+
+#define LOG_DEBUG(...)
+#define LOG_ERROR(...)
+
+#define LOG_DEBUG_D(...)
+#define LOG_ERROR_D(...)
+
+#define LogLastError
+
+
+enum class PipeConnectionStatus {
+    Error,
+    Stopped,
+    TimeoutConnection,
+    Connected,
+};
 
 enum class PipeError {
-    //TimeoutConnection,
-    //PipeDisconnected,
     InvalidHandle,
     WriteError,
     ReadError,
 };
 
-std::exception GetLastErrorException(const std::string& msg);
-bool WaitConnectPipe(HANDLE hPipe, const std::atomic<bool>& stop, int timeout = 0);
-HANDLE WaitOpenPipe(const std::wstring& pipeName, const std::atomic<bool>& stop, int timeout = 0);
+PipeConnectionStatus WaitConnectPipe(IN HANDLE hPipe, const std::atomic<bool>& stop, int timeout = 0);
+PipeConnectionStatus WaitOpenPipe(OUT HANDLE& hPipe, const std::wstring& pipeName, const std::atomic<bool>& stop, int timeout = 0);
 
-// NOTE: for simplicity we can use max buffer size ...
+// TODO: move to file system helpers
+// TODO: rewrite this without blocking current thread
 template<typename T = uint8_t>
 std::vector<T> ReadFileAsync(HANDLE hFile, const std::atomic<bool>& stop) {
+    enum StatusIO {
+        Error,
+        Stopped,
+        Completed,
+    };
+    StatusIO status;
+
     DWORD dwBytesRead = 0;
     OVERLAPPED stOverlapped = { 0 };
-    std::vector<T> tmpBuffer(1024 * 1024 * 2); // 2 MB
+    std::vector<T> tmpBuffer(1024 * 1024 * 2); // NOTE: for simplicity we can use max buffer size ... 2 MB
 
-    if (!ReadFile(hFile, tmpBuffer.data(), tmpBuffer.size() * sizeof(T), &dwBytesRead, &stOverlapped)) {
-        if (GetLastError() == ERROR_IO_PENDING) {
-            while (!stop) {
+    if (ReadFile(hFile, tmpBuffer.data(), tmpBuffer.size() * sizeof(T), &dwBytesRead, &stOverlapped)) {
+        // ReadFile completed synchronously ...
+        status = StatusIO::Completed;
+    }
+    else {
+        auto lastErrorReadFile = GetLastError();
+        switch (lastErrorReadFile) {
+        case ERROR_IO_PENDING:
+            while (true) {
+                // Check break conditions in while scope (if we chek it after while may be status conflicts)
+                if (stop) { 
+                    status = StatusIO::Stopped;
+                    break;
+                }
+
                 if (GetOverlappedResult(hFile, &stOverlapped, &dwBytesRead, FALSE)) {
-                    // ReadFile operation completed ...
+                    // ReadFile operation completed
+                    status = StatusIO::Completed;
                     break;
                 }
                 else {
                     // pending ...
-                    if (GetLastError() != ERROR_IO_INCOMPLETE) {
-                        //Log("ReadFileAsync IO incomplete!");
-                        throw GetLastErrorException("ReadFileAsync IO incomplete! "); // remote side was closed or smth else ...
+                    auto lastErrorGetOverlappedResult = GetLastError();
+                    if (lastErrorGetOverlappedResult != ERROR_IO_INCOMPLETE) {
+                        // remote side was closed or smth else
+                        status = StatusIO::Error;
+                        LogLastError;
+                        break;
                     }
                 }
-                Sleep(1); // TODO: for capturing frame use less delay ...
+                Sleep(1); // TODO: for capturing frame use less delay (CHECK)
             }
-        }
-        else {
-            throw GetLastErrorException("ReadFileAsync: "); // Read some error ...
+            break;
+
+        default:
+            LogLastError;
+            status = StatusIO::Error;
         }
     }
-    else {
-        // ReadFile completed synchronously ...
+  
+    switch (status) {
+    case StatusIO::Error:
+        throw std::exception("ReadFile error");
+        break;
+
+    case StatusIO::Stopped:
+        throw std::exception("Was stopped signal");
+        break;
+
+    case StatusIO::Completed:
+        if (dwBytesRead == 0) {
+            throw std::exception("Zero data was read");
+        }
     }
-
-    if (stop || dwBytesRead == 0)
-        return {};
-
-
-    tmpBuffer.resize(dwBytesRead / sizeof(T));
-    return std::move(tmpBuffer);
+    
+    tmpBuffer.resize(dwBytesRead / sizeof(T)); // truncate
+    return tmpBuffer;
 }
 
 
 template <typename T = uint8_t>
 void WriteToPipe(HANDLE hNamedPipe, const std::vector<T>& writeData) {
     DWORD cbWritten;
-    if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) {
+    if (!WriteFile(hNamedPipe, writeData.data(), writeData.size() * sizeof(T), &cbWritten, NULL)) { // Write synchronously
         throw PipeError::WriteError;
     }
 }
 
 template <typename T = uint8_t>
 std::vector<T> ReadFromPipeAsync(HANDLE hNamedPipe, const std::atomic<bool>& stop) {
-    std::vector<T> tmp;
     try {
-        tmp = ReadFileAsync<T>(hNamedPipe, stop);
+        return ReadFileAsync<T>(hNamedPipe, stop);
     }
     catch (...) {
         throw PipeError::ReadError;
     }
 
-    return std::move(tmp);
 }
 
 
-
-
-template <typename T>
-class LocalPtr {
-public:
-    //LocalRAII(int size)
-    //	: pData{ (T)LocalAlloc(LPTR, size) }
-    //{}
-
-    LocalPtr() = default;
-
-    LocalPtr(HLOCAL hPtr)
-        : pData{ (T*)hPtr }
-    {}
-    ~LocalPtr() {
-        if (pData != nullptr) {
-            LocalFree((HLOCAL)pData);
-        }
-    }
-
-    LocalPtr(const LocalPtr& x) = delete;
-    LocalPtr(LocalPtr&& other) noexcept
-        : pData{ other.pData }
-    {
-        other.pData = nullptr;
-    }
-
-    LocalPtr& operator=(const LocalPtr& other) = delete;
-    LocalPtr& operator=(LocalPtr&& other)
-    {
-        if (&other == this)
-            return *this;
-
-        if (pData != nullptr) {
-            LocalFree((HLOCAL)pData);
-        }
-
-        pData = other.pData;
-        other.pData = nullptr;
-
-        return *this;
-    }
-    T& operator*() const { return *pData; }
-    T* operator->() const { return pData; }
-
-    operator bool() {
-        return static_cast<bool>(pData);
-    }
-
-    T* get() {
-        return pData;
-    }
-
-    T** ReleaseAndGetAdressOf() {
-        pData = nullptr;
-        return &pData;
-    }
-
-private:
-    T* pData = nullptr;
-};
-
-
 template<typename T>
-LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
+H::LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
     DWORD dwSize = 0;
     if (!GetTokenInformation(hToken, typeInfo, NULL, 0, &dwSize) && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
         return nullptr;
     }
 
-    if (auto pTokenData = LocalPtr<T>(LocalAlloc(LPTR, dwSize))) {
+    if (auto pTokenData = H::LocalPtr<T>(LocalAlloc(LPTR, dwSize))) {
         if (GetTokenInformation(hToken, typeInfo, pTokenData.get(), dwSize, &dwSize)) {
             return pTokenData;
         }
@@ -167,11 +164,13 @@ LocalPtr<T> GetTokenInfo(HANDLE hToken, TOKEN_INFORMATION_CLASS typeInfo) {
 }
 
 
-// EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
-// TODO: fix when interrupt connection -> not process "None" msg
-// TODO: remove try .. catch if was not error in future
+// NOTE: EnumMsg must contain "Connect" msg and first "None" msg (fix in future)
+// TODO: Add guard for multiple calls pulbic methods and for usage in them in multithreading
+// TODO: fix when interrupt connection -> not process "None" msg (??? CHECK)
 template<typename EnumMsg, typename T = uint8_t>
 class Channel {
+    //CLASS_FULLNAME_LOGGING_INLINE_IMPLEMENTATION(Channel);
+
 public:
     struct Reply {
         std::vector<T> readData;
@@ -180,13 +179,18 @@ public:
     using ReadFunc = std::function<Reply()>;
     using WriteFunc = std::function<void(std::vector<T>&&, EnumMsg)>;
 
-    ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
-    WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
-
     Channel() = default;
+    ~Channel() {
+        StopChannel();
+        if (hNamedPipe) {
+            CloseHandle(hNamedPipe);
+        }
+    }
 
     // Make security attributes to connect admin & user pipe
     void CreateForAdmin(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+        LogDebugWithFullClassNameW(L"CreateForAdmin(pipeName = {}, ...) ...", pipeName);
+
         auto pSecurityDescriptor = std::make_unique<SECURITY_DESCRIPTOR>();
         InitializeSecurityDescriptor(pSecurityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION);
         SetSecurityDescriptorDacl(pSecurityDescriptor.get(), TRUE, (PACL)NULL, FALSE);
@@ -197,12 +201,14 @@ public:
 
     // Make security attributes to connect UWP & desktop apps
     void CreateForUWP(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, HANDLE hProcessUWP, int timeout = 0) {
+        LogDebugWithFullClassNameW(L"CreateForUWP(pipeName = {}, ...) ...", pipeName);
+
         pSecurityAttributes = std::make_unique<SECURITY_ATTRIBUTES>(SECURITY_ATTRIBUTES{ sizeof(SECURITY_ATTRIBUTES), NULL, FALSE });
 
         // SDDL_EVERYONE + SDDL_ALL_APP_PACKAGES + SDDL_ML_LOW
         if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(L"D:(A;;GA;;;WD)(A;;GA;;;AC)S:(ML;;;;;LW)", SDDL_REVISION_1, &pSecurityAttributes->lpSecurityDescriptor, 0)) {
-            loggerHandler(H::GetLastErrorAsString());
-            throw;
+            LogLastError;
+            throw PipeError::InvalidHandle;
         }
 
         std::wstring formattedPipeName;
@@ -211,13 +217,13 @@ public:
         if (OpenProcessToken(hProcessUWP, TOKEN_QUERY, &hToken)) {
             if (auto pTokenAppContainerInfo = GetTokenInfo<TOKEN_APPCONTAINER_INFORMATION>(hToken, ::TokenAppContainerSid)) {
                 if (auto pTokenSessingId = GetTokenInfo<ULONG>(hToken, ::TokenSessionId)) {
-                    LocalPtr<WCHAR> pStr;
+                    H::LocalPtr<WCHAR> pStr;
                     if (ConvertSidToStringSidW(pTokenAppContainerInfo->TokenAppContainer, pStr.ReleaseAndGetAdressOf())) {
                         formattedPipeName = L"\\\\?\\pipe\\Sessions\\" + std::to_wstring(*pTokenSessingId) + L"\\AppContainerNamedObjects\\" + pStr.get() + L"\\" + pipeName;
                     }
                     else {
-                        loggerHandler(H::GetLastErrorAsString());
-                        throw;
+                        LogLastError;
+                        throw PipeError::InvalidHandle;
                     }
                 }
             }
@@ -227,6 +233,8 @@ public:
     }
 
     void Create(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 0) {
+        LogDebugWithFullClassNameW(L"Create(pipeName = {}, listenHandler, timeout = {}) ...", pipeName, timeout);
+
         hNamedPipe = CreateNamedPipeW(
             pipeName.c_str(),
             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
@@ -239,33 +247,27 @@ public:
         }
 
         closeChannel = false;
-        threadChannel = std::thread([this, listenHandler, timeout] {
+        threadChannel = std::thread([this, listenHandler, timeout, pipeName] {
+            H::ThreadNameHelper::SetThreadName(pipeName + L" Create thread");
+
             while (!closeChannel) {
-                loggerHandler(L"Waiting for connect...");
-                if (WaitConnectPipe(hNamedPipe, closeChannel, timeout)) {
-                    loggerHandler(L"Connected. Waiting for command...");
+                LogDebugWithFullClassNameA("Waiting for connect...");
+                auto status = WaitConnectPipe(hNamedPipe, closeChannel, timeout);
+                LogDebugWithFullClassNameA("WaitConnectPipe status = {}", magic_enum::enum_name(status));
 
-                    connected = true;
-                    stopSignal = false; // used for multi threads (like listener, sender)
-                    threadConnect = std::thread([this] { connectHandler(); }); // Not block listening (TODO: replace on std::async)
-                    Write({}, EnumMsg::Connect);
-                    while (!stopSignal) {
-                        if (listenHandler(bindedReadFunc, bindedWriteFunc) == false) {
-                            stopSignal = true;
-                        }
-                    }
-                    threadInterrupt = std::thread([this] {
-                        interruptHandler();
-                        }); // To avoid deadlock
+                switch (status) {
+                case PipeConnectionStatus::Connected: {
+                    ListenRoutine(listenHandler);
+                    break;
                 }
-                else {
+                case PipeConnectionStatus::Error:
+                case PipeConnectionStatus::Stopped:
+                case PipeConnectionStatus::TimeoutConnection:
                     closeChannel = true;
-                    stopSignal = true; // mb unnecessary?
-                    loggerHandler(L"Timeout connection ...");
+                    stopSignal = true;
+                    break;
                 }
 
-                cvFinishSendingMessage.notify_all();
-                connected = false; // if we here - connected == false
                 StopSecondThreads();
                 DisconnectNamedPipe(hNamedPipe);
             }
@@ -275,34 +277,33 @@ public:
 
 
     void Open(const std::wstring& pipeName, std::function<bool(ReadFunc, WriteFunc)> listenHandler, int timeout = 10'000) {
-        closeChannel = false;
-        hNamedPipe = WaitOpenPipe(pipeName, closeChannel, timeout);
+        LogDebugWithFullClassNameA("Open() ...");
 
-        if (hNamedPipe == INVALID_HANDLE_VALUE) {
+        closeChannel = false;
+        auto status = WaitOpenPipe(hNamedPipe, pipeName, closeChannel, timeout);
+        LogDebugWithFullClassNameA("WaitOpenPipe status = {}", magic_enum::enum_name(status));
+
+        switch (status) {
+        case PipeConnectionStatus::Connected: {
+            break;
+        }
+        case PipeConnectionStatus::Error:
+        case PipeConnectionStatus::Stopped:
+        case PipeConnectionStatus::TimeoutConnection:
             throw PipeError::InvalidHandle;
+            break;
         }
 
-        threadChannel = std::thread([this, listenHandler] {
-            connected = true;
-            stopSignal = false;
-            threadConnect = std::thread([this] { connectHandler(); }); // Not block listening
-            Write({}, EnumMsg::Connect);
-            while (!stopSignal) {
-                if (listenHandler(bindedReadFunc, bindedWriteFunc) == false) {
-                    stopSignal = true;
-                }
-            }
-            threadInterrupt = std::thread([this] {
-                interruptHandler();
-                }); // To avoid deadlock
-
-            cvFinishSendingMessage.notify_all();
-            connected = false; // if we here - connected == false
+        threadChannel = std::thread([this, listenHandler, pipeName] {
+            H::ThreadNameHelper::SetThreadName(pipeName + L" Open thread");
+            ListenRoutine(listenHandler);
             });
     }
 
 
     void StopChannel() {
+        LogDebugWithFullClassNameA("StopChannel() ...");
+
         connected = false;
         stopSignal = true;
         closeChannel = true;
@@ -312,18 +313,11 @@ public:
 
         StopSecondThreads();
     }
+
     bool IsConnected() {
         return connected;
     }
-    ~Channel() {
-        StopChannel();
-        if (hNamedPipe)
-            CloseHandle(hNamedPipe);
-    }
 
-    void SetLoggerHandler(std::function<void(std::wstring)> handler) {
-        loggerHandler = handler;
-    }
 
     void SetInterruptHandler(std::function<void()> handler) {
         interruptHandler = handler;
@@ -334,34 +328,39 @@ public:
     }
 
 
-
     void ClearPendingMessages() {
+        LogDebugWithFullClassNameA("ClearPendingMessages() ...");
+        std::lock_guard lk{ mxWrite };
         pendingMessages.clear();
     }
 
     void WritePendingMessages() {
+        LogDebugWithFullClassNameA("WritePendingMessages() ...");
+        std::lock_guard lk{ mxWrite };
         try {
             for (auto& message : pendingMessages) {
                 WriteToPipe<T>(hNamedPipe, message);
-                if (isWaitingSendingMessage && static_cast<EnumMsg>(message.back()) == waitedMessage) { // TODO: test this case
+                if (waitedMessage != EnumMsg::None && waitedMessage == static_cast<EnumMsg>(message.back())) {
                     cvFinishSendingMessage.notify_all();
                 }
             }
-            ClearPendingMessages();
+            pendingMessages.clear();
         }
         catch (PipeError error) {
             switch (error)
             {
             case PipeError::WriteError:
-                loggerHandler(L"Write error");
+                LogErrorWithFullClassNameA("Write error! Stop channel.");
                 break;
             };
             stopSignal = true;
         }
     }
 
-    // Use rvalue ref [orig data will be lost]
+    // Write synchronously
     void Write(std::vector<T>&& writeData, EnumMsg type) {
+        std::unique_lock lk{ mxWrite };
+
         writeData.push_back(static_cast<T>(type));
         if (!connected) {
             pendingMessages.push_back(std::move(writeData));
@@ -370,7 +369,7 @@ public:
 
         try {
             WriteToPipe<T>(hNamedPipe, writeData);
-            if (isWaitingSendingMessage && type == waitedMessage) {
+            if (waitedMessage != EnumMsg::None && waitedMessage == type) {
                 cvFinishSendingMessage.notify_all();
             }
         }
@@ -378,7 +377,7 @@ public:
             switch (error)
             {
             case PipeError::WriteError:
-                loggerHandler(L"Write error");
+                LogErrorWithFullClassNameA("Write error! Stop channel.");
                 break;
             };
             stopSignal = true;
@@ -387,19 +386,44 @@ public:
 
     // TODO: add logic to wait for one of several messages
     void WaitFinishSendingMessage(EnumMsg type) {
+        std::unique_lock lk{ mxWrite };
+
         if (hNamedPipe == INVALID_HANDLE_VALUE)
             return;
 
-        std::mutex m;
-        std::unique_lock<std::mutex> lk(m);
-
         waitedMessage = type;
-        isWaitingSendingMessage = true;
-        cvFinishSendingMessage.wait(lk);
-        isWaitingSendingMessage = false;
+        cvFinishSendingMessage.wait(lk); // now mutex unlocked and thread begin wait
+        waitedMessage = EnumMsg::None;
     }
 
 private:
+    void ListenRoutine(std::function<bool(ReadFunc, WriteFunc)> listenHandler) {
+        LogDebugWithFullClassNameA("ListenRoutine() ...");
+
+        connected = true;
+        stopSignal = false;
+
+        threadConnect = std::thread([this] { // Not block current thread to avoid deadlock (TODO: replace on std::async)
+            connectHandler();
+            });
+
+        Write({}, EnumMsg::Connect);
+
+        while (!stopSignal) {
+            if (listenHandler(bindedReadFunc, bindedWriteFunc) == false) {
+                stopSignal = true;
+            }
+        }
+        LogDebugWithFullClassNameA("stopSignal = true");
+
+        threadInterrupt = std::thread([this] { // Not block current thread to avoid deadlock
+            interruptHandler();
+            });
+
+        cvFinishSendingMessage.notify_all();
+        connected = false; // if we here pipe not connected
+    }
+
     Reply Read() {
         try {
             auto readData = ReadFromPipeAsync<T>(hNamedPipe, stopSignal);
@@ -413,7 +437,7 @@ private:
             switch (error)
             {
             case PipeError::ReadError:
-                loggerHandler(L"Read error");
+                LogErrorWithFullClassNameA("Write error! Stop channel.");
                 break;
             };
             stopSignal = true;
@@ -429,7 +453,9 @@ private:
             threadInterrupt.join();
     }
 
-    std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
+
+private:
+    std::mutex mxWrite;
     HANDLE hNamedPipe = nullptr;
     std::thread threadChannel;
     std::thread threadConnect;
@@ -437,13 +463,14 @@ private:
     std::atomic<bool> connected = false;
     std::atomic<bool> stopSignal = false;
     std::atomic<bool> closeChannel = false;
-    std::function<void(std::wstring)> loggerHandler = [](std::wstring) {};
-    std::function<void()> interruptHandler = []() {};
     std::function<void()> connectHandler = []() {};
+    std::function<void()> interruptHandler = []() {};
     std::vector<std::vector<T>> pendingMessages;
 
-
-    EnumMsg waitedMessage = EnumMsg::None;
-    std::atomic<bool> isWaitingSendingMessage = false;
+    std::atomic<EnumMsg> waitedMessage = EnumMsg::None;
     std::condition_variable cvFinishSendingMessage;
+    std::unique_ptr<SECURITY_ATTRIBUTES> pSecurityAttributes;
+
+    const ReadFunc bindedReadFunc = std::bind(&Channel::Read, this);
+    const WriteFunc bindedWriteFunc = std::bind(&Channel::Write, this, std::placeholders::_1, std::placeholders::_2);
 };

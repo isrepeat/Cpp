@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CrashHandlingLibrary>$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\CrashHandling.lib</CrashHandlingLibrary>
+  </PropertyGroup>
+  
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(MSBuildThisFileDirectory)include;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CRASH_HANDLING_NUGET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>
+        $(CrashHandlingLibrary);
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>
+        $(CrashHandlingLibrary);
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <NativeDlls Include="$(MSBuildThisFileDirectory)..\..\lib\$(Platform)\$(Configuration)\**\*.dll" />
+    <Binaries Include="$(MSBuildThisFileDirectory)..\..\bin\$(Platform)\$(Configuration)\**\*.exe" />
+  </ItemGroup>
+
+  <!-- TODO: check if it realy necessary -->
+  <!--<Target Name="CopyNugetDlls" AfterTargets="Build">
+    <Message Importance="High" Text="=== [CrashHandling nuget] Copy dlls and binaries to output folder ..." />
+    <Copy SourceFiles="@(NativeDlls)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>-->
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(NativeDlls);@(Binaries)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+</Project>

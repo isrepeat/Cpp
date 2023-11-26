@@ -151,7 +151,8 @@
 //        savedTemporaryStrings.reserve(argsSize + 5);
 //    }
 //
-//    auto myTuple = std::make_tuple(std::forward<Args>(args)...);
+//    auto myTuple_orig = std::make_tuple(std::forward<Args>(args)...);
+//    auto myTuple_modified = std::make_tuple(ApplyStringConversion(args)...);
 //    if constexpr (std::is_same_v<xCHAR, char>)
 //        printf(format, ApplyStringConversion(args)...);
 //    else
