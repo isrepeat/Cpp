@@ -226,14 +226,6 @@
     <ClCompile Include="[9] DVD API\main_47_WMI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Shared\ComAPI\ComAPI.vcxproj">
-      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Shared\Helpers\Helpers.vcxproj">
-      <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
     <ClInclude Include="main_36_ThreadFinishHelper.h" />
     <ClInclude Include="[2] Static initialization fiasco\fileB.h" />
@@ -251,6 +243,14 @@
     <ClInclude Include="[9] DVD API\DiscMaster.h" />
     <ClInclude Include="[9] DVD API\DiscRecorder.h" />
     <ClInclude Include="[9] DVD API\main_47_Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UtilityHelpersLib\ComAPI\ComAPI.vcxproj">
+      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\UtilityHelpersLib\Helpers\Helpers\Helpers.vcxproj">
+      <Project>{a6a390c3-171d-47b9-b50c-39764ba0bd68}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
