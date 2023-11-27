@@ -5,7 +5,8 @@
 #include <thread>
 #include <utility>
 //#include <Windows.h>
-#include <json_struct/json_struct.h>
+//#include <json_struct/json_struct.h>
+#include <JsonParser/JsonParser.h>
 #include "Printer.h"
 
 
@@ -116,6 +117,13 @@ void TestParseScalars() {
     }
     )json";
 
+    std::vector<uint8_t> vec{ 16, 32, 128, 255, 128, 64, 32, 16 };
+    auto vecToStr = std::string(vec.begin(), vec.end());
+
+    std::string str = "\x10 €ÿ€@ \x10"; // 16 32 64 128 255 128 64 32 16
+    auto strToVec = std::vector<uint8_t>(str.begin(), str.end());
+
+
 
     Person person;
     printf("Person [src]: \n%s", JS::serializeStruct(person).c_str());
@@ -139,17 +147,8 @@ void TestParseScalars() {
 
     
 int main() {
-    
-    std::vector<uint8_t> vec{ 16, 32, 128, 255, 128, 64, 32, 16 };
-    auto vecToStr = std::string(vec.begin(), vec.end());
-    
-    std::string str = "\x10 €ÿ€@ \x10"; // 16 32 64 128 255 128 64 32 16
-    auto strToVec = std::vector<uint8_t>(str.begin(), str.end());
-
     TestParseScalars();
-    
     //Js::TestPrintJson();
-
 
     printf("\n");
     std::this_thread::sleep_for(std::chrono::milliseconds{8'000});
