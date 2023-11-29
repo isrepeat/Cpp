@@ -242,6 +242,9 @@
     <ClCompile Include="main_49_System_information.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_50_assert_message.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
