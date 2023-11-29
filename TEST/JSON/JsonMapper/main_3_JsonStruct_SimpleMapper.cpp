@@ -145,10 +145,82 @@ void TestParseScalars() {
 
 
 
+
+
+struct JsonMessageBase {
+    int type;
+    std::string eventName = "";
+
+    JS_OBJECT(
+        JS_MEMBER_ALIASES(type, "Type"),
+        JS_MEMBER_ALIASES(eventName, "EventName", "event_name")
+    );
+};
+
+struct JsonMessage : JsonMessageBase {
+    int data;
+
+    JS_OBJECT_WITH_SUPER(
+        JS_SUPER(JsonMessageBase),
+        JS_MEMBER_ALIASES(data, "Data")
+    );
+};
+
+void TestPartialParse() {
+    //const char jsonMessagePurchase[] = R"json(
+    //{
+    //    "type": 0,
+    //    "eventName": "Default",
+    //    "purchase": { 
+    //        "id": 1011,
+    //        "name": "1 month",
+    //        "price": 6.99
+    //    }
+    //}
+    //)json";
+    const char jsonMessageText[] = R"json(
+    {
+        "type": 0,
+        "eventName": "Default",
+        "data": 1234
+    }
+    )json";
+
+    JsonMessageBase jsonMessageBase;
+    JsonMessage jsonMessage;
+
+    printf("JsomMessageBase [src]: \n%s", JS::serializeStruct(jsonMessageBase).c_str());
+    printf("JsomMessage [src]: \n%s", JS::serializeStruct(jsonMessage).c_str());
+
+    JS::ParseContext parseContextBase(jsonMessageText);
+    if (parseContextBase.parseTo(jsonMessageBase) != JS::Error::NoError) {
+        std::string errorStr = parseContextBase.makeErrorString();
+        fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
+        return;
+    }
+
+    printf("\n");
+    printf("\n");
+    printf("JsomMessageBase [parsed]: \n%s", JS::serializeStruct(jsonMessageBase).c_str());
+
+    JS::ParseContext parseContext(jsonMessageText);
+    if (parseContext.parseTo(jsonMessage) != JS::Error::NoError) {
+        std::string errorStr = parseContext.makeErrorString();
+        fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
+        return;
+    }
+
+    printf("\n");
+    printf("\n");
+    printf("JsomMessage [parsed]: \n%s", JS::serializeStruct(jsonMessage).c_str());
+}
+
+
     
 int main() {
-    TestParseScalars();
     //Js::TestPrintJson();
+    //TestParseScalars();
+    TestPartialParse();
 
     printf("\n");
     std::this_thread::sleep_for(std::chrono::milliseconds{8'000});
