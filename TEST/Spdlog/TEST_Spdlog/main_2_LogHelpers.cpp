@@ -1,8 +1,5 @@
-#include "LogHelpers.h"
-#include <spdlog/sinks/dist_sink.h>
-// free falgs 'j', 'k', 'q', 'w'
-#include <Helpers/Filesystem.hpp>
 #include <Helpers/Helpers.h>
+#include <Helpers/Logger.h>
 #include <filesystem>
 
 
@@ -109,6 +106,8 @@ void TestLogHelper() {
     return;
 }
 
+
+// free falgs 'j', 'k', 'q', 'w'
 
 class custom_test_flag : public spdlog::custom_flag_formatter {
 public:
@@ -244,25 +243,25 @@ struct fmt::formatter<MyString, wchar_t> {
 };
 
 
-template<>
-struct fmt::formatter<std::filesystem::path, char> {
-    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
-        return ctx.end();
-    }
-    auto format(const std::filesystem::path& path, format_context& ctx) -> decltype(ctx.out()) {
-        return fmt::format_to(ctx.out(), "{}", path.string());
-    }
-};
-
-template<>
-struct fmt::formatter<std::filesystem::path, wchar_t> {
-    constexpr auto parse(wformat_parse_context& ctx) -> decltype(ctx.begin()) {
-        return ctx.end();
-    }
-    auto format(const std::filesystem::path& path, wformat_context& ctx) -> decltype(ctx.out()) {
-        return fmt::format_to(ctx.out(), L"{}", path.wstring());
-    }
-};
+//template<>
+//struct fmt::formatter<std::filesystem::path, char> {
+//    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+//        return ctx.end();
+//    }
+//    auto format(const std::filesystem::path& path, format_context& ctx) -> decltype(ctx.out()) {
+//        return fmt::format_to(ctx.out(), "{}", path.string());
+//    }
+//};
+//
+//template<>
+//struct fmt::formatter<std::filesystem::path, wchar_t> {
+//    constexpr auto parse(wformat_parse_context& ctx) -> decltype(ctx.begin()) {
+//        return ctx.end();
+//    }
+//    auto format(const std::filesystem::path& path, wformat_context& ctx) -> decltype(ctx.out()) {
+//        return fmt::format_to(ctx.out(), L"{}", path.wstring());
+//    }
+//};
 
 
 void TestLogCustomType() {
