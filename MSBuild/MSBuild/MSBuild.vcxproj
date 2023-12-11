@@ -156,6 +156,7 @@
     <None Include="MSBuild_6_DynamicImport.targets" />
     <None Include="MSBuild_7_Conditions.targets" />
     <None Include="MSBuild_8_Replace.targets" />
+    <None Include="MSBuild_9_CaptureConfigurationFromPartialName.targets" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
