@@ -1,6 +1,6 @@
 #include <Windows.h>
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 #include <set>
 
 bool ExecuteCommandLine(std::wstring parameters, bool admin = false, DWORD showFlag = SW_SHOW) {
@@ -29,13 +29,10 @@ int wmain(int argc, wchar_t* argv[]) {
 	}
 	
 	//setlocale(LC_CTYPE, "");
-	//std::wstring pathToDevenv = L"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.exe\"";
-	std::wstring pathToDevenv = L"\"c:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.exe\"";
+	std::filesystem::path pathToDevenv = L"\"c:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.exe\"";
 
-	std::wstring pathOne = argv[1];
-	std::wstring pathTwo = argv[2];
-	//std::wstring pathOne = L"D:\\WORK\\STUNServer\\STUNServer_27_06_2022\\STUNServer\\";
-	//std::wstring pathTwo = L"D:\\WORK\\STUNServer\\STUNServer_Test_last\\";
+	std::filesystem::path pathOne = argv[1];
+	std::filesystem::path pathTwo = argv[2];
 
 	wprintf(L"args ... pathOne = %s, pathTwo = %s \n", pathOne.c_str(), pathTwo.c_str());
 
@@ -50,15 +47,13 @@ int wmain(int argc, wchar_t* argv[]) {
 	std::cout << "\n\n";
 
 	for (const auto& entry : std::filesystem::directory_iterator(pathTwo)) {
-		//std::cout << entry.path() << "..." << entry.path().filename() << std::endl;
 		setTwo.insert(entry.path().filename());
 	}
-
 
 	for (auto& itemOne : setOne) {
 		for (auto& itemTwo : setTwo) {
 			if (itemTwo == itemOne) {
-				auto command = std::wstring{ L"/c " + pathToDevenv + L" /diff " } + pathOne + itemOne + L" " +pathTwo + itemTwo;
+				auto command = std::wstring{ L"/c " + pathToDevenv.wstring() + L" /diff " } + (pathOne / itemOne).wstring() + L" " + (pathTwo / itemTwo).wstring();
 				ExecuteCommandLine(command);
 				break;
 			}
