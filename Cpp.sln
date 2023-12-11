@@ -151,6 +151,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spdlog", "UtilityHelpersLib
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.Includes", "UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxproj", "{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VSFilesComparer", "OtherProjects\VSFilesComparer\VSFilesComparer.vcxproj", "{7BE262DC-60B5-47D8-8986-C800F567947C}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
@@ -815,6 +817,20 @@ Global
 		{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4}.Release|x64.Build.0 = Release|x64
 		{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4}.Release|x86.ActiveCfg = Release|Win32
 		{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4}.Release|x86.Build.0 = Release|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|ARM.ActiveCfg = Debug|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|x64.ActiveCfg = Debug|x64
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|x64.Build.0 = Debug|x64
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|x86.ActiveCfg = Debug|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Debug|x86.Build.0 = Debug|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|Any CPU.ActiveCfg = Release|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|ARM.ActiveCfg = Release|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|ARM64.ActiveCfg = Release|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|x64.ActiveCfg = Release|x64
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|x64.Build.0 = Release|x64
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|x86.ActiveCfg = Release|Win32
+		{7BE262DC-60B5-47D8-8986-C800F567947C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -880,6 +896,7 @@ Global
 		{618D9E1A-89C8-48FF-9A90-A7ED5ED2EA2C} = {2BB78300-C513-4C8C-B55C-3BD57639C26A}
 		{4AB35171-9952-4A89-9589-8A63E8BE47E9} = {2BB78300-C513-4C8C-B55C-3BD57639C26A}
 		{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4} = {EE13D233-2238-409F-9A16-6EE185AE4688}
+		{7BE262DC-60B5-47D8-8986-C800F567947C} = {7DC6D209-6543-41DD-811B-95C495A965D2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
