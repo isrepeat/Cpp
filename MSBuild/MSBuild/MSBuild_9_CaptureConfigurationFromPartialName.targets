@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Tab>%09</Tab>
+    <NewLine>%0D%0A</NewLine>
+    <!-- some test names that contain Debug / Release words -->
+    <CurrentConfiguration>My_DebugCustom</CurrentConfiguration>
+    <!--<CurrentConfiguration>My_ReleaseCustom</CurrentConfiguration>-->
+    
+    <RegExCaptureDebugConfiguration>^\w*?([Dd]ebug)\w*$</RegExCaptureDebugConfiguration>
+    <RegExCaptureReleaseConfiguration>^\w*?([Rr]elease)\w*$</RegExCaptureReleaseConfiguration>
+
+    <CapturedConfiguration Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(CurrentConfiguration), '$(RegExCaptureDebugConfiguration)'))">My_Debug</CapturedConfiguration>
+    <CapturedConfiguration Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(CurrentConfiguration), '$(RegExCaptureReleaseConfiguration)'))">My_Release</CapturedConfiguration>
+  </PropertyGroup>
+ 
+  <Target Name="Build">
+    <ItemGroup>
+      <!-- Must include Configuration_Debug -->
+      <DirectFiles Include="$(ProjectDir)\$(CurrentConfiguration)\*.h" />
+      <CapturedFiles Include="$(ProjectDir)\$(CapturedConfiguration)\*.h" />
+    </ItemGroup>
+
+    
+    <Message Importance="High" Text="DirectFiles:"/>
+    <Message Importance="High" Text="%(DirectFiles.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+    
+    <Message Importance="High" Text="CapturedFiles:"/>
+    <Message Importance="High" Text="%(CapturedFiles.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  </Target>
+</Project>
