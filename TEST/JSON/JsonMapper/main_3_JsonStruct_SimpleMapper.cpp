@@ -5,7 +5,8 @@
 #include <thread>
 #include <utility>
 //#include <Windows.h>
-#include <json_struct/json_struct.h>
+//#include <json_struct/json_struct.h>
+#include <JsonParser/JsonParser.h>
 #include "Printer.h"
 
 
@@ -116,6 +117,13 @@ void TestParseScalars() {
     }
     )json";
 
+    std::vector<uint8_t> vec{ 16, 32, 128, 255, 128, 64, 32, 16 };
+    auto vecToStr = std::string(vec.begin(), vec.end());
+
+    std::string str = "\x10 €ÿ€@ \x10"; // 16 32 64 128 255 128 64 32 16
+    auto strToVec = std::vector<uint8_t>(str.begin(), str.end());
+
+
 
     Person person;
     printf("Person [src]: \n%s", JS::serializeStruct(person).c_str());
@@ -137,19 +145,82 @@ void TestParseScalars() {
 
 
 
+
+
+struct JsonMessageBase {
+    int type;
+    std::string eventName = "";
+
+    JS_OBJECT(
+        JS_MEMBER_ALIASES(type, "Type"),
+        JS_MEMBER_ALIASES(eventName, "EventName", "event_name")
+    );
+};
+
+struct JsonMessage : JsonMessageBase {
+    int data;
+
+    JS_OBJECT_WITH_SUPER(
+        JS_SUPER(JsonMessageBase),
+        JS_MEMBER_ALIASES(data, "Data")
+    );
+};
+
+void TestPartialParse() {
+    //const char jsonMessagePurchase[] = R"json(
+    //{
+    //    "type": 0,
+    //    "eventName": "Default",
+    //    "purchase": { 
+    //        "id": 1011,
+    //        "name": "1 month",
+    //        "price": 6.99
+    //    }
+    //}
+    //)json";
+    const char jsonMessageText[] = R"json(
+    {
+        "type": 0,
+        "eventName": "Default",
+        "data": 1234
+    }
+    )json";
+
+    JsonMessageBase jsonMessageBase;
+    JsonMessage jsonMessage;
+
+    printf("JsomMessageBase [src]: \n%s", JS::serializeStruct(jsonMessageBase).c_str());
+    printf("JsomMessage [src]: \n%s", JS::serializeStruct(jsonMessage).c_str());
+
+    JS::ParseContext parseContextBase(jsonMessageText);
+    if (parseContextBase.parseTo(jsonMessageBase) != JS::Error::NoError) {
+        std::string errorStr = parseContextBase.makeErrorString();
+        fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
+        return;
+    }
+
+    printf("\n");
+    printf("\n");
+    printf("JsomMessageBase [parsed]: \n%s", JS::serializeStruct(jsonMessageBase).c_str());
+
+    JS::ParseContext parseContext(jsonMessageText);
+    if (parseContext.parseTo(jsonMessage) != JS::Error::NoError) {
+        std::string errorStr = parseContext.makeErrorString();
+        fprintf(stderr, "Error parsing struct %s\n", errorStr.c_str());
+        return;
+    }
+
+    printf("\n");
+    printf("\n");
+    printf("JsomMessage [parsed]: \n%s", JS::serializeStruct(jsonMessage).c_str());
+}
+
+
     
 int main() {
-    
-    std::vector<uint8_t> vec{ 16, 32, 128, 255, 128, 64, 32, 16 };
-    auto vecToStr = std::string(vec.begin(), vec.end());
-    
-    std::string str = "\x10 €ÿ€@ \x10"; // 16 32 64 128 255 128 64 32 16
-    auto strToVec = std::vector<uint8_t>(str.begin(), str.end());
-
-    TestParseScalars();
-    
     //Js::TestPrintJson();
-
+    //TestParseScalars();
+    TestPartialParse();
 
     printf("\n");
     std::this_thread::sleep_for(std::chrono::milliseconds{8'000});
