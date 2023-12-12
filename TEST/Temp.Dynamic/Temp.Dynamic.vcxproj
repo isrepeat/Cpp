@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Temp.Static\Temp.Static.vcxproj">
       <Project>{c99c2242-d38a-4e7a-925e-bdb32cf888a4}</Project>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
