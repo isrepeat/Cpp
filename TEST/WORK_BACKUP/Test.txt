@@ -1,7 +1,0 @@
-Team Remote Desktop Code Refactoring (http://tfsdct.com:8080/tfs/UWP/Remote%20Desktop%20Manager/_workitems/edit/9411)
-
-Implement logic to switch app to test mode with appearing additional functionality in UI (4)
-Add ui buttons in test mode (2)
-Refactor ConnectionState Message/Icon to simplify code and fix ui bugs	(2)
-Rewrite AsyncTasks with PPL tasks (5)
-Write spdlog helpers to log in one sink with different patterns	(3)
