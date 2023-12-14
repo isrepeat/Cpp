@@ -250,9 +250,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="main_11_enum_to_string.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="[2] Static initialization fiasco\fileB.h">
       <Filter>Source Files\[2] Static initialization fiasco</Filter>
     </ClInclude>
@@ -273,9 +270,6 @@
     </ClInclude>
     <ClInclude Include="[5] Dtor callback finish\FunctionMt.h">
       <Filter>Source Files\[5] Dtor callback finish</Filter>
-    </ClInclude>
-    <ClInclude Include="main_36_ThreadFinishHelper.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="[6] Future wrapper\FutureWrapper.h">
       <Filter>Source Files\[6] Future wrapper</Filter>
@@ -300,6 +294,12 @@
     </ClInclude>
     <ClInclude Include="[9] DVD API\DiscRecorder.h">
       <Filter>Source Files\[9] DVD API</Filter>
+    </ClInclude>
+    <ClInclude Include="main_11_enum_to_string.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main_36_ThreadFinishHelper.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
