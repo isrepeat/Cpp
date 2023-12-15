@@ -10,11 +10,12 @@ RUN apt-get update                                           \
 
 # --- Copy sources to container ---
 COPY ./src /app/src
+COPY ./CMakeLists.txt /app/CMakeLists.txt
 
 WORKDIR /app/build
 
 # --- Build ---
-RUN cmake -DCMAKE_BUILD_TYPE=Release /app/src                \
+RUN cmake -DCMAKE_BUILD_TYPE=Release /app                    \
     &&  cmake --build .
 
 # ----------------------------
