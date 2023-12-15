@@ -1,7 +1,8 @@
 # ----------------------------
 #          Building           
 # ----------------------------
-FROM gcc:latest as build
+# --- Get the GCC preinstalled image from Docker Hub --- 
+FROM gcc:latest as build_layer
 
 # --- Install neccessary packages ---
 RUN apt-get update                                           \
@@ -18,14 +19,5 @@ WORKDIR /app/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release /app                    \
     &&  cmake --build .
 
-# ----------------------------
-#          Launch           
-# ----------------------------
-FROM ubuntu:latest
-
-WORKDIR /app
-
-# -- Copy the target build to current work directory (from previous "build" container) ---
-COPY --from=build /app/build/HelloWorld .
 
 ENTRYPOINT ["./HelloWorld"]
