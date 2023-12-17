@@ -164,12 +164,6 @@
     <ClInclude Include="..\src\Platform.h" />
     <ClInclude Include="..\src\PlatformProvider.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Dockerfile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

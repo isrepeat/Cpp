@@ -161,13 +161,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Temp.Dynamic", "TEST\Temp.D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CrossPlatform", "CrossPlatform", "{49C1B776-1447-4FF0-99EB-031F3395C698}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloWorldContainer", "HelloWorldContainer", "{DB58A442-C1B4-4921-BB2D-872429DE03E3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Container_HelloWorld", "Container_HelloWorld", "{A2732E43-CF2D-46E2-B03D-88B8A6B53B4F}"
 	ProjectSection(SolutionItems) = preProject
-		CrossPlatform\HelloWorldContainer\CMakeLists.txt = CrossPlatform\HelloWorldContainer\CMakeLists.txt
-		CrossPlatform\HelloWorldContainer\Dockerfile = CrossPlatform\HelloWorldContainer\Dockerfile
+		CrossPlatform\Container_HelloWorld\CMakeLists.txt = CrossPlatform\Container_HelloWorld\CMakeLists.txt
+		CrossPlatform\Container_HelloWorld\Dockerfile = CrossPlatform\Container_HelloWorld\Dockerfile
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "CrossPlatform\HelloWorldContainer\HelloWorld\HelloWorld.vcxproj", "{A14125DE-7D16-4B56-A098-F01990ECB96A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "CrossPlatform\Container_HelloWorld\HelloWorld\HelloWorld.vcxproj", "{A14125DE-7D16-4B56-A098-F01990ECB96A}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -972,8 +972,8 @@ Global
 		{C99C2242-D38A-4E7A-925E-BDB32CF888A4} = {7F38C569-AE8E-465E-9558-BA1847A18BA0}
 		{ABC6A868-347E-450D-B464-65841F44E2A4} = {7F38C569-AE8E-465E-9558-BA1847A18BA0}
 		{32EA6B6C-57E5-4CD9-878B-0571653E5339} = {7F38C569-AE8E-465E-9558-BA1847A18BA0}
-		{DB58A442-C1B4-4921-BB2D-872429DE03E3} = {49C1B776-1447-4FF0-99EB-031F3395C698}
-		{A14125DE-7D16-4B56-A098-F01990ECB96A} = {DB58A442-C1B4-4921-BB2D-872429DE03E3}
+		{A2732E43-CF2D-46E2-B03D-88B8A6B53B4F} = {49C1B776-1447-4FF0-99EB-031F3395C698}
+		{A14125DE-7D16-4B56-A098-F01990ECB96A} = {A2732E43-CF2D-46E2-B03D-88B8A6B53B4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}

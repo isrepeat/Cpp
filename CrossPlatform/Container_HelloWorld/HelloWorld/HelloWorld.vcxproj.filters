@@ -22,10 +22,4 @@
       <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Dockerfile" />
-  </ItemGroup>
 </Project>
