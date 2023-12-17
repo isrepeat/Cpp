@@ -42,6 +42,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "CrossPlatform\Container_HelloWorld\HelloWorld\HelloWorld.vcxproj", "{A14125DE-7D16-4B56-A098-F01990ECB96A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{F3E8FB9A-EA49-4F58-AE6B-16D0B6BBB33A}"
+	ProjectSection(SolutionItems) = preProject
+		CrossPlatform\Linux\CMakeLists.txt = CrossPlatform\Linux\CMakeLists.txt
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Linux_Test.App", "CrossPlatform\Linux\Linux_Test.App\Linux_Test.App.vcxproj", "{159DFD5F-8BE2-49B2-A5A9-41D27FF54810}"
 EndProject
