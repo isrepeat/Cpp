@@ -5,12 +5,14 @@
 //#include "../Linux_Test.Static/ClassFromStaticLib.h"
 //#include "../Linux_Test.Dynamic/ClassFromDynamicLib.h"
 
+#include <ClassFromStaticLib.h>
+
 int main() { 
 	std::cout << "Hello from Linux_Test.App" << std::endl;
 
-	//ClassFromStaticLib libraryClass;
+	ClassFromStaticLib libraryClass;
 	//ClassFromDynamicLib libraryClass;
-	//std::cout << "Library print = \"" << libraryClass.Print() << "\"" << std::endl;
+	std::cout << "Library print = \"" << libraryClass.Print() << "\"" << std::endl;
 
 	for (int i = 1; i <= 3; i++) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1'000));
