@@ -16,11 +16,11 @@
 #include "QuicSocketServer.h"
 #include "Logger.h"
 
-#ifdef __UNIX_OS__
-//#define BOOST_STACKTRACE_USE_BACKTRACE // require libbacktrace + backtrace.h
-#define BOOST_STACKTRACE_USE_ADDR2LINE
-#include <boost/stacktrace.hpp>
-#endif
+//#ifdef __UNIX_OS__
+////#define BOOST_STACKTRACE_USE_BACKTRACE // require libbacktrace + backtrace.h
+//#define BOOST_STACKTRACE_USE_ADDR2LINE
+//#include <boost/stacktrace.hpp>
+//#endif
 
 
 void SignalHandler(int signal) {
@@ -50,10 +50,10 @@ void SignalHandler(int signal) {
 #endif
 	}
 
-#ifdef __UNIX_OS__
-	auto st = boost::stacktrace::stacktrace();
-	WriteDebug("Stack trace:\n%s", boost::stacktrace::to_string(st).c_str());
-#endif
+//#ifdef __UNIX_OS__
+//	auto st = boost::stacktrace::stacktrace();
+//	WriteDebug("Stack trace:\n%s", boost::stacktrace::to_string(st).c_str());
+//#endif
 
 	P7_Exceptional_Flush();
 	std::this_thread::sleep_for(std::chrono::milliseconds(1'000));

@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.10.0)
-# ${TestStaticLib} must already be added as library
-# ${TestDynamicLib} must already be added as library
 
 project(STUNServer)
 message("========== ${PROJECT_NAME} [start] ==========")
@@ -17,8 +15,17 @@ find_package(OpenSSL REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
-#add_executable(${PROJECT_NAME} ${PROTO_SRCS} ${STUN_SERVER_SRCS})
-add_executable(${PROJECT_NAME} ${STUN_SERVER_SRCS})
+include_directories(
+    ${ROOT_PROJECT_DIR}/3rdParty/msquic/src/inc
+    ${ROOT_PROJECT_DIR}/3rdParty/asio/include
+    ${ROOT_PROJECT_DIR}/3rdParty/p7/include
+    ${ROOT_PROJECT_DIR}/3rdParty 
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${PROTO_HDRS} 
+)
+
+add_executable(${PROJECT_NAME} ${PROTO_SRCS} ${STUN_SERVER_SRCS})
+#add_executable(${PROJECT_NAME} ${STUN_SERVER_SRCS})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fpermissive")
 set_target_properties(${PROJECT_NAME} PROPERTIES
