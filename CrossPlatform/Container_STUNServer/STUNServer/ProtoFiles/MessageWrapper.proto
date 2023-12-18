@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "MessageTypeEnum.proto";
+import "UserInput.proto";
+import "MediaDataMessage.proto";
+import "EmptyMessage.proto";
+import "FrameConfigurationMessage.proto";
+import "LostFramesMessage.proto";
+import "ControlSocketConfiguration.proto";
+import "STUNServerMessage.proto";
+import "ClientSTUNServerAuthMessage.proto";
+
+
+message MessageWrapper{
+	MessageType type = 1;
+	oneof data{
+		EmptyMessage empty = 2;
+		UserInputMessage user_input = 3;
+		MediaDataMessage media_data = 4;
+		FrameConfiguration frame_configuration = 5;
+		LostFramesMessage lost_frame = 6;
+		ControlSocketConfiguration control_socket_configuration = 7;
+		STUNServerMessage stun_server_message = 8;
+		ClientSTUNServerAuthMessage client_stun_server_auth_message = 9;
+	}
+}

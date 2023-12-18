@@ -7,10 +7,13 @@ FROM gcc:latest as build_layer
 # --- Install neccessary packages (Ubuntu) ---
 RUN apt-get update                                           \
     &&  apt-get install -y                                   \
+          protobuf-compiler                                  \
           libssl-dev                                         \
           cmake                                              \
           gcc                                                \
           git                                                
+
+
 
 # --- Install neccessary packages (CentOs) ---
 #RUN apt-get update                                           \

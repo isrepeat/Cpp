@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "VideoDataMessage.proto";
+import "AudioDataMessage.proto";
+
+message MediaDataMessage {
+	
+	enum Content {
+		Video = 0;
+	    Audio = 1;
+    }
+
+	Content type = 1;
+
+	oneof data {
+		AudioDataMessage audio = 2;
+		VideoDataMessage video = 3;
+	}
+}
+

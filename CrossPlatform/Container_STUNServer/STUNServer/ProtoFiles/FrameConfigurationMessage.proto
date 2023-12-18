@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message FrameConfiguration {
+
+	enum PixelFormat{
+		BGRA32 = 0;
+	}
+
+
+	PixelFormat pixel_format = 1;
+	int32 width = 2;
+	int32 height = 3;
+	int32 dpi_x = 4;
+	int32 dpi_y = 5;
+
+}

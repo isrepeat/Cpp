@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message KeyEventMessage {
+	int32 univercal_key_code = 1;
+	int32 key_modifiers = 2;
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+enum MessageType{
+	FrameConfigurationRequest = 0;
+	FrameConfigurationMessage = 1;
+	FrameRequest = 2;
+	FrameData = 3;
+	LostFrame = 4;
+	UserInput = 5;
+	ControlSocketConfigurationRequest = 6;
+	ControlSocketConfigurationMessage = 7;
+	SessionEnd = 8;
+	STUNServerAuth = 9;
+	STUNServerResponse = 10;
+}

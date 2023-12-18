@@ -7,15 +7,15 @@ message("========== ${PROJECT_NAME} [start] ==========")
 cmake_print_variables(PROJECT_SOURCE_DIR)
 message("")
 
-file(GLOB PROTO_FILES "*.proto")
+file(GLOB PROTO_FILES "ProtoFiles/*.proto")
 #file(GLOB STUN_SERVER_SRCS "*.h" "*.cpp")
 set(STUN_SERVER_SRCS "TestHello.cpp")
 
 # find packages ...
-#find_package(Protobuf REQUIRED)
+find_package(Protobuf REQUIRED)
 #find_package(OpenSSL REQUIRED)
 
-#protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 #add_executable(${PROJECT_NAME} ${PROTO_SRCS} ${STUN_SERVER_SRCS})
 add_executable(${PROJECT_NAME} ${STUN_SERVER_SRCS})

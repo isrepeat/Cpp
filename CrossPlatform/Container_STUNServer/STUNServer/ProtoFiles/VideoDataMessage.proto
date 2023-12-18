@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+message VideoDataMessage {
+	int32 chunks = 1;
+	int32 chunk_index = 2;
+	repeated DirtyImageRegion dirty_regions = 3;
+	repeated MovedImageRegion moved_regions = 4;
+	bytes data = 5;
+	bool is_control_package = 6;
+	uint32 timestamp = 7;
+
+	message DirtyImageRegion {
+		int32 x = 1;
+		int32 y = 2;
+		int32 width = 3;
+		int32 height = 4;
+		
+	}
+
+	message MovedImageRegion {
+		int32 source_x = 1;
+		int32 source_y = 2;
+		
+		int32 destination_x = 3;
+		int32 destination_y = 4;
+
+		int32 width = 5;
+		int32 height = 6;
+	}
+}
+
+message VideoControlMessage{
+	int32 chunks = 1;
+	int32 chunk_index = 2;
+	repeated DirtyImageRegion dirty_regions = 3;
+	repeated MovedImageRegion moved_regions = 4;
+
+	message DirtyImageRegion {
+		int32 x = 1;
+		int32 y = 2;
+		int32 width = 3;
+		int32 height = 4;	
+	}
+
+	message MovedImageRegion {
+		int32 source_x = 1;
+		int32 source_y = 2;
+		
+		int32 destination_x = 3;
+		int32 destination_y = 4;
+
+		int32 width = 5;
+		int32 height = 6;
+	}
+}

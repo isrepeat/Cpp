@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message ClientSTUNServerAuthMessage {
+	string local_ip = 1;
+	uint32 local_port = 2;
+	string jwt = 3;
+	uint64 requested_user_id = 4;
+	uint64 requester_id = 5;
+}

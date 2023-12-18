@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message ControlSocketConfiguration {
+	uint32 port = 1;
+}
