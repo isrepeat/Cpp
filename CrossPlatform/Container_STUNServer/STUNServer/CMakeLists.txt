@@ -8,6 +8,7 @@ project(STUNServer)
 message("========== ${PROJECT_NAME} [start] ==========")
 cmake_print_variables(PROJECT_SOURCE_DIR)
 cmake_print_variables(PROJECT_BINARY_DIR)
+cmake_print_variables(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 message("")
 
 file(GLOB PROTO_FILES "ProtoFiles/*.proto")
@@ -38,7 +39,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 add_library(msquic UNKNOWN IMPORTED)
-set_property(TARGET msquic PROPERTY IMPORTED_LOCATION "${ROOT_PROJECT_DIR}/3rdParty/msquic/release_1.2.0/bin/libmsquic.so")
+set_property(TARGET msquic PROPERTY IMPORTED_LOCATION "${ROOT_PROJECT_DIR}/3rdParty/msquic/release_1.2.0/bin/libmsquic.so") # Ensure the path is correct
 
 find_library(p7_LIBRARY NAMES p7 REQUIRED)
 cmake_print_variables(p7_LIBRARY)
@@ -46,4 +47,6 @@ add_library(p7 UNKNOWN IMPORTED)
 set_property(TARGET p7 PROPERTY IMPORTED_LOCATION "${p7_LIBRARY}")
 
 target_link_libraries(${PROJECT_NAME} -pthread -lrt -ldl -lbacktrace p7 msquic protobuf::libprotobuf OpenSSL::Crypto)
+
+file(COPY "./host.cert" "./host.key" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message("========== ${PROJECT_NAME} [end] ==========")
