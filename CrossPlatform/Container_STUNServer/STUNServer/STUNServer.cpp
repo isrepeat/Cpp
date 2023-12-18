@@ -61,6 +61,7 @@ void SignalHandler(int signal) {
 }
 
 int main() {
+	std::cout << "STUNServer started ..." << std::endl;
 	std::signal(SIGABRT, SignalHandler);
 	std::signal(SIGFPE, SignalHandler);
 	std::signal(SIGILL, SignalHandler);
@@ -75,9 +76,11 @@ int main() {
 	//t.AddNewUser(1, ActiveUse)
 	auto server = QuicSocketServer{ 53488 };
 	server.StartListening();
-	while (true)
+	while (true) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
 
 	WriteError("Exit main loop");
-	//std::cin.get();
+	std::cout << "STUNServer finished" << std::endl;
+	return 0;
 }
