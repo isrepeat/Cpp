@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(Linux_Test.Static)
+project(Linux_Test.Dynamic)
 message("========== ${PROJECT_NAME} [start] ==========")
 cmake_print_variables(PROJECT_SOURCE_DIR)
 message("")
@@ -8,7 +8,7 @@ message("")
 # find packages ...
 
 file(GLOB PROJECT_SOURCES "*.h" "*.cpp")
-add_library(${PROJECT_NAME} STATIC ${PROJECT_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${PROJECT_SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17

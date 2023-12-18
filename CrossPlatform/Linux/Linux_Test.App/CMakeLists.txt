@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10.0)
 # ${TestStaticLib} must already be added as library
+# ${TestDynamicLib} must already be added as library
 
 project(Linux_Test.App)
 message("========== ${PROJECT_NAME} [start] ==========")
-cmake_print_variables(PROJECT_NAME)
 cmake_print_variables(PROJECT_SOURCE_DIR)
 message("")
 
@@ -17,11 +17,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
-#cmake_print_properties(TARGETS ${PROJECT_NAME} PROPERTIES CXX_STANDARD CXX_STANDARD_REQUIRED CXX_EXTENSIONS)
 
-#target_include_directories(${PROJECT_NAME} PUBLIC
-#	#"${PROJECT_SOURCE_DIR}"
-#)
-
-target_link_libraries(${PROJECT_NAME} ${TestStaticLib})
+target_link_libraries(${PROJECT_NAME} ${TestDynamicLib})
 message("========== ${PROJECT_NAME} [end] ==========")
