@@ -46,7 +46,7 @@ cmake_print_variables(p7_LIBRARY)
 add_library(p7 UNKNOWN IMPORTED)
 set_property(TARGET p7 PROPERTY IMPORTED_LOCATION "${p7_LIBRARY}")
 
-target_link_libraries(${PROJECT_NAME} -pthread -lrt -ldl -lbacktrace p7 msquic protobuf::libprotobuf OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} -pthread -lrt -ldl p7 msquic protobuf::libprotobuf OpenSSL::Crypto)
 
 file(COPY "./host.cert" "./host.key" DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message("========== ${PROJECT_NAME} [end] ==========")

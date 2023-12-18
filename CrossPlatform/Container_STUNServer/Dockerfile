@@ -15,7 +15,7 @@ RUN apt-get update                                                              
           git																		 
 
 # --- Copy current dir to container and build ---
-COPY . /STUNServer
+COPY . ./STUNServer
 WORKDIR ./STUNServer
 
 # --- Install p7 ---
@@ -53,7 +53,7 @@ RUN cd 3rdParty                                                                 
 #          git    
 
 
-WORKDIR ./STUNServer/Release
+WORKDIR ./Release
 
 RUN cmake .. && cmake --build .
 
