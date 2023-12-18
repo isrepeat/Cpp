@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10.0)
-include(CMakePrintHelpers)
-
 project(STUNServerApp)
+
+include(${PROJECT_SOURCE_DIR}/CMakePrintHelpers.cmake)
+
 message("========== ${PROJECT_NAME} [start] ==========")
 cmake_print_variables(PROJECT_SOURCE_DIR)
 message("")
