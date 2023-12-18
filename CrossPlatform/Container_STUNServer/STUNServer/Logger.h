@@ -1,6 +1,5 @@
 #pragma once
 #include "Platform.h"
-#include <stdlib.h>		// size_t for Linux
 #include <P7_Client.h>
 #include <P7_Trace.h>
 #include <string>
