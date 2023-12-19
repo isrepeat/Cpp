@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message AudioDataMessage {
+
+	bytes samples = 1;
+}

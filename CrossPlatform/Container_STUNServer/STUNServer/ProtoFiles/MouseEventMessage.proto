@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+message Point {
+	int32 x = 1;
+	int32 y = 2;
+}
+
+message MouseEventMessage {
+	oneof data {
+		Point movementCoordinates = 1;
+		int32 wheelMovement = 2;
+	}
+
+	Button button = 3;
+	Action action = 4;
+
+	
+	enum Button {
+		Left = 0;
+	    Right = 1;
+	    Middle = 2;
+		None = 3;
+		Wheel = 4;
+    }
+
+	enum Action {
+		Up = 0;
+		Down = 1;
+		WheelMovement = 3;
+		Move = 4;
+	}
+}

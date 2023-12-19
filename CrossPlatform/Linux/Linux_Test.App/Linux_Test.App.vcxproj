@@ -74,40 +74,21 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IntDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\obj\$(Platform)\$(Configuration)</IntDir>
-    <OutDir>$(SolutionDir)CrossPlatform\Linux\!VS_TMP\bin\$(Platform)\$(Configuration)</OutDir>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" />
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Linux_Test.Dynamic\Linux_Test.Dynamic.vcxproj">
+      <Project>{af6eaf69-b1af-4760-b593-1ecfe821b083}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>

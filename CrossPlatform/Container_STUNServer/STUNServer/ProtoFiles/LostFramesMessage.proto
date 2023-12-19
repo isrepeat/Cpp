@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+message LostFramesMessage {
+
+	repeated int32 framesChunk = 1;
+	uint32 chunk_timestamp = 2;
+	//int32 frameChunk = 1;
+};

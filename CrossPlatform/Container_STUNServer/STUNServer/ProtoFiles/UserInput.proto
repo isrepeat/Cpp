@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "MouseEventMessage.proto";
+import "KeyEventMessage.proto";
+
+message UserInputMessage{
+	enum Input {
+		Keyboard = 0;
+	    Mouse = 1;
+    }
+
+	Input type = 1;
+
+	oneof data {
+		MouseEventMessage mouse_event = 2;
+		KeyEventMessage key_event = 3;
+	}
+}

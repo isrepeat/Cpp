@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message STUNServerMessage {
+	string ip = 1;
+	uint32 port = 2;
+	bool is_same_network = 3;
+}
