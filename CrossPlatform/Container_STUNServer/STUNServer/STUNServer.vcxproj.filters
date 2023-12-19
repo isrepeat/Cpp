@@ -1,90 +1,133 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Headers">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Proto">
+      <UniqueIdentifier>{8d9a96e0-ba52-4c51-b439-1816a3daa48c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="STUNServer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="TcpSocketServer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="UdpSocketServer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="QuicSocketServer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="MsQuicInitializer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="ProtobufSerializer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="JwtReader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="UserDataExchanger.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpSocketServer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserConnection.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UdpSocketServer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="QuicSocketServer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="MsQuicInitializer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="QuicUserStream.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="ProtobufSerializer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="JwtReader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserDataExchanger.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="ActiveUser.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserAuthMessage.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserAddress.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">
-      <Filter>Header Files</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ProtoFiles\AudioDataMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\ClientSTUNServerAuthMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\ControlSocketConfiguration.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\EmptyMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\FrameConfigurationMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\KeyEventMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\LostFramesMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\MediaDataMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\MessageTypeEnum.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\MessageWrapper.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\MouseEventMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\STUNServerMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\UserInput.proto">
+      <Filter>Proto</Filter>
+    </None>
+    <None Include="ProtoFiles\VideoDataMessage.proto">
+      <Filter>Proto</Filter>
+    </None>
   </ItemGroup>
 </Project>

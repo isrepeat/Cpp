@@ -52,6 +52,34 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Linux_Test.Static", "CrossP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Linux_Test.Dynamic", "CrossPlatform\Linux\Linux_Test.Dynamic\Linux_Test.Dynamic.vcxproj", "{AF6EAF69-B1AF-4760-B593-1ECFE821B083}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Container_STUNServer", "Container_STUNServer", "{C6F6FE1A-D6D6-4D11-9A44-841B7752709F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STUNServer", "CrossPlatform\Container_STUNServer\STUNServer\STUNServer.vcxproj", "{D6F993FD-70A6-45DF-98AD-1181978D0453}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CMake", "CMake", "{C0F6504D-7084-4971-BF68-0112DA8F1E42}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Container_HttpServer", "Container_HttpServer", "{496B828A-9E5F-4BE7-827D-19D181DE681B}"
+	ProjectSection(SolutionItems) = preProject
+		CrossPlatform\Container_HttpServer\CMakeLists.txt = CrossPlatform\Container_HttpServer\CMakeLists.txt
+		CrossPlatform\Container_HttpServer\Dockerfile = CrossPlatform\Container_HttpServer\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{0B7EDE15-29F4-4A06-8673-9F1142D05F5B}"
+	ProjectSection(SolutionItems) = preProject
+		CrossPlatform\CMake\Test\CMakeLists.txt = CrossPlatform\CMake\Test\CMakeLists.txt
+		CrossPlatform\CMake\Test\TestMain.cpp = CrossPlatform\CMake\Test\TestMain.cpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B0A9B0A9-9B16-42F3-B319-46A9B8312136}"
+	ProjectSection(SolutionItems) = preProject
+		CrossPlatform\Container_HttpServer\src\http_message.cc = CrossPlatform\Container_HttpServer\src\http_message.cc
+		CrossPlatform\Container_HttpServer\src\http_message.h = CrossPlatform\Container_HttpServer\src\http_message.h
+		CrossPlatform\Container_HttpServer\src\http_server.cc = CrossPlatform\Container_HttpServer\src\http_server.cc
+		CrossPlatform\Container_HttpServer\src\http_server.h = CrossPlatform\Container_HttpServer\src\http_server.h
+		CrossPlatform\Container_HttpServer\src\main.cc = CrossPlatform\Container_HttpServer\src\main.cc
+		CrossPlatform\Container_HttpServer\src\uri.h = CrossPlatform\Container_HttpServer\src\uri.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
@@ -302,6 +330,20 @@ Global
 		{AF6EAF69-B1AF-4760-B593-1ECFE821B083}.Release|x86.ActiveCfg = Release|x86
 		{AF6EAF69-B1AF-4760-B593-1ECFE821B083}.Release|x86.Build.0 = Release|x86
 		{AF6EAF69-B1AF-4760-B593-1ECFE821B083}.Release|x86.Deploy.0 = Release|x86
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|ARM.ActiveCfg = Debug|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|x64.ActiveCfg = Debug|x64
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|x64.Build.0 = Debug|x64
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|x86.ActiveCfg = Debug|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Debug|x86.Build.0 = Debug|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|ARM.ActiveCfg = Release|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|ARM64.ActiveCfg = Release|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x64.ActiveCfg = Release|x64
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x64.Build.0 = Release|x64
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x86.ActiveCfg = Release|Win32
+		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -323,6 +365,12 @@ Global
 		{159DFD5F-8BE2-49B2-A5A9-41D27FF54810} = {F3E8FB9A-EA49-4F58-AE6B-16D0B6BBB33A}
 		{6E1A4BF5-546F-4A58-B718-A6A6F2E58395} = {F3E8FB9A-EA49-4F58-AE6B-16D0B6BBB33A}
 		{AF6EAF69-B1AF-4760-B593-1ECFE821B083} = {F3E8FB9A-EA49-4F58-AE6B-16D0B6BBB33A}
+		{C6F6FE1A-D6D6-4D11-9A44-841B7752709F} = {49C1B776-1447-4FF0-99EB-031F3395C698}
+		{D6F993FD-70A6-45DF-98AD-1181978D0453} = {C6F6FE1A-D6D6-4D11-9A44-841B7752709F}
+		{C0F6504D-7084-4971-BF68-0112DA8F1E42} = {49C1B776-1447-4FF0-99EB-031F3395C698}
+		{496B828A-9E5F-4BE7-827D-19D181DE681B} = {49C1B776-1447-4FF0-99EB-031F3395C698}
+		{0B7EDE15-29F4-4A06-8673-9F1142D05F5B} = {C0F6504D-7084-4971-BF68-0112DA8F1E42}
+		{B0A9B0A9-9B16-42F3-B319-46A9B8312136} = {496B828A-9E5F-4BE7-827D-19D181DE681B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
