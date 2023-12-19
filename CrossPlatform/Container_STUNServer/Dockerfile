@@ -54,7 +54,7 @@ RUN cd 3rdParty                                                                 
 
 
 WORKDIR ./Release
-
 RUN cmake .. && cmake --build .
 
-ENTRYPOINT [".bin/STUNServer"]
+WORKDIR ./bin
+ENTRYPOINT ["./STUNServer"]
