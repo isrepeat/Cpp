@@ -1,7 +1,3 @@
-// Include explicitly for Linux:
-#include <cstdint> // std::uint...
-#include <stdlib.h>	// size_t
-
 #include <sys/resource.h>
 #include <sys/time.h>
 

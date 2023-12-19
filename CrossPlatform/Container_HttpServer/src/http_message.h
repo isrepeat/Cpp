@@ -8,6 +8,10 @@
 #include <string>
 #include <utility>
 
+// Include explicitly for Linux:
+#include <cstdint> // std::uint...
+#include <stdlib.h>	// size_t
+
 #include "uri.h"
 
 namespace simple_http_server {
