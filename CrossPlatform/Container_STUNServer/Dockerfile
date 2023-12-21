@@ -15,8 +15,8 @@ FROM gcc:9.5.0 as build_layer
             git
 
 # --- Copy current dir to container and build ---
-COPY . ./STUNServer
-WORKDIR ./STUNServer
+COPY . ./STUNServerBuild
+WORKDIR ./STUNServerBuild
 
 # --- Install p7 ---
 RUN cd 3rdParty                                                                                      \
@@ -42,12 +42,19 @@ RUN cd 3rdParty                                                                 
     # back to Dockerfile directory
     &&  cd ../../
 
+
 WORKDIR ./Release
 RUN cmake .. && cmake --build .
 
+# ----------------------------
+#        Finish layer          
+# ----------------------------
+FROM gcc:9.5.0
 
-# TODO: Add prodaction layer and copy executabe & deps from build_layer
-WORKDIR ./bin
+COPY --from=build_layer ./STUNServerBuild/Release/bin ./STUNServer/Release/bin
+COPY --from=build_layer ./STUNServerBuild/3rdParty ./STUNServer/3rdParty
+
+WORKDIR ./STUNServer/Release/bin/
 ENTRYPOINT ["./STUNServer"]
 
 
