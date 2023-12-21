@@ -2,31 +2,17 @@
 #        Build layer          
 # ----------------------------
 # --- Get the GCC preinstalled image from Docker Hub --- 
-FROM gcc:latest as build_layer
-
-ARG HOST_DISTRIBUTION=ubuntu
+FROM gcc:9.5.0 as build_layer
 
 # --- Install neccessary packages ---
-RUN if [ "HOST_DISTRIBUTION" = "ubuntu" ]; then                                                      \
-       apt-get update                                                                                \
-       &&  apt-get install -y                                                                        \
-             protobuf-compiler                                                                       \
-             libssl-dev                                                                              \
-             cmake                                                                                   \
-             make                                                                                    \
-             gcc                                                                                     \
-             git                                                                                     \
-    elif [ "HOST_DISTRIBUTION" = "centos" ]; then                                                    \  
-       dnf check-update                                                                              \
-       &&  dnf install -y                                                                            \
-             protobuf-compiler                                                                       \
-             openssl-devel                                                                           \
-             libatomic                                                                               \
-             gcc-c++                                                                                 \
-             cmake                                                                                   \
-             make                                                                                    \
-             git                                                                                     \
-    fi
+ RUN  apt-get update                                                                                 \
+      &&  apt-get install -y                                                                         \
+            protobuf-compiler                                                                        \
+            libssl-dev                                                                               \
+            cmake                                                                                    \
+            make                                                                                     \
+            gcc                                                                                      \
+            git
 
 # --- Copy current dir to container and build ---
 COPY . ./STUNServer
@@ -63,3 +49,29 @@ RUN cmake .. && cmake --build .
 # TODO: Add prodaction layer and copy executabe & deps from build_layer
 WORKDIR ./bin
 ENTRYPOINT ["./STUNServer"]
+
+
+
+#ARG HOST_DISTRIBUTION=ubuntu
+
+# --- Install neccessary packages ---
+#RUN if [ "HOST_DISTRIBUTION" = "ubuntu" ]; then                                                      \
+#       apt-get update                                                                                \
+#       &&  apt-get install -y                                                                        \
+#             protobuf-compiler                                                                       \
+#             libssl-dev                                                                              \
+#             cmake                                                                                   \
+#             make                                                                                    \
+#             gcc                                                                                     \
+#             git                                                                                     \
+#    elif [ "HOST_DISTRIBUTION" = "centos" ]; then                                                    \  
+#       dnf check-update                                                                              \
+#       &&  dnf install -y                                                                            \
+#             protobuf-compiler                                                                       \
+#             openssl-devel                                                                           \
+#             libatomic                                                                               \
+#             gcc-c++                                                                                 \
+#             cmake                                                                                   \
+#             make                                                                                    \
+#             git                                                                                     \
+#    fi
