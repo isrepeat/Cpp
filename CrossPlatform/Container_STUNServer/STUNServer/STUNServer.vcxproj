@@ -180,6 +180,22 @@
       <Project>{46dfd514-d3d5-45a5-8425-205b44041240}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ProtoFiles\AudioDataMessage.proto" />
+    <None Include="ProtoFiles\ClientSTUNServerAuthMessage.proto" />
+    <None Include="ProtoFiles\ControlSocketConfiguration.proto" />
+    <None Include="ProtoFiles\EmptyMessage.proto" />
+    <None Include="ProtoFiles\FrameConfigurationMessage.proto" />
+    <None Include="ProtoFiles\KeyEventMessage.proto" />
+    <None Include="ProtoFiles\LostFramesMessage.proto" />
+    <None Include="ProtoFiles\MediaDataMessage.proto" />
+    <None Include="ProtoFiles\MessageTypeEnum.proto" />
+    <None Include="ProtoFiles\MessageWrapper.proto" />
+    <None Include="ProtoFiles\MouseEventMessage.proto" />
+    <None Include="ProtoFiles\STUNServerMessage.proto" />
+    <None Include="ProtoFiles\UserInput.proto" />
+    <None Include="ProtoFiles\VideoDataMessage.proto" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
