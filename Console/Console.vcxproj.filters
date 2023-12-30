@@ -248,6 +248,9 @@
     <ClCompile Include="main_51_ThreadSafeObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_52_ThreadEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[2] Static initialization fiasco\fileB.h">
