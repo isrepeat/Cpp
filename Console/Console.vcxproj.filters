@@ -251,6 +251,9 @@
     <ClCompile Include="main_52_ThreadEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_53_redirect_IO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[2] Static initialization fiasco\fileB.h">
