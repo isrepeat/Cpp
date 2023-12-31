@@ -1,4 +1,5 @@
-#define  _CRT_SECURE_NO_WARNINGS
+//#define  _CRT_SECURE_NO_WARNINGS
+#include <Helpers/StdRedirection.h>
 #include <Helpers/Helpers.h>
 #include <Helpers/Logger.h>
 #include <Helpers/Time.h>
@@ -9,10 +10,9 @@
 #include <future>
 #include <string>
 
-
 #include <windows.h>
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 
 // Related Links:
 // https://truong.io/posts/capturing_stdout_for_c++_unit_testing.html
@@ -96,124 +96,6 @@ void TestRedirectStdoutToPipe() {
 }
 
 
-// Use this class before first use ::GetStdHandle(...) to avoid side effects, for example as singleton. 
-// All std HANDLEs that was saved with ::GetStdHandle(...) before redirection will not be redirected.
-// All std HANDLEs that was saved with ::GetStdHandle(...) during redirection will not be restored.
-class StdRedirection {
-public:
-    StdRedirection();
-    ~StdRedirection();
-
-    void BeginRedirect(std::function<void(std::vector<char>)> readCallback);
-    void EndRedirect();
-
-private:
-    enum PipeStream {
-        READ,
-        WRITE
-    };
-
-    const int PIPE_BUFFER_SIZE = 65536;
-    const int OUTPUT_BUFFER_SIZE = MAX_PATH;
-
-    std::mutex mx;
-
-    int ioPipes[2];
-    int oldStdOut;
-    std::vector<char> outputBuffer;
-    
-    std::atomic<bool> redirectInProcess;
-    std::future<void> listeningRoutine;
-};
-
-
-StdRedirection::StdRedirection()
-    : ioPipes{ -1, -1 } // initialize with default values to suppress compiler warning
-    , oldStdOut{ -1 }
-    , redirectInProcess{ false }
-{
-    LOG_FUNCTION_ENTER("StdRedirection()");
-    setvbuf(stdout, NULL, _IONBF, 0); // set "no buffer" for stdout (no need fflush manually)
-}
-
-StdRedirection::~StdRedirection() {
-    LOG_FUNCTION_SCOPE("StdRedirection()");
-    EndRedirect();
-    // If durring redirection std HANDLEs was saved with ::GetStdHandle(...) it not restored
-}
-
-void StdRedirection::BeginRedirect(std::function<void(std::vector<char>)> readCallback) {
-    LOG_FUNCTION_ENTER("BeginRedirect()");
-    LOG_ASSERT(readCallback, "readCallback is empty");
-    std::unique_lock lk{ mx };
-
-    if (redirectInProcess.exchange(true)) {
-        LOG_WARNING_D("Redirect already started, ignore");
-        return;
-    }
-
-    oldStdOut = _dup(_fileno(stdout)); // save original stdout descriptor
-
-    if (_pipe(ioPipes, PIPE_BUFFER_SIZE, O_BINARY) == -1) { // make pipe's descriptors for READ / WRITE streams
-        Dbreak;
-        throw std::exception("_pipe(...) Failed to init ioPipes");
-    }
-    if (_dup2(ioPipes[WRITE], _fileno(stdout)) == -1) { // redirect stdout to the pipe
-        Dbreak;
-        throw std::exception("_dup2(...) Failed redirect stdout to the pipe");
-    }
-    _close(ioPipes[WRITE]); // we no need work with WRITE stream so close it now
-
-
-    listeningRoutine = std::async(std::launch::async, [this, readCallback] {
-        while (redirectInProcess) {
-            outputBuffer.resize(OUTPUT_BUFFER_SIZE);
-
-            // NOTE: _read(...) block current thread until any data arrives in the ioPipes[READ]
-            int readBytes = _read(ioPipes[READ], outputBuffer.data(), outputBuffer.size());
-            if (readBytes == -1) {
-                Dbreak;
-                throw std::exception("_read(...) Failed when read from ipPipe[READ]");
-            }
-            else if (readBytes == 0) { // read end of file
-                return;
-            }
-
-            outputBuffer.resize(readBytes); // truncate
-            if (readCallback) {
-                readCallback(std::move(outputBuffer));
-            }
-        }
-        });
-}
-
-// May throw exception
-void StdRedirection::EndRedirect() {
-    LOG_FUNCTION_ENTER("EndRedirect()");
-    std::unique_lock lk{ mx };
-
-    if (!redirectInProcess.exchange(false)) {
-        LOG_WARNING_D("Redirect already finished, ignore");
-        return;
-    }
-
-    if (_dup2(oldStdOut, _fileno(stdout)) == -1) { // restore stdout to original (saved) descriptor
-        Dbreak;
-        throw std::exception("_dup2(...) Failed restore stdout");
-    }
-    // after stdout restored the _read(...) return 0  in  listeningRoutine
-    _close(oldStdOut);
-
-    if (listeningRoutine.valid())
-        listeningRoutine.get();
-
-    LOG_DEBUG("Redirection finished");
-}
-
-
-HANDLE myStdOut = nullptr;
-HANDLE origStdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
-
 void TestStdRedirectionClass() {
 
     printf("[printf] Message A \n");
@@ -223,7 +105,7 @@ void TestStdRedirectionClass() {
 
     std::vector<char> redirectedBuffer;
 
-    StdRedirection stdRedirection;
+    H::StdRedirection stdRedirection;
     stdRedirection.BeginRedirect([&redirectedBuffer](std::vector<char> outputBuffer) {
         //std::string msg{ outputBuffer.begin(), outputBuffer.end() };
         redirectedBuffer.insert(redirectedBuffer.end(), outputBuffer.begin(), outputBuffer.end());
