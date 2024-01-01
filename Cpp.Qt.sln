@@ -27,6 +27,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.Includes", "Utility
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Boost.Includes", "UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj", "{4F240080-EF67-45B1-A6DE-3DED5FA14E8E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Qt", "Qt", "{EA2B121A-4373-4D7F-8FCB-7A43A0884AF5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App_Socket", "Qt\App_Socket\App_Socket.vcxproj", "{29454F5D-D9B5-477F-A102-D4BC5C45CB07}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console", "Console\Console.vcxproj", "{27C2C410-8770-4D35-941C-6EA738388F43}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
@@ -107,6 +113,20 @@ Global
 		{4F240080-EF67-45B1-A6DE-3DED5FA14E8E}.Release|x64.Build.0 = Release|x64
 		{4F240080-EF67-45B1-A6DE-3DED5FA14E8E}.Release|x86.ActiveCfg = Release|Win32
 		{4F240080-EF67-45B1-A6DE-3DED5FA14E8E}.Release|x86.Build.0 = Release|Win32
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Debug|x64.ActiveCfg = Debug|x64
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Debug|x64.Build.0 = Debug|x64
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Debug|x86.ActiveCfg = Debug|x64
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Release|x64.ActiveCfg = Release|x64
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Release|x64.Build.0 = Release|x64
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07}.Release|x86.ActiveCfg = Release|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x64.ActiveCfg = Debug|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x64.Build.0 = Debug|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x86.ActiveCfg = Debug|Win32
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x86.Build.0 = Debug|Win32
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Release|x64.ActiveCfg = Release|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Release|x64.Build.0 = Release|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Release|x86.ActiveCfg = Release|Win32
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,6 +141,7 @@ Global
 		{4AB35171-9952-4A89-9589-8A63E8BE47E9} = {2BB78300-C513-4C8C-B55C-3BD57639C26A}
 		{0A91EB2B-8EBC-43B6-BE7B-73DF089CBFA4} = {EE13D233-2238-409F-9A16-6EE185AE4688}
 		{4F240080-EF67-45B1-A6DE-3DED5FA14E8E} = {2BB78300-C513-4C8C-B55C-3BD57639C26A}
+		{29454F5D-D9B5-477F-A102-D4BC5C45CB07} = {EA2B121A-4373-4D7F-8FCB-7A43A0884AF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
