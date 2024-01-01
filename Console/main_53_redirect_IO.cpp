@@ -15,7 +15,9 @@
 #include <io.h>
 
 // Related Links:
-// https://truong.io/posts/capturing_stdout_for_c++_unit_testing.html
+// https://stackoverflow.com/questions/71612488/capture-printf-stdout-output-in-a-win32-application-or-reassign-stdout-handle
+// https://stackoverflow.com/questions/12255543/using-stdout-in-a-win32-gui-application-crashes-if-i-dont-have-a-redirect-to-f
+// https://stackoverflow.com/questions/54094127/redirecting-stdout-in-win32-does-not-redirect-stdout
 // https://stackoverflow.com/questions/39110882/redirecting-cout-to-the-new-buffer-that-created-with-winapi
 // https://stackoverflow.com/questions/311955/redirecting-cout-to-a-console-in-windows
 // https://stackoverflow.com/questions/34245235/qt-how-to-redirect-qprocess-stdout-to-textedit
@@ -26,6 +28,7 @@
 // https://stackoverflow.com/questions/4810516/c-redirecting-stdout/4814197#4814197
 // https://stackoverflow.com/questions/49818540/how-to-redirect-stdout-stderr-for-current-process
 // https://stackoverflow.com/questions/573724/how-can-i-redirect-stdout-to-some-visible-display-in-a-windows-application
+// https://truong.io/posts/capturing_stdout_for_c++_unit_testing.html
 
 
 #define MAX_LEN 40
@@ -97,47 +100,54 @@ void TestRedirectStdoutToPipe() {
 
 
 void TestStdRedirectionClass() {
+    HANDLE stdHandle_def = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    bool consoleReallocated = H::StdRedirection::ReAllocConsole();
+    //BOOL bResult = FreeConsole();
+    //bResult = AllocConsole();
+    //FILE* fDummy;
+    //freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+    HANDLE stdHandle_new = ::GetStdHandle(STD_OUTPUT_HANDLE);
 
     printf("[printf] Message A \n");
     printf("[cout] Message B \n");
 
-    HANDLE stdHandle_orig = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    // Investigate how redirect to buffer with CreateFile
+    bool res = false;
+    char pipeBuffer[1024]{ 0 };
+    DWORD dwBytesWritten = 0;
 
-    std::vector<char> redirectedBuffer;
 
     H::StdRedirection stdRedirection;
+    std::vector<char> redirectedBuffer;
     stdRedirection.BeginRedirect([&redirectedBuffer](std::vector<char> outputBuffer) {
-        //std::string msg{ outputBuffer.begin(), outputBuffer.end() };
         redirectedBuffer.insert(redirectedBuffer.end(), outputBuffer.begin(), outputBuffer.end());
-        //redirectedMessages.push_back(msg);
         });
 
     lg::DefaultLoggers::Init("D:\\main_53_redirect_IO.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
 
-    HANDLE stdHandle_curr = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE stdHandle_cur = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    printf("[printf] Redirected \n"); // Ok
 
-    std::string text = "[WriteFile] Redirected A \n";
-    DWORD dwBytesWritten = 0;
-    bool res = false;
     // TODO: Investigate how duplicate write to STD_OUTPUT_HANDLE
-    res = ::WriteFile(stdHandle_orig, text.data(), text.size(), &dwBytesWritten, nullptr); // Fail
-    res = ::WriteFile(stdHandle_curr, text.data(), text.size(), &dwBytesWritten, nullptr); // Ok
-    LOG_DEBUG_D("[Log] Redirected B"); // Ok
-
-    printf("[printf] Redirected C \n");
-    std::cout << "[cout] Redirected D \n";
+    std::string textA = "[WriteFile] Redirected A \n";
+    std::string textB = "[WriteFile] Redirected B \n";
+    std::string textC = "[WriteFile] Redirected C \n";
+    bool resA = ::WriteFile(stdHandle_def, textA.data(), textA.size(), &dwBytesWritten, nullptr); // Fail
+    bool resC = ::WriteFile(stdHandle_new, textB.data(), textB.size(), &dwBytesWritten, nullptr); // Fail
+    bool resD = ::WriteFile(stdHandle_cur, textC.data(), textC.size(), &dwBytesWritten, nullptr); // Ok
+    
+    LOG_DEBUG_D("[Log] Redirected"); // Ok
+    std::cout << "[cout] Redirected \n"; // Ok
 
     stdRedirection.EndRedirect();
     redirectedBuffer.push_back('\0');
 
     printf("[cout] Message C \n");
     printf("[printf] Message D \n");
-
-
+    
     printf("\n\nRedirected messages:");
-    //for (auto& msg : redirectedMessages) {
-        printf("\n%s", redirectedBuffer.data());
-    //}
+    printf("\n%s", redirectedBuffer.data());
     return;
 }
 
@@ -147,26 +157,6 @@ void TestStdRedirectionClass() {
 int main() {
     //TestRedirectStdoutToPipe();
     TestStdRedirectionClass();
-
-    //std::stringstream bufferCout;
-    //std::stringstream bufferCerr;
-
-    //std::streambuf* prevBufferCout = std::cout.rdbuf(bufferCout.rdbuf());
-    //std::streambuf* prevBufferCerr = std::cerr.rdbuf(bufferCerr.rdbuf());
-    
-
-    //LOG_DEBUG_D("Logger redirected message");
-    //std::cout << "[cout] Redirected message";
-    //std::cerr << "[cerr] Redirected error" << std::endl;
-    //printf("[printf] Hello world \n");
-
-    //// Restore original buffers
-    //std::cout.rdbuf(prevBufferCout);
-    //std::cerr.rdbuf(prevBufferCerr);
-
-    //LOG_DEBUG_D("Logger msg to console");
-    //std::cout << "Print message to console" << std::endl;
-    //std::cerr << "Print error to console" << std::endl;
 
     //system("pause");
     Sleep(20000);
