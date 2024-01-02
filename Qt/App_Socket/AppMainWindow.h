@@ -14,7 +14,15 @@ public:
 
 public slots:
 
+
 private:
+	enum class TestMode {
+		None,
+		Puncher,
+		Socket,
+	};
+
 	Ui::AppMainWindowClass ui;
 	H::StdRedirection stdRedirection;
+	std::atomic<TestMode> testMode;
 };

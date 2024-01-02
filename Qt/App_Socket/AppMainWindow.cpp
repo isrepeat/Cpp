@@ -5,6 +5,7 @@
 
 AppMainWindow::AppMainWindow(QWidget *parent)
 	: QMainWindow(parent)
+	, testMode{ TestMode::None }
 {
 	ui.setupUi(this);
 
@@ -14,10 +15,21 @@ AppMainWindow::AppMainWindow(QWidget *parent)
 
 	lg::DefaultLoggers::Init("D:\\App_Socket.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
 
-	printf("[printf] AAA \n");
-	LOG_DEBUG_D("[Log] Redirected AAAAAAAA BBBBBBBBB CCCCCCCCC DDDDDDDDD EEEEEEEEE FFFFFFFFFF GGGGGGGGG ");
-	printf("[printf] BBB \n");
+	connect(ui.btnTestPucher, &QPushButton::clicked, this, [this] {
+		testMode = TestMode::Puncher;
+		ui.lbTestMode->setText("TestMode = Puncher");
+		printf("\n*********************\n");
+		printf("  TestMode = Puncher");
+		printf("\n*********************\n");
+		});
 
+	connect(ui.btnTestSocket, &QPushButton::clicked, this, [this] {
+		testMode = TestMode::Socket;
+		ui.lbTestMode->setText("TestMode = Socket");
+		printf("\n*********************\n");
+		printf("  TestMode = Socket");
+		printf("\n*********************\n");
+		});
 }
 
 AppMainWindow::~AppMainWindow() {
