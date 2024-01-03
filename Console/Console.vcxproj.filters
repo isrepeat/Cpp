@@ -9,31 +9,31 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Source Files\[1] Create process console">
+    <Filter Include="Source Files\[01] Create process console">
       <UniqueIdentifier>{b444178d-39d5-4395-8f53-767c1ed000d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[4] QUIC context token">
-      <UniqueIdentifier>{c5a136de-054d-4c19-9033-86fab0ce2853}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\[2] Static initialization fiasco">
+    <Filter Include="Source Files\[02] Static initialization fiasco">
       <UniqueIdentifier>{2d028d6d-0577-49e8-96a1-e68bcd219647}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[3] Test Helpers">
+    <Filter Include="Source Files\[03] Test Helpers">
       <UniqueIdentifier>{2026a733-39ce-4290-b359-e0940c4778e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[5] Dtor callback finish">
+    <Filter Include="Source Files\[04] QUIC context token">
+      <UniqueIdentifier>{c5a136de-054d-4c19-9033-86fab0ce2853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\[05] Dtor callback finish">
       <UniqueIdentifier>{e0de6530-d628-4799-a014-93484c895930}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[6] Future wrapper">
+    <Filter Include="Source Files\[06] Future wrapper">
       <UniqueIdentifier>{26d22de7-4e3f-40b3-a213-832fc01a2064}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[7] Print Variants">
+    <Filter Include="Source Files\[07] Print Variants">
       <UniqueIdentifier>{6e1a7fca-e4e2-481a-b824-344427823559}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[8] Token singleton">
+    <Filter Include="Source Files\[08] Token singleton">
       <UniqueIdentifier>{486b08d5-c8a7-454e-97b2-4eab786ed8a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\[9] DVD API">
+    <Filter Include="Source Files\[09] DVD API">
       <UniqueIdentifier>{c4566087-8244-4cbf-abd6-a066850249e9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -138,28 +138,28 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="[1] Create process console\main_1.cpp">
-      <Filter>Source Files\[1] Create process console</Filter>
+      <Filter>Source Files\[01] Create process console</Filter>
     </ClCompile>
     <ClCompile Include="[1] Create process console\main_2.cpp">
-      <Filter>Source Files\[1] Create process console</Filter>
+      <Filter>Source Files\[01] Create process console</Filter>
     </ClCompile>
     <ClCompile Include="[2] Static initialization fiasco\fileB.cpp">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClCompile>
     <ClCompile Include="[2] Static initialization fiasco\SettingsKeeper.cpp">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClCompile>
     <ClCompile Include="[2] Static initialization fiasco\WAppConstants.cpp">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClCompile>
     <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp">
-      <Filter>Source Files\[3] Test Helpers</Filter>
+      <Filter>Source Files\[03] Test Helpers</Filter>
     </ClCompile>
     <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp">
-      <Filter>Source Files\[4] QUIC context token</Filter>
+      <Filter>Source Files\[04] QUIC context token</Filter>
     </ClCompile>
     <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp">
-      <Filter>Source Files\[5] Dtor callback finish</Filter>
+      <Filter>Source Files\[05] Dtor callback finish</Filter>
     </ClCompile>
     <ClCompile Include="main_32_future_exception_move_Ctor.cpp">
       <Filter>Source Files</Filter>
@@ -177,16 +177,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="[6] Future wrapper\FutureWrapper.cpp">
-      <Filter>Source Files\[6] Future wrapper</Filter>
+      <Filter>Source Files\[06] Future wrapper</Filter>
     </ClCompile>
     <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp">
-      <Filter>Source Files\[6] Future wrapper</Filter>
+      <Filter>Source Files\[06] Future wrapper</Filter>
     </ClCompile>
     <ClCompile Include="[7] Print Variants\main_37_Printer.cpp">
-      <Filter>Source Files\[7] Print Variants</Filter>
+      <Filter>Source Files\[07] Print Variants</Filter>
     </ClCompile>
     <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp">
-      <Filter>Source Files\[7] Print Variants</Filter>
+      <Filter>Source Files\[07] Print Variants</Filter>
     </ClCompile>
     <ClCompile Include="main_38_ppl_tasks.cpp">
       <Filter>Source Files</Filter>
@@ -201,16 +201,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="[8] Token singleton\main_42_fileC.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClCompile>
     <ClCompile Include="[8] Token singleton\main_42_fileB.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClCompile>
     <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClCompile>
     <ClCompile Include="[8] Token singleton\main_42_main.cpp">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClCompile>
     <ClCompile Include="main_43_Find_Integrated_Adapter.cpp">
       <Filter>Source Files</Filter>
@@ -228,13 +228,13 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="[9] DVD API\main_47_Vds.cpp">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClCompile>
     <ClCompile Include="[9] DVD API\main_47_WMI.cpp">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClCompile>
     <ClCompile Include="[9] DVD API\main_47_IMAPI.cpp">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClCompile>
     <ClCompile Include="main_48_stdout.cpp">
       <Filter>Source Files</Filter>
@@ -257,49 +257,49 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[2] Static initialization fiasco\fileB.h">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClInclude>
     <ClInclude Include="[2] Static initialization fiasco\SettingsKeeper.h">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClInclude>
     <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClInclude>
     <ClInclude Include="[2] Static initialization fiasco\WAppConstants.h">
-      <Filter>Source Files\[2] Static initialization fiasco</Filter>
+      <Filter>Source Files\[02] Static initialization fiasco</Filter>
     </ClInclude>
     <ClInclude Include="[4] QUIC context token\MsQuic.h">
-      <Filter>Source Files\[4] QUIC context token</Filter>
+      <Filter>Source Files\[04] QUIC context token</Filter>
     </ClInclude>
     <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h">
-      <Filter>Source Files\[5] Dtor callback finish</Filter>
+      <Filter>Source Files\[05] Dtor callback finish</Filter>
     </ClInclude>
     <ClInclude Include="[5] Dtor callback finish\FunctionMt.h">
-      <Filter>Source Files\[5] Dtor callback finish</Filter>
+      <Filter>Source Files\[05] Dtor callback finish</Filter>
     </ClInclude>
     <ClInclude Include="[6] Future wrapper\FutureWrapper.h">
-      <Filter>Source Files\[6] Future wrapper</Filter>
+      <Filter>Source Files\[06] Future wrapper</Filter>
     </ClInclude>
     <ClInclude Include="[7] Print Variants\main_37_Printer.h">
-      <Filter>Source Files\[7] Print Variants</Filter>
+      <Filter>Source Files\[07] Print Variants</Filter>
     </ClInclude>
     <ClInclude Include="[8] Token singleton\main_42_fileC.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClInclude>
     <ClInclude Include="[8] Token singleton\main_42_fileB.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClInclude>
     <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h">
-      <Filter>Source Files\[8] Token singleton</Filter>
+      <Filter>Source Files\[08] Token singleton</Filter>
     </ClInclude>
     <ClInclude Include="[9] DVD API\DiscMaster.h">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClInclude>
     <ClInclude Include="[9] DVD API\main_47_Utils.h">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClInclude>
     <ClInclude Include="[9] DVD API\DiscRecorder.h">
-      <Filter>Source Files\[9] DVD API</Filter>
+      <Filter>Source Files\[09] DVD API</Filter>
     </ClInclude>
     <ClInclude Include="main_11_enum_to_string.h">
       <Filter>Source Files</Filter>
