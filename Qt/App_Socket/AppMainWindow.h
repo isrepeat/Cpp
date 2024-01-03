@@ -1,5 +1,6 @@
 #pragma once
 #include <Helpers/StdRedirection.h>
+#include <Helpers/Singleton.hpp>
 #include "ui_AppMainWindow.h"
 
 #include <QMainWindow>
@@ -12,17 +13,16 @@ public:
 	AppMainWindow(QWidget *parent = nullptr);
 	~AppMainWindow();
 
-public slots:
+signals:
+	void StdOutput(const QByteArray& outputBuffer);
 
+private slots:
+	void GotStdOutput(const QByteArray& outputBuffer);
+	void StartConnection();
+	void Stop();
 
 private:
-	enum class TestMode {
-		None,
-		Puncher,
-		Socket,
-	};
-
 	Ui::AppMainWindowClass ui;
-	H::StdRedirection stdRedirection;
-	std::atomic<TestMode> testMode;
 };
+
+using StdRedirectionSingleton = Singleton<H::StdRedirection>;

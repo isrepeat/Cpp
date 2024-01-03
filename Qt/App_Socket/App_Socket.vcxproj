@@ -106,11 +106,7 @@
     <ClCompile Include="AppMainWindow.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="TextField.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="AppMainWindow.h" />
