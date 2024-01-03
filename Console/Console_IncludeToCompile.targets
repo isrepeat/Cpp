@@ -16,21 +16,22 @@
 
     <ItemGroup>
       <!-- Comment folder that need to be build -->
-      <ExcludedDirsFromBuild Include="[1] Create process console" />
-      <ExcludedDirsFromBuild Include="[2] Static initialization fiasco" />
-      <ExcludedDirsFromBuild Include="[3] Test Helpers" />
-      <ExcludedDirsFromBuild Include="[4] QUIC context token" />
-      <ExcludedDirsFromBuild Include="[5] Dtor callback finish" />
-      <ExcludedDirsFromBuild Include="[6] Future wrapper" />
-      <ExcludedDirsFromBuild Include="[7] Print Variants" />
-      <ExcludedDirsFromBuild Include="[8] Token singleton" />
-      <ExcludedDirsFromBuild Include="[9] DVD API" />
+      <ExcludedDirsFromBuild Include="[01] Create process console" />
+      <ExcludedDirsFromBuild Include="[02] Static initialization fiasco" />
+      <ExcludedDirsFromBuild Include="[03] Test Helpers" />
+      <ExcludedDirsFromBuild Include="[04] QUIC context token" />
+      <ExcludedDirsFromBuild Include="[05] Dtor callback finish" />
+      <ExcludedDirsFromBuild Include="[06] Future wrapper" />
+      <ExcludedDirsFromBuild Include="[07] Print Variants" />
+      <ExcludedDirsFromBuild Include="[08] Token singleton" />
+      <ExcludedDirsFromBuild Include="[09] DVD API" />
+      <!--<ExcludedDirsFromBuild Include="[10] Socket NAT" />-->
 
       <NotBuildFiles Include="*.h;*.cpp" />
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
       
-      <BuildFiles Include="main_53_redirect_IO.cpp" />
+      <!--<BuildFiles Include="main_53_*.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
