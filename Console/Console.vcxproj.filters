@@ -308,4 +308,7 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Console_IncludeToCompile.targets" />
+  </ItemGroup>
 </Project>

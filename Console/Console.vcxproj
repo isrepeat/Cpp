@@ -257,7 +257,12 @@
       <Project>{a6a390c3-171d-47b9-b50c-39764ba0bd68}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Console_IncludeToCompile.targets" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Custom targets -->
+  <Import Project="$(ProjectDir)\Console_IncludeToCompile.targets" />
 </Project>

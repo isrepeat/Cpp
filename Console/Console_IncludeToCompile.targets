@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+  </PropertyGroup>
+  
+  <!-- Force rewrite needed sub system -->
+  <ItemDefinitionGroup>
+    <Link>
+      <!--<SubSystem>Windows</SubSystem>-->
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <Target Name="RemoveNonPlatformItems" BeforeTargets="InitializeBuildStatus">
+
+    <ItemGroup>
+      <!-- Comment folder that need to be build -->
+      <ExcludedDirsFromBuild Include="[1] Create process console" />
+      <ExcludedDirsFromBuild Include="[2] Static initialization fiasco" />
+      <ExcludedDirsFromBuild Include="[3] Test Helpers" />
+      <ExcludedDirsFromBuild Include="[4] QUIC context token" />
+      <ExcludedDirsFromBuild Include="[5] Dtor callback finish" />
+      <ExcludedDirsFromBuild Include="[6] Future wrapper" />
+      <ExcludedDirsFromBuild Include="[7] Print Variants" />
+      <ExcludedDirsFromBuild Include="[8] Token singleton" />
+      <ExcludedDirsFromBuild Include="[9] DVD API" />
+
+      <NotBuildFiles Include="*.h;*.cpp" />
+      <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
+      <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
+      
+      <BuildFiles Include="main_53_redirect_IO.cpp" />
+
+      <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
+      <ClCompile Remove="@(FilesExcludedFromBuild)" />
+    </ItemGroup>
+    
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="-------------------------------------" />
+    <Message Importance="High" Text="FilesExcludedFromBuild:"/>
+    <Message Importance="High" Text = "%(FilesExcludedFromBuild.Identity)"/>
+    
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "CLCompile files:"/>
+    <Message Importance="High" Text = "%(ClCompile.Identity)"/>
+    <Message Importance="High" Text="-------------------------------------" />
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text=  "$(NewLine)" />
+  </Target>
+</Project>
