@@ -203,51 +203,59 @@
     <ClCompile Include="main_4_tuple_to_multiple_args.cpp" />
     <ClCompile Include="main_50_assert_message.cpp" />
     <ClCompile Include="main_51_ThreadSafeObject.cpp" />
+    <ClCompile Include="main_52_ThreadEx.cpp" />
+    <ClCompile Include="main_53_redirect_IO.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
     <ClCompile Include="main_9_string_to_hex_conversion.cpp" />
-    <ClCompile Include="[1] Create process console\main_1.cpp" />
-    <ClCompile Include="[1] Create process console\main_2.cpp" />
-    <ClCompile Include="[2] Static initialization fiasco\fileB.cpp" />
-    <ClCompile Include="[2] Static initialization fiasco\SettingsKeeper.cpp" />
-    <ClCompile Include="[2] Static initialization fiasco\WAppConstants.cpp" />
-    <ClCompile Include="[3] Test Helpers\test_1_Timer_token.cpp" />
-    <ClCompile Include="[4] QUIC context token\main_QUICClient.cpp" />
-    <ClCompile Include="[5] Dtor callback finish\main_Dtor_callback_finish.cpp" />
-    <ClCompile Include="[6] Future wrapper\FutureWrapper.cpp" />
-    <ClCompile Include="[6] Future wrapper\main_FutureWrapper.cpp" />
-    <ClCompile Include="[7] Print Variants\main_37_Printer.cpp" />
-    <ClCompile Include="[7] Print Variants\main_37_PrintVariants.cpp" />
-    <ClCompile Include="[8] Token singleton\main_42_fileC.cpp" />
-    <ClCompile Include="[8] Token singleton\main_42_fileB.cpp" />
-    <ClCompile Include="[8] Token singleton\main_42_main.cpp" />
-    <ClCompile Include="[8] Token singleton\main_42_TokenSingleton.cpp" />
-    <ClCompile Include="[9] DVD API\main_47_IMAPI.cpp" />
-    <ClCompile Include="[9] DVD API\main_47_Vds.cpp" />
-    <ClCompile Include="[9] DVD API\main_47_WMI.cpp" />
+    <ClCompile Include="[01] Create process console\main_1.cpp" />
+    <ClCompile Include="[01] Create process console\main_2.cpp" />
+    <ClCompile Include="[02] Static initialization fiasco\fileB.cpp" />
+    <ClCompile Include="[02] Static initialization fiasco\SettingsKeeper.cpp" />
+    <ClCompile Include="[02] Static initialization fiasco\WAppConstants.cpp" />
+    <ClCompile Include="[03] Test Helpers\test_1_Timer_token.cpp" />
+    <ClCompile Include="[04] QUIC context token\main_QUICClient.cpp" />
+    <ClCompile Include="[05] Dtor callback finish\main_Dtor_callback_finish.cpp" />
+    <ClCompile Include="[06] Future wrapper\FutureWrapper.cpp" />
+    <ClCompile Include="[06] Future wrapper\main_FutureWrapper.cpp" />
+    <ClCompile Include="[07] Print Variants\main_37_Printer.cpp" />
+    <ClCompile Include="[07] Print Variants\main_37_PrintVariants.cpp" />
+    <ClCompile Include="[08] Token singleton\main_42_fileB.cpp" />
+    <ClCompile Include="[08] Token singleton\main_42_fileC.cpp" />
+    <ClCompile Include="[08] Token singleton\main_42_main.cpp" />
+    <ClCompile Include="[08] Token singleton\main_42_TokenSingleton.cpp" />
+    <ClCompile Include="[09] DVD API\main_47_IMAPI.cpp" />
+    <ClCompile Include="[09] DVD API\main_47_Vds.cpp" />
+    <ClCompile Include="[09] DVD API\main_47_WMI.cpp" />
+    <ClCompile Include="[10] Socket NAT\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
     <ClInclude Include="main_36_ThreadFinishHelper.h" />
-    <ClInclude Include="[2] Static initialization fiasco\fileB.h" />
-    <ClInclude Include="[2] Static initialization fiasco\SettingsKeeper.h" />
-    <ClInclude Include="[2] Static initialization fiasco\StaticConstructor.h" />
-    <ClInclude Include="[2] Static initialization fiasco\WAppConstants.h" />
-    <ClInclude Include="[4] QUIC context token\MsQuic.h" />
-    <ClInclude Include="[5] Dtor callback finish\FunctionMt.h" />
-    <ClInclude Include="[5] Dtor callback finish\ServerCallbacks.h" />
-    <ClInclude Include="[6] Future wrapper\FutureWrapper.h" />
-    <ClInclude Include="[7] Print Variants\main_37_Printer.h" />
-    <ClInclude Include="[8] Token singleton\main_42_fileC.h" />
-    <ClInclude Include="[8] Token singleton\main_42_fileB.h" />
-    <ClInclude Include="[8] Token singleton\main_42_TokenSingleton.h" />
-    <ClInclude Include="[9] DVD API\DiscMaster.h" />
-    <ClInclude Include="[9] DVD API\DiscRecorder.h" />
-    <ClInclude Include="[9] DVD API\main_47_Utils.h" />
+    <ClInclude Include="[02] Static initialization fiasco\fileB.h" />
+    <ClInclude Include="[02] Static initialization fiasco\SettingsKeeper.h" />
+    <ClInclude Include="[02] Static initialization fiasco\StaticConstructor.h" />
+    <ClInclude Include="[02] Static initialization fiasco\WAppConstants.h" />
+    <ClInclude Include="[04] QUIC context token\MsQuic.h" />
+    <ClInclude Include="[05] Dtor callback finish\FunctionMt.h" />
+    <ClInclude Include="[05] Dtor callback finish\ServerCallbacks.h" />
+    <ClInclude Include="[06] Future wrapper\FutureWrapper.h" />
+    <ClInclude Include="[07] Print Variants\main_37_Printer.h" />
+    <ClInclude Include="[08] Token singleton\main_42_fileB.h" />
+    <ClInclude Include="[08] Token singleton\main_42_fileC.h" />
+    <ClInclude Include="[08] Token singleton\main_42_TokenSingleton.h" />
+    <ClInclude Include="[09] DVD API\DiscMaster.h" />
+    <ClInclude Include="[09] DVD API\DiscRecorder.h" />
+    <ClInclude Include="[09] DVD API\main_47_Utils.h" />
+    <ClInclude Include="[10] Socket NAT\Client.h" />
+    <ClInclude Include="[10] Socket NAT\Common.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj">
+      <Project>{4f240080-ef67-45b1-a6de-3ded5fa14e8e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\UtilityHelpersLib\ComAPI\ComAPI.vcxproj">
       <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
     </ProjectReference>
@@ -255,7 +263,12 @@
       <Project>{a6a390c3-171d-47b9-b50c-39764ba0bd68}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Console_IncludeToCompile.targets" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Custom targets -->
+  <Import Project="$(ProjectDir)\Console_IncludeToCompile.targets" />
 </Project>

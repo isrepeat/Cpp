@@ -1,7 +1,7 @@
 #include "Console.h"
 #include <QScrollBar>
 
-Console::Console(QWidget* parent) 
+Console::Console(QWidget* parent)
     : QPlainTextEdit(parent)
 {
     document()->setMaximumBlockCount(100);
@@ -9,7 +9,7 @@ Console::Console(QWidget* parent)
     p.setColor(QPalette::Base, QColor{ 0, 0, 0 });
     p.setColor(QPalette::Text, QColor{ 204, 204, 204 });
     setPalette(p);
-    
+
     setFont(QFont{ "Consolas" });
 }
 

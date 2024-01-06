@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>418</width>
-    <height>494</height>
+    <height>452</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,6 +111,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="btnStop">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="cotrolPanel_Buttons_2_HSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -124,12 +131,6 @@
           </spacer>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="TextField" name="field_PartnerId"/>
-       </item>
-       <item>
-        <widget class="TextField" name="field_PartnerPort"/>
        </item>
        <item>
         <spacer name="cotrolPanel_VSpacer">
@@ -176,11 +177,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>TextField</class>
-   <extends>QPushButton</extends>
-   <header>TextField.h</header>
-  </customwidget>
   <customwidget>
    <class>Console</class>
    <extends>QPlainTextEdit</extends>
