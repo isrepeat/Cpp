@@ -1,5 +1,7 @@
 #include "AppMainWindow.h"
 #include <Helpers/Logger.h>
+#include <Helpers/Time.h>
+#include "Common.h"
 #include <QDebug>
 
 AppMainWindow::AppMainWindow(QWidget *parent)
@@ -30,8 +32,32 @@ void AppMainWindow::GotStdOutput(const QByteArray& outputBuffer) {
 
 void AppMainWindow::StartConnection() {
 	LOG_FUNCTION_ENTER("StartConnection()");
+
+	senderThread = std::thread([this] {
+		boost::asio::io_service io_service;
+		udp::socket socket(io_service);
+
+		LOG_DEBUG("Open socket");
+		udp::endpoint remote_endpoint = udp::endpoint(address::from_string(IPADDRESS), UDP_PORT);
+		socket.open(udp::v4());
+
+		LOG_DEBUG("Send to {}", remote_endpoint.address().to_string());
+		boost::system::error_code err;
+		auto sent = socket.send_to(boost::asio::buffer("test message"), remote_endpoint, 0, err);
+
+		std::mutex mx;
+		std::unique_lock lk{ mx };
+		cvSending.wait_for(lk, 20'000ms);
+
+		LOG_DEBUG("Close socket");
+		socket.close();
+		});
 }
 
 void AppMainWindow::Stop() {
 	LOG_FUNCTION_SCOPE("Stop()");
+	
+	cvSending.notify_one();
+	if (senderThread.joinable())
+		senderThread.join();
 }

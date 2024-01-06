@@ -71,11 +71,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -119,12 +121,18 @@
     <QtMoc Include="Console.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers\Helpers.vcxproj">
-      <Project>{a6a390c3-171d-47b9-b50c-39764ba0bd68}</Project>
-    </ProjectReference>
+    <QtMoc Include="TextField.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="TextField.h" />
+    <ClInclude Include="Common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj">
+      <Project>{4f240080-ef67-45b1-a6de-3ded5fa14e8e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers.Raw\Helpers.Raw.vcxproj">
+      <Project>{298ab331-24aa-4f41-916e-2206023f8085}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -6,6 +6,9 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include <condition_variable>
+#include <thread>
+
 class AppMainWindow : public QMainWindow {
 	Q_OBJECT;
 
@@ -23,6 +26,8 @@ private slots:
 
 private:
 	Ui::AppMainWindowClass ui;
+	std::condition_variable cvSending;
+	std::thread senderThread;
 };
 
 using StdRedirectionSingleton = Singleton<H::StdRedirection>;

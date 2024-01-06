@@ -1,3 +1,4 @@
+// Use predefined macro WIN32_LEAN_AND_MEAN to solve errors like this: "C2011: 'sockaddr': 'struct' type redefinition"
 #include "AppMainWindow.h"
 #include <QApplication>
 #include <iostream>
