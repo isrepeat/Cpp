@@ -205,6 +205,7 @@
     <ClCompile Include="main_51_ThreadSafeObject.cpp" />
     <ClCompile Include="main_52_ThreadEx.cpp" />
     <ClCompile Include="main_53_redirect_IO.cpp" />
+    <ClCompile Include="main_54_STUN_server.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
     <ClCompile Include="main_7_regex_replace_group.cpp" />

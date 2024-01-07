@@ -174,13 +174,37 @@ enum class MessageType {
 //	return;
 //}
 
+template <MessageType msgTypeParam>
+struct MessageBase {
+	const MessageType type = msgTypeParam;
+};
 
-
-struct Message {
-	MessageType type;
+struct Message : MessageBase<MessageType::Stop> {
+	//MessageType type;
 	int msgSize;
 	uint8_t* msgData;
 };
+
+#pragma pack(push, 1)
+//struct MessageBase {
+//	MessageType type;
+//};
+//
+//struct Message : MessageBase {
+//	int msgSize;
+//	bool test = false;
+//	uint8_t* msgData;
+//
+//	Message() = default;
+//	Message(int msgSize, bool test, uint8_t* msgData)
+//		: msgSize{ msgSize }
+//		, test{ test }
+//		, msgData{ msgData }
+//	{
+//		type = MessageType::Stop;
+//	}
+//};
+#pragma pack(pop)
 
 void foo(std::span<uint8_t> sp) {
 }
@@ -192,7 +216,7 @@ void TestMessageStructToBytesAndBack() {
 
 		uint8_t* storage = new uint8_t[sizeof(Message) + someData.size()]{};
 		Message* message = reinterpret_cast<Message*>(storage);
-		message->type = MessageType::FrameData;
+		//message->type = MessageType::FrameData;
 		message->msgSize = someData.size();
 		message->msgData = storage + sizeof(Message);
 		std::copy(someData.begin(), someData.end(), storage + sizeof(Message));
@@ -211,6 +235,10 @@ void TestMessageStructToBytesAndBack() {
 		Message* tempPtr;
 		tempPtr = reinterpret_cast<Message*>(networkBytes.data());
 	}
+
+
+	MessageType* msgType;
+	msgType = reinterpret_cast<MessageType*>(networkBytes.data());
 
 	Message newMessage;
 	auto ptr2 = reinterpret_cast<uint8_t*>(&newMessage);

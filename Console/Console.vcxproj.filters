@@ -260,6 +260,9 @@
     <ClCompile Include="[09] DVD API\main_47_WMI.cpp">
       <Filter>Source Files\[09] DVD API</Filter>
     </ClCompile>
+    <ClCompile Include="main_54_STUN_server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
