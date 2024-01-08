@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PlatformLogger.h" />
     <ClInclude Include="SocketBaseUdp.h" />
     <ClInclude Include="StunServer.h" />
     <ClInclude Include="Platform.h" />

@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
-#include <Logger/Logger.h>
+#include "PlatformLogger.h"
+#include <functional>
 #include <string>
 
 namespace boostAsio = __BOOST_NS::asio;

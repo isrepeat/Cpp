@@ -19,6 +19,9 @@
     <ClInclude Include="StunServerModels.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="PlatformLogger.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

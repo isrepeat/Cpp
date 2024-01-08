@@ -1,8 +1,6 @@
 #pragma once
 #include "Platform.h"
-#include <MagicEnum/MagicEnum.h>
-#include <Logger/Logger.h>
-
+#include "PlatformLogger.h"
 #include "StunServerModels.h"
 #include "SocketBaseUdp.h"
 
