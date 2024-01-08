@@ -25,13 +25,13 @@
       <ExcludedDirsFromBuild Include="[07] Print Variants" />
       <ExcludedDirsFromBuild Include="[08] Token singleton" />
       <ExcludedDirsFromBuild Include="[09] DVD API" />
-      <!--<ExcludedDirsFromBuild Include="[10] Socket NAT" />-->
+      <ExcludedDirsFromBuild Include="[10] Socket NAT" />
 
       <NotBuildFiles Include="*.h;*.cpp" />
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
       
-      <!--<BuildFiles Include="main_53_*.cpp" />-->
+      <BuildFiles Include="main_54_*.cpp" />
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
