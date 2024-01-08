@@ -28,7 +28,7 @@ public:
 
 private:
     // Handle only structs that inherited from N::Query
-    void HandleReceive(const boost::system::error_code& error, std::size_t bytesTransferred) override {
+    void HandleReceive(const boostSystem::error_code& error, std::size_t bytesTransferred) override {
         LOG_FUNCTION_ENTER("HandleReceive(error, bytesTransferred)");
         if (error) {
             LOG_ERROR_D("socket error [HandleReceive(...)] = {}", error.message());
@@ -46,7 +46,7 @@ private:
             N::Server::UserAddress clientAddress;
             clientAddress.local = handshakeData.localAddress;
             clientAddress.global = { remoteEndpoint.address().to_v4().to_ulong(), remoteEndpoint.port() };
-            SendAsync(std::move(boost::asio::buffer(&clientAddress, sizeof(N::Server::UserAddress))));
+            SendAsync(std::move(boostAsio::buffer(&clientAddress, sizeof(N::Server::UserAddress))));
             break;
         }
         default:

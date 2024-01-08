@@ -1,8 +1,10 @@
 #pragma once
 #include "Platform.h"
 #include <Logger/Logger.h>
-#include <boost/asio.hpp>
 #include <string>
+
+namespace boostAsio = __BOOST_NS::asio;
+namespace boostSystem = __BOOST_SYSTEM_NS;
 
 class SocketBaseUdp {
 protected:
@@ -12,12 +14,12 @@ protected:
         LOG_FUNCTION_ENTER("SocketBaseUdp()");
     }
     SocketBaseUdp(uint16_t port)
-        : socket{ ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port) } // binded
+        : socket{ ioContext, boostAsio::ip::udp::endpoint(boostAsio::ip::udp::v4(), port) } // binded
     {
         LOG_FUNCTION_ENTER("SocketBaseUdp(port = {})", port);
     }
     SocketBaseUdp(std::string address, uint16_t port)
-        : socket{ ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(address), port) } // binded
+        : socket{ ioContext, boostAsio::ip::udp::endpoint(boostAsio::ip::address::from_string(address), port) } // binded
     {
         LOG_FUNCTION_ENTER("SocketBaseUdp(address = {}, port = {})", address, port);
     }
@@ -28,17 +30,17 @@ protected:
         receiveBuffer.resize(maxBufferSize);
 
         socket.async_receive_from(
-            boost::asio::buffer(receiveBuffer), remoteEndpoint,
+            boostAsio::buffer(receiveBuffer), remoteEndpoint,
             std::bind(&SocketBaseUdp::HandleReceive, this,
                 std::placeholders::_1,
                 std::placeholders::_2));
     }
 
-    virtual void HandleReceive(const boost::system::error_code& error, std::size_t bytesTransferred) = 0;
+    virtual void HandleReceive(const boostSystem::error_code& error, std::size_t bytesTransferred) = 0;
 
-    virtual void SendAsync(boost::asio::mutable_buffers_1 buffer) {
+    virtual void SendAsync(boostAsio::mutable_buffers_1 buffer) {
         socket.async_send_to(buffer, remoteEndpoint,
-            [this](const boost::system::error_code& error, std::size_t bytesTransferred) {
+            [this](const boostSystem::error_code& error, std::size_t bytesTransferred) {
                 if (error) {
                     LOG_ERROR_D("socket error [async_send_to(...)] = {}", error.message());
                 }
@@ -67,9 +69,9 @@ public:
     }
 
 protected:
-    boost::asio::io_context ioContext;
-    boost::asio::ip::udp::socket socket;
-    boost::asio::ip::udp::endpoint remoteEndpoint;
+    boostAsio::io_context ioContext;
+    boostAsio::ip::udp::socket socket;
+    boostAsio::ip::udp::endpoint remoteEndpoint;
     //std::vector<uint8_t> sendBuffer;
     std::vector<uint8_t> receiveBuffer;
 };

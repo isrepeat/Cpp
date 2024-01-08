@@ -2,8 +2,7 @@
 #include "StunServer.h"
 
 namespace {
-	const std::filesystem::path publicFolder = ".";
-	const std::filesystem::path appLocalFolder = publicFolder / "StunServerMini";
+	const std::filesystem::path appLocalFolder = ".";
 }
 
 int main() {
