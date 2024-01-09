@@ -243,7 +243,7 @@ void TestMessageStructToBytesAndBack() {
 	Message newMessage;
 	auto ptr2 = reinterpret_cast<uint8_t*>(&newMessage);
 	std::copy(networkBytes.begin(), networkBytes.end(), ptr2);
-	newMessage.msgData = networkBytes.data() + sizeof(Message);
+	newMessage.msgData = ptr2 + sizeof(Message);
 
 	auto d1 = newMessage.msgData[0];
 	auto d5 = newMessage.msgData[5];
