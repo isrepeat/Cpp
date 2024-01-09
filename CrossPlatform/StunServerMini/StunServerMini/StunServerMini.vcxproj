@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StunServerModels.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj">
