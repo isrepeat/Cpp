@@ -19,7 +19,7 @@ namespace N {
 #pragma pack(push, 1)
     template<QueryType queryType>
     struct Query {
-        /*const*/ QueryType type = queryType; // do not use const so that the operator= is not removed implicitly
+        /*const*/ QueryType type = queryType; // do not use const so that the operator= was not removed implicitly
     };
 
     template<ResponseType responseType>

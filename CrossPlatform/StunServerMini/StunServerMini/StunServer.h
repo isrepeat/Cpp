@@ -6,8 +6,8 @@
 #include <unordered_map>
 
 struct UserExchangeInfo{
-    N::Server::UserAddress userAddress;
-    std::function<void(N::Server::UserAddress)> fetchCallback;
+    std::unique_ptr<N::Server::UserAddress> userAddress;
+    std::function<void(std::unique_ptr<N::Server::UserAddress>)> fetchCallback;
 };
 
 class StunServer : public SocketBaseUdp {
@@ -47,40 +47,49 @@ private:
         switch (queryType) {
         case N::QueryType::Hello: {
             printf("Hello \n");
-            // remember serialized msg for async send
-            sendBuffer = N::SerializeCustomMessage("Hello from Mini StunServer");
-            SendAsync(std::move(boostAsio::buffer(sendBuffer)));
+            auto serializedMessage = std::make_unique<std::vector<uint8_t>>(N::SerializeCustomMessage("Hello from Mini StunServer"));
+            SendAsync(std::move(serializedMessage), boostAsio::buffer(*serializedMessage));
             break;
         }
         case N::QueryType::GetMyAddress: {
             printf("GetMyAddress \n");
             N::Client::Handshake handshakeData = *reinterpret_cast<N::Client::Handshake*>(receiveBuffer.data());
-            N::Server::UserAddress clientAddress;
-            clientAddress.local = handshakeData.localAddress;
-            clientAddress.global = { remoteEndpoint.address().to_v4().to_ulong(), remoteEndpoint.port() };
-            SendAsync(std::move(boostAsio::buffer(&clientAddress, sizeof(N::Server::UserAddress))));
+
+            auto clientAddress = std::make_unique<N::Server::UserAddress>();
+            clientAddress->local = handshakeData.localAddress;
+            clientAddress->global = { remoteEndpoint.address().to_v4().to_ulong(), remoteEndpoint.port() };
+            SendAsync(std::move(clientAddress), boostAsio::buffer(clientAddress.get(), sizeof(N::Server::UserAddress)));
             break;
         }
         case N::QueryType::GetPartnerAddress: {
             printf("GetPartnerAddress [usersOnline = %d]\n", usersOnline.size());
             N::Client::AuthMessage authMessageData = *reinterpret_cast<N::Client::AuthMessage*>(receiveBuffer.data());
 
-            N::Server::UserAddress clientAddress;
-            clientAddress.local = authMessageData.localAddress;
-            clientAddress.global = { remoteEndpoint.address().to_v4().to_ulong(), remoteEndpoint.port() };
+            auto currentClientAddress = std::make_unique<N::Server::UserAddress>();
+            currentClientAddress->local = authMessageData.localAddress;
+            currentClientAddress->global = { remoteEndpoint.address().to_v4().to_ulong(), remoteEndpoint.port() };
 
-            UserExchangeInfo clientRequester;
-            clientRequester.userAddress = clientAddress;
-            clientRequester.fetchCallback = [this, myRemoteEndpoint = this->remoteEndpoint](N::Server::UserAddress partnerAddress) {
-                SendAsync(std::move(boostAsio::buffer(&partnerAddress, sizeof(N::Server::UserAddress))), myRemoteEndpoint);
+            auto currentClientExchangeInfo = std::make_unique<UserExchangeInfo>();
+            currentClientExchangeInfo->userAddress = std::move(currentClientAddress);
+            currentClientExchangeInfo->fetchCallback = [this, myRemoteEndpoint = this->remoteEndpoint](std::unique_ptr<N::Server::UserAddress> partnerAddress) {
+                SendAsync(std::move(partnerAddress), boostAsio::buffer(partnerAddress.get(), sizeof(N::Server::UserAddress)), myRemoteEndpoint);
             };
-            usersOnline[authMessageData.localId] = clientRequester;
+            
+            // Put requester to usersOnline
+            auto& currentClientExchangeInfoRef = usersOnline[authMessageData.localId];
+            currentClientExchangeInfoRef = std::move(currentClientExchangeInfo);
 
+            // Fetch partner from usersOnline
             auto it = usersOnline.find(authMessageData.parnterId);
             if (it != usersOnline.end()) {
-                it->second.fetchCallback(clientRequester.userAddress);
+                auto& partnerExchangeInfo = it->second;
+
+                // Send current client (requester) address to partner endpoint 
+                partnerExchangeInfo->fetchCallback(std::move(currentClientExchangeInfoRef->userAddress));
                 std::this_thread::sleep_for(std::chrono::milliseconds{ 200 });
-                SendAsync(std::move(boostAsio::buffer(&it->second.userAddress, sizeof(N::Server::UserAddress))));
+
+                // Send partner address to current client (requester) endpoint 
+                SendAsync(std::move(partnerExchangeInfo->userAddress), boostAsio::buffer(partnerExchangeInfo->userAddress.get(), sizeof(N::Server::UserAddress)));
                 
                 printf("delete users \n");
                 usersOnline.erase(authMessageData.localId);
@@ -97,6 +106,5 @@ private:
     }
 
 private:
-    std::vector<uint8_t> sendBuffer;
-    std::unordered_map<int, UserExchangeInfo> usersOnline;
+    std::unordered_map<int, std::unique_ptr<UserExchangeInfo>> usersOnline;
 };
