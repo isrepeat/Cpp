@@ -60,27 +60,30 @@ protected:
 
     virtual void HandleReceive(const boostSystem::error_code& error, std::size_t bytesTransferred) = 0;
 
-    void SendAsync(boostAsio::mutable_buffers_1 buffer) {
-        SendAsyncInternal(std::move(buffer), this->remoteEndpoint);
+    template <typename DataT, typename BoostBufferT>
+    void SendAsync(std::unique_ptr<DataT> msgToken, BoostBufferT buffer) {
+        SendAsyncInternal<DataT, BoostBufferT>(std::move(msgToken), buffer, this->remoteEndpoint);
     }
-    void SendAsync(boostAsio::mutable_buffers_1 buffer, boostAsio::ip::udp::endpoint customRemoteEdnpoint) {
-        SendAsyncInternal(std::move(buffer), customRemoteEdnpoint);
+    template <typename DataT, typename BoostBufferT>
+    void SendAsync(std::unique_ptr<DataT> msgToken, BoostBufferT buffer, boostAsio::ip::udp::endpoint customRemoteEdnpoint) {
+        SendAsyncInternal<DataT, BoostBufferT>(std::move(msgToken), buffer, customRemoteEdnpoint);
     }
 
 private:
-    void SendAsyncInternal(boostAsio::mutable_buffers_1 buffer, boostAsio::ip::udp::endpoint remoteEndpoint) {
-        socket.async_send_to(buffer, remoteEndpoint,
-            [this](const boostSystem::error_code& error, std::size_t bytesTransferred) {
-                if (error) {
-                    LOG_ERROR_D("socket error [async_send_to(...)] = {}", error.message());
-                }
-            });
+    template <typename DataT, typename BoostBufferT>
+    void SendAsyncInternal(std::unique_ptr<DataT> msgToken, BoostBufferT buffer, boostAsio::ip::udp::endpoint remoteEndpoint) {
+        socket.async_send_to(buffer, remoteEndpoint, [this, movedMsgToken = std::move(msgToken)](const boostSystem::error_code& error, std::size_t bytesTransferred) {
+            if (error) {
+                LOG_ERROR_D("socket error [async_send_to(...)] = {}", error.message());
+            }
+            // here movedMsgToken will destroy
+        });
     }
 
 protected:
     boostAsio::io_context ioContext;
     boostAsio::ip::udp::socket socket;
     boostAsio::ip::udp::endpoint remoteEndpoint;
-    //std::vector<uint8_t> sendBuffer;
+
     std::vector<uint8_t> receiveBuffer;
 };

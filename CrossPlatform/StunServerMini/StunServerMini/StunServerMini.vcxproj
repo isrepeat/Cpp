@@ -30,14 +30,6 @@
     <ClCompile Include="StunServerModels.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj">
-      <Project>{4f240080-ef67-45b1-a6de-3ded5fa14e8e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.vcxproj">
-      <Project>{618d9e1a-89c8-48ff-9a90-a7ed5ed2ea2c}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +73,8 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\..\..\UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems" Label="Shared" />
+    <Import Project="..\..\..\UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
