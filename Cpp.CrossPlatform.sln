@@ -69,10 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloWorld", "HelloWorld", 
 		CrossPlatform\Docker\HelloWorld\Dockerfile = CrossPlatform\Docker\HelloWorld\Dockerfile
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StunServerMini", "StunServerMini", "{2558B5C5-A0C0-4571-914F-311B4BE92322}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StunServerMini", "CrossPlatform\StunServerMini\StunServerMini\StunServerMini.vcxproj", "{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UtilityHelpersLib", "UtilityHelpersLib", "{C83B5A1E-54A5-468E-AC9F-E703ADC62113}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdParty", "3rdParty", "{7036E1AB-59ED-4A90-A85D-BCB747EED25D}"
@@ -117,6 +113,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers", "UtilityHelpersLi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.UWP", "UtilityHelpersLib\Helpers\Helpers.UWP\Helpers.UWP.vcxproj", "{1F26DD5B-02C2-4192-AC91-06BED3D214F3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Container_StunServerMini", "Container_StunServerMini", "{89053CB4-BD88-4B84-9FBC-307819FDCBD6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StunServerMini", "CrossPlatform\Container_StunServerMini\StunServerMini\StunServerMini.vcxproj", "{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
@@ -129,6 +129,8 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{2a7a5d42-7dde-4267-ba6f-a43f9f8350a7}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{2a7a5d42-7dde-4267-ba6f-a43f9f8350a7}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{301bf8c8-f7ca-429f-8b12-ded615a64508}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{34a69ffa-7fae-4de7-bac0-30b5730831e9}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
@@ -138,8 +140,6 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{9119a10a-d27c-4eaf-8ee9-1a3097d8c6f6}*SharedItemsImports = 9
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{9ae2e2f4-5b16-4d19-9d1f-799a9e18ca69}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a0e357d8-bee3-4fdb-93d7-d8d4c08ca5a0}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a0e357d8-bee3-4fdb-93d7-d8d4c08ca5a0}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
@@ -321,20 +321,6 @@ Global
 		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x64.Build.0 = Release|x64
 		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x86.ActiveCfg = Release|Win32
 		{D6F993FD-70A6-45DF-98AD-1181978D0453}.Release|x86.Build.0 = Release|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|ARM.ActiveCfg = Debug|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|ARM64.ActiveCfg = Debug|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|x64.ActiveCfg = Debug|x64
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|x64.Build.0 = Debug|x64
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|x86.ActiveCfg = Debug|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Debug|x86.Build.0 = Debug|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|Any CPU.ActiveCfg = Release|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|ARM.ActiveCfg = Release|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|ARM64.ActiveCfg = Release|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|x64.ActiveCfg = Release|x64
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|x64.Build.0 = Release|x64
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|x86.ActiveCfg = Release|Win32
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0}.Release|x86.Build.0 = Release|Win32
 		{BD4FF601-0E36-4E0C-91B4-56FA4626A54D}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{BD4FF601-0E36-4E0C-91B4-56FA4626A54D}.Debug|ARM.ActiveCfg = Debug|Win32
 		{BD4FF601-0E36-4E0C-91B4-56FA4626A54D}.Debug|ARM64.ActiveCfg = Debug|Win32
@@ -435,6 +421,20 @@ Global
 		{1F26DD5B-02C2-4192-AC91-06BED3D214F3}.Release|x64.Build.0 = Release|x64
 		{1F26DD5B-02C2-4192-AC91-06BED3D214F3}.Release|x86.ActiveCfg = Release|Win32
 		{1F26DD5B-02C2-4192-AC91-06BED3D214F3}.Release|x86.Build.0 = Release|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|ARM.ActiveCfg = Debug|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|x64.ActiveCfg = Debug|x64
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|x64.Build.0 = Debug|x64
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|x86.ActiveCfg = Debug|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Debug|x86.Build.0 = Debug|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|Any CPU.ActiveCfg = Release|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|ARM.ActiveCfg = Release|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|ARM64.ActiveCfg = Release|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|x64.ActiveCfg = Release|x64
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|x64.Build.0 = Release|x64
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|x86.ActiveCfg = Release|Win32
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -457,8 +457,6 @@ Global
 		{B0A9B0A9-9B16-42F3-B319-46A9B8312136} = {496B828A-9E5F-4BE7-827D-19D181DE681B}
 		{216B4E5F-3B97-44B7-9CE9-6A694DF264CA} = {49C1B776-1447-4FF0-99EB-031F3395C698}
 		{66DCBD32-C71E-4D19-BE8B-A2A3B05A1953} = {216B4E5F-3B97-44B7-9CE9-6A694DF264CA}
-		{2558B5C5-A0C0-4571-914F-311B4BE92322} = {49C1B776-1447-4FF0-99EB-031F3395C698}
-		{A0E357D8-BEE3-4FDB-93D7-D8D4C08CA5A0} = {2558B5C5-A0C0-4571-914F-311B4BE92322}
 		{7036E1AB-59ED-4A90-A85D-BCB747EED25D} = {C83B5A1E-54A5-468E-AC9F-E703ADC62113}
 		{3EE95BCE-9008-402E-8AAA-17A4F04C0759} = {C83B5A1E-54A5-468E-AC9F-E703ADC62113}
 		{73CF8D90-4AEA-4D9B-86DE-024FBD5CC92F} = {7036E1AB-59ED-4A90-A85D-BCB747EED25D}
@@ -480,6 +478,8 @@ Global
 		{298AB331-24AA-4F41-916E-2206023F8085} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{A6A390C3-171D-47B9-B50C-39764BA0BD68} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{1F26DD5B-02C2-4192-AC91-06BED3D214F3} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
+		{89053CB4-BD88-4B84-9FBC-307819FDCBD6} = {49C1B776-1447-4FF0-99EB-031F3395C698}
+		{2A7A5D42-7DDE-4267-BA6F-A43F9F8350A7} = {89053CB4-BD88-4B84-9FBC-307819FDCBD6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
