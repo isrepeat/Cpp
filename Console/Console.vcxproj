@@ -258,6 +258,14 @@
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UtilityHelpersLib\Helpers\ComAPI\ComAPI.vcxproj">
+      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\UtilityHelpersLib\Helpers\Helpers\Helpers.vcxproj">
+      <Project>{a6a390c3-171d-47b9-b50c-39764ba0bd68}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
