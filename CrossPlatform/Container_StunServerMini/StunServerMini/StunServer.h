@@ -4,6 +4,7 @@
 #include "StunServerModels.h"
 #include "SocketBaseUdp.h"
 #include <unordered_map>
+#include <thread>
 
 struct UserExchangeInfo{
     std::unique_ptr<N::Server::UserAddress> userAddress;
@@ -62,7 +63,7 @@ private:
             break;
         }
         case N::QueryType::GetPartnerAddress: {
-            printf("GetPartnerAddress [usersOnline = %d]\n", usersOnline.size());
+            printf("GetPartnerAddress [usersOnline = %d]\n", (int)usersOnline.size());
             N::Client::AuthMessage authMessageData = *reinterpret_cast<N::Client::AuthMessage*>(receiveBuffer.data());
 
             auto currentClientAddress = std::make_unique<N::Server::UserAddress>();
@@ -94,7 +95,7 @@ private:
                 printf("delete users \n");
                 usersOnline.erase(authMessageData.localId);
                 usersOnline.erase(authMessageData.parnterId);
-                printf("usersOnline = %d \n", usersOnline.size());
+                printf("usersOnline = %d \n", (int)usersOnline.size());
             }
             break;
         }
