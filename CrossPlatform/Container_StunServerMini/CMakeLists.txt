@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10.0)
-#include(CMakePrintHelpers)
 project (StunServerMiniApp)
 
 # Default cmake modules may not be found from under docker container, so keep them in this folder
+#include(CMakePrintHelpers)
 include(./CMakePrintHelpers.cmake)
 
 message("========== ${PROJECT_NAME} [start] ==========")
