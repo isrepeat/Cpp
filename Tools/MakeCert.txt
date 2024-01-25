@@ -1,0 +1,51 @@
+
+MakeCert.exe -r -h 0 -n "CN=<publisher_name>" -eku 1.3.6.1.5.5.7.3.3 -pe -sv <my_filename.pvk> <my_filename.cer>
+pvk2pfx.exe -pvk <my_filename.pvk> -spc <my_filename.cer> -pfx <my_filename.pfx>
+
+-----------------------------------------------------------------
+Yellow Elephant Production [18942261-2124-4395-AE9D-8F15F5AA764D]
+-----------------------------------------------------------------
+MakeCert.exe -r -h 0 -n "CN=18942261-2124-4395-AE9D-8F15F5AA764D" -eku 1.3.6.1.5.5.7.3.3 -pe -sv C:\CERTIFICATE\StoreKeyYEP.pvk C:\CERTIFICATE\StoreKeyYEP.cer
+pvk2pfx.exe -pvk C:\CERTIFICATE\StoreKeyYEP.pvk -spc C:\CERTIFICATE\StoreKeyYEP.cer -pfx C:\CERTIFICATE\StoreKeyYEP.pfx
+
+----------------------------------------------------
+Virtual Pulse [02972EC3-2720-4882-AE5F-A567E9AC3FCA]
+----------------------------------------------------
+MakeCert.exe -r -h 0 -n "CN=02972EC3-2720-4882-AE5F-A567E9AC3FCA" -eku 1.3.6.1.5.5.7.3.3 -pe -sv C:\CERTIFICATE\StoreKeyVP.pvk C:\CERTIFICATE\StoreKeyVP.cer
+pvk2pfx.exe -pvk C:\CERTIFICATE\StoreKeyVP.pvk -spc C:\CERTIFICATE\StoreKeyVP.cer -pfx C:\CERTIFICATE\StoreKeyVP.pfx
+
+------------------------------------------------
+Art Group [AE076C69-EAEE-4A76-91F6-F94384441A3F]
+------------------------------------------------
+MakeCert.exe -r -h 0 -n "CN=AE076C69-EAEE-4A76-91F6-F94384441A3F" -eku 1.3.6.1.5.5.7.3.3 -pe -sv C:\CERTIFICATE\StoreKeyAG.pvk C:\CERTIFICATE\StoreKeyAG.cer
+pvk2pfx.exe -pvk C:\CERTIFICATE\StoreKeyAG.pvk -spc C:\CERTIFICATE\StoreKeyAG.cer -pfx C:\CERTIFICATE\StoreKeyAG.pfx
+
+----------------------------------------------------------
+Andrii Leshchinskiy [670F4215-04CE-41D5-B5CC-84AC21765098]
+----------------------------------------------------------
+MakeCert.exe -r -h 0 -n "CN=670F4215-04CE-41D5-B5CC-84AC21765098" -eku 1.3.6.1.5.5.7.3.3 -pe -sv C:\CERTIFICATE\StoreKeyAL.pvk C:\CERTIFICATE\StoreKeyAL.cer
+pvk2pfx.exe -pvk C:\CERTIFICATE\StoreKeyAL.pvk -spc C:\CERTIFICATE\StoreKeyAL.cer -pfx C:\CERTIFICATE\StoreKeyAL.pfx
+
+
+
+
+
+-------------------- Libre Office test --------------------
+[pass = 14881488]
+MakeCert.exe -r -h 0 -n "CN=OneTwo" -eku 1.3.6.1.5.5.7.3.3 -pe -sv C:\CERTIFICATE\OneTwo.pvk C:\CERTIFICATE\OneTwo.cer
+pvk2pfx.exe -pvk C:\CERTIFICATE\OneTwo.pvk -spc C:\CERTIFICATE\OneTwo.cer -pfx C:\CERTIFICATE\OneTwo.pfx
+
+
+
+[26.05.2022 LibreOffice]
+--------------------------------------------------------------------------------------------------------------------------------------------
+MakeAppx unpack /p D:\WORK\TEST\LibreOffice\OfficePackEditorLite_1.3.0.5_new.appx /d "D:\WORK\TEST\LibreOffice\OfficePackEditorLite_1.3.0.5_new"
+
+VirtualPulse [02972EC3-2720-4882-AE5F-A567E9AC3FCA]
+makepri createconfig /cf D:\Apps\Word\priconfig.xml /dq en-US /o
+makepri new /pr D:\Apps\Word /cf D:\Apps\Word\priconfig.xml
+MakeAppx pack /v /h SHA256 /d "D:\Apps\Word" /p D:\Apps\Word.appx
+SignTool sign /fd SHA256 /a /f "C:\CERTIFICATE\StoreKeyVP.pfx" D:\Apps\Word.appx
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+

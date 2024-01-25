@@ -202,9 +202,6 @@
     <QtMoc Include="AppCenter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Shared\ComAPI\ComAPI.vcxproj">
-      <Project>{d2f14f8e-303b-4ae6-a98b-b789cd19981d}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Shared\Helpers\Helpers.vcxproj">
       <Project>{99eb66fc-797a-45fb-8932-dc1dfbefda9e}</Project>
     </ProjectReference>
