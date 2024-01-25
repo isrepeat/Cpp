@@ -3,7 +3,7 @@
   <PropertyGroup>
     <NewLine>%0D%0A</NewLine>
   </PropertyGroup>
-  
+
   <!-- Force rewrite needed sub system -->
   <ItemDefinitionGroup>
     <Link>
@@ -26,22 +26,23 @@
       <ExcludedDirsFromBuild Include="[08] Token singleton" />
       <ExcludedDirsFromBuild Include="[09] DVD API" />
       <ExcludedDirsFromBuild Include="[10] Socket NAT" />
+      <!--<ExcludedDirsFromBuild Include="[11] C++20 Coroutine" />-->
 
       <NotBuildFiles Include="*.h;*.cpp" />
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
-      
-      <BuildFiles Include="main_26_*.cpp" />
+
+      <!--<BuildFiles Include="main_26_*.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
     </ItemGroup>
-    
+
     <Message Importance="High" Text="$(NewLine)" />
     <Message Importance="High" Text="-------------------------------------" />
     <Message Importance="High" Text="FilesExcludedFromBuild:"/>
     <Message Importance="High" Text = "%(FilesExcludedFromBuild.Identity)"/>
-    
+
     <Message Importance="High" Text=  "$(NewLine)" />
     <Message Importance="High" Text = "CLCompile files:"/>
     <Message Importance="High" Text = "%(ClCompile.Identity)"/>

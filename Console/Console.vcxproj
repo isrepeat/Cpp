@@ -233,6 +233,7 @@
     <ClCompile Include="[09] DVD API\main_47_Vds.cpp" />
     <ClCompile Include="[09] DVD API\main_47_WMI.cpp" />
     <ClCompile Include="[10] Socket NAT\main.cpp" />
+    <ClCompile Include="[11] C++20 Coroutine\main_55_Coroutine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />

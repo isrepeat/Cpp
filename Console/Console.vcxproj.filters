@@ -39,6 +39,9 @@
     <Filter Include="Source Files\[10] Socket NAT">
       <UniqueIdentifier>{a88ddbf5-e000-4c95-9d79-6bc7504ad19c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[11] C++20 Coroutine">
+      <UniqueIdentifier>{5773ca91-dd1d-4af0-bdce-b2787b6c5c51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -262,6 +265,9 @@
     </ClCompile>
     <ClCompile Include="main_54_STUN_server.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="[11] C++20 Coroutine\main_55_Coroutine.cpp">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
