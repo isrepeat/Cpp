@@ -29,7 +29,7 @@ namespace N {
 
     // Helpers:
     struct endpoint {
-        uint32_t ip = 0;
+        uint64_t ip = 0;
         uint16_t port = 0;
     };
 
