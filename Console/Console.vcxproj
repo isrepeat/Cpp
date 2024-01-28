@@ -208,6 +208,8 @@
     <ClCompile Include="main_52_ThreadEx.cpp" />
     <ClCompile Include="main_53_redirect_IO.cpp" />
     <ClCompile Include="main_54_STUN_server.cpp" />
+    <ClCompile Include="main_56_fixed_string_1.cpp" />
+    <ClCompile Include="main_56_fixed_string_2.cpp" />
     <ClCompile Include="main_5_format_string_cx17.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
     <ClCompile Include="main_7_regex_replace_group.cpp" />
@@ -233,7 +235,9 @@
     <ClCompile Include="[09] DVD API\main_47_Vds.cpp" />
     <ClCompile Include="[09] DVD API\main_47_WMI.cpp" />
     <ClCompile Include="[10] Socket NAT\main.cpp" />
+    <ClCompile Include="[11] C++20 Coroutine\AsyncTasksCo.cpp" />
     <ClCompile Include="[11] C++20 Coroutine\main_55_Coroutine.cpp" />
+    <ClCompile Include="[11] C++20 Coroutine\main_AsyncTasks_Coroutine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
@@ -255,6 +259,7 @@
     <ClInclude Include="[09] DVD API\main_47_Utils.h" />
     <ClInclude Include="[10] Socket NAT\Client.h" />
     <ClInclude Include="[10] Socket NAT\Common.h" />
+    <ClInclude Include="[11] C++20 Coroutine\AsyncTasksCo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />

@@ -32,7 +32,10 @@
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
 
-      <!--<BuildFiles Include="main_26_*.cpp" />-->
+      <!--<BuildFiles Include="main.cpp" />-->
+      <!--<BuildFiles Include="main_1_*.cpp" />-->
+      <!--<BuildFiles Include="main_45_*.cpp" />-->
+      <!--<BuildFiles Include="main_56_*.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
