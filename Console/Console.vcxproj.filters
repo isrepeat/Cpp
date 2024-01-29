@@ -343,6 +343,9 @@
     <ClInclude Include="[11] C++20 Coroutine\AsyncTasksCo.h">
       <Filter>Source Files\[11] C++20 Coroutine</Filter>
     </ClInclude>
+    <ClInclude Include="[11] C++20 Coroutine\Awaitables.h">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />

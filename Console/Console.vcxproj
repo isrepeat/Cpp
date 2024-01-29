@@ -260,6 +260,7 @@
     <ClInclude Include="[10] Socket NAT\Client.h" />
     <ClInclude Include="[10] Socket NAT\Common.h" />
     <ClInclude Include="[11] C++20 Coroutine\AsyncTasksCo.h" />
+    <ClInclude Include="[11] C++20 Coroutine\Awaitables.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />

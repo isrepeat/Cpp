@@ -3,20 +3,30 @@
 #include "AsyncTasksCo.h"
 #include <iostream>
 
+Async::AsyncTasks asyncTasks;
 
 
-
-std::unique_ptr<Async::Task> DefferedTask() {
-    LOG_FUNCTION_SCOPE("DefferedTask()");
-
+Async::AsyncTasks::Task_t EmbeddedTask() {
+    LOG_FUNCTION_SCOPE("EmbeddedTask()");
     LOG_DEBUG_D("Some heavy computes ~1s ...");
     Sleep(1000);
-
     co_return;
 }
 
 
-void foo(std::unique_ptr<Async::Task> task) {
+Async::AsyncTasks::Task_t DefferedTask_AAA() {
+    LOG_FUNCTION_SCOPE("DefferedTask_AAA()");
+    //asyncTasks.Add(EmbeddedTask());
+    LOG_DEBUG_D("Some heavy computes ~1s ...");
+    Sleep(1000);
+    co_return;
+}
+
+Async::AsyncTasks::Task_t DefferedTask_BBB() {
+    LOG_FUNCTION_SCOPE("DefferedTask_BBB()");
+    LOG_DEBUG_D("Some heavy computes ~1s ...");
+    Sleep(1000);
+    co_return;
 }
 
 
@@ -24,44 +34,49 @@ int main() {
 	lg::DefaultLoggers::Init("D:\\main_AsyncTasks_Coroutine.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
     LOG_FUNCTION_SCOPE("main()");
 
-    std::coroutine_traits<Async::Task>::promise_type;
-    std::coroutine_traits<std::unique_ptr<Async::Task>>::promise_type;
+
+    //Async::AsyncTasks::Task_t::element_type::taskDescription;
+    //Async::AsyncTasks::WorkToken_t::element_type::taskDescription;
+
+    std::coroutine_traits<Async::AsyncTasks::Task_t>::promise_type;
+    std::coroutine_traits<Async::AsyncTasks::WorkToken_t, Async::AsyncTasks*>::promise_type;
+
 
     H::ConcurrentQueue<H::TaskItemWithDescription> workQueue;
-    std::queue<std::unique_ptr<Async::Task>> defferedTasks;
     
-    {
-        auto task = DefferedTask();
-        defferedTasks.push(std::move(task));
+    asyncTasks.SetResumeCallback([&workQueue](std::coroutine_handle<> coroHandle) {
+        workQueue.Push({ "signal ResumeNextCoTask()", [coroHandle] {
+            coroHandle.resume();
+            } });
+        });
 
-        workQueue.Push({ "signal ShowEvent()", [&workQueue, &defferedTasks] {
-            LOG_DEBUG_D("ShowEvent_Action_1");
+    asyncTasks.Add(DefferedTask_AAA());
+    asyncTasks.Add(DefferedTask_BBB());
+
+    workQueue.Push({ "signal ShowEvent()", [&workQueue] {
+        LOG_DEBUG_D("ShowEvent_Action_1");
+        Sleep(500);
+
+        asyncTasks.StartExecuting();
+
+        LOG_DEBUG_D("ShowEvent_Action_2");
+        Sleep(500);
+
+        workQueue.Push({ "signal CustomSlot()", [&workQueue] {
+            LOG_DEBUG_D("CustomSlot_Action_1");
             Sleep(500);
-
-            if (!defferedTasks.empty()) {
-                auto task = std::move(defferedTasks.front());
-                defferedTasks.pop();
-                task->resume();
-            }
-
-            LOG_DEBUG_D("ShowEvent_Action_2");
+            LOG_DEBUG_D("CustomSlot_Action_2");
             Sleep(500);
-
-            workQueue.Push({ "signal CustomSlot()", [&workQueue] {
-                LOG_DEBUG_D("CustomSlot_Action_1");
-                Sleep(500);
-                LOG_DEBUG_D("CustomSlot_Action_2");
-                Sleep(500);
-                LOG_DEBUG_D("CustomSlot_Action_last");
-                Sleep(500);
-                return;
-                } });
-
-            LOG_DEBUG_D("ShowEvent_Action_last");
+            LOG_DEBUG_D("CustomSlot_Action_last");
             Sleep(500);
             return;
             } });
-    }
+
+        LOG_DEBUG_D("ShowEvent_Action_last");
+        Sleep(500);
+        return;
+        } });
+    
 
     while (workQueue.IsWorking()) {
         auto item = workQueue.Pop();
