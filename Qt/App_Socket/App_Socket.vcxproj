@@ -45,7 +45,9 @@
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
   </Target>
   <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="Shared" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\..\UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(QtMsBuild)\Qt.props" />
@@ -128,9 +130,6 @@
     <ClInclude Include="Common.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\UtilityHelpersLib\3rdParty\Boost.Includes\Boost.Includes.vcxproj">
-      <Project>{4f240080-ef67-45b1-a6de-3ded5fa14e8e}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers.Raw\Helpers.Raw.vcxproj">
       <Project>{298ab331-24aa-4f41-916e-2206023f8085}</Project>
     </ProjectReference>
