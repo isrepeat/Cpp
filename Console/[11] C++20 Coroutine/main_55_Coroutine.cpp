@@ -59,8 +59,8 @@
 //
 //        auto initial_suspend() const noexcept {
 //            LOG_FUNCTION_SCOPE("initial_suspend()");
-//            return std::suspend_always{};
-//            //return std::suspend_never{};
+//            return std::suspend_always{}; // return control to caller immediatly (do not execute co-function body)
+//            //return std::suspend_never{}; // execute co-function body and return control to caller after first "suspend point"
 //        }
 //
 //        void unhandled_exception() {
@@ -69,7 +69,8 @@
 //
 //        auto final_suspend() const noexcept {
 //            LOG_FUNCTION_SCOPE("final_suspend()");
-//            return std::suspend_never{};
+//            return std::suspend_always{}; // need manually destroy coroutine_handle
+//            //return std::suspend_never{}; // coroutine_handle destroyed automatically after this method
 //        }
 //
 //        void return_void() {
@@ -81,18 +82,35 @@
 //
 //    void resume() {
 //        LOG_FUNCTION_SCOPE("resume()");
+//        bool isDone = coro_handle.done();
+//
+//        if (canceled) {
+//            LOG_WARNING_D("task canceled");
+//            return;
+//        }
 //
 //        if (promiseToken.expired()) {
 //            LOG_WARNING_D("promiseToken expired");
 //            return;
 //        }
+//
 //        if (coro_handle) {
-//            coro_handle.resume();
+//            coro_handle.resume(); // change context on co-function ...
 //        }
+//    }
+//
+//    // May be called from any thread
+//    void Cancel() {
+//        canceled = true;
 //    }
 //
 //    ~Task() {
 //        LOG_FUNCTION_ENTER("~Task()");
+//        bool isDone = coro_handle.done();
+//        if (coro_handle) {
+//            LOG_DEBUG_D("destroy coro_handle");
+//            coro_handle.destroy(); // after this call promise_type will destroy (if final_suspend return suspend_always)
+//        }
 //    }
 //
 //private:
@@ -108,6 +126,7 @@
 //
 //    std::coroutine_handle<> coro_handle;
 //    std::weak_ptr<int> promiseToken;
+//    std::atomic<bool> canceled = false;
 //};
 //
 //
@@ -148,6 +167,10 @@
 //
 //    LOG_DEBUG_D("Some heavy computes ~1s ...");
 //    Sleep(1000);
+//    LOG_DEBUG_D("Some heavy computes ~1s ...");
+//    Sleep(1000);
+//    LOG_DEBUG_D("Some heavy computes ~1s ...");
+//    Sleep(1000);
 //
 //    co_return;
 //    LOG_DEBUG_D("... after 'co_await 2000ms'");
@@ -163,18 +186,106 @@
 //    LOG_DEBUG_D("wait 2s ...");
 //    Sleep(2'000);
 //
+//    H::Timer::Once(1'500ms, [&saveTask] {
+//        LOG_DEBUG_D("Cancel ...");
+//        saveTask.Cancel();
+//        });
+//
 //    saveTask.resume();
+//
 //
 //    LOG_DEBUG_D("wait 4s ...");
 //    Sleep(4'000);
 //}
 //
 //
+//#include <coroutine>
+//
+//class MyClass;
+//
+//namespace std {
+//    template<typename T, typename... Args>
+//    struct coroutine_traits<std::shared_ptr<T>, Args...> {
+//        using promise_type = typename T::promise_type;
+//    };
+//
+//    template<typename T, typename Caller, typename... Args>
+//    struct coroutine_traits<std::shared_ptr<T>, Caller*, Args...> {
+//        using promise_type = typename T::promise_type;
+//    };
+//}
+//
+//struct initial_suspend_always {
+//    std::suspend_never initial_suspend() { return {}; }
+//};
+//
+//template <typename Caller>
+//struct task {
+//    struct promise_type : initial_suspend_always {
+//#ifdef __INTELLISENSE__ // https://stackoverflow.com/questions/67209981/weird-error-from-visual-c-no-default-constructor-for-promise-type
+//        // Not use default Ctor, just mark it for intelli sense
+//        promise_type();
+//#endif
+//        // Used for non-class functions
+//        promise_type(int) {
+//            int xx = 9;
+//        }
+//
+//        // Used for Caller class methods
+//        template <typename Caller>
+//        promise_type(Caller&, int) {
+//            int xx = 9;
+//        }
+//
+//        //std::shared_ptr<task> get_return_object() { return std::make_shared<task>(); }
+//        task get_return_object() { return task{}; }
+//        std::suspend_never final_suspend() noexcept { return {}; }
+//        void return_void() {}
+//        void unhandled_exception() {}
+//    };
+//
+//    task() {
+//    }
+//    ////explicit CoTask(std::coroutine_handle<> coroHandle, std::weak_ptr<int> promiseToken, std::wstring coroFrameName)
+//    //explicit task(std::coroutine_handle<> coroHandle, std::weak_ptr<int> promiseToken)
+//    //{
+//    //}
+//    //~task() {
+//    //}
+//    //task(task&& other)
+//    //{
+//    //}
+//    //task& operator=(task&& other) {
+//    //    return *this;
+//    //}
+//
+//    //task(task const&) = delete;
+//    //task& operator=(task const&) = delete;
+//};
+//
+//class MyClass {
+//public:
+//    MyClass() {}
+//
+//    //std::shared_ptr<task<MyClass>> foo(int) {
+//    task<MyClass> foo(int) {
+//    //task foo(int) {
+//        co_await std::suspend_never{};
+//    }
+//
+//};
+//
+//task<void> bar(int) {
+//    co_await std::suspend_never{};
+//}
+//
 //
 //int main() {
 //	lg::DefaultLoggers::Init("D:\\main_55_Coroutine.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
 //    LOG_FUNCTION_SCOPE("main()");
-//
+//    MyClass myClass;
+//    myClass.foo(12);
+//    bar(12);
 //    //TestCoroutineTick();
 //    TestCoroutineDefferedStart();
 //
