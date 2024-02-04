@@ -6,6 +6,14 @@
 
   <!-- Force rewrite needed sub system -->
   <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>
+        <!--DISABLE_COMMON_LOGGING;-->
+        <!--DISABLE_ERROR_LOGGING;-->
+        <!--DISABLE_VERBOSE_LOGGING;-->
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
+    </ClCompile>
     <Link>
       <!--<SubSystem>Windows</SubSystem>-->
       <SubSystem>Console</SubSystem>
@@ -34,6 +42,7 @@
 
       <!--<BuildFiles Include="main.cpp" />-->
       <!--<BuildFiles Include="main_1_*.cpp" />-->
+      <!--<BuildFiles Include="main_27_*.cpp" />-->
       <!--<BuildFiles Include="main_45_*.cpp" />-->
       <!--<BuildFiles Include="main_56_*.cpp" />-->
 
