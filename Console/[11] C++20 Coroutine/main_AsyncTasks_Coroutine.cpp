@@ -1,3 +1,5 @@
+#define DISABLE_VERBOSE_LOGGING
+
 #include <Helpers/ConcurrentQueue.h>
 #include <Helpers/Async/AsyncTasks.h>
 #include <Helpers/Logger.h>
@@ -46,8 +48,10 @@ struct Functor {
     }
 };
 
-H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskWithAsyncOperation(std::wstring coroFrameName) {
-    LOG_FUNCTION_SCOPE(L"TaskWithAsyncOperation(name = {})", coroFrameName);
+//H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskWithAsyncOperation(H::Async::InstanceName, int, float) {
+//H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskWithAsyncOperation(int, float) {
+H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskWithAsyncOperation() {
+    //LOG_FUNCTION_SCOPE(L"TaskWithAsyncOperation(name = {})", coroFrameName);
 
     
     co_await H::Async::AsyncOperationWithResumeSignal([](std::weak_ptr<H::Signal> resumeSignalWeak) {
@@ -104,12 +108,12 @@ public:
             auto temp = std::make_shared<Temp>();
 
             asyncTasks.AddTaskLambda(0ms, [this, temp](std::wstring taskName = {}) -> H::Async::AsyncTasks::Task::Ret_t {
-                LOG_FUNCTION_SCOPE("Task_1__lambda()");
+                LOG_FUNCTION_ENTER("Task_1__lambda()");
                 NOOP;
                 temp->Test();
-                asyncTasks.Cancel();
+                //asyncTasks.Cancel();
                 co_return;
-                }, L"Task_1");
+                });
         }
         NOOP;
 
@@ -118,43 +122,64 @@ public:
             auto temp = std::make_shared<Temp>();
 
             asyncTasks.AddTaskLambda(0ms, [temp](std::wstring taskName = {}) -> H::Async::AsyncTasks::Task::Ret_t {
-                LOG_FUNCTION_SCOPE("Task_1__lambda()");
+                LOG_FUNCTION_ENTER("Task_1__lambda()");
                 NOOP;
                 temp->Test();
-                //asyncTasks.Cancel();
+
+                //co_await H::Async::AsyncOperationWithResumeSignal([](std::weak_ptr<H::Signal> resumeSignalWeak) {
+                //    LOG_FUNCTION_SCOPE(L"AsyncOperationWithSignal__lambda()");
+
+                //    H::Timer::Once(2000ms, [resumeSignalWeak] { // (1)
+                //        auto resumeSignal = resumeSignalWeak.lock();
+                //        if (!resumeSignal) {
+                //            LOG_ERROR_D("resumeSignal expired");
+                //            return;
+                //        }
+                //        (*resumeSignal)(); // (2)
+                //        NOOP;
+                //        });
+                //    });
+
+                //NOOP;
+                ////asyncTasks.Cancel();
                 co_return;
                 }, L"Task_1");
         }
         NOOP;
 
 
-        //auto lambdaA = [this](std::wstring taskName = {}) -> H::Async::AsyncTasks::Task::Ret_t {
-        //    LOG_FUNCTION_SCOPE("Task_1__lambda()");
-        //    NOOP;
-        //    //asyncTasks.Cancel();
+
+        
+        //asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation, L"", 1, 3.0f);
+        //asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation, 1, 3.0f);
+        asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation);
+        
+        asyncTasks.AddTaskFn(0ms, this, &Prototype::TaskMember);
+        //asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation, L"");
+        
+        //auto fnPtr = &TaskWithAsyncOperation;
+        //H::Async::CoTask<H::Async::PromiseDefault>::Ret_t(*fnPtr)(std::wstring coroFrameName = {});
+        //fnPtr();
+        
+        //asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation, L""); // Fails
+
+        //std::function<H::Async::AsyncTasks::Task::Ret_t(std::wstring)> xxx = &Prototype::TaskMember;
+
+        //std::function<H::Async::AsyncTasks::Task::Ret_t(std::wstring)> xxx = std::bind(&Prototype::TaskMember, this, std::placeholders::);
+        
+        //H::FunctionTraits<decltype(&Prototype::TaskMember)>::
+
+        //asyncTasks.AddTaskLambda(0ms, &TaskWithAsyncOperation); // Fails
+        //asyncTasks.AddTaskLambda(0ms, [](std::wstring taskName = {})->H::Async::AsyncTasks::Task::Ret_t { // Ok
+        //    co_return;
+        //    });
+
+        //std::function<H::Async::AsyncTasks::Task::Ret_t(std::wstring)> stdFunc = [](std::wstring taskName = {})->H::Async::AsyncTasks::Task::Ret_t {
         //    co_return;
         //};
+        //asyncTasks.AddTaskLambda(0ms, stdFunc); // Fails
 
-        //
-        //using R = H::FunctionTraits<decltype(lambdaA)>::Ret;
-        //using C = H::FunctionTraits<decltype(lambdaA)>::Class;
-
-        //std::function<R(std::wstring)> fn = lambdaA;
-        //std::list<decltype(fn)> list;
-        //list.emplace_back(std::move(fn));
-        //list.erase(
-        ////std::set<decltype(lambdaA)> functionsKeeper;
-        //std::unordered_set<decltype(lambdaA)> functionsKeeper;
-        ////std::unordered_set<decltype(fn)> functionsKeeper;
-        ////std::unordered_set<std::function<R(std::wstring)>> functionsKeeper;
-        ////std::pair<std::set<std::basic_string<XCHAR>>::iterator, bool> retIterator;
-        //auto insertResult = functionsKeeper.insert(std::move(lambdaA));
-        //assert(insertResult.first != functionsKeeper.end());
-        //
-
-
-        //asyncTasks.AddTaskFn(0ms, &TaskWithAsyncOperation, L"Task_Signal");
-        ////asyncTasks.AddTaskFn(0ms, this, &Prototype::TaskMember, L"taskSignal");
+        //asyncTasks.AddTaskFn(0ms, this, &Prototype::TaskMember);
         //
         ////auto xx = asyncTasks.AddTaskLambda(0ms, [](std::wstring) -> H::Async::CoTask<H::Async::PromiseDefault>::Ret_t {
         //////auto xx = asyncTasks.AddTaskLambda(0ms, [](std::wstring, std::function<void(std::weak_ptr<H::Async::CoTaskBase>)>) -> H::Async::CoTask<H::Async::PromiseRoot>::Ret_t {
@@ -202,8 +227,9 @@ public:
             } });
     }
 
-    H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskMember(std::wstring coroFrameName) {
-        LOG_FUNCTION_SCOPE(L"TaskWithAsyncOperation(name = {})", coroFrameName);
+    //H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskMember(H::Async::InstanceName) {
+    H::Async::CoTask<H::Async::PromiseDefault>::Ret_t TaskMember() {
+        LOG_FUNCTION_SCOPE(L"TaskWithAsyncOperation()");
 
 
         co_await H::Async::AsyncOperationWithResumeSignal([](std::weak_ptr<H::Signal> resumeSignalWeak) {
