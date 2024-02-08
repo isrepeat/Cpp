@@ -39,6 +39,9 @@
     <Filter Include="Source Files\[10] Socket NAT">
       <UniqueIdentifier>{a88ddbf5-e000-4c95-9d79-6bc7504ad19c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[11] C++20 Coroutine">
+      <UniqueIdentifier>{5773ca91-dd1d-4af0-bdce-b2787b6c5c51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -263,6 +266,24 @@
     <ClCompile Include="main_54_STUN_server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="[11] C++20 Coroutine\main_55_Coroutine.cpp">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClCompile>
+    <ClCompile Include="[11] C++20 Coroutine\AsyncTasksCo.cpp">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClCompile>
+    <ClCompile Include="[11] C++20 Coroutine\main_AsyncTasks_Coroutine.cpp">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClCompile>
+    <ClCompile Include="main_56_fixed_string_1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_56_fixed_string_2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_57_Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -321,6 +342,12 @@
     </ClInclude>
     <ClInclude Include="[09] DVD API\main_47_Utils.h">
       <Filter>Source Files\[09] DVD API</Filter>
+    </ClInclude>
+    <ClInclude Include="[11] C++20 Coroutine\AsyncTasksCo.h">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClInclude>
+    <ClInclude Include="[11] C++20 Coroutine\Awaitables.h">
+      <Filter>Source Files\[11] C++20 Coroutine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
