@@ -281,6 +281,9 @@
     <ClCompile Include="main_56_fixed_string_2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_57_Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
