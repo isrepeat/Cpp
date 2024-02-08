@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{385D99C3-1BAE-4452-A843-722C6B878740}</ProjectGuid>
-    <RootNamespace>MSBuild_Project_B</RootNamespace>
+    <ProjectGuid>{B93D9E5D-A09F-4C7C-8177-FB0194FFCB3F}</ProjectGuid>
+    <RootNamespace>MSBuild_Project_C</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -154,17 +154,17 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_A\MSBuild_Project_A.vcxproj">
-      <Project>{c18d53a4-a516-44af-8142-e7e001b96006}</Project>
-    </ProjectReference>
+    <None Include="MSBuild_Project_C.targets" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="MSBuild_Project_B.targets" />
+    <ProjectReference Include="..\MSBuild_Project_B\MSBuild_Project_B.vcxproj">
+      <Project>{385d99c3-1bae-4452-a843-722c6b878740}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- ================= Custom targets ================== -->
-  <Import Project="$(ProjectDir)\MSBuild_Project_B.targets" />
+  <Import Project="$(ProjectDir)\MSBuild_Project_C.targets" />
   <!-- =================================================== -->
 </Project>

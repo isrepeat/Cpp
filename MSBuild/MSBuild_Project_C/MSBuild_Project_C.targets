@@ -8,9 +8,8 @@
   </ItemDefinitionGroup>-->
 
   <ItemGroup>
-    <NativeDlls Include="D:\Bar.txt" />
+    <NativeDlls Include="D:\Qux.txt" />
   </ItemGroup>
-
 
   <ItemGroup>
     <ContentWithTargetPath Include="@(NativeDlls)">

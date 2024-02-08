@@ -9,5 +9,11 @@
   <!--<Import Project="$(ProjectDir)\MSBuild_6_DynamicImport.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_7_Conditions.targets" />-->
   <!--<Import Project="$(ProjectDir)\MSBuild_8_Replace.targets" />-->
-  <Import Project="$(ProjectDir)\MSBuild_9_CaptureConfigurationFromPartialName.targets" />
+  <!--<Import Project="$(ProjectDir)\MSBuild_9_CaptureConfigurationFromPartialName.targets" />-->
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
 </Project>
