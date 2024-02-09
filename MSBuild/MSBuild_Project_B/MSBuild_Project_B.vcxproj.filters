@@ -14,4 +14,7 @@
   <ItemGroup>
     <None Include="MSBuild_Project_B.targets" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Bar.txt" />
+  </ItemGroup>
 </Project>

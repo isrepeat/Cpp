@@ -7,8 +7,14 @@
     </ClCompile>
   </ItemDefinitionGroup>-->
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <NativeDlls Include="D:\Qux.txt" />
+    <NativeDlls Include="D:\project_C.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,5 +23,21 @@
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
-  
+
+  <!--<Target Name="Content_InitializeBuildStatus" BeforeTargets="InitializeBuildStatus">
+    <Message Importance="High" Text="==== [MSBuild_Project_C] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+  </Target>-->
+
+
+  <!--<Target Name="GetCopyToOutputDirectoryItems" Returns="@(CopyToOutputDirectoryItemsWithTargetPath2)">
+    <ItemGroup>
+      <CopyToOutputDirectoryItems Include="D:\Hello.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </CopyToOutputDirectoryItems>
+    </ItemGroup>
+    <AssignTargetPath Files="@(CopyToOutputDirectoryItems)" RootFolder="$(TargetDir)">
+      <Output TaskParameter="AssignedFiles" ItemName="CopyToOutputDirectoryItemsWithTargetPath2" />
+    </AssignTargetPath>
+  </Target>-->
+
 </Project>

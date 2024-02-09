@@ -161,6 +161,11 @@
   <ItemGroup>
     <None Include="MSBuild_Project_B.targets" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Bar.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </Text>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -7,8 +7,19 @@
     </ClCompile>
   </ItemDefinitionGroup>-->
 
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+  </PropertyGroup>
+  
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+
   <ItemGroup>
-    <NativeDlls Include="D:\Foo.txt" />
+    <Content Include="D:\Hello.txt" CopyToOutputDirectory="PreserveNewest"/>
+    <NativeDlls Include="D:\project_A.txt" />
   </ItemGroup>
 
 
@@ -18,5 +29,25 @@
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
+
+  <!--<Target Name="Content_Before_InitializeBuildStatus" BeforeTargets="InitializeBuildStatus">-->
+  <Target Name="Content_Before_AssignTargetPath" BeforeTargets="AssignTargetPaths">
+    <Message Importance="High" Text="==== [$(ProjectName)] Content_Before_AssignTargetPath:" />
+    <Message Importance="High" Text="==== [$(ProjectName)] Content = %(Content.Identity)" />
+    <Message Importance="High" Text="==== [$(ProjectName)] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+
+  <Target Name="Content_After_AssignTargetPath" AfterTargets="AssignTargetPaths">
+    <Message Importance="High" Text="==== [$(ProjectName)] Content_After_AssignTargetPath:" />
+    <Message Importance="High" Text="==== [$(ProjectName)] Content = %(Content.Identity)" />
+    <Message Importance="High" Text="==== [$(ProjectName)] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+
+  <!--<Target Name="Content_After_Build" AfterTargets="Build">
+    <Message Importance="High" Text="==== [MSBuild_Project_A] Content = %(Content.Identity)" />
+    <Message Importance="High" Text="==== [MSBuild_Project_A] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+  </Target>-->
 
 </Project>
