@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+    <!--<MSBuildCopyContentTransitively>false</MSBuildCopyContentTransitively>-->
+  </PropertyGroup>
+
+
+  <!--
+    ============================================================
+                                        AssignProjectConfiguration
+
+    Assigns the appropriate configuration to each project in the list of project references passed in.
+    Adds to the project references passed in any project references implied by dependencies expressed in the solution file, if any.
+
+        [IN]
+        @(ProjectReference) - the list of all project references
+
+        [OUT]
+        @(ProjectReferenceWithConfiguration) - the list of project references (MSBuild and potentially VSIP projects)
+                                               with metadata values FullConfiguration, Configuration, Platform,
+                                               SetConfiguration, and SetPlatform
+    ============================================================
+    -->
+  <Target
+      Name="AssignProjectConfiguration"
+      Condition="'$(CurrentSolutionConfigurationContents)' != '' or '@(ProjectReference)'!=''">
+
+    <PropertyGroup>
+      <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration Condition="'$(OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration)' == ''">true</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
+      <ShouldUnsetParentConfigurationAndPlatform Condition="'$(ShouldUnsetParentConfigurationAndPlatform)' == '' and ('$(BuildingInsideVisualStudio)' == 'true' or '$(BuildingSolutionFile)' == 'true')">true</ShouldUnsetParentConfigurationAndPlatform>
+      <ShouldUnsetParentConfigurationAndPlatform Condition="'$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
+
+      <!-- Web Application projects can "secretly" reference Silverlight projects, which can take project dependencies on that same Web Application.  If the project
+           dependencies are promoted to project references, this ends up creating a situation where we have a circular reference between the two projects.  We don't
+           want this to happen, so just turn off synthetic project reference generation for Silverlight projects. -->
+      <AddSyntheticProjectReferencesForSolutionDependencies Condition="'$(AddSyntheticProjectReferencesForSolutionDependencies)' == '' and '$(TargetFrameworkIdentifier)' == 'Silverlight'">false</AddSyntheticProjectReferencesForSolutionDependencies>
+
+      <!-- Inside VS, we do not need to add synthetic references, as VS already organizes the build per any solution-level dependencies; we only do this on the command line-->
+      <AddSyntheticProjectReferencesForSolutionDependencies Condition="'$(AddSyntheticProjectReferencesForSolutionDependencies)' == '' and '$(BuildingInsideVisualStudio)' != 'true'">true</AddSyntheticProjectReferencesForSolutionDependencies>
+    </PropertyGroup>
+
+    <!-- Assign a project configuration to each project reference if we're building a solution file. -->
+    <AssignProjectConfiguration
+        ProjectReferences="@(ProjectReference)"
+        CurrentProject="$(MSBuildProjectFullPath)"
+        CurrentProjectConfiguration="$(Configuration)"
+        CurrentProjectPlatform="$(Platform)"
+        DefaultToVcxPlatformMapping="$(DefaultToVcxPlatformMapping)"
+        VcxToDefaultPlatformMapping="$(VcxToDefaultPlatformMapping)"
+        OutputType="$(OutputType)"
+        ResolveConfigurationPlatformUsingMappings="false"
+        SolutionConfigurationContents="$(CurrentSolutionConfigurationContents)"
+        AddSyntheticProjectReferencesForSolutionDependencies="$(AddSyntheticProjectReferencesForSolutionDependencies)"
+        OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration = "$(OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration)"
+        ShouldUnsetParentConfigurationAndPlatform = "$(ShouldUnsetParentConfigurationAndPlatform)" >
+
+      <!-- EMITTED FOR COMPATIBILITY REASONS ONLY. CONSUME PROJECTREFERENCEWITHCONFIGURATION INSTEAD -->
+      <Output TaskParameter="AssignedProjects" ItemName="_ProjectReferenceWithConfiguration"/>
+      <Output TaskParameter="UnassignedProjects" ItemName="_ProjectReferenceWithConfiguration"/>
+
+      <Output TaskParameter="AssignedProjects" ItemName="ProjectReferenceWithConfiguration"/>
+      <Output TaskParameter="UnassignedProjects" ItemName="ProjectReferenceWithConfiguration"/>
+    </AssignProjectConfiguration>
+
+    <ItemGroup>
+      <_ProjectReferenceWithConfiguration>
+        <BuildReference Condition="'%(_ProjectReferenceWithConfiguration.BuildReference)' == ''">true</BuildReference>
+        <ReferenceOutputAssembly Condition="'%(_ProjectReferenceWithConfiguration.ReferenceOutputAssembly)' == ''">true</ReferenceOutputAssembly>
+      </_ProjectReferenceWithConfiguration>
+      <ProjectReferenceWithConfiguration>
+        <BuildReference Condition="'%(ProjectReferenceWithConfiguration.BuildReference)' == ''">true</BuildReference>
+        <ReferenceOutputAssembly Condition="'%(ProjectReferenceWithConfiguration.ReferenceOutputAssembly)' == ''">true</ReferenceOutputAssembly>
+      </ProjectReferenceWithConfiguration>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        _SplitProjectReferencesByFileExistence
+
+    Split referenced projects into two lists: those that exist on
+    disk and those that don't.
+    ============================================================
+    -->
+
+  <Target
+    Name="_SplitProjectReferencesByFileExistence">
+
+    <!--
+        Use this task for matching projects with pre-resolved project outputs set by the IDE
+        if building inside the IDE.  The IDE only includes non-MSBuild projects in the output list.  We'll
+        use MSBuild to resolve MSBuild projects.
+        This task will resolve VSIP (3rd party) project references and create a new item list with only project references
+        to projects in the MSBuild format.
+        -->
+    <ResolveNonMSBuildProjectOutput
+        ProjectReferences="@(ProjectReferenceWithConfiguration)"
+        PreresolvedProjectOutputs="$(VSIDEResolvedNonMSBuildProjectOutputs)"
+        Condition="'$(BuildingInsideVisualStudio)'=='true' and '@(ProjectReferenceWithConfiguration)'!=''">
+
+      <Output TaskParameter="ResolvedOutputPaths" ItemName="_ResolvedProjectReferencePaths"/>
+      <Output TaskParameter="UnresolvedProjectReferences" ItemName="_MSBuildProjectReference"/>
+
+    </ResolveNonMSBuildProjectOutput>
+
+    <!--
+       If building from the command line, simply copy the ProjectReferenceWithConfiguration item list to _MSBuildProjectReference,
+       since we have to assume all projects are in the MSBuild format. We have no way of building
+       VSIP (3rd party) projects from the command line.
+       -->
+    <ItemGroup>
+      <_MSBuildProjectReference Include="@(ProjectReferenceWithConfiguration)" Condition="'$(BuildingInsideVisualStudio)'!='true' and '@(ProjectReferenceWithConfiguration)'!=''"/>
+    </ItemGroup>
+
+    <!-- Break the project list into two lists: those that exist on disk and those that don't. -->
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent Include="@(_MSBuildProjectReference)" Condition="Exists('%(Identity)')"/>
+      <_MSBuildProjectReferenceNonexistent Include="@(_MSBuildProjectReference)" Condition="!Exists('%(Identity)')"/>
+    </ItemGroup>
+
+  </Target>
+
+
+
+  <!--
+    ============================================================
+                                        GetCopyToOutputDirectoryItems
+
+    Get all project items that may need to be transferred to the output directory.
+    This includes baggage items from transitively referenced projects. It would appear
+    that this target computes full transitive closure of content items for all referenced
+    projects; however that is not the case. It only collects the content items from its
+    immediate children and not children of children. The reason this happens is that
+    the ProjectReferenceWithConfiguration list that is consumed by _SplitProjectReferencesByFileExistence
+    is only populated in the current project and is empty in the children. The empty list
+    causes _MSBuildProjectReferenceExistent to be empty and terminates the recursion.
+    ============================================================
+    -->
+  <PropertyGroup>
+    <_TargetsThatPrepareProjectReferences>_SplitProjectReferencesByFileExistence</_TargetsThatPrepareProjectReferences>
+    <!--
+      GetCopyToOutputDirectoryItems depends on an unspecified dependency _SplitProjectReferencesByFileExistence -> AssignProjectConfiguration (https://github.com/microsoft/msbuild/issues/4677).
+      When the unspecified dependency does not happen by accident, content copying is only 1 level deep instead of transitive.
+      This target enforces the dependency.
+
+      TODO: make transitive content copying the default when the breaking change is acceptable.
+    -->
+    <_TargetsThatPrepareProjectReferences Condition=" '$(MSBuildCopyContentTransitively)' == 'true' ">
+      AssignProjectConfiguration;
+      _SplitProjectReferencesByFileExistence
+    </_TargetsThatPrepareProjectReferences>
+
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      AssignTargetPaths;
+      $(_TargetsThatPrepareProjectReferences);
+      _GetProjectReferenceTargetFrameworkProperties;
+      _PopulateCommonStateForGetCopyToOutputDirectoryItems
+    </GetCopyToOutputDirectoryItemsDependsOn>
+
+    <!--
+      Mitigation for https://github.com/microsoft/msbuild/issues/4677
+      When MSBuildCopyContentTransitively == true, all content copying is transitive.
+      When MSBuildCopyContentTransitively == false, content copying is 1 level deep.
+      When MSBuildCopyContentTransitively != {true, false}, the legacy behaviour in https://github.com/microsoft/msbuild/issues/4677 manifests.
+     -->
+    <_RecursiveTargetForContentCopying>GetCopyToOutputDirectoryItems</_RecursiveTargetForContentCopying>
+    <!-- Enforce 1 level deep content copying by replacing the recursive content target with the target that retrieves the content for the current project only. -->
+    <_RecursiveTargetForContentCopying Condition=" '$(MSBuildCopyContentTransitively)' == 'false' ">_GetCopyToOutputDirectoryItemsFromThisProject</_RecursiveTargetForContentCopying>
+  </PropertyGroup>
+
+  <Target Name="_PopulateCommonStateForGetCopyToOutputDirectoryItems">
+    <!-- In the general case, clients need very little of the metadata which is generated by invoking this target on this project and its children.  For those
+         cases, we can immediately discard the unwanted metadata, reducing memory usage, particularly in very large and interconnected systems of projects.
+         However, if some client does require the original functionality, it is sufficient to set MSBuildDisableGetCopyToOutputDirectoryItemsOptimization to
+         a non-empty value and the original behavior will be restored. -->
+    <PropertyGroup Condition=" '$(MSBuildDisableGetCopyToOutputDirectoryItemsOptimization)' == '' ">
+      <_GCTODIKeepDuplicates>false</_GCTODIKeepDuplicates>
+      <_GCTODIKeepMetadata>CopyToOutputDirectory;TargetPath</_GCTODIKeepMetadata>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences"
+    DependsOnTargets="_PopulateCommonStateForGetCopyToOutputDirectoryItems;_AddOutputPathToGlobalPropertiesToRemove"
+    Returns="@(_TransitiveItemsToCopyToOutputDirectory)">
+
+    <PropertyGroup>
+      <__TaskName>_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _MSBuildProjectReferenceExistent = %(_MSBuildProjectReferenceExistent.Identity)   %(_MSBuildProjectReferenceExistent.Private)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): UseCommonOutputDirectory = $(UseCommonOutputDirectory)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuildCopyContentTransitively = $(MSBuildCopyContentTransitively)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _RecursiveTargetForContentCopying = $(_RecursiveTargetForContentCopying)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _GetChildProjectCopyToOutputDirectoryItems = $(_GetChildProjectCopyToOutputDirectoryItems)" />
+    <PropertyGroup>
+      <ValidConditionsToBuildChildProject>IGNORE child project!</ValidConditionsToBuildChildProject>
+      <ValidConditionsToBuildChildProject Condition="'@(_MSBuildProjectReferenceExistent)' != '' and '$(_GetChildProjectCopyToOutputDirectoryItems)' == 'true' and '%(_MSBuildProjectReferenceExistent.Private)' != 'false' and '$(UseCommonOutputDirectory)' != 'true'">Build child project ...</ValidConditionsToBuildChildProject>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): $(ValidConditionsToBuildChildProject)" />
+
+    <!-- Get items from child projects first. -->
+    <MSBuild
+        Projects="@(_MSBuildProjectReferenceExistent)"
+        Targets="$(_RecursiveTargetForContentCopying)"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform); %(_MSBuildProjectReferenceExistent.SetTargetFramework)"
+        Condition="'@(_MSBuildProjectReferenceExistent)' != '' and '$(_GetChildProjectCopyToOutputDirectoryItems)' == 'true' and '%(_MSBuildProjectReferenceExistent.Private)' != 'false' and '$(UseCommonOutputDirectory)' != 'true'"
+        ContinueOnError="$(ContinueOnError)"
+        SkipNonexistentTargets="true"
+        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)$(_GlobalPropertiesToRemoveFromProjectReferences)">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_AllChildProjectItemsWithTargetPath"/>
+      <!-- _AllChildProjectItemsWithTargetPath contain result from $(_RecursiveTargetForContentCopying)
+            i.e. _AllChildProjectItemsWithTargetPath = GetCopyToOutputDirectoryItems(); // (called in child project)
+      -->
+    </MSBuild>
+
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _AllChildProjectItemsWithTargetPath = %(_AllChildProjectItemsWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ----" />
+    <Message Importance="High" Text="$(NewLine)" />
+
+    <!-- Target outputs must be full paths because they will be consumed by a different project. -->
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectory   KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_AllChildProjectItemsWithTargetPath->'%(FullPath)')" Condition="'%(_AllChildProjectItemsWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <_TransitiveItemsToCopyToOutputDirectory   KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_AllChildProjectItemsWithTargetPath->'%(FullPath)')" Condition="'%(_AllChildProjectItemsWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <!-- Remove items which we will never again use - they just sit around taking up memory otherwise -->
+    <ItemGroup>
+      <_AllChildProjectItemsWithTargetPath       Remove="@(_AllChildProjectItemsWithTargetPath)"/>
+    </ItemGroup>
+
+    <!-- Copy paste _GetCopyToOutputDirectoryItemsFromThisProject but keep the items that came from other projects via ProjectReference's OutputItemType metadata -->
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(ContentWithTargetPath->'%(FullPath)')" Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always' AND '%(ContentWithTargetPath.MSBuildSourceProjectFile)'!=''"/>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(ContentWithTargetPath->'%(FullPath)')" Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' AND '%(ContentWithTargetPath.MSBuildSourceProjectFile)'!=''"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(EmbeddedResource->'%(FullPath)')" Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='Always' AND '%(EmbeddedResource.MSBuildSourceProjectFile)'!=''"/>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(EmbeddedResource->'%(FullPath)')" Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='PreserveNewest' AND '%(EmbeddedResource.MSBuildSourceProjectFile)'!=''"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_CompileItemsToCopy Include="@(Compile->'%(FullPath)')" Condition="('%(Compile.CopyToOutputDirectory)'=='Always' or '%(Compile.CopyToOutputDirectory)'=='PreserveNewest') AND '%(Compile.MSBuildSourceProjectFile)'!=''"/>
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_CompileItemsToCopy)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_CompileItemsToCopyWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_CompileItemsToCopyWithTargetPath)" Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_CompileItemsToCopyWithTargetPath)" Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_NoneWithTargetPath->'%(FullPath)')" Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' AND '%(_NoneWithTargetPath.MSBuildSourceProjectFile)'!=''"/>
+      <_TransitiveItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_NoneWithTargetPath->'%(FullPath)')" Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' AND '%(_NoneWithTargetPath.MSBuildSourceProjectFile)'!=''"/>
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+      Name="_GetCopyToOutputDirectoryItemsFromThisProject"
+      DependsOnTargets="AssignTargetPaths;_PopulateCommonStateForGetCopyToOutputDirectoryItems"
+      Returns="@(_ThisProjectItemsToCopyToOutputDirectory)">
+
+    <ItemGroup>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(ContentWithTargetPath->'%(FullPath)')" Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always' AND '%(ContentWithTargetPath.MSBuildSourceProjectFile)'==''"/>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(ContentWithTargetPath->'%(FullPath)')" Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' AND '%(ContentWithTargetPath.MSBuildSourceProjectFile)'==''"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(EmbeddedResource->'%(FullPath)')" Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='Always' AND '%(EmbeddedResource.MSBuildSourceProjectFile)'==''"/>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(EmbeddedResource->'%(FullPath)')" Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='PreserveNewest' AND '%(EmbeddedResource.MSBuildSourceProjectFile)'==''"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_CompileItemsToCopy Include="@(Compile->'%(FullPath)')" Condition="('%(Compile.CopyToOutputDirectory)'=='Always' or '%(Compile.CopyToOutputDirectory)'=='PreserveNewest') AND '%(Compile.MSBuildSourceProjectFile)'==''"/>
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_CompileItemsToCopy)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_CompileItemsToCopyWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_CompileItemsToCopyWithTargetPath)" Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='Always'"/>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_CompileItemsToCopyWithTargetPath)" Condition="'%(_CompileItemsToCopyWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_NoneWithTargetPath->'%(FullPath)')" Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' AND '%(_NoneWithTargetPath.MSBuildSourceProjectFile)'==''"/>
+      <_ThisProjectItemsToCopyToOutputDirectory       KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_NoneWithTargetPath->'%(FullPath)')" Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' AND '%(_NoneWithTargetPath.MSBuildSourceProjectFile)'==''"/>
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+      Name="GetCopyToOutputDirectoryItems"
+      Returns="@(AllItemsFullPathWithTargetPath)"
+      KeepDuplicateOutputs=" '$(MSBuildDisableGetCopyToOutputDirectoryItemsOptimization)' == '' "
+      DependsOnTargets="$(GetCopyToOutputDirectoryItemsDependsOn)">
+
+    <PropertyGroup>
+      <__TaskName>GetCopyToOutputDirectoryItems()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    
+    <!-- Compose the content items as the union between transitive content items and content items from this project. -->
+    <!-- Use CallTarget to avoid breaking targets that hook right before GetCopyToOutputDirectoryItems but expect to run after _GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences and _GetCopyToOutputDirectoryItemsFromThisProject -->
+    <CallTarget Targets="_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences">
+      <Output TaskParameter="TargetOutputs" ItemName="_TransitiveItemsToCopyToOutputDirectory" />
+    </CallTarget>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _TransitiveItemsToCopyToOutputDirectory = %(_TransitiveItemsToCopyToOutputDirectory.Identity)" />
+
+    <CallTarget Targets="_GetCopyToOutputDirectoryItemsFromThisProject">
+      <Output TaskParameter="TargetOutputs" ItemName="_ThisProjectItemsToCopyToOutputDirectory" />
+    </CallTarget>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): _ThisProjectItemsToCopyToOutputDirectory = %(_ThisProjectItemsToCopyToOutputDirectory.Identity)" />
+
+    <ItemGroup Condition="'$(CopyConflictingTransitiveContent)' == 'false'">
+      <_TransitiveItemsToCopyToOutputDirectory Remove="@(_ThisProjectItemsToCopyToOutputDirectory)" MatchOnMetadata="TargetPath" MatchOnMetadataOptions="PathLike" />
+    </ItemGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): [*]_TransitiveItemsToCopyToOutputDirectory = %(_TransitiveItemsToCopyToOutputDirectory.Identity)" Condition="'$(CopyConflictingTransitiveContent)' == 'false'"/>
+
+    <ItemGroup>
+      <_TransitiveItemsToCopyToOutputDirectoryAlways               KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_TransitiveItemsToCopyToOutputDirectory->'%(FullPath)')" Condition="'%(_TransitiveItemsToCopyToOutputDirectory.CopyToOutputDirectory)'=='Always'"/>
+      <_TransitiveItemsToCopyToOutputDirectoryPreserveNewest       KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_TransitiveItemsToCopyToOutputDirectory->'%(FullPath)')" Condition="'%(_TransitiveItemsToCopyToOutputDirectory.CopyToOutputDirectory)'=='PreserveNewest'"/>
+
+      <_ThisProjectItemsToCopyToOutputDirectoryAlways              KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_ThisProjectItemsToCopyToOutputDirectory->'%(FullPath)')" Condition="'%(_ThisProjectItemsToCopyToOutputDirectory.CopyToOutputDirectory)'=='Always'"/>
+      <_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest      KeepDuplicates=" '$(_GCTODIKeepDuplicates)' != 'false' " KeepMetadata="$(_GCTODIKeepMetadata)" Include="@(_ThisProjectItemsToCopyToOutputDirectory->'%(FullPath)')" Condition="'%(_ThisProjectItemsToCopyToOutputDirectory.CopyToOutputDirectory)'=='PreserveNewest'"/>
+
+      <!-- Append the items from this project last so that they will be copied last. -->
+      <_SourceItemsToCopyToOutputDirectoryAlways                   Include="@(_TransitiveItemsToCopyToOutputDirectoryAlways);@(_ThisProjectItemsToCopyToOutputDirectoryAlways)"/>
+      <_SourceItemsToCopyToOutputDirectory                         Include="@(_TransitiveItemsToCopyToOutputDirectoryPreserveNewest);@(_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest)"/>
+
+      <AllItemsFullPathWithTargetPath                              Include="@(_SourceItemsToCopyToOutputDirectoryAlways->'%(FullPath)');@(_SourceItemsToCopyToOutputDirectory->'%(FullPath)')"/>
+
+      <!-- Empty intermediate items to release memory -->
+      <_TransitiveItemsToCopyToOutputDirectoryAlways               Remove="@(_TransitiveItemsToCopyToOutputDirectoryAlways)"/>
+      <_TransitiveItemsToCopyToOutputDirectoryPreserveNewest       Remove="@(_TransitiveItemsToCopyToOutputDirectoryPreserveNewest)"/>
+      <_TransitiveItemsToCopyToOutputDirectory                     Remove="@(_TransitiveItemsToCopyToOutputDirectory)"/>
+
+      <_ThisProjectItemsToCopyToOutputDirectoryAlways              Remove="@(_ThisProjectItemsToCopyToOutputDirectoryAlways)"/>
+      <_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest      Remove="@(_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest)"/>
+      <_ThisProjectItemsToCopyToOutputDirectory                    Remove="@(_ThisProjectItemsToCopyToOutputDirectory)"/>
+    </ItemGroup>
+    
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ----" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+
+
+
+
+
+  
+  <!--<Target Name="Content_Before_AssignTargetPath" BeforeTargets="AssignTargetPaths">
+    <Message Importance="High" Text="== [$(ProjectName)] Content_Before_AssignTargetPath:" />
+    <Message Importance="High" Text="== [$(ProjectName)] Content = %(Content.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+    <Message Importance="High" Text="==============================================================================" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+
+  <Target Name="Content_After_AssignTargetPath" AfterTargets="AssignTargetPaths">
+    <Message Importance="High" Text="== [$(ProjectName)] Content_After_AssignTargetPath:" />
+    <Message Importance="High" Text="== [$(ProjectName)] Content = %(Content.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
+    <Message Importance="High" Text="==============================================================================" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
+  <Target Name="AllItems_After_GetCopyToOutputDirectoryItems" AfterTargets="GetCopyToOutputDirectoryItems">
+    <Message Importance="High" Text="== [$(ProjectName)] === AllItems_After_GetCopyToOutputDirectoryItems:" />
+    <Message Importance="High" Text="== [$(ProjectName)] AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="==============================================================================" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+  
+</Project>

@@ -141,8 +141,8 @@
     <None Include="MSBuild_Component_CLR.targets" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_C\MSBuild_Project_C.vcxproj">
-      <Project>{b93d9e5d-a09f-4c7c-8177-fb0194ffcb3f}</Project>
+    <ProjectReference Include="..\MSBuild_Project_B\MSBuild_Project_B.vcxproj">
+      <Project>{385d99c3-1bae-4452-a843-722c6b878740}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

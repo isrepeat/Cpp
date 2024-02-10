@@ -58,6 +58,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.UWP", "UtilityHelpersLib\Helpers\Helpers.UWP\Helpers.UWP.vcxproj", "{1F26DD5B-02C2-4192-AC91-06BED3D214F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSBuild", "MSBuild", "{EB980CA6-4778-459E-A1A6-7C606F077A53}"
+	ProjectSection(SolutionItems) = preProject
+		MSBuild\MSBuild_Shared.targets = MSBuild\MSBuild_Shared.targets
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSBuild", "MSBuild\MSBuild\MSBuild.vcxproj", "{8AF6B6DD-1AB9-49FA-97CA-C484BBF386CA}"
 EndProject

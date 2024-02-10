@@ -154,17 +154,17 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_A\MSBuild_Project_A.vcxproj">
-      <Project>{c18d53a4-a516-44af-8142-e7e001b96006}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="MSBuild_Project_B.targets" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Bar.txt">
       <DeploymentContent>true</DeploymentContent>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MSBuild_Project_A\MSBuild_Project_A.vcxproj">
+      <Project>{c18d53a4-a516-44af-8142-e7e001b96006}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

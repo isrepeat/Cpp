@@ -110,6 +110,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="MSBuild_Project_WPF.targets" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -122,8 +123,10 @@
     <ProjectReference Include="..\MSBuild_Component_CLR\MSBuild_Component_CLR.vcxproj">
       <Project>{37baaa35-47b6-4691-b734-d46f273e9dac}</Project>
       <Name>MSBuild_Component_CLR</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- ================== Custom targets =================== -->
+  <Import Project="$(ProjectDir)\MSBuild_Project_WPF.targets" />
+  <!-- ===================================================== -->
 </Project>
