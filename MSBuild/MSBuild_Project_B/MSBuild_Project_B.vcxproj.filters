@@ -7,11 +7,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MSBuild_Project_B.targets" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MSBuild_Project_B.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Bar.txt" />
   </ItemGroup>
 </Project>

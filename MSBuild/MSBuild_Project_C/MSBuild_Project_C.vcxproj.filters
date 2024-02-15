@@ -12,6 +12,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MSBuild_Project_A.targets" />
+    <None Include="MSBuild_Project_C.targets" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{C18D53A4-A516-44AF-8142-E7E001B96006}</ProjectGuid>
-    <RootNamespace>ComAPI</RootNamespace>
+    <RootNamespace>MSBuild_Project_A</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -151,17 +151,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="MSBuild_Project_A.targets" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <None Include="MSBuild_Project_A.targets" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-
-
-  <PropertyGroup>
-    <PublicIncludeDirectories>Hello_World;$(PublicIncludeDirectories)</PublicIncludeDirectories>
-  </PropertyGroup>
+  <!-- ================= Custom targets ================== -->
+  <Import Project="$(ProjectDir)\MSBuild_Project_A.targets" />
+  <!-- =================================================== -->
 </Project>

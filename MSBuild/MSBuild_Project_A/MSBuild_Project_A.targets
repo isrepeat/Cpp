@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Define macros (used only in this project) -->
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <PreprocessorDefinitions>AAAA__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  
+  <!-- ================= Shared targets ================== -->
+  <Import Project="$(ProjectDir)..\MSBuild_Shared.targets" />
+  <!-- =================================================== -->
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\!VS_TMP\Intermediate\$(PlatformToolset)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="D:\Hello.txt" CopyToOutputDirectory="PreserveNewest"/>
+    <NativeDlls Include="D:\project_A.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(NativeDlls)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <!--<PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+  </PropertyGroup>
+
+  <Target Name="AllItems_Before_GetCopyToOutputDirectoryItems" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>AllItems_Before_GetCopyToOutputDirectoryItems()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ____" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
 </Project>
