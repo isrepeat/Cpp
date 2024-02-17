@@ -77,8 +77,8 @@ void AMQPMessager::InitMessageHandler() {
 	CreateAMQPHandler();
 }
 
-AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string password, std::string virtualHost, std::string machineID, int queueFlags) {
-	LOG_FUNCTION_SCOPE("Connect(login, password, virtualHost, machineID = {})", machineID);
+AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string password, std::string virtualHost, std::string machineId, int queueFlags) {
+	LOG_FUNCTION_SCOPE("Connect(login, password, virtualHost, machineId = {})", machineId);
 
 	if (!amqpHandler) {
 		LOG_WARNING_D("You need init AMQPHandler before create channel and connection");
@@ -90,16 +90,17 @@ AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string passwor
 		return Error::ChannelAlreadyConnected;
 	}
 
+	queueName = machineId;
 	connection = std::make_unique<AMQP::Connection>(amqpHandler.get(), AMQP::Login{ login, password }, virtualHost);
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
 	auto args = AMQP::Table{};
-	args["x-expires"] = 10'000; // 10s
-	channel->declareQueue(machineID, queueFlags, args).onError([](const char* err) {
+	args["x-expires"] = 10'000; // [ms]
+	channel->declareQueue(queueName, queueFlags, args).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});
 
-	channel->consume(machineID, tag, AMQP::noack).onReceived([this](const AMQP::Message& message, uint64_t deliveryTag, bool redelivered) {
+	channel->consume(queueName, tag, AMQP::noack).onReceived([this](const AMQP::Message& message, uint64_t deliveryTag, bool redelivered) {
 		LOG_FUNCTION_ENTER("AMQPMessager->onReceived(message, ...)");
 
 		auto messageData = std::string(message.body(), static_cast<int>(message.bodySize()));
@@ -133,7 +134,7 @@ AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string passwor
 }
 
 void AMQPMessager::Send(std::string msg) {
-	channel->publish("", "rk-A", msg.c_str());
+	channel->publish("", queueName, msg.c_str());
 }
 
 void AMQPMessager::RecreateChannelConnection() {

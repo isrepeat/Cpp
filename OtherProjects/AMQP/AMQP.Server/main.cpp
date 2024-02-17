@@ -8,9 +8,15 @@ int main() {
 	auto amqpMessager = AMQPMessager{ "teamrd.net", 5243 };
 	
 	amqpMessager.InitMessageHandler();
+	//auto error = amqpMessager.Connect(
+	//	"client_rdm",
+	//	"8c9f6788c54a410a98c1d09c6e821c37",
+	//	"rdmvhost",
+	//	"666001");	
+	
 	auto error = amqpMessager.Connect(
-		"client_rdm",
-		"8c9f6788c54a410a98c1d09c6e821c37",
+		"server_rdm",
+		"b740a43fdce9440ebbedad5296150842",
 		"rdmvhost",
 		"666001");
 
@@ -20,8 +26,8 @@ int main() {
 
 	int msgIdx = 0;
 	while (true) {
-		//amqpMessager.Send(std::format("Hello from server [{}]", msgIdx++));
-		std::this_thread::sleep_for(std::chrono::seconds(2));
+		amqpMessager.Send(std::format("Hello from server [{}]", msgIdx++));
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 	return 0;
 }

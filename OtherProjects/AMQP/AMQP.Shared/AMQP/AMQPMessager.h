@@ -21,7 +21,7 @@ public:
 	void WaitingFinishThreads() override;
 
 	void InitMessageHandler();
-	Error Connect(std::string login, std::string password, std::string virtualHost, std::string machineID, int queueFlags = 0);
+	Error Connect(std::string login, std::string password, std::string virtualHost, std::string machineId, int queueFlags = 0);
 
 	void Send(std::string msg);
 
@@ -54,8 +54,8 @@ private:
 	const std::function<void()> threadExceptionCallback;
 
 	std::mutex mx;
+	std::string queueName;
 	std::unique_ptr<AMQPHandler> amqpHandler;
-
 	std::unique_ptr<AMQP::Connection> connection;
 	std::unique_ptr<AMQP::Channel> channel;
 
