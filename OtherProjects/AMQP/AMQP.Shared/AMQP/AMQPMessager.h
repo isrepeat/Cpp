@@ -22,6 +22,8 @@ public:
 
 	void InitMessageHandler();
 	Error Connect(std::string login, std::string password, std::string virtualHost, std::string machineId, int queueFlags = 0);
+	Error ConnectAsConsumer(std::string login, std::string password, std::string virtualHost, std::string machineId);
+	Error ConnectAsPublisher(std::string login, std::string password, std::string virtualHost, std::string machineId);
 
 	void Send(std::string msg);
 

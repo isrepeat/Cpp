@@ -14,7 +14,8 @@ int main() {
 	//	"rdmvhost",
 	//	"666001");	
 	
-	auto error = amqpMessager.Connect(
+	//auto error = amqpMessager.Connect(
+	auto error = amqpMessager.ConnectAsPublisher(
 		"server_rdm",
 		"b740a43fdce9440ebbedad5296150842",
 		"rdmvhost",

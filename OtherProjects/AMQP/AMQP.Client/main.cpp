@@ -8,12 +8,18 @@ int main() {
 	auto amqpMessager = AMQPMessager{ "teamrd.net", 5243 };
 	
 	amqpMessager.InitMessageHandler();
-	auto error = amqpMessager.Connect(
+	//auto error = amqpMessager.Connect(
+	//	"client_rdm",
+	//	"8c9f6788c54a410a98c1d09c6e821c37",
+	//	"rdmvhost",
+	//	"666001",
+	//	AMQP::passive);
+
+	auto error = amqpMessager.ConnectAsConsumer(
 		"client_rdm",
 		"8c9f6788c54a410a98c1d09c6e821c37",
 		"rdmvhost",
-		"666001",
-		AMQP::passive);
+		"666001");
 
 	if (error != AMQPMessager::Error::NoError) {
 		LOG_ERROR_D("amqpMessager Connect error = {}", MagicEnum::ToString(error));

@@ -133,6 +133,128 @@ AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string passwor
 	return Error::NoError;
 }
 
+AMQPMessager::Error AMQPMessager::ConnectAsConsumer(std::string login, std::string password, std::string virtualHost, std::string machineId) {
+	LOG_FUNCTION_SCOPE("Connect(login, password, virtualHost, machineId = {})", machineId);
+
+	if (!amqpHandler) {
+		LOG_WARNING_D("You need init AMQPHandler before create channel and connection");
+		return Error::AMQPHanlerNotInited;
+	}
+
+	if (channel) {
+		LOG_WARNING_D("AMQP channel already connected");
+		return Error::ChannelAlreadyConnected;
+	}
+
+	queueName = machineId;
+	connection = std::make_unique<AMQP::Connection>(amqpHandler.get(), AMQP::Login{ login, password }, virtualHost);
+	channel = std::make_unique<AMQP::Channel>(connection.get());
+
+	auto args = AMQP::Table{};
+	args["x-expires"] = 10'000; // [ms]
+	channel->declareQueue(queueName, AMQP::passive, args).onError([](const char* err) {
+		LOG_DEBUG_D("channel queue error = {}", err);
+		});
+
+	channel->consume(queueName, tag, AMQP::noack)
+		.onReceived(
+			[this](const AMQP::Message& message, uint64_t deliveryTag, bool redelivered) {
+				LOG_FUNCTION_ENTER("AMQPMessager->onReceived(message, ...)");
+
+				auto messageData = std::string(message.body(), static_cast<int>(message.bodySize()));
+				LOG_DEBUG_D("AMQPMessager message = {}", messageData);
+
+				//AMQP::BaseMessage baseMessage;
+				//if (!JS::ParseTo(messageData.constData(), messageData.size(), baseMessage))
+				//	return;
+
+				//auto handler = messageHandlers[static_cast<MessageType>(baseMessage.type)];
+				//handler(messageData);
+		})
+		.onSuccess(
+			[this](const std::string& consumertag) {
+				LOG_FUNCTION_ENTER("AMQPMessager->onSuccess(consumertag = {})", consumertag);
+			})
+		.onError(
+			[this](const char* errorMessage) {
+				LOG_FUNCTION_ENTER("AMQPMessager->onError(errorMessage = {})", errorMessage);
+			});
+
+	LOG_DEBUG_D("RabbitMQ inited");
+
+	workerThread = std::make_unique<H::ThreadEx>(threadExceptionCallback, [this] {
+		LOG_THREAD(L"AMQPMessager worker thread");
+		amqpHandler->StartLoop();
+		});
+
+	pingerThread = std::make_unique<H::ThreadEx>(threadExceptionCallback, [this] {
+		LOG_THREAD(L"AMQPMessager pinger thread");
+		while (!amqpHandler->IsQuit()) {
+			auto lock = std::unique_lock{ pingerMutex };
+			pingerCv.wait_for(lock, std::chrono::seconds(30));
+			connection->heartbeat();
+		}
+		});
+
+	return Error::NoError;
+}
+
+AMQPMessager::Error AMQPMessager::ConnectAsPublisher(std::string login, std::string password, std::string virtualHost, std::string machineId) {
+	LOG_FUNCTION_SCOPE("Connect(login, password, virtualHost, machineId = {})", machineId);
+
+	if (!amqpHandler) {
+		LOG_WARNING_D("You need init AMQPHandler before create channel and connection");
+		return Error::AMQPHanlerNotInited;
+	}
+
+	if (channel) {
+		LOG_WARNING_D("AMQP channel already connected");
+		return Error::ChannelAlreadyConnected;
+	}
+
+	queueName = machineId;
+	connection = std::make_unique<AMQP::Connection>(amqpHandler.get(), AMQP::Login{ login, password }, virtualHost);
+	channel = std::make_unique<AMQP::Channel>(connection.get());
+
+	auto args = AMQP::Table{};
+	args["x-expires"] = 10'000; // [ms]
+	channel->declareQueue(queueName, 0, args).onError([](const char* err) {
+		LOG_DEBUG_D("channel queue error = {}", err);
+		});
+
+	//channel->consume(queueName, tag, AMQP::noack).onReceived([this](const AMQP::Message& message, uint64_t deliveryTag, bool redelivered) {
+	//	LOG_FUNCTION_ENTER("AMQPMessager->onReceived(message, ...)");
+
+	//	auto messageData = std::string(message.body(), static_cast<int>(message.bodySize()));
+	//	LOG_DEBUG_D("AMQPMessager message = {}", messageData);
+
+	//	//AMQP::BaseMessage baseMessage;
+	//	//if (!JS::ParseTo(messageData.constData(), messageData.size(), baseMessage))
+	//	//	return;
+
+	//	//auto handler = messageHandlers[static_cast<MessageType>(baseMessage.type)];
+	//	//handler(messageData);
+	//	});
+
+	LOG_DEBUG_D("RabbitMQ inited");
+
+	workerThread = std::make_unique<H::ThreadEx>(threadExceptionCallback, [this] {
+		LOG_THREAD(L"AMQPMessager worker thread");
+		amqpHandler->StartLoop();
+		});
+
+	pingerThread = std::make_unique<H::ThreadEx>(threadExceptionCallback, [this] {
+		LOG_THREAD(L"AMQPMessager pinger thread");
+		while (!amqpHandler->IsQuit()) {
+			auto lock = std::unique_lock{ pingerMutex };
+			pingerCv.wait_for(lock, std::chrono::seconds(30));
+			connection->heartbeat();
+		}
+		});
+
+	return Error::NoError;
+}
+
 void AMQPMessager::Send(std::string msg) {
 	channel->publish("", queueName, msg.c_str());
 }
