@@ -4,6 +4,8 @@
 #include <Helpers/Action.h>
 #include <Helpers/Thread.h>
 
+#define QUEUE_EXPIRATION 70'000
+
 
 //namespace AMQP {
 //	struct BaseMessage {
@@ -95,7 +97,7 @@ AMQPMessager::Error AMQPMessager::Connect(std::string login, std::string passwor
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
 	auto args = AMQP::Table{};
-	args["x-expires"] = 10'000; // [ms]
+	args["x-expires"] = QUEUE_EXPIRATION; // [ms]
 	channel->declareQueue(queueName, queueFlags, args).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});
@@ -151,7 +153,7 @@ AMQPMessager::Error AMQPMessager::ConnectAsConsumer(std::string login, std::stri
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
 	auto args = AMQP::Table{};
-	args["x-expires"] = 10'000; // [ms]
+	args["x-expires"] = QUEUE_EXPIRATION; // [ms]
 	channel->declareQueue(queueName, AMQP::passive, args).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});
@@ -217,7 +219,7 @@ AMQPMessager::Error AMQPMessager::ConnectAsPublisher(std::string login, std::str
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
 	auto args = AMQP::Table{};
-	args["x-expires"] = 10'000; // [ms]
+	args["x-expires"] = QUEUE_EXPIRATION; // [ms]
 	channel->declareQueue(queueName, 0, args).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});

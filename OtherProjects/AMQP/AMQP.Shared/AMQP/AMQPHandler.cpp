@@ -8,7 +8,6 @@
 #include <thread>
 #include <vector>
 
-
 AMQPHandler::AMQPHandler(const std::string& host, uint16_t port)
 	: inputBuffer(AMQPHandler::BUFFER_SIZE)
 	, outBuffer(AMQPHandler::BUFFER_SIZE)

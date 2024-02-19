@@ -4,7 +4,7 @@
 #include <format>
 
 int main() {
-	lg::DefaultLoggers::Init("D:\\AMQP_Client.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
+	lg::DefaultLoggers::Init(H::ExePath() / "AMQPLogs\\AMQP_Client.log", lg::InitFlags::DefaultFlags | lg::InitFlags::EnableLogToStdout);
 	auto amqpMessager = AMQPMessager{ "teamrd.net", 5243 };
 	
 	amqpMessager.InitMessageHandler();
