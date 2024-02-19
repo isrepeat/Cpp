@@ -13,7 +13,14 @@
   <ItemGroup>
     <Content Include="D:\Hello.txt" CopyToOutputDirectory="PreserveNewest"/>
     <NativeDlls Include="D:\project_A.txt" />
+    <NativeDlls Include="D:\TEST_MSBuild\**\*.txt" />
   </ItemGroup>
+
+  <!--<ItemGroup>
+    <MyItems Include="(A) Item1.txt" />
+    <MyItems Include="(A) Item2.txt" />
+    <MyItems Include="(A) Item3.txt" />
+  </ItemGroup>-->
 
   <ItemGroup>
     <ContentWithTargetPath Include="@(NativeDlls)">
@@ -22,11 +29,52 @@
     </ContentWithTargetPath>
   </ItemGroup>
 
-  <!--<PropertyGroup>
+  <PropertyGroup>
     <NewLine>%0D%0A</NewLine>
   </PropertyGroup>
 
-  <Target Name="AllItems_Before_GetCopyToOutputDirectoryItems" BeforeTargets="GetCopyToOutputDirectoryItems">
+  <!--<PropertyGroup>
+    <_RecursiveTargetForContentCopying>MyCopyTarget;$(_RecursiveTargetForContentCopying)</_RecursiveTargetForContentCopying>
+  </PropertyGroup>-->
+
+  <!--<Target Name="CustomTarget_111" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>CustomTarget_111()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): Custom Target 111" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
+  <!--<Target Name="CustomTarget_222">
+    <PropertyGroup>
+      <__TaskName>CustomTarget_222()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): Custom Target 222" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
+  <!--<Target Name="MyCopyTarget"  AfterTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>MyCopyTarget()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): My copy target" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): OutDir = $(OutDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): NativeDlls = %(NativeDlls.RecursiveDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): ContentWithTargetPath = %(ContentWithTargetPath.TargetPath)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
+  <!--<Target Name="AllItems_Before_GetCopyToOutputDirectoryItems" BeforeTargets="GetCopyToOutputDirectoryItems">
     <PropertyGroup>
       <__TaskName>AllItems_Before_GetCopyToOutputDirectoryItems()</__TaskName>
     </PropertyGroup>

@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MSBuild_Component_CLR.targets" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

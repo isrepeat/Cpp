@@ -156,11 +156,6 @@
   <ItemGroup>
     <None Include="MSBuild_Project_C.targets" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_B\MSBuild_Project_B.vcxproj">
-      <Project>{385d99c3-1bae-4452-a843-722c6b878740}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

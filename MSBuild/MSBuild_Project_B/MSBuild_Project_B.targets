@@ -4,20 +4,6 @@
   <Import Project="$(ProjectDir)..\MSBuild_Shared.targets" />
   <!-- =================================================== -->
   
-  <UsingTask TaskName="Sleep" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-    <ParameterGroup>
-      <!-- Delay in milliseconds -->
-      <Delay ParameterType="System.Int32" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-System.Threading.Thread.Sleep(this.Delay);
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
@@ -34,14 +20,113 @@ System.Threading.Thread.Sleep(this.Delay);
       <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
+
+
+ 
+  <!--<PropertyGroup>
+    <_ProjectDependenciesDir>$(OutDir)\ProjectDependencies</_ProjectDependenciesDir>
+    <_ThisProjectWasBuiltMarkFile>$(_ProjectDependenciesDir)\_ThisProjectWasBuiltFileMarkFile.txt</_ThisProjectWasBuiltMarkFile>
+  </PropertyGroup>
+
+  
+  <ItemGroup Condition="Exists('$(_ThisProjectWasBuiltMarkFile)')">
+    <AllDependenciesForThisProject Include="$(OutDir)\ProjectDependencies\**\*.*" Exclude="$(_ThisProjectWasBuiltMarkFile)"/>
+    
+    <ContentWithTargetPath Include="@(AllDependenciesForThisProject)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+
+  <Target 
+    Name="Task_After_GetCopyToOutputDirectoryItems" 
+    Condition="!Exists('$(_ThisProjectWasBuiltMarkFile)')"
+    AfterTargets="GetCopyToOutputDirectoryItems">
+    
+    <PropertyGroup>
+      <__TaskName>Task_After_GetCopyToOutputDirectoryItems()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): Copy all project dependencies to '$(_ProjectDependenciesDir)'" />
+       
+    <Copy 
+        SourceFiles="@(AllItemsFullPathWithTargetPath)" 
+        DestinationFiles="$(_ProjectDependenciesDir)\%(AllItemsFullPathWithTargetPath.TargetPath)" 
+        SkipUnchangedFiles="true" />
+
+    <WriteLinesToFile File="$(_ThisProjectWasBuiltMarkFile)" Lines="" Overwrite="true" />
+
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
+
+
+
+  <Target Name="MyCopyTarget"  AfterTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>MyCopyTarget()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): My copy target" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): OutDir = $(OutDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): NativeDlls = %(NativeDlls.RecursiveDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): ContentWithTargetPath = %(ContentWithTargetPath.TargetPath)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.TargetPath)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+
+
+
+
+  <!--<PropertyGroup>
+    <_RecursiveTargetForContentCopying>SomeTarget;$(_RecursiveTargetForContentCopying)</_RecursiveTargetForContentCopying>
+  </PropertyGroup>
+  
+  <Target Name="SomeTarget">
+    <PropertyGroup>
+      <__TaskName>SomeTarget()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): SomeTarget" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>-->
   
   
-  <!--<Target Name="PreBuildTask_PrintProperties" BeforeTargets="InitializeBuildStatus">
+  <!--<Target Name="Task_Before_GetCopyToOutputDirectoryItems" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>Task_Before_GetCopyToOutputDirectoryItems()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild ..." />
     <MSBuild
       Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_A\MSBuild_Project_A.vcxproj"
-      Targets="GetTargetPath" 
-      Properties="Platform=Win32; Configuration=Debug">
+      Targets="GetCopyToOutputDirectoryItems"
+      Properties="Platform=x64; Configuration=Debug">
     </MSBuild>
+    
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild ..." />
+    <MSBuild
+          Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_A\MSBuild_Project_A.vcxproj"
+          Targets="CustomTarget_111;CustomTarget_222"
+          Properties="Platform=x64; Configuration=Debug">
+    </MSBuild>
+
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild ..." />
+    <MSBuild
+          Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_A\MSBuild_Project_A.vcxproj"
+          Targets="MyCopyTarget"
+          Properties="Platform=x64; Configuration=Debug">
+    </MSBuild>
+    
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ____" />
+    <Message Importance="High" Text="$(NewLine)" />
   </Target>-->
 
 </Project>
