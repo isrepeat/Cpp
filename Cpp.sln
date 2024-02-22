@@ -134,6 +134,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSBuild_Project_WPF", "MSBu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSBuild_Component_CLR", "MSBuild\MSBuild_Component_CLR\MSBuild_Component_CLR.vcxproj", "{37BAAA35-47B6-4691-B734-D46F273E9DAC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AMQP", "AMQP", "{9D3C4241-3063-4C8E-9843-D80443E9319A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMQP.Shared", "OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems", "{8E84E541-50E8-4485-AEC4-DE0285F2AA12}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMQP.Client", "OtherProjects\AMQP\AMQP.Client\AMQP.Client.vcxproj", "{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AMQP.Server", "OtherProjects\AMQP\AMQP.Server\AMQP.Server.vcxproj", "{D8E029E4-6932-4AA5-9C72-A225D461BD5B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
@@ -153,13 +161,18 @@ Global
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{4dc532ad-a19b-4ec5-9923-990df8f4a9ab}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{8e84e541-50e8-4485-aec4-de0285f2aa12}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{9119a10a-d27c-4eaf-8ee9-1a3097d8c6f6}*SharedItemsImports = 9
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{9ae2e2f4-5b16-4d19-9d1f-799a9e18ca69}*SharedItemsImports = 9
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{d2f14f8e-303b-4ae6-a98b-b789cd19981d}*SharedItemsImports = 4
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -642,6 +655,34 @@ Global
 		{37BAAA35-47B6-4691-B734-D46F273E9DAC}.Release|x64.Build.0 = Release|x64
 		{37BAAA35-47B6-4691-B734-D46F273E9DAC}.Release|x86.ActiveCfg = Release|Win32
 		{37BAAA35-47B6-4691-B734-D46F273E9DAC}.Release|x86.Build.0 = Release|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|ARM.ActiveCfg = Debug|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|x64.ActiveCfg = Debug|x64
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|x64.Build.0 = Debug|x64
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|x86.ActiveCfg = Debug|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Debug|x86.Build.0 = Debug|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|Any CPU.ActiveCfg = Release|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|ARM.ActiveCfg = Release|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|ARM64.ActiveCfg = Release|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|x64.ActiveCfg = Release|x64
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|x64.Build.0 = Release|x64
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|x86.ActiveCfg = Release|Win32
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C}.Release|x86.Build.0 = Release|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|ARM.ActiveCfg = Debug|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|x64.ActiveCfg = Debug|x64
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|x64.Build.0 = Debug|x64
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|x86.ActiveCfg = Debug|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Debug|x86.Build.0 = Debug|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|ARM.ActiveCfg = Release|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|ARM64.ActiveCfg = Release|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|x64.ActiveCfg = Release|x64
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|x64.Build.0 = Release|x64
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|x86.ActiveCfg = Release|Win32
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -697,6 +738,10 @@ Global
 		{B93D9E5D-A09F-4C7C-8177-FB0194FFCB3F} = {EB980CA6-4778-459E-A1A6-7C606F077A53}
 		{D237CB38-7F15-4ACE-A524-21985C8448BB} = {EB980CA6-4778-459E-A1A6-7C606F077A53}
 		{37BAAA35-47B6-4691-B734-D46F273E9DAC} = {EB980CA6-4778-459E-A1A6-7C606F077A53}
+		{9D3C4241-3063-4C8E-9843-D80443E9319A} = {332489AD-CA90-4D73-8AB6-7324DE952015}
+		{8E84E541-50E8-4485-AEC4-DE0285F2AA12} = {9D3C4241-3063-4C8E-9843-D80443E9319A}
+		{BBB946C5-E5A5-4D22-A3D2-660A49FE201C} = {9D3C4241-3063-4C8E-9843-D80443E9319A}
+		{D8E029E4-6932-4AA5-9C72-A225D461BD5B} = {9D3C4241-3063-4C8E-9843-D80443E9319A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}

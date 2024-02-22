@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Define macros (used only in this project) -->
-  <!--<ItemDefinitionGroup>
-    <ClCompile>
-      <PreprocessorDefinitions>BBBB__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>-->
-
+  <!-- ================= Shared targets ================== -->
+  <Import Project="$(ProjectDir)..\MSBuild_Shared.targets" />
+  <!-- =================================================== -->
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(ProjectDir)\!VS_TMP\Build\$(PlatformToolset)\$(Configuration)\$(Platform)\</OutDir>
@@ -24,20 +21,51 @@
     </ContentWithTargetPath>
   </ItemGroup>
 
-  <!--<Target Name="Content_InitializeBuildStatus" BeforeTargets="InitializeBuildStatus">
-    <Message Importance="High" Text="==== [MSBuild_Project_C] ContentWithTargetPath = %(ContentWithTargetPath.Identity)" />
-  </Target>-->
+  <Target Name="Task_Before_GetCopyToOutputDirectoryItems" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>Task_Before_GetCopyToOutputDirectoryItems()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <!--<Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild A ..." />
+    <MSBuild
+      Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_A\MSBuild_Project_A.vcxproj"
+      Targets="MyCopyTarget"
+      Properties="Platform=x64; Configuration=Debug">
+    </MSBuild>-->
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild B ..." />
+    <MSBuild
+      Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_B\MSBuild_Project_B.vcxproj"
+      Targets="GetCopyToOutputDirectoryItems"
+      Properties="Platform=x64; Configuration=Debug;">
+    </MSBuild>
+
+    <!--<Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): MSBuild ..." />
+    <MSBuild
+          Projects="d:\WORK\C++\CppPrivate\MSBuild\MSBuild_Project_B\MSBuild_Project_B.vcxproj"
+          Targets="CustomTarget_111;CustomTarget_222"
+          Properties="Platform=x64; Configuration=Debug">
+    </MSBuild>-->
+
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ____" />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
 
 
-  <!--<Target Name="GetCopyToOutputDirectoryItems" Returns="@(CopyToOutputDirectoryItemsWithTargetPath2)">
-    <ItemGroup>
-      <CopyToOutputDirectoryItems Include="D:\Hello.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </CopyToOutputDirectoryItems>
-    </ItemGroup>
-    <AssignTargetPath Files="@(CopyToOutputDirectoryItems)" RootFolder="$(TargetDir)">
-      <Output TaskParameter="AssignedFiles" ItemName="CopyToOutputDirectoryItemsWithTargetPath2" />
-    </AssignTargetPath>
-  </Target>-->
 
+  <Target Name="MyCopyTarget"  AfterTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <__TaskName>MyCopyTarget()</__TaskName>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ++++" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): My copy target" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): OutDir = $(OutDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): NativeDlls = %(NativeDlls.RecursiveDir)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): ContentWithTargetPath = %(ContentWithTargetPath.TargetPath)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.Identity)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName): AllItemsFullPathWithTargetPath = %(AllItemsFullPathWithTargetPath.TargetPath)" />
+    <Message Importance="High" Text="== [$(ProjectName)] $(__TaskName)  ...." />
+    <Message Importance="High" Text="$(NewLine)" />
+  </Target>
+  
 </Project>
