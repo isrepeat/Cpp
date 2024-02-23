@@ -4,7 +4,7 @@
 #include <cassert>
 #include <string>
 #include <type_traits>
-#include <Helpers/FunctionTraits.h>
+#include <Helpers/FunctionTraits.hpp>
 
 
 template <typename T>
