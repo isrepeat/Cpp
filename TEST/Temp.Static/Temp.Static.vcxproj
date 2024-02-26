@@ -19,10 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyClass.h" />
+    <ClInclude Include="MyClass_Static.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MyClass.cpp" />
+    <ClCompile Include="MyClass_Static.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Static\Spdlog.Static.vcxproj">
+      <Project>{4ab35171-9952-4a89-9589-8a63e8be47e9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers.Raw\Helpers.Raw.vcxproj">
+      <Project>{298ab331-24aa-4f41-916e-2206023f8085}</Project>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -63,6 +73,7 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\..\UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />

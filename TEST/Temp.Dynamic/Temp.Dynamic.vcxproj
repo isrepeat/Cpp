@@ -19,15 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MyClass.cpp" />
+    <ClCompile Include="MyClass_Dynamic.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyClass.h" />
+    <ClInclude Include="MyClass_Dynamic.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Temp.Static\Temp.Static.vcxproj">
       <Project>{c99c2242-d38a-4e7a-925e-bdb32cf888a4}</Project>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -69,6 +69,8 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\..\UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems" Label="Shared" />
+    <Import Project="..\..\UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
