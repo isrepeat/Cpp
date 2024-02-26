@@ -45,8 +45,8 @@
       <!--<BuildFiles Include="main_27_*.cpp" />-->
       <!--<BuildFiles Include="main_45_*.cpp" />-->
       <!--<BuildFiles Include="main_56_*.cpp" />-->
-      <BuildFiles Include="main_40_filesystem.cpp" />
-      <!--<BuildFiles Include="main_57_*.cpp" />-->
+      <!--<BuildFiles Include="main_40_filesystem.cpp" />-->
+      <BuildFiles Include="main_57_*.cpp" />
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
