@@ -1,8 +1,7 @@
 #include "DxDevice.h"
-#include <dxgi1_3.h>
-#include <combaseapi.h>
 #include <Helpers/System.h>
-#include <Helpers/Macros.h>
+#include <combaseapi.h>
+#include <dxgi1_3.h>
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -102,6 +101,10 @@ void DxDevice::CreateDeviceDependentResources() {
     Microsoft::WRL::ComPtr<ID2D1DeviceContext> d2dCtx;
 
     flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+#if defined(_DEBUG)
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
     D3D_FEATURE_LEVEL featureLevels[] = {
         D3D_FEATURE_LEVEL_11_1,

@@ -7,28 +7,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mainD3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DxDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DxDeviceCtx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mainD2D.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Direct2DRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Drawer2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mainOverlay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mainDrawToDesktop.cpp">
+    <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,13 +27,7 @@
     <ClInclude Include="DxDeviceCtx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Direct2DRenderer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Drawer2D.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Size.h">
+    <ClInclude Include="Texture.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,9 +1,6 @@
-#include "Drawer2D.h"
-//#include <Windows.h>
+#include "Texture.h"
 #include <cassert>
 
-
-Drawer2D drawer;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -26,7 +23,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         RECT rc;
         ::GetClientRect(hwnd, &rc);
-        drawer.Resize(Size(rc.right - rc.left, rc.bottom - rc.top));
+        //drawer.Resize(Size(rc.right - rc.left, rc.bottom - rc.top));
         break;
     }
 
@@ -78,41 +75,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         }
     }
 
+    auto res = Texture::RenderTextToBytesArray(L"Hello", {400, 400});
 
+    //drawer.CreateSwapChain(hwnd);
 
-    drawer.CreateSwapChain(hwnd);
-
-    //DxDevice dxDev;
-
-
-    //HWND hWndDesktop = GetDesktopWindow();
-    //HDC hdcDesktop = GetDC(hWndDesktop);
-
-    //// Get the dimensions of the client drawing area.
-    //RECT rc;
-    //GetClientRect(hWndDesktop, &rc);
-
-    //// Create a DC render target.
-    //D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-    //    D2D1_RENDER_TARGET_TYPE_DEFAULT,
-    //    D2D1::PixelFormat(
-    //        DXGI_FORMAT_B8G8R8A8_UNORM,
-    //        D2D1_ALPHA_MODE_IGNORE),
-    //    0,
-    //    0,
-    //    D2D1_RENDER_TARGET_USAGE_NONE,
-    //    D2D1_FEATURE_LEVEL_DEFAULT
-    //);
-
-    //Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> renderTargetDC;
-    //hr = dxDev.GetD2DFactory()->CreateDCRenderTarget(&props, renderTargetDC.GetAddressOf()); 
-
-    //// Bind the DC to the DC render target.
-    //hr = renderTargetDC->BindDC(hdcDesktop, &rc);
-    
-
-
-    // Main Loop
     bool isRunning = true;
     while (isRunning)
     {
@@ -125,8 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
             DispatchMessageW(&msg);
         }
 
-
-        drawer.Render();
+        //drawer.Render();
     }
 
     return 0;
