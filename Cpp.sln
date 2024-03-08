@@ -39,7 +39,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JsonParser.Static", "Utilit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MagicEnum.Shared", "UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems", "{9119A10A-D27C-4EAF-8EE9-1A3097D8C6F6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Static", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Static\Spdlog.Static.vcxproj", "{4AB35171-9952-4A89-9589-8A63E8BE47E9}"
 EndProject
@@ -203,6 +203,7 @@ Global
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|ARM64.ActiveCfg = Debug|Win32
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x64.ActiveCfg = Debug|x64
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x64.Build.0 = Debug|x64
+		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x64.Deploy.0 = Debug|x64
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x86.ActiveCfg = Debug|Win32
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Debug|x86.Build.0 = Debug|Win32
 		{27C2C410-8770-4D35-941C-6EA738388F43}.Release|Any CPU.ActiveCfg = Release|Win32
