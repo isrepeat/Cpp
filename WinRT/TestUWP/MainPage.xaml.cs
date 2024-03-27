@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using WinRtLibrary;
+//using WinRtLibrary;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,17 +26,19 @@ namespace TestUWP
         public MainPage()
         {
             this.InitializeComponent();
-            var instance1 = Class3_Singleton.CreateInstance(1, 3.14f);
-            var instance2 = Class3_Singleton.CreateInstance(7, 0.99f);
-            var instance3 = Class3_Singleton.GetInstance();
-            var instance4 = Class3_Singleton.GetInstance();
+
+            new Test_WinRT_Component_2.WinRtLibrary.Hello();
+            //var instance1 = Class3_Singleton.CreateInstance(1, 3.14f);
+            //var instance2 = Class3_Singleton.CreateInstance(7, 0.99f);
+            //var instance3 = Class3_Singleton.GetInstance();
+            //var instance4 = Class3_Singleton.GetInstance();
 
 
-            instance4.Dispose();
-            //using (var lk = instance.LockScoped())
-            //{
-            //    int xxx = 1;
-            //}
+            //instance4.Dispose();
+            ////using (var lk = instance.LockScoped())
+            ////{
+            ////    int xxx = 1;
+            ////}
 
             int xx = 9;
         }
