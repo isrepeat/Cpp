@@ -70,13 +70,13 @@ namespace H {
         	return std::chrono::operator-(_Left, _Right);
         }
 
-        using Hns = DurationBase<unsigned long long, std::ratio<1, 10'000'000>>;
+        using Hns = DurationBase<long long, std::ratio<1, 10'000'000>>;
         //using Hns = std::chrono::duration<unsigned long long, std::ratio<1, 10'000'000>>;
     }
 
     inline namespace Literals {
         inline namespace ChronoLiterals {
-            constexpr Chrono::Hns operator"" hns(unsigned long long _Val) noexcept {
+            constexpr Chrono::Hns operator"" _hns(unsigned long long _Val) noexcept {
                 return Chrono::Hns(_Val);
             }
         }
@@ -96,7 +96,7 @@ T Clamp(T value, T min, T max) {
 void TestHNS() {
     LOG_FUNCTION_ENTER("TestHNS()");
     
-    constexpr auto countHns = 1'000'000hns;
+    constexpr auto countHns = 1'000'000_hns;
     constexpr auto countMs = 1ms;
     constexpr auto countS = 1s;
 
@@ -111,9 +111,6 @@ void TestHNS() {
     float hnsCastToFloat = (double)hns_1;
 
     Clamp<H::Chrono::Hns>(hns_1, hns_1, countMs);
-
-    //if (hn) {
-    //}
 
     LOG_DEBUG_D("countHns = {}", countHns.count());
 
@@ -134,6 +131,47 @@ void TestHNS() {
 }
 
 
+void TestArithmetics() {
+    LOG_FUNCTION_ENTER("TestArithmetics()");
+    constexpr auto tpA = 100ms;
+    constexpr auto tpB = 120ms;
+    constexpr auto tpC = 200_hns;
+    constexpr auto tpD = 400_hns;
+
+    //static_assert(tpA - tpB == -20ms);
+    //static_assert(tpC - tpD == -40_hns);
+
+    LOG_DEBUG_D("tpA = {}ms", H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpA).count());
+    LOG_DEBUG_D("tpB = {}ms", H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpB).count());
+    LOG_DEBUG_D("tpC = {}ms = {}hns", H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpC).count(), tpC.count());
+    LOG_DEBUG_D("tpD = {}ms = {}hns", H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpD).count(), tpD.count());
+
+    LOG_DEBUG_D("   tpB - tpA = {}ms", (tpB - tpA).count());
+    LOG_DEBUG_D("   tpA - tpB = {}ms", (tpA - tpB).count());
+
+    //auto dtDC = H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpD - tpC);
+    //auto dtCD = H::Chrono::duration_cast_float<std::chrono::milliseconds>(tpC - tpD);
+
+    auto dtDC = tpD - tpC;
+    auto dtCD = tpC - tpD;
+    auto dtDCms = H::Chrono::duration_cast_float<std::chrono::milliseconds>(dtDC);
+    auto dtCDms = H::Chrono::duration_cast_float<std::chrono::milliseconds>(dtCD);
+
+    LOG_DEBUG_D("1) tpD - tpC = {}hns = {}hns", (tpD - tpC).count(), (int64_t)((tpD - tpC).count()));
+    LOG_DEBUG_D("2) tpD - tpC = {}hns = {}hns", dtDC.count(), (int64_t)(dtDC.count()));
+    LOG_DEBUG_D("3) dtDC = {}ms", dtDCms.count());
+    LOG_DEBUG_D("");
+    LOG_DEBUG_D("1) tpC - tpD = {}hns = {}hns", (tpC - tpD).count(), (int64_t)((tpC - tpD).count()));
+    LOG_DEBUG_D("2) tpC - tpD = {}hns = {}hns", dtCD.count(), (int64_t)(dtCD.count()));
+    LOG_DEBUG_D("3) dtCD = {}ms", dtCDms.count());// , ()(dtCDms.count()));
+
+    LOG_DEBUG_D("");
+    //LOG_DEBUG_D("1) |tpC - tpD| < 25ms = {}", (tpC - tpD).count() < 25);
+    LOG_DEBUG_D("   |tpC - tpD| < 25ms = {}", std::abs((int64_t)(dtCDms.count())) < 25);
+
+    return;
+}
+
 int main() {
     HH::Flags<lg::InitFlags> loggerInitFlags =
         lg::InitFlags::DefaultFlags |
@@ -142,8 +180,9 @@ int main() {
     lg::DefaultLoggers::Init(L"D:\\main_57_Time.log", loggerInitFlags);
 
     //TestCast();
-    TestHNS();
+    //TestHNS();
+    TestArithmetics();
 
-    Sleep(10'000);
+    Sleep(100'000);
     return 0;
 }
