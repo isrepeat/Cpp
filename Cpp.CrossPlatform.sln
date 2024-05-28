@@ -95,9 +95,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JsonParser.Static", "Utilit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MagicEnum.Shared", "UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems", "{9119A10A-D27C-4EAF-8EE9-1A3097D8C6F6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Static", "UtilityHelpersLib\3rdParty\spdlog\Spdlog.Static\Spdlog.Static.vcxproj", "{4AB35171-9952-4A89-9589-8A63E8BE47E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Static", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Static\Spdlog.Static.vcxproj", "{4AB35171-9952-4A89-9589-8A63E8BE47E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComAPI.Shared", "UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems", "{9AE2E2F4-5B16-4D19-9D1F-799A9E18CA69}"
 EndProject
@@ -121,17 +121,19 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{2a7a5d42-7dde-4267-ba6f-a43f9f8350a7}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{2a7a5d42-7dde-4267-ba6f-a43f9f8350a7}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{301bf8c8-f7ca-429f-8b12-ded615a64508}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{34a69ffa-7fae-4de7-bac0-30b5730831e9}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
@@ -144,6 +146,9 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{c99c2242-d38a-4e7a-925e-bdb32cf888a4}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{d2f14f8e-303b-4ae6-a98b-b789cd19981d}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
