@@ -193,9 +193,9 @@
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WinRtLibrary\WinRtLibrary.vcxproj">
-      <Project>{bbddf20b-b9d8-4c05-a877-b657f5c8609a}</Project>
-      <Name>WinRtLibrary</Name>
+    <ProjectReference Include="..\..\TEST\WinRT\Test.WinRT.Component_2\Test.WinRT.Component_2.vcxproj">
+      <Project>{5255332c-542b-4410-98c7-776d874353ab}</Project>
+      <Name>Test.WinRT.Component_2</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

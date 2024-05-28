@@ -9,21 +9,9 @@
     <ClCompile Include="Class1_DuplicatesContainer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Class2_ScopedLock.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Class3_SingletonWinRt.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Class2_ScopedLock.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="Class1_DuplicatesContainer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Class3_SingletonWinRt.h">
       <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
