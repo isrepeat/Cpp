@@ -31,9 +31,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JsonParser.Static", "Utilit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MagicEnum.Shared", "UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems", "{9119A10A-D27C-4EAF-8EE9-1A3097D8C6F6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Shared", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems", "{34A69FFA-7FAE-4DE7-BAC0-30B5730831E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Static", "UtilityHelpersLib\3rdParty\spdlog\Spdlog.Static\Spdlog.Static.vcxproj", "{4AB35171-9952-4A89-9589-8A63E8BE47E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spdlog.Static", "UtilityHelpersLib\3rdParty\Spdlog\Spdlog.Static\Spdlog.Static.vcxproj", "{4AB35171-9952-4A89-9589-8A63E8BE47E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComAPI.Shared", "UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems", "{9AE2E2F4-5B16-4D19-9D1F-799A9E18CA69}"
 EndProject
@@ -70,6 +70,7 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{29454f5d-d9b5-477f-a102-d4bc5c45cb07}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{301bf8c8-f7ca-429f-8b12-ded615a64508}*SharedItemsImports = 9

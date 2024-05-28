@@ -121,6 +121,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
