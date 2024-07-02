@@ -56,6 +56,7 @@ AMQPHandler::~AMQPHandler() {
 void AMQPHandler::StartLoop() {
 	try {
 		while (!quit) {
+			// Decode incomming RabbitMQ data from socket
 			if (socket.available() > 0) {
 				size_t avail = socket.available();
 
@@ -71,8 +72,6 @@ void AMQPHandler::StartLoop() {
 
 			if (connection && inputBuffer.available()) {
 				size_t count = connection->parse(inputBuffer.data(), inputBuffer.available());
-				//qDebug() << count;
-
 				if (count == inputBuffer.available()) {
 					inputBuffer.drain();
 				}
@@ -131,7 +130,7 @@ void AMQPHandler::onClosed(AMQP::Connection* connection) {
 
 std::uint16_t AMQPHandler::onNegotiate(AMQP::Connection* connection, std::uint16_t interval) {
 	LOG_FUNCTION_ENTER("onNegotiate()");
-	return 60;
+	return 0;
 }
 
 
