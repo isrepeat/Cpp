@@ -4,7 +4,7 @@
 #include <Helpers/Action.h>
 #include <Helpers/Thread.h>
 
-#define QUEUE_EXPIRATION 70'000
+#define QUEUE_EXPIRATION 10'000
 
 
 //namespace AMQP {
@@ -152,9 +152,10 @@ AMQPMessager::Error AMQPMessager::ConnectAsConsumer(std::string login, std::stri
 	connection = std::make_unique<AMQP::Connection>(amqpHandler.get(), AMQP::Login{ login, password }, virtualHost);
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
-	auto args = AMQP::Table{};
-	args["x-expires"] = QUEUE_EXPIRATION; // [ms]
-	channel->declareQueue(queueName, AMQP::passive, args).onError([](const char* err) {
+	//auto args = AMQP::Table{};
+	//args["x-expires"] = QUEUE_EXPIRATION; // [ms]
+	//channel->declareQueue(queueName, AMQP::passive, args).onError([](const char* err) {
+	channel->declareQueue(queueName, AMQP::passive).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});
 
@@ -177,10 +178,10 @@ AMQPMessager::Error AMQPMessager::ConnectAsConsumer(std::string login, std::stri
 			[this](const std::string& consumertag) {
 				LOG_FUNCTION_ENTER("AMQPMessager->onSuccess(consumertag = {})", consumertag);
 			})
-		.onError(
-			[this](const char* errorMessage) {
-				LOG_FUNCTION_ENTER("AMQPMessager->onError(errorMessage = {})", errorMessage);
-			});
+			.onError(
+				[this](const char* errorMessage) {
+					LOG_FUNCTION_ENTER("AMQPMessager->onError(errorMessage = {})", errorMessage);
+				});
 
 	LOG_DEBUG_D("RabbitMQ inited");
 
@@ -218,9 +219,13 @@ AMQPMessager::Error AMQPMessager::ConnectAsPublisher(std::string login, std::str
 	connection = std::make_unique<AMQP::Connection>(amqpHandler.get(), AMQP::Login{ login, password }, virtualHost);
 	channel = std::make_unique<AMQP::Channel>(connection.get());
 
-	auto args = AMQP::Table{};
-	args["x-expires"] = QUEUE_EXPIRATION; // [ms]
-	channel->declareQueue(queueName, 0, args).onError([](const char* err) {
+	//auto args = AMQP::Table{};
+	//args["x-expires"] = QUEUE_EXPIRATION; // [ms]
+	//channel->declareQueue(queueName, 0, args).onError([](const char* err) {
+	//	LOG_DEBUG_D("channel queue error = {}", err);
+	//	});
+
+	channel->declareQueue(queueName, AMQP::autodelete).onError([](const char* err) {
 		LOG_DEBUG_D("channel queue error = {}", err);
 		});
 
