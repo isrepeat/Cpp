@@ -42,6 +42,9 @@
     <Filter Include="Source Files\[11] C++20 Coroutine">
       <UniqueIdentifier>{5773ca91-dd1d-4af0-bdce-b2787b6c5c51}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[12] Doxygen">
+      <UniqueIdentifier>{81e871d4-db8a-457a-9864-b0ecd3c98b96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -290,6 +293,12 @@
     <ClCompile Include="main_59_hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="[12] Doxygen\Classes.cpp">
+      <Filter>Source Files\[12] Doxygen</Filter>
+    </ClCompile>
+    <ClCompile Include="[12] Doxygen\main_Doxygen.cpp">
+      <Filter>Source Files\[12] Doxygen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -354,6 +363,9 @@
     </ClInclude>
     <ClInclude Include="[11] C++20 Coroutine\Awaitables.h">
       <Filter>Source Files\[11] C++20 Coroutine</Filter>
+    </ClInclude>
+    <ClInclude Include="[12] Doxygen\Classes.h">
+      <Filter>Source Files\[12] Doxygen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
