@@ -10,9 +10,7 @@
 
 namespace SomeProject {
 	/**
-		\brief Foo class.
-
-		\details This is the Foo class
+		\brief Main class
 	*/
 	class Foo {
 	public:
@@ -28,4 +26,16 @@ namespace SomeProject {
 	private:
 		void Initialize();
 	};
+
+	// Detailed description about Foo class logic
+	/**
+	    \class Foo
+		## Main logic
+		Description ...
+		______
+
+		## Drag and Drop logic
+		Description ...
+		______
+	*/
 }
