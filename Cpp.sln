@@ -157,6 +157,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Doxyfile = Doxyfile
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxDesktop", "DirectX\DxDesktop\DxDesktop.vcxproj", "{1E71E98B-C690-4038-9047-9D311BF16139}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
@@ -776,6 +778,20 @@ Global
 		{257171DE-8321-4044-B08A-8B26B1946B2D}.Release|x64.Build.0 = Release|x64
 		{257171DE-8321-4044-B08A-8B26B1946B2D}.Release|x86.ActiveCfg = Release|Win32
 		{257171DE-8321-4044-B08A-8B26B1946B2D}.Release|x86.Build.0 = Release|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|ARM.ActiveCfg = Debug|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|x64.ActiveCfg = Debug|x64
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|x64.Build.0 = Debug|x64
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|x86.ActiveCfg = Debug|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Debug|x86.Build.0 = Debug|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|Any CPU.ActiveCfg = Release|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|ARM.ActiveCfg = Release|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|ARM64.ActiveCfg = Release|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|x64.ActiveCfg = Release|x64
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|x64.Build.0 = Release|x64
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|x86.ActiveCfg = Release|Win32
+		{1E71E98B-C690-4038-9047-9D311BF16139}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -840,6 +856,7 @@ Global
 		{CA49FA1E-5E63-462F-B973-F3AAECD8C24A} = {A607E310-7306-4DBD-B0AB-6538E0BC1888}
 		{5255332C-542B-4410-98C7-776D874353AB} = {A607E310-7306-4DBD-B0AB-6538E0BC1888}
 		{257171DE-8321-4044-B08A-8B26B1946B2D} = {A607E310-7306-4DBD-B0AB-6538E0BC1888}
+		{1E71E98B-C690-4038-9047-9D311BF16139} = {981F00B6-36B7-43A2-B26E-1986A82B3F7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
