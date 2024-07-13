@@ -35,6 +35,7 @@
       <ExcludedDirsFromBuild Include="[09] DVD API" />
       <ExcludedDirsFromBuild Include="[10] Socket NAT" />
       <ExcludedDirsFromBuild Include="[11] C++20 Coroutine" />
+      <!--<ExcludedDirsFromBuild Include="[12] Doxygen" />-->
 
       <NotBuildFiles Include="*.h;*.cpp" />
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
@@ -46,8 +47,9 @@
       <!--<BuildFiles Include="main_45_*.cpp" />-->
       <!--<BuildFiles Include="main_56_*.cpp" />-->
       <!--<BuildFiles Include="main_40_filesystem.cpp" />-->
-      <BuildFiles Include="main_57_Time.cpp" />
+      <!--<BuildFiles Include="main_57_Time.cpp" />-->
       <!--<BuildFiles Include="main_58_Remote_debug.cpp" />-->
+      <!--<BuildFiles Include="main_59_*.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
