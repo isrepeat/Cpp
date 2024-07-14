@@ -24,6 +24,7 @@
     <ItemGroup>
       <!-- Comment folder that need to be build -->
       <ExcludedDirsFromBuild Include="[01] Simple Window" />
+      <!--<ExcludedDirsFromBuild Include="[02] Dx SwapChain simple render" />-->
 
       <NonBuildFiles Include="*.h;*.cpp" />
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>

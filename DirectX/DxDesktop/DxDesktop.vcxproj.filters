@@ -4,10 +4,19 @@
     <Filter Include="[01] Simple Window">
       <UniqueIdentifier>{a344d42f-014e-4cdb-bf96-f486843abff9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="[02] Dx SwapChain simple render">
+      <UniqueIdentifier>{763dcdfe-c621-4bed-babb-f2e775de7f7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[01] Simple Window\MainWindow.h">
       <Filter>[01] Simple Window</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] Dx SwapChain simple render\MainWindow.h">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.h">
+      <Filter>[02] Dx SwapChain simple render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -16,6 +25,15 @@
     </ClCompile>
     <ClCompile Include="[01] Simple Window\main.cpp">
       <Filter>[01] Simple Window</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\main.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\MainWindow.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
