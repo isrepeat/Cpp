@@ -7,6 +7,9 @@
     <Filter Include="[02] Dx SwapChain simple render">
       <UniqueIdentifier>{763dcdfe-c621-4bed-babb-f2e775de7f7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="[03] Dx Triangle Render">
+      <UniqueIdentifier>{989a81c5-53a2-453a-90cb-776ab8787151}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[01] Simple Window\MainWindow.h">
@@ -17,6 +20,15 @@
     </ClInclude>
     <ClInclude Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.h">
       <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\MainWindow.h">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\ShaderStructures.h">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h">
+      <Filter>[03] Dx Triangle Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,8 +47,25 @@
     <ClCompile Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.cpp">
       <Filter>[02] Dx SwapChain simple render</Filter>
     </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\main.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\MainWindow.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\SimpleSceneRenderer.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxDesktop_CompiledFiles.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="[03] Dx Triangle Render\PixelShader.hlsl">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </FxCompile>
+    <FxCompile Include="[03] Dx Triangle Render\VertexShader.hlsl">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

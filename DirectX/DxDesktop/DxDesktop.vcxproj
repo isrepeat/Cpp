@@ -102,6 +102,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -119,6 +120,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -132,6 +134,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -149,11 +152,15 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="[01] Simple Window\MainWindow.h" />
     <ClInclude Include="[02] Dx SwapChain simple render\MainWindow.h" />
     <ClInclude Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.h" />
+    <ClInclude Include="[03] Dx Triangle Render\MainWindow.h" />
+    <ClInclude Include="[03] Dx Triangle Render\ShaderStructures.h" />
+    <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="[01] Simple Window\main.cpp" />
@@ -161,6 +168,9 @@
     <ClCompile Include="[02] Dx SwapChain simple render\main.cpp" />
     <ClCompile Include="[02] Dx SwapChain simple render\MainWindow.cpp" />
     <ClCompile Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.cpp" />
+    <ClCompile Include="[03] Dx Triangle Render\main.cpp" />
+    <ClCompile Include="[03] Dx Triangle Render\MainWindow.cpp" />
+    <ClCompile Include="[03] Dx Triangle Render\SimpleSceneRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers.Raw\Helpers.Raw.vcxproj">
@@ -169,6 +179,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DxDesktop_CompiledFiles.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="[03] Dx Triangle Render\PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="[03] Dx Triangle Render\VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
