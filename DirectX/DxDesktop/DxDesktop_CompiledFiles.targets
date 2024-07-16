@@ -25,7 +25,8 @@
       <!-- Comment folder that need to be build -->
       <ExcludedDirsFromBuild Include="[01] Simple Window" />
       <ExcludedDirsFromBuild Include="[02] Dx SwapChain simple render" />
-      <!--<ExcludedDirsFromBuild Include="[03] Dx Triangle Render" />-->
+      <ExcludedDirsFromBuild Include="[03] Dx Triangle Render" />
+      <!--<ExcludedDirsFromBuild Include="[04] Dx Texture Render" />-->
 
       <NonBuildFiles Include="*.h;*.cpp" />
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>

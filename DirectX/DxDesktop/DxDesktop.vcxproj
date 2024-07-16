@@ -161,6 +161,9 @@
     <ClInclude Include="[03] Dx Triangle Render\MainWindow.h" />
     <ClInclude Include="[03] Dx Triangle Render\ShaderStructures.h" />
     <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h" />
+    <ClInclude Include="[04] Dx Texture Render\MainWindow.h" />
+    <ClInclude Include="[04] Dx Texture Render\SimpleSceneRenderer.h" />
+    <ClInclude Include="[04] Dx Texture Render\Tools.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="[01] Simple Window\main.cpp" />
@@ -171,6 +174,10 @@
     <ClCompile Include="[03] Dx Triangle Render\main.cpp" />
     <ClCompile Include="[03] Dx Triangle Render\MainWindow.cpp" />
     <ClCompile Include="[03] Dx Triangle Render\SimpleSceneRenderer.cpp" />
+    <ClCompile Include="[04] Dx Texture Render\main.cpp" />
+    <ClCompile Include="[04] Dx Texture Render\MainWindow.cpp" />
+    <ClCompile Include="[04] Dx Texture Render\SimpleSceneRenderer.cpp" />
+    <ClCompile Include="[04] Dx Texture Render\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\UtilityHelpersLib\Helpers\Helpers.Raw\Helpers.Raw.vcxproj">
@@ -193,6 +200,33 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imagePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imageVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\trianglePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\triangleVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="[04] Dx Texture Render\texture.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

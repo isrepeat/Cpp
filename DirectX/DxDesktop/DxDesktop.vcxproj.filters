@@ -10,6 +10,12 @@
     <Filter Include="[03] Dx Triangle Render">
       <UniqueIdentifier>{989a81c5-53a2-453a-90cb-776ab8787151}</UniqueIdentifier>
     </Filter>
+    <Filter Include="[04] Dx Texture Render">
+      <UniqueIdentifier>{01eac1da-e1b8-4d2b-a251-a40fe8bef17c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[04] Dx Texture Render\Shaders">
+      <UniqueIdentifier>{bab71551-387b-4830-9f3d-5f3ea0fee666}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[01] Simple Window\MainWindow.h">
@@ -29,6 +35,15 @@
     </ClInclude>
     <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h">
       <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\MainWindow.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\SimpleSceneRenderer.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\Tools.h">
+      <Filter>[04] Dx Texture Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +71,18 @@
     <ClCompile Include="[03] Dx Triangle Render\SimpleSceneRenderer.cpp">
       <Filter>[03] Dx Triangle Render</Filter>
     </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\main.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\MainWindow.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\SimpleSceneRenderer.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\Tools.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxDesktop_CompiledFiles.targets" />
@@ -67,5 +94,22 @@
     <FxCompile Include="[03] Dx Triangle Render\VertexShader.hlsl">
       <Filter>[03] Dx Triangle Render</Filter>
     </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imagePS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imageVS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\trianglePS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\triangleVS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="[04] Dx Texture Render\texture.bmp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </Image>
   </ItemGroup>
 </Project>
