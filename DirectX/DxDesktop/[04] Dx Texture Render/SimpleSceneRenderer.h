@@ -1,40 +1,14 @@
 #pragma once
 #include <Helpers/Dx/SwapChainPanel.h>
+
+#include "DxRenderObj.h"
+#include "HDRCommon.h"
+#include "StepTimer.h"
+#include "Keyboard.h"
+
 #include <mutex>
 
 namespace DxDesktop {
-	struct VS_CONSTANT_BUFFER {
-		DirectX::XMFLOAT4X4 mWorldViewProj;
-	};
-
-	struct DxRenderObj {
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
-
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texture;
-		Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
-
-		VS_CONSTANT_BUFFER vsConstantBufferData;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
-
-		void Reset() {
-			this->vertexShader.Reset();
-			this->pixelShader.Reset();
-			this->inputLayout.Reset();
-			this->vertexBuffer.Reset();
-			this->indexBuffer.Reset();
-			this->texture.Reset();
-			this->sampler.Reset();
-		}
-
-		//operator bool() {
-		//	return this->inputLayout;
-		//}
-	};
-
 	class SimpleSceneRenderer {
 	public:
 		SimpleSceneRenderer(Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel);
@@ -43,28 +17,40 @@ namespace DxDesktop {
 		// Basic render loop
 		void Tick();
 
+		void OnWindowSizeChanged(H::Size newSize);
+
 	private:
 		void CreateDeviceDependentResources();
 		void CreateWindowSizeDependentResources();
 		void ReleaseDeviceDependentResources();
 
 		DxRenderObj CreateDxRenderObjImage();
-		DxRenderObj CreateDxRenderObjTriangle();
+		DxRenderObjHDR CreateDxRenderObjHdrQuad();
+		void CreateHdrTexture(DxRenderObjBase* dxRenderObjBase);
 
+		void Update();
 		void Clear();
 		void Render();
-		void RenderImage();
-		void RenderTriangle();
+
+		void RenderHDRScene();
+		void PrepareSwapChainBuffer();
 
 	private:
 		std::mutex mx;
 		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
 
-		// Sample objects
-		DxRenderObj dxRenderObjImage;
-		DxRenderObj dxRenderObjTriangle;
+		// Rendering loop timer.
+		DX::StepTimer renderLoopTimer;
 
-		float currentPaperWhiteNits; // Current brightness for paper white
+		// Input devices.
+		std::unique_ptr<DirectX::Keyboard> keyboard;
+		DirectX::Keyboard::KeyboardStateTracker keyboardButtons;
+
+		// Sample objects.
+		DxRenderObj dxRenderObjImage;
+		DxRenderObjHDR dxRenderObjHdrQuad;
+
+		float currentNits; // Current brightness
 		
 		// Prepares HDR and SDR swapchain buffers
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> d3dPrepareSwapChainBuffersPS; // Outputs an signal for the swapchain buffers to correctly be displayed in HDR/SDR

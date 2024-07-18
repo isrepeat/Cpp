@@ -29,7 +29,7 @@ int WINAPI WinMain(
 }
 
 int Run(HINSTANCE hInstance) {
-	auto mainWindow = DxDesktop::MainWindow{ hInstance, 830, 600, 300, 150};
+	auto mainWindow = DxDesktop::MainWindow{ hInstance, 1040, 540, 300, 150};
 
 	H::Dx::SwapChainPanel::InitData swapChainPanelInitData;
 	swapChainPanelInitData.environment = H::Dx::SwapChainPanel::InitData::Environment::Desktop;
@@ -39,17 +39,19 @@ int Run(HINSTANCE hInstance) {
 
 	auto swapChainPanel = Microsoft::WRL::Make<H::Dx::SwapChainPanel>(swapChainPanelInitData);
 
-	auto mainWindowSize = mainWindow.GetSize();
+	// TODO: put real display info
 	swapChainPanel->InitSwapChainPanelInfo(
-		static_cast<H::Size_f>(mainWindowSize),
+		static_cast<H::Size_f>(mainWindow.GetSize()),
 		H::Dx::DisplayOrientations::Landscape,
 		H::Dx::DisplayOrientations::Landscape,
-		2.5f,
-		2.5f,
-		240
+		2.5f, // dpi scale factor X
+		2.5f, // dpi scale factor Y
+		240 // dpi value
 	);
 
+
 	std::atomic<bool> isRenderRunning = false;
+	auto simpleSceneRenderer = DxDesktop::SimpleSceneRenderer{ swapChainPanel };
 
 	mainWindow.eventQuit.Add([&] {
 		LOG_DEBUG_D("[event] Quit");
@@ -58,11 +60,8 @@ int Run(HINSTANCE hInstance) {
 
 	mainWindow.eventWindowSizeChanged.Add([&](H::Size size) {
 		LOG_DEBUG_D("[event] WindowSizeChanged(width {}, height = {})", size.width, size.height);
-		swapChainPanel->SetLogicalSize(static_cast<H::Size_f>(size));
+		simpleSceneRenderer.OnWindowSizeChanged(size);
 		});
-
-
-	auto simpleSceneRenderer = DxDesktop::SimpleSceneRenderer{ swapChainPanel };
 
 	isRenderRunning = true;
 	auto renderThread = std::thread([&] {

@@ -19,11 +19,12 @@ struct Pixel
 };
 
 Texture2D txDiffuse : register(t0);
-SamplerState samplerLinear : register(s0);
+//SamplerState linearSampler : register(s0);
+SamplerState pointSampler : register(s0);
 
 Pixel main(Interpolants In)
 {
     Pixel Out;
-    Out.color = txDiffuse.Sample(samplerLinear, In.texcoord);
+    Out.color = txDiffuse.Sample(pointSampler, In.texcoord);
     return Out;
 }

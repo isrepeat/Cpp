@@ -16,6 +16,9 @@
     <Filter Include="[04] Dx Texture Render\Shaders">
       <UniqueIdentifier>{bab71551-387b-4830-9f3d-5f3ea0fee666}</UniqueIdentifier>
     </Filter>
+    <Filter Include="[04] Dx Texture Render\Common">
+      <UniqueIdentifier>{dd700356-89ec-4267-92de-cdbec507b3d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="[01] Simple Window\MainWindow.h">
@@ -43,6 +46,18 @@
       <Filter>[04] Dx Texture Render</Filter>
     </ClInclude>
     <ClInclude Include="[04] Dx Texture Render\Tools.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\HDRCommon.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\Keyboard.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\PlatformHelpers.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObj.h">
       <Filter>[04] Dx Texture Render</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,9 +98,15 @@
     <ClCompile Include="[04] Dx Texture Render\Tools.cpp">
       <Filter>[04] Dx Texture Render</Filter>
     </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\Keyboard.cpp">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxDesktop_CompiledFiles.targets" />
+    <None Include="[04] Dx Texture Render\HDRCommon.hlsli">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="[03] Dx Triangle Render\PixelShader.hlsl">
@@ -106,10 +127,11 @@
     <FxCompile Include="[04] Dx Texture Render\triangleVS.hlsl">
       <Filter>[04] Dx Texture Render\Shaders</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="[04] Dx Texture Render\texture.bmp">
-      <Filter>[04] Dx Texture Render</Filter>
-    </Image>
+    <FxCompile Include="[04] Dx Texture Render\PrepareSwapChainBuffersPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\ToneMapPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
