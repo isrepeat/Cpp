@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="[01] Simple Window">
+      <UniqueIdentifier>{a344d42f-014e-4cdb-bf96-f486843abff9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[02] Dx SwapChain simple render">
+      <UniqueIdentifier>{763dcdfe-c621-4bed-babb-f2e775de7f7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[03] Dx Triangle Render">
+      <UniqueIdentifier>{989a81c5-53a2-453a-90cb-776ab8787151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[04] Dx Texture Render">
+      <UniqueIdentifier>{01eac1da-e1b8-4d2b-a251-a40fe8bef17c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[04] Dx Texture Render\Shaders">
+      <UniqueIdentifier>{bab71551-387b-4830-9f3d-5f3ea0fee666}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[04] Dx Texture Render\Common">
+      <UniqueIdentifier>{dd700356-89ec-4267-92de-cdbec507b3d3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="[01] Simple Window\MainWindow.h">
+      <Filter>[01] Simple Window</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] Dx SwapChain simple render\MainWindow.h">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.h">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\MainWindow.h">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\ShaderStructures.h">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\MainWindow.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\SimpleSceneRenderer.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\Tools.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\HDRCommon.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\Keyboard.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\PlatformHelpers.h">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObj.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\QuadRenderer.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjHdrQuad.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjImage.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjProxy.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="[01] Simple Window\MainWindow.cpp">
+      <Filter>[01] Simple Window</Filter>
+    </ClCompile>
+    <ClCompile Include="[01] Simple Window\main.cpp">
+      <Filter>[01] Simple Window</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\main.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\MainWindow.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] Dx SwapChain simple render\SimpleSceneRenderer.cpp">
+      <Filter>[02] Dx SwapChain simple render</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\main.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\MainWindow.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Dx Triangle Render\SimpleSceneRenderer.cpp">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\main.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\MainWindow.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\SimpleSceneRenderer.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\Tools.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\Keyboard.cpp">
+      <Filter>[04] Dx Texture Render\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\QuadRenderer.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DxDesktop_CompiledFiles.targets" />
+    <None Include="[04] Dx Texture Render\HDRCommon.hlsli">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="[03] Dx Triangle Render\PixelShader.hlsl">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </FxCompile>
+    <FxCompile Include="[03] Dx Triangle Render\VertexShader.hlsl">
+      <Filter>[03] Dx Triangle Render</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imagePS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\imageVS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\trianglePS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\triangleVS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\PrepareSwapChainBuffersPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\ToneMapPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\proxyPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
