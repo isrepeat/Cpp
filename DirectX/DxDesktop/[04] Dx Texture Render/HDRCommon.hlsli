@@ -160,6 +160,15 @@ float4 ConvertToHDR10(float4 hdrSceneValue, float paperWhiteNits)
     return float4(HDR10.rgb, hdrSceneValue.a);
 }
 
+float4 ConvertToHDR10_2(float4 hdrSceneValue, float paperWhiteNits)
+{
+    float3 rec709 = hdrSceneValue.rgb;
+    float3 normalizedLinearValue = NormalizeHDRSceneValue(rec709, paperWhiteNits);     // Normalize using paper white nits to prepare for ST.2084     
+    float3 HDR10 = LinearToST2084(normalizedLinearValue);                              // Apply ST.2084 curve
+
+    return float4(HDR10.rgb, hdrSceneValue.a);
+}
+
 
 #endif
 

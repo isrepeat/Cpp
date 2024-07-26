@@ -60,6 +60,18 @@
     <ClInclude Include="[04] Dx Texture Render\DxRenderObj.h">
       <Filter>[04] Dx Texture Render</Filter>
     </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\QuadRenderer.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjHdrQuad.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjImage.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjProxy.h">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="[01] Simple Window\MainWindow.cpp">
@@ -101,6 +113,9 @@
     <ClCompile Include="[04] Dx Texture Render\Keyboard.cpp">
       <Filter>[04] Dx Texture Render\Common</Filter>
     </ClCompile>
+    <ClCompile Include="[04] Dx Texture Render\QuadRenderer.cpp">
+      <Filter>[04] Dx Texture Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxDesktop_CompiledFiles.targets" />
@@ -131,6 +146,9 @@
       <Filter>[04] Dx Texture Render\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="[04] Dx Texture Render\ToneMapPS.hlsl">
+      <Filter>[04] Dx Texture Render\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\proxyPS.hlsl">
       <Filter>[04] Dx Texture Render\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

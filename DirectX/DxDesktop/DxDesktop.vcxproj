@@ -162,10 +162,14 @@
     <ClInclude Include="[03] Dx Triangle Render\ShaderStructures.h" />
     <ClInclude Include="[03] Dx Triangle Render\SimpleSceneRenderer.h" />
     <ClInclude Include="[04] Dx Texture Render\DxRenderObj.h" />
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjHdrQuad.h" />
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjImage.h" />
+    <ClInclude Include="[04] Dx Texture Render\DxRenderObjProxy.h" />
     <ClInclude Include="[04] Dx Texture Render\HDRCommon.h" />
     <ClInclude Include="[04] Dx Texture Render\Keyboard.h" />
     <ClInclude Include="[04] Dx Texture Render\MainWindow.h" />
     <ClInclude Include="[04] Dx Texture Render\PlatformHelpers.h" />
+    <ClInclude Include="[04] Dx Texture Render\QuadRenderer.h" />
     <ClInclude Include="[04] Dx Texture Render\SimpleSceneRenderer.h" />
     <ClInclude Include="[04] Dx Texture Render\Tools.h" />
   </ItemGroup>
@@ -181,6 +185,7 @@
     <ClCompile Include="[04] Dx Texture Render\Keyboard.cpp" />
     <ClCompile Include="[04] Dx Texture Render\main.cpp" />
     <ClCompile Include="[04] Dx Texture Render\MainWindow.cpp" />
+    <ClCompile Include="[04] Dx Texture Render\QuadRenderer.cpp" />
     <ClCompile Include="[04] Dx Texture Render\SimpleSceneRenderer.cpp" />
     <ClCompile Include="[04] Dx Texture Render\Tools.cpp" />
   </ItemGroup>
@@ -233,6 +238,16 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="[04] Dx Texture Render\proxyPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>

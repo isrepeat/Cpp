@@ -1,7 +1,11 @@
 #pragma once
 #include <Helpers/Dx/SwapChainPanel.h>
 
+#include "QuadRenderer.h"
 #include "DxRenderObj.h"
+#include "DxRenderObjHdrQuad.h"
+#include "DxRenderObjProxy.h"
+#include "DxRenderObjImage.h"
 #include "HDRCommon.h"
 #include "StepTimer.h"
 #include "Keyboard.h"
@@ -25,7 +29,9 @@ namespace DxDesktop {
 		void ReleaseDeviceDependentResources();
 
 		DxRenderObj CreateDxRenderObjImage();
+		DxRenderObj CreateDxRenderObjProxy();
 		DxRenderObjHDR CreateDxRenderObjHdrQuad();
+		void CreateProxyTexture(DxRenderObjBase* dxRenderObjBase);
 		void CreateHdrTexture(DxRenderObjBase* dxRenderObjBase);
 
 		void Update();
@@ -33,7 +39,6 @@ namespace DxDesktop {
 		void Render();
 
 		void RenderHDRScene();
-		void PrepareSwapChainBuffer();
 
 	private:
 		std::mutex mx;
@@ -47,8 +52,10 @@ namespace DxDesktop {
 		DirectX::Keyboard::KeyboardStateTracker keyboardButtons;
 
 		// Sample objects.
-		DxRenderObj dxRenderObjImage;
-		DxRenderObjHDR dxRenderObjHdrQuad;
+		QuadRenderer quadRenderer;
+		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;
+		std::unique_ptr<DxRenderObjProxy> dxRenderObjProxy;
+		std::unique_ptr<DxRenderObjHdrQuad> dxRenderObjHdrQuad;
 
 		float currentNits; // Current brightness
 		

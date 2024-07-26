@@ -4,10 +4,20 @@
 #include "HDRCommon.h"
 #include "StepTimer.h"
 #include "Keyboard.h"
+#include "Tools.h"
 
 #include <mutex>
 
 namespace DxDesktop {
+	struct VertexPositionTexcoord {
+		DirectX::XMFLOAT4 position;
+		DirectX::XMFLOAT2 texcoord;
+	};
+	struct VertexPositionColor {
+		DirectX::XMFLOAT4 position;
+		DirectX::XMFLOAT4 color;
+	};
+
 	// To ensure that structures aligned by 16 use dx macros, but may be this not neccessary ...
 	XM_ALIGNED_STRUCT(16) VS_CONSTANT_BUFFER {
 		DirectX::XMFLOAT4X4 mWorldViewProj;
@@ -67,5 +77,27 @@ namespace DxDesktop {
 			this->pixelShaderHDR.Reset();
 			this->pixelShaderToneMap.Reset();
 		}
+	};
+
+
+	//struct IDxRenderObjFactory {
+	//	virtual std::unique_ptr<DxRenderObjBase> CreateObject() = 0;
+	//};
+	template <typename DxRenderObjT, typename... Args>
+	class DxRenderObjProvider {
+	public:
+		virtual void CreateWindowSizeDependentResources() = 0;
+		virtual void ReleaseDeviceDependentResources() = 0;
+
+		std::unique_ptr<DxRenderObjT, Args...>& operator->() {
+			return this->dxRenderObj;
+		}
+
+		std::unique_ptr<DxRenderObjT, Args...>& GetObj() {
+			return this->dxRenderObj;
+		}
+
+	protected:
+		std::unique_ptr<DxRenderObjT, Args...> dxRenderObj;
 	};
 }

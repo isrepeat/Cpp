@@ -21,9 +21,8 @@ struct Pixel
 Texture2D txDiffuse : register(t0);
 SamplerState pointSampler : register(s0);
 
-Pixel main(Interpolants In)
+float4 main(Interpolants In) : SV_Target0 
 {
-    Pixel Out;
-    Out.color = txDiffuse.Sample(pointSampler, In.texcoord);
-    return Out;
+    float4 rgba = txDiffuse.Sample(pointSampler, In.texcoord);
+    return rgba;
 }

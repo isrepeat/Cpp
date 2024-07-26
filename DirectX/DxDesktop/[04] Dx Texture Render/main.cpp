@@ -35,6 +35,7 @@ int Run(HINSTANCE hInstance) {
 	swapChainPanelInitData.environment = H::Dx::SwapChainPanel::InitData::Environment::Desktop;
 	swapChainPanelInitData.hWnd = mainWindow.GetHwnd();
 	swapChainPanelInitData.backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+	//swapChainPanelInitData.backBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	swapChainPanelInitData.optionFlags = H::Dx::SwapChainPanel::InitData::Options::EnableHDR;
 
 	auto swapChainPanel = Microsoft::WRL::Make<H::Dx::SwapChainPanel>(swapChainPanelInitData);
