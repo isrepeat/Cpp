@@ -171,10 +171,8 @@ namespace DxDesktop {
 		//		});
 		//}
 
-
 		{
-			// Render ObjProxy texture (8:8:8:8) to ObjHdrQuad RTV (16:16:16:16).
-			// Render ObjImage texture (8:8:8:8) to ObjHdrQuad RTV (16:16:16:16).
+			// Render ObjImage texture (x:x:x:x) to ObjHdrQuad RTV (16:16:16:16).
 			auto renderTargetView = this->dxRenderObjHdrQuad->GetObj()->textureRTV;
 			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Black);
 
@@ -184,7 +182,6 @@ namespace DxDesktop {
 			auto viewport = this->swapChainPanel->GetScreenViewport();
 			d3dCtx->RSSetViewports(1, &viewport);
 
-			//auto& dxRenderObj = this->dxRenderObjProxy->GetObj();
 			auto& dxRenderObj = this->dxRenderObjImage->GetObj();
 			this->quadRenderer.Draw(dxRenderObj->textureSRV, dxRenderObj.get(), [&] {
 				d3dCtx->VSSetShader(dxRenderObj->vertexShader.Get(), nullptr, 0);
@@ -198,8 +195,7 @@ namespace DxDesktop {
 		// Process the HDR scene so that the swapchains can correctly be sent to HDR or SDR display
 		//
 		{
-			// Render ObjHdrQuad texture (16:16:16:16) to swapChain RTV (10:10:10:2).
-			// Render ObjHdrQuad texture (16:16:16:16) to swapChain Proxy RTV (8:8:8:8).
+			// Render ObjHdrQuad texture (16:16:16:16) to swapChain proxy RTV (16:16:16:16).
 			auto renderTargetView = this->swapChainPanel->GetRenderTargetView();
 			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
 
@@ -225,9 +221,11 @@ namespace DxDesktop {
 				});
 		}
 
-		//this->swapChainPanel->DrawProxyTexture();
 
 		ID3D11ShaderResourceView* nullrtv[] = { nullptr };
 		d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+
+		// ...
+		// swapChain proxy texture (16:16:16:16) to swapChain RTV (10:10:10:2).
 	}
 }
