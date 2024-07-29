@@ -27,6 +27,7 @@ namespace DxSamplesApp
         {
             this.InitializeComponent();
 
+            var bounds = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().VisibleBounds;
             mainRenderer = new DxSamples.WinRt.MainRenderer(this.swapChainPanel);
         }
     }

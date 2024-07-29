@@ -28,6 +28,7 @@ namespace DxSamples {
 		void ReleaseDeviceDependentResources();
 
 		void Render() override;
+		void OnWindowSizeChanged(H::Size newSize) override {};
 
 	private:
 		std::mutex mx;

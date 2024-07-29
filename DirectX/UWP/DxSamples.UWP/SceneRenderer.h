@@ -10,6 +10,8 @@ namespace DxSamples {
 		SceneRenderer(Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanelNative);
 		~SceneRenderer();
 
+		void OnWindowSizeChanged(H::Size newSize);
+
 	private:
 		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanelNative;
 		std::unique_ptr<IScene> scene;

@@ -13,6 +13,7 @@ namespace DxSamples {
 
             // Event handlers
             void OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
+            void OnCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ sender, Platform::Object^ args);
 
         private:
             Concurrency::critical_section criticalSection;

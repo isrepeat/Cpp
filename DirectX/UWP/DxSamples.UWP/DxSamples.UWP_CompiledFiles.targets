@@ -28,15 +28,16 @@
 
     <ItemGroup>
       <!-- Comment folder that need to be build -->
-      <!--<ExcludedDirsFromBuild Include="[01] Simple Renderer" />-->
+      <ExcludedDirsFromBuild Include="[01] Simple Scene" />
+      <!--<ExcludedDirsFromBuild Include="[02] HDR Scene" />-->
 
-      <NonBuildFiles Include="*.h;*.cpp" />
+      <!--<NonBuildFiles Include="*.h;*.cpp" />-->
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
 
-      <BuildFiles Include="IScene.h" />
+      <!--<BuildFiles Include="IScene.h" />
       <BuildFiles Include="SceneRenderer.h" />
-      <BuildFiles Include="SceneRenderer.cpp" />
+      <BuildFiles Include="SceneRenderer.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NonBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
@@ -54,4 +55,16 @@
     <Message Importance="High" Text=  "$(NewLine)" />
     <Message Importance="High" Text=  "$(NewLine)" />
   </Target>
+
+  <ItemGroup>
+    <Textures Include="$(MSBuildThisFileDirectory)Textures\*.*" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(Textures)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Textures\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
 </Project>
