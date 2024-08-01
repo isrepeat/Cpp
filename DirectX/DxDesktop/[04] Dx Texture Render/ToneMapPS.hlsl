@@ -144,6 +144,8 @@ float4 main(Interpolants In) : SV_Target0 {
     float opacity = rgba.a * Opacity;
     float3 rgb = (float3)rgba;
 
+
+    //rgb = pow(rgb, 2.2);
     return rgba;
     //return float4(pow(rgba.rgb, 1.0 / 2.2), rgba.a);
     //return float4(pow(rgba.rgb, 2.2), rgba.a);
@@ -154,5 +156,8 @@ float4 main(Interpolants In) : SV_Target0 {
     rgb = adjustRange(rgb);
 
     //rgb = tonemap_uc2(rgb);
+
+    //rgba = pow(rgb, 1.0 / 2.2);
+    rgb = pow(rgb, 2.2);
     return float4(rgb, saturate(opacity));
 }

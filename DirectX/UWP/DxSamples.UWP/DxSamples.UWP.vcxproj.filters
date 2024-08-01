@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="[01] Simple Scene">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="[02] HDR Scene">
+      <UniqueIdentifier>{04681fa1-8788-49b4-9fca-4080b555e5cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[02] HDR Scene\Shaders">
+      <UniqueIdentifier>{c1dff167-1675-4a58-809e-c3219a6e833d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[02] HDR Scene\Common">
+      <UniqueIdentifier>{0966c0cd-4ccf-4a9b-a1c6-838ee15a5005}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SceneRenderer.cpp" />
+    <ClCompile Include="[01] Simple Scene\SimpleScene.cpp">
+      <Filter>[01] Simple Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] HDR Scene\QuadRenderer.cpp">
+      <Filter>[02] HDR Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] HDR Scene\HDRScene.cpp">
+      <Filter>[02] HDR Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="[02] HDR Scene\Tools.cpp">
+      <Filter>[02] HDR Scene\Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IScene.h" />
+    <ClInclude Include="SceneRenderer.h" />
+    <ClInclude Include="[01] Simple Scene\SimpleScene.h">
+      <Filter>[01] Simple Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\DxRenderObj.h">
+      <Filter>[02] HDR Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\DxRenderObjHdrQuad.h">
+      <Filter>[02] HDR Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\DxRenderObjImage.h">
+      <Filter>[02] HDR Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\QuadRenderer.h">
+      <Filter>[02] HDR Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\HDRScene.h">
+      <Filter>[02] HDR Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\HDRCommon.h">
+      <Filter>[02] HDR Scene\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\StepTimer.h">
+      <Filter>[02] HDR Scene\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[02] HDR Scene\Tools.h">
+      <Filter>[02] HDR Scene\Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DxSamples.UWP_CompiledFiles.targets" />
+    <None Include="[02] HDR Scene\HDRCommon.hlsli">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="[02] HDR Scene\imagePS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[02] HDR Scene\imageVS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[02] HDR Scene\PrepareSwapChainBuffersPS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[02] HDR Scene\ToneMapPS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
