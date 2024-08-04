@@ -1,7 +1,18 @@
 <Project>
   <PropertyGroup>
-    <BuildOutDir>$([MSBuild]::NormalizeDirectory('$(SolutionDir)', '_build', '$(Platform)', '$(Configuration)'))</BuildOutDir>
-    <OutDir>$([MSBuild]::NormalizeDirectory('$(BuildOutDir)', '$(MSBuildProjectName)', 'bin'))</OutDir>
-    <IntDir>$([MSBuild]::NormalizeDirectory('$(BuildOutDir)', '$(MSBuildProjectName)', 'obj'))</IntDir>
+    <CustomOutDirRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '!VS_TMP'))</CustomOutDirRoot>
+    <CustomOutDir>$([MSBuild]::NormalizeDirectory('$(CustomOutDirRoot)', '$(Platform)', '$(Configuration)'))</CustomOutDir>
+    <OutDir>$([MSBuild]::NormalizeDirectory('$(CustomOutDir)', '$(MSBuildProjectName)', 'bin'))</OutDir>
+    <IntDir>$([MSBuild]::NormalizeDirectory('$(CustomOutDir)', '$(MSBuildProjectName)', 'obj'))</IntDir>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')"
+          />
+  
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')"
+          />
+  </ItemGroup>
 </Project>
