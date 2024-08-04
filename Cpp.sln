@@ -172,6 +172,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DxSamplesApp", "DirectX\UWP\DxSamplesApp\DxSamplesApp.csproj", "{54E85DE8-EFF4-4C55-A970-43D547DE6E81}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinUI3", "WinUI3", "{D8B16DFF-F06A-4548-82B2-67E2176BB7BF}"
+	ProjectSection(SolutionItems) = preProject
+		WinUI3\Directory.Build.props = WinUI3\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApp.WinUI3", "WinUI3\SimpleApp.WinUI3\SimpleApp.WinUI3.csproj", "{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}"
 EndProject
@@ -179,7 +182,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibrary", "WinUI3\TestL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibrary.WinRt.WinUI3", "WinUI3\TestLibrary.WinRt.WinUI3\TestLibrary.WinRt.WinUI3.vcxproj", "{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLibrary.WinRt.Projection", "WinUI3\TestLibrary.WinRt.Projection\TestLibrary.WinRt.Projection.csproj", "{E6BB380E-BB30-491F-A988-0868A8EDB617}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLibrary.WinRt.Projection", "WinUI3\TestLibrary.WinRt.Projection\TestLibrary.WinRt.Projection.csproj", "{E6BB380E-BB30-491F-A988-0868A8EDB617}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
