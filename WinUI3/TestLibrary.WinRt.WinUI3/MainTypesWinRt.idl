@@ -1,0 +1,9 @@
+namespace TestLibrary_WinRt_WinUI3 
+{
+    [default_interface]
+    runtimeclass MainTypesWinRt 
+    {
+        MainTypesWinRt();
+        Int32 TestIntProperty;
+    }
+}

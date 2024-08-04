@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>TestLibraryComponentWinUI3</id>
+    <version>0.1.0-prerelease</version>
+    <authors>C++Team</authors>
+    <description>A simple component with basic math operations</description>
+    <dependencies>
+      <group targetFramework="net6.0-windows10.0.19041.0" />
+      <group targetFramework="UAP10.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <!--Support .NET 6, UAP, C++ -->
+    <!--Architecture-neutral assemblies-->
+    <file src="..\..\..\_build\AnyCPU\Release\TestLibrary.WinRt.Projection\bin\TestLibrary.WinRt.Projection.dll" target="lib\net6.0-windows10.0.19041.0\TestLibrary.WinRt.Projection.dll" />
+    <file src="..\..\..\_build\x64\Release\TestLibrary.WinRt.WinUI3\bin\TestLibrary_WinRt_WinUI3.winmd" target="lib\uap10.0\TestLibrary_WinRt_WinUI3.winmd" />
+    <!--Architecture-specific implementation DLLs should be copied into RID-relative folders-->
+    <file src="..\..\..\_build\x64\Release\TestLibrary.WinRt.WinUI3\bin\TestLibrary.WinRt.WinUI3.dll" target="runtimes\win10-x64\native\TestLibrary.WinRt.WinUI3.dll" />
+  </files>
+</package>
