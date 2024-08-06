@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NugetName>TestLibraryComponent</NugetName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- [Helpers] Detect platform -->
+    <CapturedPlatform Condition="'$(Platform)' == 'Win32'">x86</CapturedPlatform>
+    <CapturedPlatform Condition="'$(Platform)' != 'Win32'">$(Platform)</CapturedPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- [Helpers] Detect necessary configuration if $(Configuration) does not match exactly Debug or Release -->
+    <RegExCaptureDebugConfiguration>^\w*?([Dd]ebug)\w*$</RegExCaptureDebugConfiguration>
+    <RegExCaptureReleaseConfiguration>^\w*?([Rr]elease)\w*$</RegExCaptureReleaseConfiguration>
+    <CapturedConfiguration Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(Configuration), '$(RegExCaptureDebugConfiguration)'))">Debug</CapturedConfiguration>
+    <CapturedConfiguration Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(Configuration), '$(RegExCaptureReleaseConfiguration)'))">Release</CapturedConfiguration>
+  </PropertyGroup>
+
+  
+  <!-- For WinRt use only Release or Debug configuration -->
+  <!--<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'WinRT'">
+    <CapturedConfiguration>Release</CapturedConfiguration>
+  </PropertyGroup>-->
+
+  <!-- WinRt implementations dlls -->
+  <ItemGroup>
+    <!-- Note that .NET 5.0+ does not support .winmd references. -->
+    <!--<WinRtDlls Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(CapturedPlatform)\native\**\*.dll" />-->
+    <WinRtDlls Include="$(MSBuildThisFileDirectory)..\runtimes\win10-$(CapturedPlatform)\native\**\*.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="@(WinRtDlls)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <Target Name="__NugetInfo" BeforeTargets="Build">
+    <Message Text="==== [$(NugetName) nuget] Nuget info:" Importance="High" />
+    <Message Text="==== [$(NugetName) nuget] CapturedPlatform = $(CapturedPlatform)" Importance="High" />
+    <Message Text="==== [$(NugetName) nuget] CapturedConfiguration = $(CapturedConfiguration)" Importance="High" />
+    <Message Text="==== [$(NugetName) nuget] TargetPlatformIdentifier = $(TargetPlatformIdentifier)" Importance="High" />
+    <Message Text="==== [$(NugetName) nuget] WinRtDlls = %(WinRtDlls.Identity)" Importance="High" />
+  </Target>
+</Project>

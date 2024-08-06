@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <!-- TODO: override 'Clean' target to -->
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <!-- Set Platform to AnyCPU to allow consumption of the projection assembly from any architecture. -->
     <Platform>AnyCPU</Platform>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Alway do build even if project is up-to-date -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,13 +19,9 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <NugetStructureDir>$(MSBuildProjectDirectory)\Nuget</NugetStructureDir>
-    <NuspecFile>$(NugetStructureDir)\TestLibrary.WinRt.Projection.nuspec</NuspecFile>
+    <NuspecFile>$(NugetStructureDir)\TestLibraryComponent.nuspec</NuspecFile>
     <OutputPath>$(NugetStructureDir)</OutputPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="Nuget\TestLibrary.WinRt.Projection.nuspec" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.8" />

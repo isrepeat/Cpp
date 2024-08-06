@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="__MakeNugetStructure" BeforeTargets="GenerateNuspec">
+    <!--
+      NOTE: CustomOutDirRoot property defined in Directory.Build.props 
+            that imported in this project implicitly.
+    -->
+    <PropertyGroup>
+      <NewLine>%0D%0A</NewLine>
+      <NugetName>TestLibraryComponent</NugetName>
+      <NugetConfiguration>Debug</NugetConfiguration>
+
+      <!-- Projects names -->
+      <Project__TestLibrary_WinRt_WinUI3>TestLibrary.WinRt.WinUI3</Project__TestLibrary_WinRt_WinUI3>
+      <Project__TestLibrary_WinRt_WinUI3_unsc>$([System.Text.RegularExpressions.Regex]::Replace( $(Project__TestLibrary_WinRt_WinUI3), '[.]+', '_' ) )</Project__TestLibrary_WinRt_WinUI3_unsc>
+      <Project__TestLibrary_WinRt_Projection>$(ProjectName)</Project__TestLibrary_WinRt_Projection>
+      
+      <!-- 
+        Regex groups:
+        [1] - Build path
+        [2] - Platform
+        [3] - Configuration
+        [4] - Optional subfolders before 'bin' directory
+        [5] - Rest path
+      -->
+      <RegExToCapturePlatformConfiguration>(.*\\?)(x86|x64|Win32)\\(Debug|Release)\\(.*?\\)?bin\\(.*)</RegExToCapturePlatformConfiguration>
+    </PropertyGroup>
+
+    <!--
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetStructureDir = $(NugetStructureDir)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] CustomOutDirRoot = $(CustomOutDirRoot)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Projects:" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Project__TestLibrary_WinRt_WinUI3 = $(Project__TestLibrary_WinRt_WinUI3)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Project__TestLibrary_WinRt_WinUI3_unsc = $(Project__TestLibrary_WinRt_WinUI3_unsc)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Project__TestLibrary_WinRt_Projection = $(Project__TestLibrary_WinRt_Projection)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Clean previous build ..." />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <RemoveDir Directories="$(NugetStructureDir)" />
+    -->
+    
+    <!-- Nuget structure -->
+    <ItemGroup>
+      <!-- Architecture-neutral assemblies.
+           Note that .winmd is shared for different platforms (if windows runtime component is built as c++) 
+      -->
+      <NugetProjectionDll Include="$(CustomOutDirRoot)\AnyCPU\$(NugetConfiguration)\$(Project__TestLibrary_WinRt_Projection)\bin\$(Project__TestLibrary_WinRt_Projection).dll" />
+      <NugetWinRtMetaData Include="$(CustomOutDirRoot)\x64\$(NugetConfiguration)\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3_unsc).winmd" />
+
+      <!-- Architecture-specific implementation DLLs should be copied into RID-relative folders. -->
+      <NugetWinRtPri Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3).pri" />
+      <NugetWinRtDlls Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3).dll" />
+
+      <NugetNuspec Include="$(ProjectDir)\$(NugetName).nuspec" />
+      <NugetTargets Include="$(ProjectDir)\$(NugetName).targets" />
+    </ItemGroup>
+
+
+    <!-- Print nuget structure original items -->
+    <!--
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetProjectionDll = %(NugetProjectionDll.Identity)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtMetaData = %(NugetWinRtMetaData.Identity)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtPri = %(NugetWinRtPri.Identity)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtDlls = %(NugetWinRtDlls.Identity)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetNuspec = %(NugetNuspec.Identity)" />
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetTargets = %(NugetTargets.Identity)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    -->
+
+    <!-- Correct item group filepathes -->
+    <ItemGroup>
+      <!-- Capture <Configuration> and <Platform> as meta data -->
+      <__NugetWinRtDllsWithMetadata Include="@(NugetWinRtPri);@(NugetWinRtDlls)">
+        <__Platform>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[2].Value)</__Platform>
+        <__Configuration>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[3].Value)</__Configuration>
+        <__RecursiveDir_rest>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[5].Value)</__RecursiveDir_rest>
+      </__NugetWinRtDllsWithMetadata>
+
+      <!-- Replace 'Win32' to 'x86' -->
+      <__NugetWinRtDllsWithMetadata Condition="'%(__Platform)' == 'Win32'">
+        <__Platform>x86</__Platform>
+        <__Configuration>%(__Configuration)</__Configuration>
+        <__RecursiveDir_rest>%(__RecursiveDir_rest)</__RecursiveDir_rest>
+      </__NugetWinRtDllsWithMetadata>
+
+      <!-- Use only release or debug configuration for WinRt dlls and add suffix "win10-" to <Platform> -->
+      <NugetWinRtDllsWithMetadata Include="@(__NugetWinRtDllsWithMetadata)" Condition="'%(__Configuration)' == '$(NugetConfiguration)'">
+        <RecursiveDir_custom>win10-%(__Platform)\native\%(__RecursiveDir_rest)</RecursiveDir_custom>
+      </NugetWinRtDllsWithMetadata>
+    </ItemGroup>
+    
+    
+    <!-- Print items -->
+    <Message Importance="High" Text="==== [$(NugetName) nuget] __NugetWinRtDllsWithMetadata = [...\NugetStructure]\%(__NugetWinRtDllsWithMetadata.RecursiveDir)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtDllsWithMetadata = [...\NugetStructure]\%(NugetWinRtDllsWithMetadata.RecursiveDir_custom)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+    
+    
+    <!-- Copying -->
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Copy projection dll and .winmd ..." />
+    <Copy SourceFiles="@(NugetProjectionDll)" DestinationFolder="$(NugetStructureDir)\lib\net6.0-windows10.0.19041.0\" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="@(NugetWinRtMetaData)" DestinationFolder="$(NugetStructureDir)\lib\uap10.0\" SkipUnchangedFiles="true" />-->
+
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Copy dlls ..." />
+    <Copy SourceFiles="@(NugetWinRtDllsWithMetadata)" DestinationFolder="$(NugetStructureDir)\runtimes\%(RecursiveDir_custom)" SkipUnchangedFiles="true" />
+
+    <Message Importance="High" Text="==== [$(NugetName) nuget] Copy nuspec, props, targets ..." />
+    <Copy SourceFiles="@(NugetNuspec)" DestinationFolder="$(NugetStructureDir)\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(NugetStructureDir)\build\" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(NugetStructureDir)\build\net6.0-windows10.0.19041.0\" SkipUnchangedFiles="true" />-->
+    <!--<Copy SourceFiles="@(NugetTargets)" DestinationFolder="$(NugetStructureDir)\build\uap10.0\" SkipUnchangedFiles="true" />-->
+
+    
+    <!-- Remove nuget package from default location -->
+    <Message Importance="High" Text="==== [$(NugetName)] remove '$(NugetName)' package ..." />
+    <RemoveDir Directories="C:\$(HOMEPATH)\.nuget\packages\$(NugetName)" />
+  </Target>
+</Project>
