@@ -2,16 +2,16 @@
 
 namespace TestLibraryNative {
 	int MainTypesNative::GetTestInt() {
-		return 1234;
+		return 3333;
 	}
 	void MainTypesNative::SetTestInt(int value) {
-		return;
+		this->testInt = value;
 	}
 
-	std::string MainTypesNative::GetTestString() {
-		return "string";
-	}
 	std::wstring MainTypesNative::GetTestWString() {
-		return L"wstring";
+		return this->testWString;
+	}
+	void MainTypesNative::SetTestWString(std::wstring str) {
+		this->testWString = str;
 	}
 }

@@ -1,8 +1,7 @@
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace SimpleApp.WinUI3
-{
+namespace SimpleApp.WinUI3 {
     using Microsoft.UI.Xaml;
     using Microsoft.UI.Xaml.Controls;
     using Microsoft.UI.Xaml.Controls.Primitives;
@@ -23,20 +22,36 @@ namespace SimpleApp.WinUI3
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : Window
-    {
-        public MainWindow()
-        {
+    public sealed partial class MainWindow : Window {
+        public MainWindow() {
             this.InitializeComponent();
 
             var mainTypesWinRt = new MainTypesWinRt();
 
             var testIntProperty = mainTypesWinRt.TestIntProperty;
+
+            var testStringProperty = mainTypesWinRt.TestStringProperty;
+            mainTypesWinRt.TestStringProperty = "string modified";
+            testStringProperty = mainTypesWinRt.TestStringProperty;
+
+            TestAsync(mainTypesWinRt);
+
+            var testStringPropertyOnlyGet = mainTypesWinRt.TestStringPropertyOnlyGet;
+        }
+        private void myButton_Click(object sender, RoutedEventArgs e) {
+            myButton.Content = "Clicked";
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
-        {
-            myButton.Content = "Clicked";
+
+        private void ProgressEventHandler(object sender, float progress) {
+            float x = progress;
+        }
+
+        private async void TestAsync(MainTypesWinRt mainTypesWinRt) {
+            await mainTypesWinRt.TestAsyncAction();
+
+            mainTypesWinRt.ProgressEvent += ProgressEventHandler;
+            mainTypesWinRt.DoSomething();
         }
     }
 }

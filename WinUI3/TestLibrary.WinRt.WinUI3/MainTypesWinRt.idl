@@ -4,6 +4,14 @@ namespace TestLibrary_WinRt_WinUI3
     runtimeclass MainTypesWinRt 
     {
         MainTypesWinRt();
+
         Int32 TestIntProperty;
+        String TestStringProperty;
+        String TestStringPropertyOnlyGet{ get; };
+
+        event Windows.Foundation.EventHandler<Single> ProgressEvent;
+
+        void DoSomething();
+        Windows.Foundation.IAsyncAction TestAsyncAction();
     }
 }

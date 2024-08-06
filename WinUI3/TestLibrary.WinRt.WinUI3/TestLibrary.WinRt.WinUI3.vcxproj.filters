@@ -24,6 +24,7 @@
   <ItemGroup>
     <None Include="TestLibrary_WinRt_WinUI3.def" />
     <None Include="packages.config" />
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
