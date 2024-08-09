@@ -1,3 +1,5 @@
+import "Runtime/Interfaces/DxSettingsWrapper.idl";
+
 namespace TestLibrary_WinRt_WinUI3 
 {
     [default_interface]
@@ -13,5 +15,8 @@ namespace TestLibrary_WinRt_WinUI3
 
         void DoSomething();
         Windows.Foundation.IAsyncAction TestAsyncAction();
+
+        //Helpers.WinRt.Dx.DxSettingsWrapper GetDxSettings();
+        DxSettingsWrapper GetDxSettings();
     }
 }

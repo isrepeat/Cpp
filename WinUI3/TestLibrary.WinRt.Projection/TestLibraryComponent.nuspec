@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>TestLibraryComponent</id>
-    <version>0.5.0-prerelease</version>
+    <version>0.6.0-prerelease</version>
     <authors>C++Team</authors>
     <description>A simple component with basic math operations</description>
     <dependencies>

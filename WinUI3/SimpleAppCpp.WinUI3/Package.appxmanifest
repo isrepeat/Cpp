@@ -8,14 +8,14 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="c07e3a2c-b738-488d-bd1d-9075e287b434"
+    Name="e613bc28-ddc2-4ece-b178-27fa829c493e"
     Publisher="CN=isrepeat"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="c07e3a2c-b738-488d-bd1d-9075e287b434" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="e613bc28-ddc2-4ece-b178-27fa829c493e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>SimpleApp.WinUI3</DisplayName>
+    <DisplayName>SimpleAppCpp.WinUI3</DisplayName>
     <PublisherDisplayName>isrepeat</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="SimpleApp.WinUI3"
-        Description="SimpleApp.WinUI3"
+        DisplayName="SimpleAppCpp.WinUI3"
+        Description="SimpleAppCpp.WinUI3"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

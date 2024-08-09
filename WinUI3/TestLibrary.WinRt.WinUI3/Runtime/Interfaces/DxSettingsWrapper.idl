@@ -1,0 +1,12 @@
+namespace TestLibrary_WinRt_WinUI3
+{
+    //namespace Helpers.WinRt.Dx
+    //{
+        [default_interface]
+        runtimeclass DxSettingsWrapper
+        {
+            DxSettingsWrapper();
+            Boolean MSAA;
+        }
+    //}
+}

@@ -26,7 +26,13 @@ namespace SimpleApp.WinUI3 {
         public MainWindow() {
             this.InitializeComponent();
 
+
+        }
+        private void myButton_Click(object sender, RoutedEventArgs e) {
             var mainTypesWinRt = new MainTypesWinRt();
+
+            var dxSettings = mainTypesWinRt.GetDxSettings();
+            bool msaa = dxSettings.MSAA;
 
             var testIntProperty = mainTypesWinRt.TestIntProperty;
 
@@ -37,8 +43,7 @@ namespace SimpleApp.WinUI3 {
             TestAsync(mainTypesWinRt);
 
             var testStringPropertyOnlyGet = mainTypesWinRt.TestStringPropertyOnlyGet;
-        }
-        private void myButton_Click(object sender, RoutedEventArgs e) {
+
             myButton.Content = "Clicked";
         }
 

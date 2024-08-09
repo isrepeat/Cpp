@@ -2,10 +2,10 @@
 #include "MainTypesWinRt.g.h"
 #include "MainTypesNative.h"
 
-#include <Helpers/Async/Awaitables.h>
-
-using RootTask = H::Async::CoTask<H::Async::PromiseRoot>;
-using Task = H::Async::CoTask<H::Async::PromiseDefault>;
+//#include <Helpers/Async/Awaitables.h>
+//
+//using RootTask = H::Async::CoTask<H::Async::PromiseRoot>;
+//using Task = H::Async::CoTask<H::Async::PromiseDefault>;
 
 namespace winrt::TestLibrary_WinRt_WinUI3::implementation {
     struct MainTypesWinRt : MainTypesWinRtT<MainTypesWinRt> {
@@ -35,10 +35,16 @@ namespace winrt::TestLibrary_WinRt_WinUI3::implementation {
 
         winrt::Windows::Foundation::IAsyncAction TestAsyncAction();
 
+        //Helpers::WinRt::Dx::DxSettings GetDxSettings();
+        DxSettingsWrapper GetDxSettings();
+
     private:
+        //winrt::Helpers::WinRt::Dx::DxSettings dxSettings;
+        DxSettingsWrapper dxSettingsWrapper;
+
         TestLibraryNative::MainTypesNative mainTypesNative;
         winrt::event<Windows::Foundation::EventHandler<float>> progressEvent;
-        RootTask::Ret_t rootTask;
+        //RootTask::Ret_t rootTask;
     };
 }
 namespace winrt::TestLibrary_WinRt_WinUI3::factory_implementation {

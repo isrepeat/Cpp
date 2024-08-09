@@ -11,6 +11,7 @@
       <NugetConfiguration>Debug</NugetConfiguration>
 
       <!-- Projects names -->
+      <Project__Helpers_WinRt>Helpers.WinRt</Project__Helpers_WinRt>
       <Project__TestLibrary_WinRt_WinUI3>TestLibrary.WinRt.WinUI3</Project__TestLibrary_WinRt_WinUI3>
       <Project__TestLibrary_WinRt_WinUI3_unsc>$([System.Text.RegularExpressions.Regex]::Replace( $(Project__TestLibrary_WinRt_WinUI3), '[.]+', '_' ) )</Project__TestLibrary_WinRt_WinUI3_unsc>
       <Project__TestLibrary_WinRt_Projection>$(ProjectName)</Project__TestLibrary_WinRt_Projection>
@@ -18,12 +19,12 @@
       <!-- 
         Regex groups:
         [1] - Build path
-        [2] - Platform
-        [3] - Configuration
-        [4] - Optional subfolders before 'bin' directory
+        [2] - Configuration
+        [3] - Platform
+        [4] - Optional subfolder (it's can be project name or another folder)
         [5] - Rest path
       -->
-      <RegExToCapturePlatformConfiguration>(.*\\?)(x86|x64|Win32)\\(Debug|Release)\\(.*?\\)?bin\\(.*)</RegExToCapturePlatformConfiguration>
+      <RegExToCapturePlatformConfiguration>(.*\\?)(Debug|Release)\\(x86|x64|Win32)\\(.*?\\)?(.*)</RegExToCapturePlatformConfiguration>
     </PropertyGroup>
 
     <!--
@@ -45,12 +46,16 @@
       <!-- Architecture-neutral assemblies.
            Note that .winmd is shared for different platforms (if windows runtime component is built as c++) 
       -->
-      <NugetProjectionDll Include="$(CustomOutDirRoot)\AnyCPU\$(NugetConfiguration)\$(Project__TestLibrary_WinRt_Projection)\bin\$(Project__TestLibrary_WinRt_Projection).dll" />
-      <NugetWinRtMetaData Include="$(CustomOutDirRoot)\x64\$(NugetConfiguration)\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3_unsc).winmd" />
+      <!--<NugetWinRtMetaData Include="$(SolutionDir)\!VS_TMP\Build\$(NugetConfiguration)\x64\$(Project__Helpers_WinRt).winmd" />-->
+      <NugetWinRtMetaData Include="$(CustomOutDirRoot)\Build\$(NugetConfiguration)\x64\$(Project__TestLibrary_WinRt_WinUI3)\$(Project__TestLibrary_WinRt_WinUI3_unsc).winmd" />
+      <NugetProjectionDll Include="$(CustomOutDirRoot)\Build\$(NugetConfiguration)\AnyCPU\$(Project__TestLibrary_WinRt_Projection)\$(Project__TestLibrary_WinRt_Projection).dll" />
 
       <!-- Architecture-specific implementation DLLs should be copied into RID-relative folders. -->
-      <NugetWinRtPri Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3).pri" />
-      <NugetWinRtDlls Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\bin\$(Project__TestLibrary_WinRt_WinUI3).dll" />
+      <!--<NugetWinRtDlls Include="$(SolutionDir)\!VS_TMP\Build\**\$(Project__Helpers_WinRt).dll" />-->
+      <!--<NugetWinRtPri Include="$(SolutionDir)\!VS_TMP\Build\**\$(Project__Helpers_WinRt).pri" />-->
+      
+      <NugetWinRtDlls Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\$(Project__TestLibrary_WinRt_WinUI3).dll" />
+      <NugetWinRtPri Include="$(CustomOutDirRoot)\**\$(Project__TestLibrary_WinRt_WinUI3)\$(Project__TestLibrary_WinRt_WinUI3).pri" />
 
       <NugetNuspec Include="$(ProjectDir)\$(NugetName).nuspec" />
       <NugetTargets Include="$(ProjectDir)\$(NugetName).targets" />
@@ -59,6 +64,7 @@
 
     <!-- Print nuget structure original items -->
     <!--
+    -->
     <Message Importance="High" Text="==== [$(NugetName) nuget] NugetProjectionDll = %(NugetProjectionDll.Identity)" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtMetaData = %(NugetWinRtMetaData.Identity)" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] NugetWinRtPri = %(NugetWinRtPri.Identity)" />
@@ -66,14 +72,13 @@
     <Message Importance="High" Text="==== [$(NugetName) nuget] NugetNuspec = %(NugetNuspec.Identity)" />
     <Message Importance="High" Text="==== [$(NugetName) nuget] NugetTargets = %(NugetTargets.Identity)" />
     <Message Importance="High" Text="$(NewLine)"/>
-    -->
 
     <!-- Correct item group filepathes -->
     <ItemGroup>
       <!-- Capture <Configuration> and <Platform> as meta data -->
-      <__NugetWinRtDllsWithMetadata Include="@(NugetWinRtPri);@(NugetWinRtDlls)">
-        <__Platform>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[2].Value)</__Platform>
-        <__Configuration>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[3].Value)</__Configuration>
+      <__NugetWinRtDllsWithMetadata Include="@(NugetWinRtDlls);@(NugetWinRtPri)">
+        <__Platform>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[3].Value)</__Platform>
+        <__Configuration>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[2].Value)</__Configuration>
         <__RecursiveDir_rest>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[5].Value)</__RecursiveDir_rest>
       </__NugetWinRtDllsWithMetadata>
 
