@@ -167,21 +167,7 @@
     <ClInclude Include="MyClass.h" />
     <ClInclude Include="SubDir\SubClass.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_C\MSBuild_Project_C.vcxproj">
-      <Project>{b93d9e5d-a09f-4c7c-8177-fb0194ffcb3f}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <!--<ItemGroup>
-    <ProjectReference Include="..\MSBuild_Project_A\MSBuild_Project_A.vcxproj">
-      <Project>{c18d53a4-a516-44af-8142-e7e001b96006}</Project>
-    </ProjectReference>
-  </ItemGroup>-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <!-- =================== Custom targets ===================== -->
-  <!-- NOTE: must be placed at the end of file to success resolving properties and avoid overriding  -->
-  <Import Project="$(ProjectDir)\MSBuild.targets" />
-  <!-- ======================================================== -->
 </Project>

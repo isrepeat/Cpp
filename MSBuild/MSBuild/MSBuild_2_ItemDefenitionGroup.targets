@@ -8,12 +8,21 @@
   </ItemDefinitionGroup>
   
   <ItemGroup>
-    <MyItem Include="PrintItemInfo">
+    <MyItem Include="one">
       <DefaultLibs>quic.lib; core.lib; %(DefaultLibs)</DefaultLibs>
     </MyItem>
   </ItemGroup>
 
-  <Target Name="Build">
-    <Message Importance="High" Text = "Item: @(MyItem) ... DefaultLibs: %(DefaultLibs)"/>
+  <ItemGroup>
+    <MyItem Include="two">
+      <DefaultLibs>xxx.lib; yyy.lib;</DefaultLibs>
+    </MyItem>
+  </ItemGroup>
+
+  
+  <Target Name="__Print" BeforeTargets="PrepareForBuild">
+    <Message Importance="high" Text="$(NewLine)" />
+    <Message Importance="High" Text = "Item: @(MyItem) ... DefaultLibs: %(DefaultLibs) %(DefaultIncludes)"/>
+    <Message Importance="high" Text="$(NewLine)" />
   </Target>
 </Project>

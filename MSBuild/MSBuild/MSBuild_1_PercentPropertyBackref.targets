@@ -1,31 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestProp>Hello</TestProp>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <A>
+      <x>%(x);[SolutionAAA] $(TestProp)</x>
+    </A>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
-     
-    <ExampColl Include="Item1">
-      <Number>1</Number>
-    </ExampColl>
-    <ExampColl Include="Item2">
-      <Number>2</Number>
-      <Number>[2a]; %(Number)</Number>
-    </ExampColl>
-    <ExampColl Include="Item3">
-      <Number>3</Number>
-    </ExampColl>
-
-    <ExampColl2 Include="Item4">
-      <Number>1</Number>
-    </ExampColl2>
-    <ExampColl2 Include="Item5">
-      <Number>2</Number>
-    </ExampColl2>
-    <ExampColl2 Include="Item6">
-      <Number>3</Number>
-    </ExampColl2>
-
+    <A Include="SolutionAAA">
+      <files>test.htm;test_sol1.htm</files>
+      <!--<x>[SolutionAAA] $(TestProp)</x>-->
+      <y>b1</y>
+      <z>c1</z>
+    </A>
+    <A Include="SolutionBBB">
+      <files>test.proj</files>
+      <!--<x>[SolutionBBB] a2</x>-->
+      <y>b2</y>
+      <z>c2</z>
+    </A>
   </ItemGroup>
 
-  <Target Name="Build">
-    <Message Importance="High" Text = "Number: %(Number) == Items in ExampColl: @(ExampColl) ExampColl2: @(ExampColl2)"/>
+  <PropertyGroup>
+    <TestProp>Bye</TestProp>
+  </PropertyGroup>
+
+
+  <ItemDefinitionGroup>
+    <A>
+      <x>%(x);[SolutionAAA] $(TestProp)</x>
+    </A>
+  </ItemDefinitionGroup>
+
+
+  <Target Name="__Print" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <NL>%0D%0A</NL>
+    </PropertyGroup>
+    
+    <!--<Message Importance="High" Text="A: %(A.files)"/>-->
+    <Message Importance="High" Text="[%(A.Identity)]
+    A.x = %(A.x)
+    A.y = %(A.y)
+    A.z = %(A.z)
+             "/>
+    <Message Importance="High" Text="@(A->'%(Identity) x:%(x) y:%(y) z:%(z)', '$(NL)')" />
   </Target>
 </Project>
