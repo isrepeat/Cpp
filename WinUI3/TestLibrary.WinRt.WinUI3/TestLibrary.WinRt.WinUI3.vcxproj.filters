@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime">
+      <UniqueIdentifier>{f6611b6b-9504-4948-a501-c33dd84051a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime\Interfaces">
+      <UniqueIdentifier>{d0c249c8-4fa2-4f76-84ef-610df712cb1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Runtime\Implementation">
+      <UniqueIdentifier>{f6d76ae8-dca7-422d-81a3-ab81ca1eeea6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Runtime\Implementation\Helpers.WinRt.Dx.DxSettingsWrapper.cpp">
+      <Filter>Runtime\Implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="Runtime\Implementation\MainTypesWinRt.cpp">
+      <Filter>Runtime\Implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="Runtime\Implementation\DxSettingsWrapper.cpp">
+      <Filter>Runtime\Implementation</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Runtime\Implementation\Helpers.WinRt.Dx.DxSettingsWrapper.h">
+      <Filter>Runtime\Implementation</Filter>
+    </ClInclude>
+    <ClInclude Include="Runtime\Implementation\MainTypesWinRt.h">
+      <Filter>Runtime\Implementation</Filter>
+    </ClInclude>
+    <ClInclude Include="Runtime\Implementation\DxSettingsWrapper.h">
+      <Filter>Runtime\Implementation</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestLibrary_WinRt_WinUI3.def" />
+    <None Include="packages.config" />
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props" />
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Runtime\Interfaces\DxSettingsWrapper.idl">
+      <Filter>Runtime\Interfaces</Filter>
+    </Midl>
+    <Midl Include="Runtime\Interfaces\MainTypesWinRt.idl">
+      <Filter>Runtime\Interfaces</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

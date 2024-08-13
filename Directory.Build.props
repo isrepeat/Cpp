@@ -1,0 +1,95 @@
+<Project>
+  <!-- WARNING: Place this file in solution directory. All custom properties that defined here
+                should starts from __ to avoid conflicts with reserved msbuild props. 
+  -->
+  <!-- This props can helps us to determine if this file 'Directory.Build.props' is imported from another .props -->
+  <PropertyGroup>
+    <__IsLocalPrevious>$(__IsLocal)</__IsLocalPrevious>
+    <__IsLocal Condition="'$(__IsLocalPrevious)' != ''">false</__IsLocal>
+    <__IsLocal Condition="'$(__IsLocalPrevious)' == ''">true</__IsLocal>
+  </PropertyGroup>
+  
+  <!-- Define here global props that can be overriden by parent 'Directory.Build.props'.
+       You need override this props for child 'Directory.Build.props' at the end of this file to avoid breaking local build logic.
+  -->
+  <PropertyGroup>
+    <!-- [Set msbuild well known props] -->
+    <!-- See more details in Microsoft.CppCommon.targets -->
+    <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+    
+    <!-- [Set custom default props] -->
+    <__OverrideOutputPath>false</__OverrideOutputPath>
+    <__OverrideOutputPathOnlyIfBuildFromAnotherSolution>false</__OverrideOutputPathOnlyIfBuildFromAnotherSolution>
+    <__PrintDirectoryBuildPropsInfo>true</__PrintDirectoryBuildPropsInfo>
+  </PropertyGroup>
+
+  
+  <!-- ::::::::::::::::::::::  Import  :::::::::::::::::::::: -->
+  <!-- Define here props that imported to child 'Directory.Build.props'. -->
+  <PropertyGroup>
+    <__ImportedSolutionDirectory>$(MSBuildThisFileDirectory)</__ImportedSolutionDirectory>
+  </PropertyGroup>
+  
+  <!-- Import closest parent 'Directory.Build.props' -->
+  <PropertyGroup>
+    <__ParentDirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..\'))</__ParentDirectoryBuildProps>
+  </PropertyGroup>
+  <Import Project="$(__ParentDirectoryBuildProps)" Condition="Exists('$(__ParentDirectoryBuildProps)')"/>
+  
+  <PropertyGroup Condition="'$(__OverrideOutputPathOnlyIfBuildFromAnotherSolution)' == 'true'">
+    <!-- Force reset __OverrideOutputPath. -->
+    <__OverrideOutputPath>false</__OverrideOutputPath>
+    <!-- If imported .props is not belong to current solution reset __OverrideOutputPathOnlyIfBuildFromAnotherSolution -->
+    <__OverrideOutputPathOnlyIfBuildFromAnotherSolution Condition="'$(__ImportedSolutionDirectory)' != '$(SolutionDir)'">false</__OverrideOutputPathOnlyIfBuildFromAnotherSolution>
+  </PropertyGroup>
+
+  <!-- Return handled imported values back to current 'Directory.Build.props'. -->
+  <PropertyGroup>
+    <__ImportedSolutionDirectory>$(MSBuildThisFileDirectory)</__ImportedSolutionDirectory>
+  </PropertyGroup>
+  <!-- :::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+
+
+  <!-- Handle overridable dependent props here. -->
+  <PropertyGroup Condition="'$(__OverrideOutputPath)' == 'false' and '$(__OverrideOutputPathOnlyIfBuildFromAnotherSolution)' == 'false'">
+    <!-- Note that $(PlatformToolset) here is empty (not defined yet). -->
+    <OutDir>$(SolutionDir)!VS_TMP\Build\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)!VS_TMP\Intermediate\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir Condition="!HasTrailingSlash('$(OutDir)')">$(OutDir)\</OutDir>
+    <IntDir Condition="!HasTrailingSlash('$(IntDir)')">$(IntDir)\</IntDir>
+  </PropertyGroup>
+
+
+  <!-- ::::::::::::::::::::::  Local  :::::::::::::::::::::: -->
+  <!-- Define global props for all directory's child projects here. 
+       Add Condition="'$(__IsLocal)' == 'true'" for local props which should not be included in child 'Directory.Build.props'.
+  -->
+  <!-- Import PROJECT.props -->
+  <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props') and '$(__IsLocal)' == 'true'" />
+
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props') and '$(__IsLocal)' == 'true'" />
+  </ItemGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+
+
+  <!-- Remember current 'Directory.Build.props' directory to print it latter for debug -->
+  <ItemGroup>
+    <__CapturedDirectoryBuildProps Include="$(MSBuildThisFileDirectory)" />
+  </ItemGroup>
+
+  
+  <!-- :::::::::::::::::::::  Override  ::::::::::::::::::::: -->
+  <PropertyGroup>
+    <!-- Override specific properties for child 'Directory.Build.props' -->
+    <__OverrideOutputPathOnlyIfBuildFromAnotherSolution>true</__OverrideOutputPathOnlyIfBuildFromAnotherSolution>
+
+    <!--Return $(__IsLocal) value back -->
+    <__IsLocal>$(__IsLocalPrevious)</__IsLocal>
+  </PropertyGroup>
+  <!-- :::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+</Project>

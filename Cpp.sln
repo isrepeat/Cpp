@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33130.400
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console", "Console\Console.vcxproj", "{27C2C410-8770-4D35-941C-6EA738388F43}"
 EndProject
@@ -152,8 +152,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test.WinRT.Component_2", "T
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test.WinRT.Static", "TEST\WinRT\Test.WinRT.Static\Test.WinRT.Static.vcxproj", "{257171DE-8321-4044-B08A-8B26B1946B2D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4EF46011-9825-429E-BE7E-069EA094EDFC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution", "!Solution", "{4EF46011-9825-429E-BE7E-069EA094EDFC}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		Doxyfile = Doxyfile
 	EndProjectSection
 EndProject
@@ -171,52 +173,23 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxSamples.WinRt", "DirectX\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DxSamplesApp", "DirectX\UWP\DxSamplesApp\DxSamplesApp.csproj", "{54E85DE8-EFF4-4C55-A970-43D547DE6E81}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinUI3", "WinUI3", "{D8B16DFF-F06A-4548-82B2-67E2176BB7BF}"
+	ProjectSection(SolutionItems) = preProject
+		WinUI3\Directory.Build.props = WinUI3\Directory.Build.props
+		WinUI3\Directory.Build.targets = WinUI3\Directory.Build.targets
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApp.WinUI3", "WinUI3\SimpleApp.WinUI3\SimpleApp.WinUI3.csproj", "{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibrary", "WinUI3\TestLibrary\TestLibrary.vcxproj", "{15F05768-CCA3-4057-8A2C-DDBC7B160003}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibrary.WinRt.WinUI3", "WinUI3\TestLibrary.WinRt.WinUI3\TestLibrary.WinRt.WinUI3.vcxproj", "{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLibrary.WinRt.Projection", "WinUI3\TestLibrary.WinRt.Projection\TestLibrary.WinRt.Projection.csproj", "{E6BB380E-BB30-491F-A988-0868A8EDB617}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleAppCpp.WinUI3", "WinUI3\SimpleAppCpp.WinUI3\SimpleAppCpp.WinUI3.vcxproj", "{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{301bf8c8-f7ca-429f-8b12-ded615a64508}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{34a69ffa-7fae-4de7-bac0-30b5730831e9}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{4dc532ad-a19b-4ec5-9923-990df8f4a9ab}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{6bec93a0-e1a2-4037-a5df-5ceee0aaa5fd}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{6cef19eb-02db-4b9a-93d8-9e89e662f919}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
-		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{8e84e541-50e8-4485-aec4-de0285f2aa12}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{9119a10a-d27c-4eaf-8ee9-1a3097d8c6f6}*SharedItemsImports = 9
-		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{9ae2e2f4-5b16-4d19-9d1f-799a9e18ca69}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a08a7b52-6de6-44e1-b55d-621b6e5a1e6e}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a1b116ce-961d-42f0-b6c7-82a64b509caa}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{ad8f9708-44ea-4cec-b78d-c376eb02c2b8}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{ad8f9708-44ea-4cec-b78d-c376eb02c2b8}*SharedItemsImports = 4
-		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{c99c2242-d38a-4e7a-925e-bdb32cf888a4}*SharedItemsImports = 4
-		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{d2f14f8e-303b-4ae6-a98b-b789cd19981d}*SharedItemsImports = 4
-		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -903,6 +876,126 @@ Global
 		{54E85DE8-EFF4-4C55-A970-43D547DE6E81}.Release|x86.ActiveCfg = Release|x86
 		{54E85DE8-EFF4-4C55-A970-43D547DE6E81}.Release|x86.Build.0 = Release|x86
 		{54E85DE8-EFF4-4C55-A970-43D547DE6E81}.Release|x86.Deploy.0 = Release|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|Any CPU.Build.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM.ActiveCfg = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM.Build.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM.Deploy.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x64.ActiveCfg = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x64.Build.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x64.Deploy.0 = Debug|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x86.ActiveCfg = Debug|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x86.Build.0 = Debug|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Debug|x86.Deploy.0 = Debug|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|Any CPU.ActiveCfg = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|Any CPU.Build.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|Any CPU.Deploy.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM.ActiveCfg = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM.Build.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM.Deploy.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM64.Build.0 = Release|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|ARM64.Deploy.0 = Release|ARM64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x64.ActiveCfg = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x64.Build.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x64.Deploy.0 = Release|x64
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x86.ActiveCfg = Release|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x86.Build.0 = Release|x86
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE}.Release|x86.Deploy.0 = Release|x86
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|Any CPU.Build.0 = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|ARM.ActiveCfg = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|ARM.Build.0 = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|ARM64.ActiveCfg = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|ARM64.Build.0 = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|x64.ActiveCfg = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|x64.Build.0 = Debug|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|x86.ActiveCfg = Debug|Win32
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Debug|x86.Build.0 = Debug|Win32
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|Any CPU.ActiveCfg = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|Any CPU.Build.0 = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|ARM.ActiveCfg = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|ARM.Build.0 = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|ARM64.ActiveCfg = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|ARM64.Build.0 = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|x64.ActiveCfg = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|x64.Build.0 = Release|x64
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|x86.ActiveCfg = Release|Win32
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003}.Release|x86.Build.0 = Release|Win32
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|Any CPU.Build.0 = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|ARM.ActiveCfg = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|ARM.Build.0 = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|ARM64.Build.0 = Debug|ARM64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|x64.ActiveCfg = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|x64.Build.0 = Debug|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Debug|x86.Build.0 = Debug|Win32
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|Any CPU.ActiveCfg = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|Any CPU.Build.0 = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|ARM.ActiveCfg = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|ARM.Build.0 = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|ARM64.ActiveCfg = Release|ARM64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|ARM64.Build.0 = Release|ARM64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|x64.ActiveCfg = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|x64.Build.0 = Release|x64
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|x86.ActiveCfg = Release|Win32
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}.Release|x86.Build.0 = Release|Win32
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|ARM.Build.0 = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|x64.Build.0 = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Debug|x86.Build.0 = Debug|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|ARM.ActiveCfg = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|ARM.Build.0 = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|ARM64.Build.0 = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|x64.ActiveCfg = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|x64.Build.0 = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|x86.ActiveCfg = Release|Any CPU
+		{E6BB380E-BB30-491F-A988-0868A8EDB617}.Release|x86.Build.0 = Release|Any CPU
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|Any CPU.Build.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM.ActiveCfg = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM.Build.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM.Deploy.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM64.Build.0 = Debug|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x64.ActiveCfg = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x64.Build.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x64.Deploy.0 = Debug|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x86.ActiveCfg = Debug|Win32
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x86.Build.0 = Debug|Win32
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Debug|x86.Deploy.0 = Debug|Win32
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|Any CPU.ActiveCfg = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|Any CPU.Build.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|Any CPU.Deploy.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM.ActiveCfg = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM.Build.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM.Deploy.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM64.ActiveCfg = Release|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM64.Build.0 = Release|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|ARM64.Deploy.0 = Release|ARM64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x64.ActiveCfg = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x64.Build.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x64.Deploy.0 = Release|x64
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x86.ActiveCfg = Release|Win32
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x86.Build.0 = Release|Win32
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -974,8 +1067,58 @@ Global
 		{DF3B9FBE-FDAA-45B2-9555-CCF9937C4D7C} = {C19740AA-3ABB-4ECD-9539-310D11671996}
 		{BDBEBB9B-9773-4AB4-A18D-802F2DF64963} = {C19740AA-3ABB-4ECD-9539-310D11671996}
 		{54E85DE8-EFF4-4C55-A970-43D547DE6E81} = {C19740AA-3ABB-4ECD-9539-310D11671996}
+		{4DEAC4CD-429D-40E0-A794-5FFD62C28FBE} = {D8B16DFF-F06A-4548-82B2-67E2176BB7BF}
+		{15F05768-CCA3-4057-8A2C-DDBC7B160003} = {D8B16DFF-F06A-4548-82B2-67E2176BB7BF}
+		{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C} = {D8B16DFF-F06A-4548-82B2-67E2176BB7BF}
+		{E6BB380E-BB30-491F-A988-0868A8EDB617} = {D8B16DFF-F06A-4548-82B2-67E2176BB7BF}
+		{4991E4C4-A5C6-4B24-A3DA-06B4E5C31D62} = {D8B16DFF-F06A-4548-82B2-67E2176BB7BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{301bf8c8-f7ca-429f-8b12-ded615a64508}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{34a69ffa-7fae-4de7-bac0-30b5730831e9}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{4dc532ad-a19b-4ec5-9923-990df8f4a9ab}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{6bec93a0-e1a2-4037-a5df-5ceee0aaa5fd}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{6cef19eb-02db-4b9a-93d8-9e89e662f919}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{8e84e541-50e8-4485-aec4-de0285f2aa12}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{9119a10a-d27c-4eaf-8ee9-1a3097d8c6f6}*SharedItemsImports = 9
+		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{9ae2e2f4-5b16-4d19-9d1f-799a9e18ca69}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a08a7b52-6de6-44e1-b55d-621b6e5a1e6e}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a1b116ce-961d-42f0-b6c7-82a64b509caa}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{abc6a868-347e-450d-b464-65841f44e2a4}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{ad8f9708-44ea-4cec-b78d-c376eb02c2b8}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{ad8f9708-44ea-4cec-b78d-c376eb02c2b8}*SharedItemsImports = 4
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{bbb946c5-e5a5-4d22-a3d2-660a49fe201c}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{c99c2242-d38a-4e7a-925e-bdb32cf888a4}*SharedItemsImports = 4
+		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{d2f14f8e-303b-4ae6-a98b-b789cd19981d}*SharedItemsImports = 4
+		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
+		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal

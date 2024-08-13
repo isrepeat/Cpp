@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <!-- See more details in Microsoft.CppCommon.targets -->
+    <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+
+    <CustomOutDirRoot>$(MSBuildThisFileDirectory)\!VS_TMP</CustomOutDirRoot>
+    <OutDir>$(CustomOutDirRoot)\Build\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>$(CustomOutDirRoot)\Intermediate\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</IntDir>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')"
+          />
+
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')"
+          />
+  </ItemGroup>
+</Project>

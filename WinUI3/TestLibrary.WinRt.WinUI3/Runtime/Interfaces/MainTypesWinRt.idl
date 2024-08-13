@@ -1,0 +1,22 @@
+import "Runtime/Interfaces/DxSettingsWrapper.idl";
+
+namespace TestLibrary_WinRt_WinUI3 
+{
+    [default_interface]
+    runtimeclass MainTypesWinRt 
+    {
+        MainTypesWinRt();
+
+        Int32 TestIntProperty;
+        String TestStringProperty;
+        String TestStringPropertyOnlyGet{ get; };
+
+        event Windows.Foundation.EventHandler<Single> ProgressEvent;
+
+        void DoSomething();
+        Windows.Foundation.IAsyncAction TestAsyncAction();
+
+        //Helpers.WinRt.Dx.DxSettingsWrapper GetDxSettings();
+        DxSettingsWrapper GetDxSettings();
+    }
+}
