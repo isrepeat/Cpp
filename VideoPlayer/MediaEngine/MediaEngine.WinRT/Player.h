@@ -55,16 +55,18 @@ namespace MediaEngineWinRT {
 		void OnResuming(Platform::Object^ sender, Platform::Object^ args);
 
 	private:
-		//std::shared_ptr<H::Dx::SwapChainPanel> QuerySwapChainPanelNative();
+		Helpers::WinRt::Dx::SwapChainPanel^ CreateSwapChainPanelWinRt(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanelXaml);
 		std::unique_ptr<IAudioClientFactory> CreateAudioClientFactory();
 
 	private:
 		Concurrency::critical_section criticalSection;
+		Helpers::WinRt::Dx::DxSettings^ dxSettings;
+		Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt;
+		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanelNative;
+
 		Windows::Foundation::IAsyncAction^ fileOpenAction;
 		Windows::Foundation::IAsyncAction^ renderLoopWorker;
 		//MediaPlayer mediaPlayer;
-		Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt;
-		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
 		VideoSceneRenderer videoSceneRenderer;
     };
 }

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "VideoSceneRenderer.h"
 #include <Helpers/Dx/DxHelpers.h>
+#include <Helpers/FileSystem.h>
 #include <Helpers/File.h>
 
 #define LOG_DEBUG_D(fmt, ...)
@@ -57,8 +58,8 @@ namespace MediaEngineWinRT {
 
 	void VideoSceneRenderer::CreateDeviceDependentResources() {
 		// Load shaders asynchronously.
-		auto loadVSTask = H::ReadDataAsync(L"MediaEngineWinRT\\SampleVertexShader.cso");
-		auto loadPSTask = H::ReadDataAsync(L"MediaEngineWinRT\\SamplePixelShader.cso");
+		auto loadVSTask = H::WinRt::ReadDataAsync(L"MediaEngineWinRT\\SampleVertexShader.cso");
+		auto loadPSTask = H::WinRt::ReadDataAsync(L"MediaEngineWinRT\\SamplePixelShader.cso");
 
 		// After the vertex shader file is loaded, create the shader and input layout.
 		auto createVSTask = loadVSTask.then([this](const std::vector<BYTE>& fileData) {

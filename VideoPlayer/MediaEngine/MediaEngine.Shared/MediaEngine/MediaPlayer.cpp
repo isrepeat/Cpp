@@ -2,7 +2,9 @@
 
 
 MediaPlayer::MediaPlayer(std::unique_ptr<IAudioClientFactory> audioClientFactory, H::Size /*windowSize*/)
-	: dxDeviceSafeObj{ std::make_unique<H::Dx::details::DxVideoDeviceMF>() }
+	: dxDeviceSafeObj{ 
+		std::make_unique<H::Mutex<std::recursive_mutex>>(),
+		std::make_unique<H::Dx::details::DxVideoDeviceMF>() }
 	, avTrack(&dxDeviceSafeObj, std::move(audioClientFactory))
 {
 	this->avTrack.SetEventListener(this);

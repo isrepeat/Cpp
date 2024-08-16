@@ -15,7 +15,7 @@ public:
 private:
     H::Dx::DxDeviceSafeObj* dxDeviceSafeObj;
 #if AvReaderDxgiManager_NEW_LOGIC
-    H::Dx::DxDeviceSafeObj mfDxDeviceSafeObj;
+    H::Dx::DxDeviceSafeObj dxDeviceForVideoRenderSafeObj;
 #endif
 
     Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mfDxgiDeviceManager;
