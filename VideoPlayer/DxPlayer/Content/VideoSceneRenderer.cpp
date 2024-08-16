@@ -58,8 +58,8 @@ namespace DxPlayer {
 
 	void VideoSceneRenderer::CreateDeviceDependentResources() {
 		// Load shaders asynchronously.
-		auto loadVSTask = H::ReadDataAsync(L"SampleVertexShader.cso");
-		auto loadPSTask = H::ReadDataAsync(L"SamplePixelShader.cso");
+		auto loadVSTask = H::WinRt::ReadDataAsync(L"Default_VS.cso");
+		auto loadPSTask = H::WinRt::ReadDataAsync(L"Default_PS.cso");
 
 		// After the vertex shader file is loaded, create the shader and input layout.
 		auto createVSTask = loadVSTask.then([this](const std::vector<BYTE>& fileData) {

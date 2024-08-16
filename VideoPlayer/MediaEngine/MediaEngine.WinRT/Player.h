@@ -66,7 +66,6 @@ namespace MediaEngineWinRT {
 
 		Windows::Foundation::IAsyncAction^ fileOpenAction;
 		Windows::Foundation::IAsyncAction^ renderLoopWorker;
-		//MediaPlayer mediaPlayer;
 		VideoSceneRenderer videoSceneRenderer;
     };
 }

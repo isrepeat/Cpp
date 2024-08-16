@@ -1,4 +1,4 @@
-#include "NoiseFilter.hlsli"
+//#include "NoiseFilter.hlsli"
 
 Texture2D Tex : register(t0);
 
@@ -17,9 +17,10 @@ struct PsInput{
 
 float4 main(PsInput input) : SV_TARGET{
 	float4 color = Tex.Sample(TexSampler, input.tex);
-    //return color;
-	color = mul(color, ColorEffect);
-	color *= Opacity;
+    return color;
+	
+	//color = mul(color, ColorEffect);
+	//color *= Opacity;
 
-	return ApplyNoise(color, input.tex, GlobalTime);
+	//return ApplyNoise(color, input.tex, GlobalTime);
 }

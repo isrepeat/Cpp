@@ -17,6 +17,4 @@ private:
 #if AvReaderDxgiManager_NEW_LOGIC
     H::Dx::DxDeviceSafeObj dxDeviceForVideoRenderSafeObj;
 #endif
-
-    Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mfDxgiDeviceManager;
 };

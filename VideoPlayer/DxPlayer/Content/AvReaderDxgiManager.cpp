@@ -6,6 +6,11 @@
 #if ENGINE_TYPE == MEDIA_ENDIGNE_LOGIC
 AvReaderDxgiManager::AvReaderDxgiManager(H::Dx::DxDeviceSafeObj* dxDeviceSafeObj)
     : dxDeviceSafeObj{ dxDeviceSafeObj }
+#if AvReaderDxgiManager_NEW_LOGIC
+    , dxDeviceForVideoRenderSafeObj{
+        std::make_unique<H::Mutex<std::recursive_mutex>>(),
+        std::make_unique<H::Dx::details::DxDeviceMF>() }
+#endif
 {}
 
 AvReaderDxgiManager::~AvReaderDxgiManager() {
@@ -14,10 +19,13 @@ AvReaderDxgiManager::~AvReaderDxgiManager() {
 void AvReaderDxgiManager::SetAttributes(IMFAttributes* attr) {
     HRESULT hr = S_OK;
 
+    H::Dx::details::DxDeviceMF* dxDeviceMf = nullptr; // suppress C4703
 #if AvReaderDxgiManager_NEW_LOGIC
-    auto dxDeviceMf = this->mfDxDeviceSafeObj.Lock();
+    auto dxDeviceForVideoRender = this->dxDeviceForVideoRenderSafeObj.Lock();
+    dxDeviceMf = dxDeviceForVideoRender.As<H::Dx::details::DxDeviceMF>();
 #else
-    auto dxDeviceMf = this->dxDeviceSafeObj->Lock();
+    auto dxDevice = this->dxDeviceSafeObj->Lock();
+    dxDeviceMf = dxDevice.As<H::Dx::details::DxDeviceMF>();
 #endif
     dxDeviceMf->CreateMFDXGIDeviceManager();
 
@@ -35,7 +43,11 @@ void AvReaderDxgiManager::SetAttributes(IMFAttributes* attr) {
 
 std::unique_ptr<IAvReaderEffect> AvReaderDxgiManager::CreateEffect(IMFMediaType* input) {
 #if AvReaderDxgiManager_NEW_LOGIC
-    std::unique_ptr<IAvReaderEffect> res = std::make_unique<AvReaderDxgiEffect>(input, this->dxDeviceSafeObj, this->mfDxDeviceSafeObj.Lock()->GetMFDXGIDeviceManager());
+    auto dxDeviceForVideoRender = this->dxDeviceForVideoRenderSafeObj.Lock();
+    H::Dx::details::DxDeviceMF* dxDeviceMf = nullptr; // suppress C4703
+    dxDeviceMf = dxDeviceForVideoRender.As<H::Dx::details::DxDeviceMF>();
+    dxDeviceMf->CreateMFDXGIDeviceManager();
+    std::unique_ptr<IAvReaderEffect> res = std::make_unique<AvReaderDxgiEffect>(input, this->dxDeviceSafeObj, dxDeviceMf->GetMFDXGIDeviceManager());
 #else
     std::unique_ptr<IAvReaderEffect> res = std::make_unique<AvReaderDxgiEffect>(input, this->dxDeviceSafeObj);
 #endif
@@ -55,7 +67,7 @@ void AvReaderDxgiManager::SetAttributes(IMFAttributes* attr) {
     HRESULT hr = S_OK;
 
 #if AvReaderDxgiManager_NEW_LOGIC
-    auto dxDeviceMf = this->mfDxDeviceSafeObj.Lock();
+    auto dxDeviceMf = this->dxDeviceForVideoRenderSafeObj.Lock();
 #else
     auto dxDeviceMf = this->dxDeviceSafeObj->Lock();
 #endif

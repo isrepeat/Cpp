@@ -30,7 +30,7 @@ namespace DxPlayer
 
 		// Cached pointer to device resources.
 		Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt;
-		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
+		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanelNative;
 
 		// TODO: Replace with your own content renderers.
 		std::unique_ptr<VideoSceneRenderer> m_sceneRenderer;

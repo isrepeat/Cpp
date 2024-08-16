@@ -58,7 +58,7 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
         if (!this->sharedTexture) {
             this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
         }
-        sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
+        this->sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
 
         //hr = this->mfLock.UnlockDevice();
         //if (FAILED(hr)) {
@@ -143,7 +143,7 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
         if (!this->sharedTexture) {
             this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
         }
-        sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
+        this->sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
 
         //hr = this->mfLock.UnlockDevice();
         //if (FAILED(hr)) {
