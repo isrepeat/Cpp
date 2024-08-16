@@ -80,5 +80,11 @@
     <FxCompile Include="[02] HDR Scene\ToneMapPS.hlsl">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="[02] HDR Scene\Proxy1_PS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[02] HDR Scene\Proxy2_PS.hlsl">
+      <Filter>[02] HDR Scene\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 #pragma once
 #include <Helpers/Dx/SwapChainPanel.h>
+#include <Helpers/Dx/FullScreenQuad.h>
+#include <Helpers/Dx/DxRenderObjHDR.h>
 
 #include "IScene.h"
 #include "DxRenderObjHdrQuad.h"
@@ -40,9 +42,15 @@ namespace DxSamples {
 		DX::StepTimer renderLoopTimer;
 
 		// Sample objects.
-		QuadRenderer quadRenderer;
+		//QuadRenderer quadRenderer;
 		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;
-		std::unique_ptr<DxRenderObjHdrQuad> dxRenderObjHdrQuad;
+		//std::unique_ptr<DxRenderObjHdrQuad> dxRenderObjHdrQuad;
+
+		H::Dx::details::FullScreenQuad fullScreenQuad;
+		std::unique_ptr<H::Dx::details::DxRenderObjHDR> dxRenderObjProxyLocal;
+		std::unique_ptr<H::Dx::details::DxRenderObjHDR> dxRenderObjProxy1;
+		std::unique_ptr<H::Dx::details::DxRenderObjHDR> dxRenderObjProxy2;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> rsState;
 
 		float currentNits; // Current brightness
 	};

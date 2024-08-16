@@ -161,7 +161,8 @@ namespace DxSamples {
 				txtDesc.Usage = D3D11_USAGE_IMMUTABLE;
 				txtDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-				auto imageBlob = Tools::LoadBGRAImage(L"Textures\\Dune_screenshot_24s.png", txtDesc.Width, txtDesc.Height);
+				//auto imageBlob = Tools::LoadBGRAImage(L"Textures\\Dune_screenshot_24s.png", txtDesc.Width, txtDesc.Height);
+				auto imageBlob = Tools::LoadBGRAImage(L"Textures\\Unexpendibles.4K.DV_screenshot.png", txtDesc.Width, txtDesc.Height);
 
 				D3D11_SUBRESOURCE_DATA initialData = {};
 				initialData.pSysMem = imageBlob.data();

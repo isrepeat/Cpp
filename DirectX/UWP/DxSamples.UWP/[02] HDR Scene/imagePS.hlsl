@@ -24,7 +24,7 @@ SamplerState pointSampler : register(s0);
 Pixel main(Interpolants In)
 {
     Pixel Out;
-    //Out.color = txDiffuse.Sample(pointSampler, In.texcoord);
-    Out.color = float4(0.5f, 0.0f, 0.0f, 1.0f);
+    Out.color = txDiffuse.Sample(pointSampler, In.texcoord);
+    //Out.color = float4(0.5f, 0.0f, 0.0f, 1.0f);
     return Out;
 }
