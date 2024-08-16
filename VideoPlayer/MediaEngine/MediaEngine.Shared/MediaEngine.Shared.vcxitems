@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{ADE9BE58-DBD7-4A0B-9273-4C59F7E77513}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <!-- ======================= Custom targets ======================== -->
+  <Import Project="$(MSBuildThisFileDirectory)MediaEngine.Shared.targets" />
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)MediaEngine.Shared.targets" />
+  </ItemGroup>
+  <!-- =============================================================== -->
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\AudioBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\AudioRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\SimpleAudioMixer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\WASAPIAudioOutput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\XAudio2Output.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\AvReader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\AvReaderDxgiManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\AvReaderDxgiEffect.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\AvSourceStreamManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\AvTrack.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\directx.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDeviceCtx.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDeviceMt.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\MappedResource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\BmpSize.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\D2DTargetState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\Structs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\Texture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\TextureDesc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\TextureRTState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\MediaPlayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\MediaSample.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\MFTools.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\PlaybackClock.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\RewindParams.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaEngine\Track.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\AudioBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\AudioRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\AudioWaveFormat.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\IAudioClientFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\IAudioOutput.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\SimpleAudioMixer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\WASAPIAudioOutput.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Audio\XAudio2Output.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvReader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvReaderDxgiManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvReaderDxgiEffect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvSourceStreamManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvStreamType.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\AvTrack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\directx.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDeviceCtx.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxDeviceMt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\DxHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\MappedResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\BmpSize.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\comptr_array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\D2DTargetState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\D3DTargetState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\OMRenderTargetState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\RSViewportState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\Structs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\Texture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\TextureDesc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\TextureRTState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Dx\Texture\TextureType.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\HData.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\HMath.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\IAvReaderEffect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\MediaPlayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\MediaSample.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\MFTools.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\PlaybackClock.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\RewindParams.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaEngine\Track.h" />
+  </ItemGroup>
+</Project>
