@@ -1,0 +1,8 @@
+## Ignore Cmake output
+out/
+
+## Ignore vlc prebuilt files
+sdk/
+
+## Ignore vlc sources if exist
+vlc/

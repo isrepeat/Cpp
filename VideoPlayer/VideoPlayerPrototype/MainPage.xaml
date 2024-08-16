@@ -1,0 +1,154 @@
+﻿<Page
+    x:Class="VideoPlayerPrototype.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VideoPlayerPrototype"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AllowDrop="True" 
+    DragOver="OnDragOver"
+    Drop="OnDrop">
+
+    <Page.Resources>
+        <local:TimeTooltipConverter x:Key="TimeTooltipConverter"/>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <!--<RowDefinition Height="70"/>-->
+        </Grid.RowDefinitions>
+
+        <SwapChainPanel x:Name="videoPanel"
+                        Grid.Row="0"
+                        PointerReleased="OnVideoViewClicked" />
+
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+            <AppBarButton x:Name="TextTrackAddBtn"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Width="80"
+                    Icon="Add"
+                    Label="Add track"
+                    Command="{Binding Path=AddTrackCommand}"/>
+            
+            <TextBlock x:Name="positionLabel"
+                     Grid.Column="1"
+                     HorizontalAlignment="Center"
+                     TextWrapping="Wrap"
+                     Text="0:00"
+                     VerticalAlignment="Center" Margin="10,0,10,0"/>
+
+            <Slider x:Name="positionSlider"
+                    Grid.Column="2"
+                    ThumbToolTipValueConverter="{StaticResource TimeTooltipConverter}"
+                    IsTapEnabled="True"
+                    Tapped="OnSeekSliderTapped"
+                    ManipulationMode="All"
+                    ManipulationStarted="OnSeekSliderDragStarted"
+                    ManipulationCompleted="OnSeekSliderDragEnded"
+                    ValueChanged="OnSeekSliderDragged"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center" />
+
+            <TextBlock x:Name="durationLabel"
+                     Grid.Column="3"
+                     HorizontalAlignment="Center"
+                     TextWrapping="Wrap"
+                     Text="0:00"
+                     VerticalAlignment="Center" Margin="10,0,10,0"/>
+
+
+
+            <Slider Grid.Column="5" 
+                    VerticalAlignment="Center" 
+                    DataContext="{Binding Path=DynamicRenderResolution}"
+                    IsEnabled="{Binding Path=IsEnabled, Mode=TwoWay}"
+                    Minimum="{Binding Path=MinScaleValue}"
+                    Maximum="{Binding Path=MaxScaleValue}"
+                    Value="{Binding Path=ScaleValue, Mode=TwoWay}"
+                    StepFrequency="10"
+                    TickFrequency="10"
+                    ManipulationMode="TranslateX">
+            </Slider>
+            
+            <TextBlock Grid.Column="6" 
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center" 
+                       DataContext="{Binding Path=DynamicRenderResolution}">
+                <Run Text="{Binding Path=ScaleValue}" />
+                <Run Text="{Binding Path=Units}" />
+            </TextBlock>
+
+
+            <!--<Slider x:Name="dynamicRenderResolutionSlider"
+                    Grid.Column="5"
+                    Minimum="50"
+                    Maximum="100"
+                    TickFrequency="20"
+                    IsTapEnabled="True"
+                    Tapped="OnSeekSliderTapped"
+                    ManipulationMode="All"
+                    ManipulationStarted="OnSeekSliderDragStarted"
+                    ManipulationCompleted="OnSeekSliderDragEnded"
+                    ValueChanged="OnSeekSliderDragged"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center" />
+
+            <TextBlock x:Name="dynamicRenderResolutionLabel"
+                     Grid.Column="6"
+                     HorizontalAlignment="Center"
+                     TextWrapping="Wrap"
+                     Text=""
+                     VerticalAlignment="Center" Margin="10,0,10,0"/>-->
+
+            <AppBarButton x:Name="ToggleFullScreenButton"
+                    Grid.Column="7" 
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Width="80"
+                    Icon="FullScreen"
+                    Label="Fullscreen"
+                    Command="{Binding Path=ToggleFullscreenCommand}"/>
+        </Grid>
+
+        <!--<Grid Grid.Row="2" Margin="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="15*"/>
+                    <ColumnDefinition Width="593*"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Slider x:Name="volumeSlider"
+                    Grid.Column="3"
+                    ValueChanged="OnVolumeSliderDragged"
+                    Value="100"
+                    VerticalAlignment="Center" Maximum="100" Grid.ColumnSpan="2" Margin="0,0,54,0"/>
+                
+                <TextBlock x:Name="volumeLabel"
+                    Grid.Column="4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    100%
+                </TextBlock>
+            </Grid>
+        </Grid>-->
+    </Grid>
+</Page>
