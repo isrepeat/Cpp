@@ -1,4 +1,17 @@
 <Project>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        <!-- Expose project properties through macros: -->
+        MSBuildProject__RootNamespace=$(RootNamespace);
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  
   <!--
   <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets"
           Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets')"
@@ -10,4 +23,39 @@
           />
   </ItemGroup>
   -->
+
+  <Target Name="__RemovePreviousCompiledShadersObjectsTask"
+          BeforeTargets="InitializeBuildStatus"
+          >
+      <Message Importance="High" Text = "==== [$(ProjectName)] remove .cso ..." />
+      <ItemGroup>
+        <FilesToDelete Include="$(OutDir)**\*.cso"/>
+      </ItemGroup>
+      <Delete Files="@(FilesToDelete)" />
+  </Target>
+  
+  
+  <Target Name="__FixConfilictsForCsoFilesCopyingTask"
+          AfterTargets="GetCopyToOutputDirectoryItems"
+          >
+    <PropertyGroup>
+      <!-- Platform\ProjectName\ProjectRootNamespace\Some.cso -->
+      <RegexToCaptureProjectCsoLocation>.*\\$(Platform)\\[\w_.]+\\[\w_.]+\\.*[.]cso</RegexToCaptureProjectCsoLocation>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <!-- Exclude the proxy projects .cso-files from 
+          'AllItemsFullPathWithTargetPath' and '_SourceItemsToCopyToOutputDirectory'.
+      -->
+      <AllItemsFullPathWithTargetPath
+        Remove="@(AllItemsFullPathWithTargetPath)"
+        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(AllItemsFullPathWithTargetPath.Identity), '$(RegexToCaptureProjectCsoLocation)'))"
+        />
+
+      <_SourceItemsToCopyToOutputDirectory
+        Remove="@(_SourceItemsToCopyToOutputDirectory)"
+        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(_SourceItemsToCopyToOutputDirectory.Identity), '$(RegexToCaptureProjectCsoLocation)'))"
+        />
+    </ItemGroup>
+  </Target>
 </Project>
