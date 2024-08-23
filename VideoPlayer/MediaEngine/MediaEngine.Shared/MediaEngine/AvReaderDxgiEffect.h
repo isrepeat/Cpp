@@ -5,7 +5,7 @@
 #include <Helpers/Dx/DxgiDeviceLock.h>
 #include <Helpers/Dx/DxDevice.h>
 
-#define AvReaderDxgiManager_NEW_LOGIC 1
+#define AvReaderDxgiManager_NEW_LOGIC 0
 
 class AvReaderDxgiEffect : public IAvReaderEffect {
 public:

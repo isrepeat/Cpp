@@ -37,8 +37,8 @@ namespace DxPlayer
 		void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 
 		// Track our independent input on a background worker thread.
-		Windows::Foundation::IAsyncAction^ m_inputLoopWorker;
-		Windows::UI::Core::CoreIndependentInputSource^ m_coreInput;
+		Windows::Foundation::IAsyncAction^ inputLoopWorker;
+		Windows::UI::Core::CoreIndependentInputSource^ coreInput;
 
 		// Independent input handling functions.
 		void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
@@ -48,7 +48,7 @@ namespace DxPlayer
 		// Resources used to render the DirectX content in the XAML page background.
 		MediaEngineWinRT::Player^ playerWinRt;
 
-		bool m_windowVisible;
+		bool windowVisible;
 	};
 }
 
@@ -71,6 +71,8 @@ namespace DxPlayer
 		void LoadInternalState(Windows::Foundation::Collections::IPropertySet^ state);
 
 	private:
+		Helpers::WinRt::Dx::SwapChainPanel^ DirectXPage::CreateSwapChainPanelWinRt(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanelXaml);
+
 		// XAML low-level rendering event handler.
 		void OnRendering(Platform::Object^ sender, Platform::Object^ args);
 
@@ -88,19 +90,21 @@ namespace DxPlayer
 		void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 
 		// Track our independent input on a background worker thread.
-		Windows::Foundation::IAsyncAction^ m_inputLoopWorker;
-		Windows::UI::Core::CoreIndependentInputSource^ m_coreInput;
+		Windows::Foundation::IAsyncAction^ inputLoopWorker;
+		Windows::UI::Core::CoreIndependentInputSource^ coreInput;
 
 		// Independent input handling functions.
 		void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
 		void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
 		void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
 
+
+	private:
 		// Resources used to render the DirectX content in the XAML page background.
 		Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt;
 
-		std::unique_ptr<DxPlayerMain> m_main; 
-		bool m_windowVisible;
+		std::unique_ptr<DxPlayerMain> main; 
+		bool windowVisible;
 	};
 }
 
@@ -139,8 +143,8 @@ namespace DxPlayer
 		void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 
 		// Track our independent input on a background worker thread.
-		Windows::Foundation::IAsyncAction^ m_inputLoopWorker;
-		Windows::UI::Core::CoreIndependentInputSource^ m_coreInput;
+		Windows::Foundation::IAsyncAction^ inputLoopWorker;
+		Windows::UI::Core::CoreIndependentInputSource^ coreInput;
 
 		// Independent input handling functions.
 		void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
@@ -148,10 +152,10 @@ namespace DxPlayer
 		void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
 
 		// Resources used to render the DirectX content in the XAML page background.
-		std::shared_ptr<DX::DeviceResources> m_deviceResources;
+		std::shared_ptr<DX::DeviceResources> deviceResources;
 	
-		std::unique_ptr<DxPlayerMain> m_main;
-		bool m_windowVisible;
+		std::unique_ptr<DxPlayerMain> main;
+		bool windowVisible;
 	};
 }
 

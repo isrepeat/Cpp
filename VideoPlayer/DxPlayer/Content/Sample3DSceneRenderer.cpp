@@ -68,8 +68,8 @@ namespace DxPlayer {
 
 	void Sample3DSceneRenderer::CreateDeviceDependentResources() {
 		// Load shaders asynchronously.
-		auto loadVSTask = DX::ReadDataAsync(L"SampleVertexShader.cso");
-		auto loadPSTask = DX::ReadDataAsync(L"SamplePixelShader.cso");
+		auto loadVSTask = DX::ReadDataAsync(L"Default_VS.cso");
+		auto loadPSTask = DX::ReadDataAsync(L"Default_PS.cso");
 
 		// After the vertex shader file is loaded, create the shader and input layout.
 		auto createVSTask = loadVSTask.then([this](const std::vector<byte>& fileData) {

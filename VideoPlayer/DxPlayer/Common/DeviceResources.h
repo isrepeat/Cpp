@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "pch.h"
+#include "../Common/Config.h"
 #if ENGINE_TYPE == DX_PLAYER_RENDER
 #include <Helpers/ThreadSafeObject.hpp>
 

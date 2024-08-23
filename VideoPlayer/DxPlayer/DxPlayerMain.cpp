@@ -11,31 +11,19 @@ using namespace Windows::Storage::Pickers;
 using namespace Windows::Storage::Streams;
 using namespace Concurrency;
 
-namespace Tools {
-	Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> QuerySwapChainPanelNative(Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt) {
-		HRESULT hr = S_OK;
-		auto unk = reinterpret_cast<IUnknown*>(swapChainPanelWinRt->GetSwapChainNative());
-
-		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
-		hr = unk->QueryInterface(swapChainPanel.ReleaseAndGetAddressOf());
-		H::System::ThrowIfFailed(hr);
-
-		return swapChainPanel;
-	}
-}
 
 // Loads and initializes application assets when the application is loaded.
 DxPlayerMain::DxPlayerMain(Helpers::WinRt::Dx::SwapChainPanel^ swapChainPanelWinRt)
 	: swapChainPanelWinRt{ swapChainPanelWinRt }
-	, swapChainPanel{ Tools::QuerySwapChainPanelNative(swapChainPanelWinRt) }
+	, swapChainPanelNative{ H::Dx::WinRt::Tools::QuerySwapChainPanelNative(swapChainPanelWinRt->GetSwapChainPanelNativeAsObject()) }
 	, m_pointerLocationX{ 0.0f }
 {
 	// Register to be notified if the Device is lost or recreated
-	auto dxDevResources = swapChainPanel->GetDxDevice()->Lock();
+	auto dxDevResources = this->swapChainPanelNative->GetDxDevice()->Lock();
 	//dxDevResources->RegisterDeviceNotify(this);
 
 	// TODO: Replace this with your app's content initialization.
-	m_sceneRenderer = std::unique_ptr<VideoSceneRenderer>(new VideoSceneRenderer(swapChainPanel));
+	m_sceneRenderer = std::unique_ptr<VideoSceneRenderer>(new VideoSceneRenderer(this->swapChainPanelNative));
 
 	// TODO: Change the timer settings if you want something other than the default variable timestep mode.
 	// e.g. for 60 FPS fixed timestep update logic, call:
@@ -84,7 +72,7 @@ void DxPlayerMain::StartRenderLoop() {
 				concurrency::create_task(file->OpenAsync(Windows::Storage::FileAccessMode::ReadWrite)).then([this](IRandomAccessStream^ stream) {
 					m_openFileAction = nullptr;
 
-					auto avReader = std::make_unique<AvReader>(reinterpret_cast<IStream*>(stream), swapChainPanel->GetDxDevice());
+					auto avReader = std::make_unique<AvReader>(reinterpret_cast<IStream*>(stream), this->swapChainPanelNative->GetDxDevice());
 					m_sceneRenderer->Init(std::move(avReader));
 
 					auto workItemHandler = ref new WorkItemHandler([this](IAsyncAction^ action) {
@@ -104,7 +92,7 @@ void DxPlayerMain::StartRenderLoop() {
 							std::chrono::steady_clock::time_point tpB2;
 							if (rendered) {
 								tpB1 = std::chrono::high_resolution_clock::now();
-								swapChainPanel->Present();
+								this->swapChainPanelNative->Present();
 								tpB2 = std::chrono::high_resolution_clock::now();
 							}
 
@@ -168,21 +156,21 @@ bool DxPlayerMain::Render()
 		return false;
 	}
 
-	//auto dxDevResources = swapChainPanel->GetDxDevice()->Lock();
+	//auto dxDevResources = this->swapChainPanelNative->GetDxDevice()->Lock();
 	//auto dxCtx = dxDevResources->LockContext();
 	//auto d3dCtx = dxCtx->D3D();
 
 	//// Reset the viewport to target the whole screen.
-	//auto viewport = swapChainPanel->GetScreenViewport();
+	//auto viewport = this->swapChainPanelNative->GetScreenViewport();
 	//d3dCtx->RSSetViewports(1, &viewport);
 
 	//// Reset render targets to the screen.
-	//ID3D11RenderTargetView* const targets[1] = { swapChainPanel->GetBackBufferRenderTargetView() };
-	//d3dCtx->OMSetRenderTargets(1, targets, swapChainPanel->GetDepthStencilView());
+	//ID3D11RenderTargetView* const targets[1] = { this->swapChainPanelNative->GetBackBufferRenderTargetView() };
+	//d3dCtx->OMSetRenderTargets(1, targets, this->swapChainPanelNative->GetDepthStencilView());
 
 	//// Clear the back buffer and depth stencil view.
-	//d3dCtx->ClearRenderTargetView(swapChainPanel->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
-	//d3dCtx->ClearDepthStencilView(swapChainPanel->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	//d3dCtx->ClearRenderTargetView(this->swapChainPanelNative->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
+	//d3dCtx->ClearDepthStencilView(this->swapChainPanelNative->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Render the scene objects.
 	// TODO: Replace this with your app's content rendering functions.

@@ -17,10 +17,8 @@ public:
 private:
     H::Dx::DxDeviceSafeObj* dxDeviceSafeObj;
 #if AvReaderDxgiManager_NEW_LOGIC
-    H::Dx::DxDeviceSafeObj mfDxDeviceSafeObj;
+    H::Dx::DxDeviceSafeObj dxDeviceForVideoRenderSafeObj;
 #endif
-
-    Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mfDxgiDeviceManager;
 };
 
 #elif ENGINE_TYPE == DX_PLAYER_RENDER
@@ -41,7 +39,7 @@ public:
 private:
     DX::DeviceResources* dxDeviceSafeObj;
 #if AvReaderDxgiManager_NEW_LOGIC
-    DX::DeviceResources mfDxDeviceSafeObj;
+    DX::DeviceResources dxDeviceForVideoRenderSafeObj;
 #endif
 
     Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mfDxgiDeviceManager;

@@ -210,12 +210,6 @@ namespace MediaEngineWinRT {
 		auto displayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
 
 		this->swapChainPanelWinRt->SetLogicalSize(e->NewSize);
-
-		//this->mediaPlayer.ResizeVideo(
-		//	static_cast<WORD>(size.Width),
-		//	static_cast<WORD>(size.Height),
-		//	displayInformation->LogicalDpi
-		//);
 	}
 
 	void Player::OnCompositionScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ sender, Object^ args)
@@ -230,11 +224,11 @@ namespace MediaEngineWinRT {
 
 	Helpers::WinRt::Dx::SwapChainPanel^ Player::CreateSwapChainPanelWinRt(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanelXaml) {
 		Helpers::WinRt::Dx::SwapChainPanelInitData initData;
-		initData.deviceType = Helpers::WinRt::Dx::SwapChainPanelInitData_Device::DxDevice;
-		//initData.deviceMutexType = Helpers::WinRt::Dx::SwapChainPanelInitData_DeviceMutex::None;
-		//initData.optionFlags = Helpers::WinRt::Dx::SwapChainPanelInitData_Options::EnableHDR;
+		initData.deviceType = Helpers::WinRt::Dx::SwapChainPanelInitData_Device::DxDeviceMF;
+		initData.deviceMutexType = Helpers::WinRt::Dx::SwapChainPanelInitData_DeviceMutex::Recursive;
+		initData.optionFlags = Helpers::WinRt::Dx::SwapChainPanelInitData_Options::None;
 
-		auto swapChainPanelWinRt = ref new Helpers::WinRt::Dx::SwapChainPanel(initData, this->dxSettings);
+		auto swapChainPanelWinRt = ref new Helpers::WinRt::Dx::SwapChainPanel(initData /*, this->dxSettings*/);
 		swapChainPanelWinRt->SetSwapChainPanelXaml(swapChainPanelXaml);
 		return swapChainPanelWinRt;
 	}
