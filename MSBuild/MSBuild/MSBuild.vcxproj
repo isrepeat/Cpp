@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="MSBuild.props" />
+    <None Include="MSBuild_10_TargetWithResults.targets" />
     <None Include="MSBuild_1_PercentPropertyBackref.targets" />
     <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
     <None Include="MSBuild_3_ExcludeFromCompile.targets" />

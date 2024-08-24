@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution", "!Solution", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSBuild", "MSBuild", "{C9F74C12-4311-45B3-8E48-7E8E024894E7}"
+	ProjectSection(SolutionItems) = preProject
+		MSBuild\InlineTasks.targets = MSBuild\InlineTasks.targets
+		MSBuild\MSBuild_Shared.targets = MSBuild\MSBuild_Shared.targets
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSBuild", "MSBuild\MSBuild\MSBuild.vcxproj", "{8AF6B6DD-1AB9-49FA-97CA-C484BBF386CA}"
 EndProject
