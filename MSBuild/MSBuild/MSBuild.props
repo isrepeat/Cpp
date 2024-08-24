@@ -4,6 +4,14 @@
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\MSBuild_1_PercentPropertyBackref.targets" />
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_2_ItemDefenitionGroup.targets" />-->
+  <!-- Include other targets -->
+  <!--<Import Project="$(ProjectDir)\MSBuild_1_PercentPropertyBackref.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_2_ItemDefenitionGroup.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_3_ExcludeFromCompile.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_4_PublicIncludeDirectories.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_5_RebuildAdminTasks.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_6_DynamicImport.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_7_Conditions.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_8_Replace.targets" />-->
+  <!--<Import Project="$(ProjectDir)\MSBuild_9_CaptureConfigurationFromPartialName.targets" />-->
 </Project>

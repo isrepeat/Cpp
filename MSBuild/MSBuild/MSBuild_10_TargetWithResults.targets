@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="__Task" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <Tab>%09</Tab>
+      <NewLine>%0D%0A</NewLine>
+      <NugetName>MSBuild_10</NugetName>
+      <NugetConfiguration>_Debug</NugetConfiguration>
+
+      <!-- 
+        Regex groups:
+        [1] - Build path
+        [2] - Configuration
+        [3] - Platform
+        [4] - Optional subfolder (project name)
+        [5] - Rest path
+      -->
+      <RegExToCapturePlatformConfiguration>(.*\\?)(_Debug|_Release)\\(_x86|_x64|_Win32)\\(.*?\\)?(.*)</RegExToCapturePlatformConfiguration>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <NugetRuntimes Include="$(ProjectDir)TEST__VS_TMP\**\*.cpp" />
+    </ItemGroup>
+
+    <!-- Correct item group filepathes -->
+    <ItemGroup>
+      <!-- Capture <Configuration> and <Platform> as meta data -->
+      <__NugetRuntimesWithMetadata Include="@(NugetRuntimes)">
+        <__Platform>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[3].Value)</__Platform>
+        <__Configuration>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[2].Value)</__Configuration>
+        <__RecursiveDir_rest>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[5].Value)</__RecursiveDir_rest>
+      </__NugetRuntimesWithMetadata>
+
+      <!-- Replace 'Win32' to 'x86' -->
+      <__NugetRuntimesWithMetadata Condition="'%(__Platform)' == '_Win32'">
+        <__Platform>_x86</__Platform>
+        <__Configuration>%(__Configuration)</__Configuration>
+        <__RecursiveDir_rest>%(__RecursiveDir_rest)</__RecursiveDir_rest>
+      </__NugetRuntimesWithMetadata>
+
+      <!-- Use only release or debug configuration for WinRt dlls and add suffix "win10-" to <Platform> -->
+      <NugetRuntimesWithMetadata Include="@(__NugetRuntimesWithMetadata)" Condition="'%(__Configuration)' == '$(NugetConfiguration)'">
+        <RecursiveDir_custom>win10-%(__Platform)\native\%(__RecursiveDir_rest)</RecursiveDir_custom>
+      </NugetRuntimesWithMetadata>
+    </ItemGroup>
+
+    <!-- Print final items -->
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetRuntimes = %(NugetRuntimes.RecursiveDir)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="==== [$(NugetName) nuget] __NugetRuntimesWithMetadata = [...\NugetStructure]\%(__NugetRuntimesWithMetadata.RecursiveDir)%(Filename)%(Extension)  [%(__NugetRuntimesWithMetadata.__Platform) | %(__NugetRuntimesWithMetadata.__Configuration)]" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetRuntimesWithMetadata = [...\NugetStructure]\%(NugetRuntimesWithMetadata.RecursiveDir_custom)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="==== [$(NugetName) nuget] __NugetShellExtensionsWithMetadata = [...\NugetStructure]\%(__NugetShellExtensionsWithMetadata.RecursiveDir)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="==== [$(NugetName) nuget] NugetShellExtensionsWithMetadata = [...\NugetStructure]\%(NugetShellExtensionsWithMetadata.RecursiveDir_custom)%(Filename)%(Extension)" />
+    <Message Importance="High" Text="$(NewLine)"/>
+    <Message Importance="High" Text="$(NewLine)"/>
+  </Target>
+</Project>
