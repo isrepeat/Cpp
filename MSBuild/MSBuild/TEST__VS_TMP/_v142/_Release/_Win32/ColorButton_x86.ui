@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ColorButton</class>
+ <widget class="QPushButton" name="ColorButton">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ColorButton</string>
+  </property>
+  <property name="flat">
+   <bool>true</bool>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+    <widget class="QLabel" name="Mark">
+     <property name="styleSheet">
+      <string notr="true">color: palette(text);
+  font-weight: normal;
+  font-size: 24px;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  font-family: &quot;Segoe MDL2 Assets&quot;;
+  border: 0px;</string>
+     </property>
+     <property name="text">
+      <string notr="true"></string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

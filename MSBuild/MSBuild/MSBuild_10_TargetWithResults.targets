@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(ProjectDir)..\InlineTasks.targets" />
+
+  <PropertyGroup>
+    <Tab>%09</Tab>
+    <NewLine>%0D%0A</NewLine>
+    <NugetName>MSBuild_10</NugetName>
+    <RegExToCapturePlatformConfiguration>(.*\\?)(_Debug|_Release)\\(_x86|_x64|_Win32)\\(.*?\\)?(.*)</RegExToCapturePlatformConfiguration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <global_NugetRuntimes Include="$(ProjectDir)TEST__VS_TMP\**\*.cpp" />
+  </ItemGroup>
+
+  <!-- Only works with global items -->
+  <Target
+    Name="__CaptureConfigurationPlatformForRecursiveDirTask"
+    Returns="@(__ResultItemsWithMetadata)">
+    <ItemGroup>
+      <__ResultItemsWithMetadata Include="@(global_NugetRuntimes)">
+        <__Platform>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[3].Value)</__Platform>
+        <__Configuration>$([System.Text.RegularExpressions.Regex]::Match(%(RecursiveDir), `$(RegExToCapturePlatformConfiguration)`).Groups[2].Value)</__Configuration>
+      </__ResultItemsWithMetadata>
+
+      <__ResultItemsWithMetadata Condition="'%(__Platform)' == '_Win32'">
+        <__Platform>_x86</__Platform>
+        <__Configuration>%(__Configuration)</__Configuration>
+      </__ResultItemsWithMetadata>
+    </ItemGroup>
+  </Target>
+
+
+  <UsingTask TaskName="TCaptureConfigurationPlatformForRecursiveDir" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <inFiles Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+      <outResult Output="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (inFiles.Length > 0) {
+              outResult = new TaskItem[inFiles.Length];
+              string regExToCaptureConfigurationPlatform = @"(.*\\?)(_Debug|_Release)\\(_x86|_x64|_Win32)\\(.*?\\)?(.*)";
+            
+              for (int i = 0; i < inFiles.Length; i++) {
+                  ITaskItem item = inFiles[i];
+                  string itemRecursiveDir = item.GetMetadata("RecursiveDir");
+                  
+                  var regexMatch = Regex.Match(itemRecursiveDir, regExToCaptureConfigurationPlatform);
+                  if (regexMatch.Success) {
+                      outResult[i] = new TaskItem(item.ItemSpec);
+                      
+                      var capturedConfiguration = regexMatch.Groups[2].Value;
+                      var capturedPlatform = regexMatch.Groups[3].Value;
+                      
+                      if (capturedPlatform == "_Win32") {
+                          capturedPlatform = "_x86";
+                      }
+                      
+                      outResult[i].SetMetadata("__Configuration", capturedConfiguration);
+                      outResult[i].SetMetadata("__Platform", capturedPlatform);
+                  }  
+              }
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+
+
+
+  <Target Name="__TestBuild" BeforeTargets="PrepareForBuild">
+    <Message text="__TestBuild task" Importance="High"/>
+    
+    <TMessage Text="Call __CaptureConfigurationPlatformForRecursiveDirTask() ..." />
+    <CallTarget Targets="__CaptureConfigurationPlatformForRecursiveDirTask">
+      <Output TaskParameter="TargetOutputs" ItemName="ResultItemsWithMetadata" />
+    </CallTarget>
+    <TMessage Text="%(ResultItemsWithMetadata.Identity) [%(__Platform) | %(__Configuration)]" />
+
+    <TNewLine />
+    <TNewLine />
+
+    <ItemGroup>
+      <NugetRuntimes Include="$(ProjectDir)TEST__VS_TMP\**\*.cpp" />
+    </ItemGroup>
+    
+    <TMessage Text="Call __AddCustomMetadataTask() ..." />
+    <TCaptureConfigurationPlatformForRecursiveDir inFiles="@(NugetRuntimes)">
+      <Output TaskParameter="outResult" ItemName="MatchedFiles" />
+    </TCaptureConfigurationPlatformForRecursiveDir>
+    <TMessage Text="%(MatchedFiles.Identity) [%(__Platform) | %(__Configuration)]" />
+  </Target>
+
+
+
+  <!--<PropertyGroup>
+    <MyProp>X</MyProp>
+  </PropertyGroup>
+
+  <Target Name="__Task" BeforeTargets="PrepareForBuild">
+    <Message text="$(MyProp)" Importance="High"/>
+    <CallTarget Targets="Sub">
+      <Output TaskParameter="TargetOutputs" PropertyName="MyProp"/>
+    </CallTarget>
+    <Message text="$(MyProp)" Importance="High"/>
+  </Target>
+
+  <Target Name="Sub" Outputs="$(localProp)">
+    <PropertyGroup>
+      <localProp>Y</localProp>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="__Message" Outputs="$(localProp)">
+    <PropertyGroup>
+      <localProp>Y</localProp>
+    </PropertyGroup>
+  </Target>-->
+</Project>

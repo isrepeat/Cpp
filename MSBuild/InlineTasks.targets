@@ -1,0 +1,54 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- TODO: provide way to download this file localy to current solution from server 
+             and include this shared inline tasks helpers from Directory.Build.targets.
+             
+             For example, add DownloadFile task for it file to Directory.Build.targets 
+             and mark it as task that will be executed before Restore nugets.
+  -->
+  <UsingTask TaskName="TMessage" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <Text Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        Log.LogMessage(MessageImportance.High, Text);
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="TNewLine" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        Log.LogMessage(MessageImportance.High, "\n");
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="TGetMatchedFiles" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <inRegExpression Required="true" />
+      <inFiles Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+      <outResult Output="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (inFiles.Length > 0) {
+              outResult = new TaskItem[inFiles.Length];
+            
+              for (int i = 0; i < inFiles.Length; i++) {
+                  ITaskItem item = inFiles[i];
+                  string itemFullPath = item.GetMetadata("FullPath");
+              
+                  if (Regex.Match(itemFullPath, inRegExpression).Success) {
+                      outResult[i] = new TaskItem(item.ItemSpec);
+                      outResult[i].SetMetadata("MyMetadata", "111");
+                  }  
+              }
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
