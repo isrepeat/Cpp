@@ -33,8 +33,8 @@
     <ClInclude Include="Printer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\UtilityHelpersLib\3rdParty\JsonParser\JsonParser.vcxproj">
-      <Project>{40c76878-b769-483b-a825-6224b831ab06}</Project>
+    <ProjectReference Include="..\..\..\UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Static\JsonParser.Static.vcxproj">
+      <Project>{4dc532ad-a19b-4ec5-9923-990df8f4a9ab}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
