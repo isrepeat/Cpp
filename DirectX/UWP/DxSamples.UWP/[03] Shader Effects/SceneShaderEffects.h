@@ -44,19 +44,6 @@ namespace DxSamples {
 
 		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;
 
-
-		Microsoft::WRL::ComPtr<ID3D11Module> shaderLibrary;
-		Microsoft::WRL::ComPtr<ID3D11ModuleInstance> shaderLibraryInstance;
-		Microsoft::WRL::ComPtr<ID3D11FunctionLinkingGraph> vertexShaderGraph;
-		Microsoft::WRL::ComPtr<ID3D11LinkingNode> vertexShaderInputNode;
-		Microsoft::WRL::ComPtr<ID3D11LinkingNode> vertexFunctionCallNode;
-		Microsoft::WRL::ComPtr<ID3D11LinkingNode> vertexShaderOutputNode;
-		Microsoft::WRL::ComPtr<ID3D11ModuleInstance> vertexShaderGraphInstance;
-		Microsoft::WRL::ComPtr<ID3D11Linker> linker;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-
-
 		// Rendering loop timer.
 		DX::StepTimer renderLoopTimer;
 	};

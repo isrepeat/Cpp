@@ -12,5 +12,5 @@ SamplerState Anisotropic : register(s0);
 
 export void VertexFunction(inout float4 position, inout float2 uv)
 {
-    position.x += 0.05;
+    position.x += 0.3;
 }

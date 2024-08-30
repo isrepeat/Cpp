@@ -4,6 +4,7 @@
 
 namespace DxSamples {
 	struct DxShaderMudule {
+		Microsoft::WRL::ComPtr<ID3DBlob> compiledCodeBlob; // save loaded .hlsl compiledCode [blob] for ID3DLinker->Link 
 		Microsoft::WRL::ComPtr<ID3D11Module> shaderLibrary;
 		Microsoft::WRL::ComPtr<ID3D11ModuleInstance> shaderLibraryInstance;
 		Microsoft::WRL::ComPtr<ID3D11LinkingNode> shaderCallFunctionNode;
@@ -42,6 +43,8 @@ namespace DxSamples {
 		std::vector<DxShaderMudule> dxShaderModules;
 		Microsoft::WRL::ComPtr<ID3D11LinkingNode> vertexShaderInputNode;
 		Microsoft::WRL::ComPtr<ID3D11LinkingNode> vertexShaderOutputNode;
+
+		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob;
 
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;

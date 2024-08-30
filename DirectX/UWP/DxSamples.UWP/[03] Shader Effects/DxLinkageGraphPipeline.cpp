@@ -24,7 +24,7 @@ namespace DxSamples {
 
 		auto hlslBlob = H::FS::ReadFile(hlslFile);
 
-		Microsoft::WRL::ComPtr<ID3DBlob> codeBlob;
+		Microsoft::WRL::ComPtr<ID3DBlob> compiledCodeBlob;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 		hr = D3DCompile(
 			hlslBlob.data(),
@@ -36,13 +36,11 @@ namespace DxSamples {
 			"lib_5_0",
 			D3DCOMPILE_OPTIMIZATION_LEVEL3,
 			0,
-			&codeBlob,
+			&compiledCodeBlob,
 			&errorBlob
 		);
-
-		std::string d3dCompileError;
 		if (errorBlob) {
-			d3dCompileError = (char*)errorBlob->GetBufferPointer();
+			LOG_ERROR_D("d3dLinkerError = \"{}\"", (char*)errorBlob->GetBufferPointer());
 		}
 		H::System::ThrowIfFailed(hr);
 
@@ -50,8 +48,8 @@ namespace DxSamples {
 		// Load the compiled library code into a module object.
 		Microsoft::WRL::ComPtr<ID3D11Module> shaderLibrary;
 		hr = D3DLoadModule(
-			codeBlob->GetBufferPointer(),
-			codeBlob->GetBufferSize(),
+			compiledCodeBlob->GetBufferPointer(),
+			compiledCodeBlob->GetBufferSize(),
 			shaderLibrary.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
@@ -67,6 +65,7 @@ namespace DxSamples {
 		H::System::ThrowIfFailed(hr);
 
 		this->dxShaderModules.push_back(DxShaderMudule{
+			compiledCodeBlob,
 			shaderLibrary,
 			shaderLibraryInstance,
 			{}
@@ -203,16 +202,18 @@ namespace DxSamples {
 		H::System::ThrowIfFailed(hr);
 
 		// Link the vertex shader.
-		ID3DBlob* vertexShaderBlob = nullptr;
-		ID3DBlob* errorBlob = nullptr;
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 		hr = this->linker->Link(
 			this->vertexShaderGraphInstance.Get(),
 			"main",
 			"vs_5_0",
 			0,
-			&vertexShaderBlob,
+			this->vertexShaderBlob.GetAddressOf(),
 			&errorBlob
 		);
+		if (errorBlob) {
+			LOG_ERROR_D("d3dLinkerError = \"{}\"", (char*)errorBlob->GetBufferPointer());
+		}
 		H::System::ThrowIfFailed(hr);
 
 		static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[2] = {
@@ -223,15 +224,15 @@ namespace DxSamples {
 		hr = d3dDev->CreateInputLayout(
 			inputElementDesc,
 			ARRAYSIZE(inputElementDesc),
-			vertexShaderBlob->GetBufferPointer(),
-			vertexShaderBlob->GetBufferSize(),
+			this->vertexShaderBlob->GetBufferPointer(),
+			this->vertexShaderBlob->GetBufferSize(),
 			this->inputLayout.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
 		hr = d3dDev->CreateVertexShader(
-			vertexShaderBlob->GetBufferPointer(),
-			vertexShaderBlob->GetBufferSize(),
+			this->vertexShaderBlob->GetBufferPointer(),
+			this->vertexShaderBlob->GetBufferSize(),
 			nullptr,
 			this->vertexShader.GetAddressOf()
 		);

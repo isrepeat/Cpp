@@ -113,6 +113,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <ClInclude Include="[03] Shader Effects\Shaders\Function1.VS.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="[03] Shader Effects\Shaders\Function2.VS.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
     <FxCompile Include="[03] Shader Effects\Shaders\Image_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
