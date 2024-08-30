@@ -299,6 +299,9 @@
     <ClCompile Include="[12] Doxygen\main_Doxygen.cpp">
       <Filter>Source Files\[12] Doxygen</Filter>
     </ClCompile>
+    <ClCompile Include="main_60_Json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
