@@ -21,8 +21,8 @@ namespace DxSamples {
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> GetInputLayout();
 
 		DxShaderMudule AddModule(
-			const std::filesystem::path& hlslFile);
-			//const std::string& callFunctionName);
+			const std::filesystem::path& hlslFile,
+			const std::string& callFunctionName);
 
 		void SetInputSignature();
 		

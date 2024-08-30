@@ -17,14 +17,14 @@ namespace DxSamples {
 
 
 	DxShaderMudule DxLinkageGraphPipeline::AddModule(
-		const std::filesystem::path& hlslFile)
-		//const std::string& callFunctionName)
+		const std::filesystem::path& hlslFile,
+		const std::string& callFunctionName)
 	{
 		HRESULT hr = S_OK;
+		DxShaderMudule dxShaderModule;
 
 		auto hlslBlob = H::FS::ReadFile(hlslFile);
 
-		Microsoft::WRL::ComPtr<ID3DBlob> compiledCodeBlob;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 		hr = D3DCompile(
 			hlslBlob.data(),
@@ -36,41 +36,62 @@ namespace DxSamples {
 			"lib_5_0",
 			D3DCOMPILE_OPTIMIZATION_LEVEL3,
 			0,
-			&compiledCodeBlob,
+			dxShaderModule.compiledCodeBlob.GetAddressOf(),
 			&errorBlob
 		);
 		if (errorBlob) {
-			LOG_ERROR_D("d3dLinkerError = \"{}\"", (char*)errorBlob->GetBufferPointer());
+			LOG_ERROR_D("d3dCompileError = \"{}\"", (char*)errorBlob->GetBufferPointer());
 		}
 		H::System::ThrowIfFailed(hr);
 
-
 		// Load the compiled library code into a module object.
-		Microsoft::WRL::ComPtr<ID3D11Module> shaderLibrary;
 		hr = D3DLoadModule(
-			compiledCodeBlob->GetBufferPointer(),
-			compiledCodeBlob->GetBufferSize(),
-			shaderLibrary.GetAddressOf()
+			dxShaderModule.compiledCodeBlob->GetBufferPointer(),
+			dxShaderModule.compiledCodeBlob->GetBufferSize(),
+			dxShaderModule.shaderLibrary.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
 		// Create an instance of the library and define resource bindings for it.
 		// In this sample we use the same slots as the source library however this is not required.
-		Microsoft::WRL::ComPtr<ID3D11ModuleInstance> shaderLibraryInstance;
-		hr = shaderLibrary->CreateInstance("", shaderLibraryInstance.GetAddressOf());
+		hr = dxShaderModule.shaderLibrary->CreateInstance(
+			"",
+			dxShaderModule.shaderLibraryInstance.GetAddressOf()
+		);
 		H::System::ThrowIfFailed(hr);
+
+		// TODO: add support ...
+		//dxShaderModule.shaderLibraryInstance->BindResource(0, 0, 1);
+		//dxShaderModule.shaderLibraryInstance->BindSampler(0, 0, 1);
 
 		// Hook up the shader library instance.
-		hr = this->linker->UseLibrary(shaderLibraryInstance.Get());
+		hr = this->linker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
 		H::System::ThrowIfFailed(hr);
 
-		this->dxShaderModules.push_back(DxShaderMudule{
-			compiledCodeBlob,
-			shaderLibrary,
-			shaderLibraryInstance,
-			{}
-			});
+		// Create a node for the main VertexFunction call using the output of the helper functions.
+		hr = this->vertexShaderGraph->CallFunction(
+			"",
+			dxShaderModule.shaderLibrary.Get(),
+			callFunctionName.c_str(),
+			dxShaderModule.shaderCallFunctionNode.GetAddressOf()
+		);
+		H::System::ThrowIfFailed(hr);
 
+		if (this->dxShaderModules.empty()) {
+			hr = this->vertexShaderGraph->PassValue(this->vertexShaderInputNode.Get(), 0, dxShaderModule.shaderCallFunctionNode.Get(), 0);
+			H::System::ThrowIfFailed(hr);
+			hr = this->vertexShaderGraph->PassValue(this->vertexShaderInputNode.Get(), 1, dxShaderModule.shaderCallFunctionNode.Get(), 1);
+			H::System::ThrowIfFailed(hr);
+		}
+		else {
+			auto prevModule = this->dxShaderModules.back();
+			hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 0, dxShaderModule.shaderCallFunctionNode.Get(), 0);
+			H::System::ThrowIfFailed(hr);
+			hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 1, dxShaderModule.shaderCallFunctionNode.Get(), 1);
+			H::System::ThrowIfFailed(hr);
+		}
+
+		this->dxShaderModules.push_back(std::move(dxShaderModule));
 		return this->dxShaderModules.back();
 	}
 
@@ -156,6 +177,12 @@ namespace DxSamples {
 			ARRAYSIZE(vertexShaderOutputParameters),
 			this->vertexShaderOutputNode.GetAddressOf()
 		);
+		H::System::ThrowIfFailed(hr);
+
+		auto prevModule = this->dxShaderModules.back();
+		hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 0, this->vertexShaderOutputNode.Get(), 0);
+		H::System::ThrowIfFailed(hr);
+		hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 1, this->vertexShaderOutputNode.Get(), 1);
 		H::System::ThrowIfFailed(hr);
 	}
 

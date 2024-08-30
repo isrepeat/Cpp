@@ -57,42 +57,13 @@ namespace DxSamples {
 		this->dxRenderObjImage = std::make_unique<DxRenderObjImage>(this->swapChainPanel, dxRenderObjImageParams);
 
 
-		auto vertexShaderGraph = this->dxLinkageGraphPipeline.GetVertexShaderGraph();
-
 		this->dxLinkageGraphPipeline.SetInputSignature();
-		auto vertexShaderInputNode = this->dxLinkageGraphPipeline.GetVertexShaderInputNode();
-
-		auto vsModule1 = this->dxLinkageGraphPipeline.AddModule("Function1.VS.hlsl");
-		vsModule1.shaderLibraryInstance->BindResource(0, 0, 1);
-		vsModule1.shaderLibraryInstance->BindSampler(0, 0, 1);
-
-		this->dxLinkageGraphPipeline.CallFunction(vsModule1, "VertexFunction");
-		hr = vertexShaderGraph->PassValue(vertexShaderInputNode.Get(), 0, vsModule1.shaderCallFunctionNode.Get(), 0);
-		H::System::ThrowIfFailed(hr);
-		hr = vertexShaderGraph->PassValue(vertexShaderInputNode.Get(), 1, vsModule1.shaderCallFunctionNode.Get(), 1);
-		H::System::ThrowIfFailed(hr);
-
-		auto vsModule2 = this->dxLinkageGraphPipeline.AddModule("Function2.VS.hlsl");
-		vsModule2.shaderLibraryInstance->BindResource(0, 0, 1);
-		vsModule2.shaderLibraryInstance->BindSampler(0, 0, 1);
-
-		this->dxLinkageGraphPipeline.CallFunction(vsModule2, "VertexFunctionNew");
-		hr = vertexShaderGraph->PassValue(vsModule1.shaderCallFunctionNode.Get(), 0, vsModule2.shaderCallFunctionNode.Get(), 0);
-		H::System::ThrowIfFailed(hr);
-		hr = vertexShaderGraph->PassValue(vsModule1.shaderCallFunctionNode.Get(), 1, vsModule2.shaderCallFunctionNode.Get(), 1);
-		H::System::ThrowIfFailed(hr);
-
+		this->dxLinkageGraphPipeline.AddModule("Function1.VS.hlsl", "VertexFunction");
+		this->dxLinkageGraphPipeline.AddModule("Function2.VS.hlsl", "VertexFunctionNew");
 		this->dxLinkageGraphPipeline.SetOutputSignature();
-		auto vertexShaderOutputNode = this->dxLinkageGraphPipeline.GetVertexShaderOutputNode();
-
-		hr = vertexShaderGraph->PassValue(vsModule2.shaderCallFunctionNode.Get(), 0, vertexShaderOutputNode.Get(), 0);
-		H::System::ThrowIfFailed(hr);
-		hr = vertexShaderGraph->PassValue(vsModule2.shaderCallFunctionNode.Get(), 1, vertexShaderOutputNode.Get(), 1);
-		H::System::ThrowIfFailed(hr);
-
+		
 		this->dxLinkageGraphPipeline.LogVertexShaderGraph();
 		this->dxLinkageGraphPipeline.CreateVertexShader();
-
 	}
 
 	void SceneShaderEffects::CreateWindowSizeDependentResources() {
