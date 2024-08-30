@@ -31,7 +31,7 @@ namespace DxSamples {
 			auto dxRenderObj = std::make_unique<DxRenderObjHDR>();
 
 			// Load and create shaders.
-			auto vertexShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"imageVS.cso");
+			auto vertexShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"Default_VS.cso");
 			hr = d3dDev->CreateVertexShader(
 				vertexShaderBlob.data(),
 				vertexShaderBlob.size(),
@@ -40,7 +40,7 @@ namespace DxSamples {
 			);
 			H::System::ThrowIfFailed(hr);
 
-			auto pixelShaderHDRBlob = Tools::ReadFile(g_shaderLoadDir / L"PrepareSwapChainBuffersPS.cso");
+			auto pixelShaderHDRBlob = Tools::ReadFile(g_shaderLoadDir / L"PrepareSwapChainBuffers_PS.cso");
 			hr = d3dDev->CreatePixelShader(
 				pixelShaderHDRBlob.data(),
 				pixelShaderHDRBlob.size(),
@@ -49,7 +49,7 @@ namespace DxSamples {
 			);
 			H::System::ThrowIfFailed(hr);
 
-			auto pixelShaderToneMapBlob = Tools::ReadFile(g_shaderLoadDir / L"ToneMapPS.cso");
+			auto pixelShaderToneMapBlob = Tools::ReadFile(g_shaderLoadDir / L"ToneMap_PS.cso");
 			hr = d3dDev->CreatePixelShader(
 				pixelShaderToneMapBlob.data(),
 				pixelShaderToneMapBlob.size(),
