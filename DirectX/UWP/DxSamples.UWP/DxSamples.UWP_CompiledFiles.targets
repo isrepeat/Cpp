@@ -69,9 +69,9 @@
     <Textures Include="$(MSBuildThisFileDirectory)Textures\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.VS.hlsl" />
+    <!--<__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.VS.hlsl" />
     <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function2.VS.hlsl" />
-    <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.PS.hlsl" />
+    <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.PS.hlsl" />-->
   </ItemGroup>
 
   <!-- Mark Textures as content -->

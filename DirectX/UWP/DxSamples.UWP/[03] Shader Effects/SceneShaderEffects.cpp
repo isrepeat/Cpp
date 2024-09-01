@@ -57,13 +57,48 @@ namespace DxSamples {
 		this->dxRenderObjImage = std::make_unique<DxRenderObjImage>(this->swapChainPanel, dxRenderObjImageParams);
 
 
-		this->dxLinkageGraphPipeline.SetInputSignature();
-		this->dxLinkageGraphPipeline.AddModule("Function1.VS.hlsl", "VertexFunction");
-		this->dxLinkageGraphPipeline.AddModule("Function2.VS.hlsl", "VertexFunctionNew");
-		this->dxLinkageGraphPipeline.SetOutputSignature();
-		
-		this->dxLinkageGraphPipeline.LogVertexShaderGraph();
-		this->dxLinkageGraphPipeline.CreateVertexShader();
+		DxVertexShaderFLG vertexShaderFLG;
+		vertexShaderFLG.vertexInputLayout = {
+			{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		vertexShaderFLG.shaderInputParameters = {
+			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_LINEAR, D3D_PF_IN,0,0,0,0 },
+			{ "inputUV", "TEXCOORD0", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,2,D3D_INTERPOLATION_LINEAR,D3D_PF_IN,0,0,0,0}
+		};
+		vertexShaderFLG.shaderOutputParameters = {
+			{ "outputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0,0,0,0},
+			{ "outputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR,1,2,D3D_INTERPOLATION_UNDEFINED,D3D_PF_OUT,0,0,0,0 },
+		};
+		vertexShaderFLG.hlslModules = {
+			{ g_ProjectRootNamespace / "VertexFunctionA.VS.hlsl", {"VertexFunctionA"} },
+			{ g_ProjectRootNamespace / "VertexFunctionB.VS.hlsl", {"VertexFunctionB"} },
+		};
+		this->dxLinkageGraphPipeline.AddVertexShaderFLG(vertexShaderFLG);
+
+
+		DxPixelShaderFLG pixelShaderFLG;
+		pixelShaderFLG.shaderInputParameters = {
+			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_UNDEFINED, D3D_PF_IN, 0,0,0,0},
+			{ "inputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR,1,2,D3D_INTERPOLATION_UNDEFINED,D3D_PF_IN,0,0,0,0 },
+		};
+		pixelShaderFLG.shaderOutputParameters = {
+			{"outputColor", "SV_TARGET", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0}
+		};
+		pixelShaderFLG.hlslModules = {
+			{ g_ProjectRootNamespace / "PixelFunctionA.PS.hlsl", {"PixelFunctionA"} },
+			{ g_ProjectRootNamespace / "PixelFunctionB.PS.hlsl", {"PixelFunctionB"} },
+		};
+		this->dxLinkageGraphPipeline.AddPixelShaderFLG(pixelShaderFLG);
+
+
+		//this->dxLinkageGraphPipeline.SetInputSignature();
+		//this->dxLinkageGraphPipeline.AddModule(g_ProjectRootNamespace / "FunctionA.VS.hlsl", "VertexFunctionA");
+		//this->dxLinkageGraphPipeline.AddModule(g_ProjectRootNamespace / "FunctionB.VS.hlsl", "VertexFunctionB");
+		//this->dxLinkageGraphPipeline.SetOutputSignature();
+		//
+		//this->dxLinkageGraphPipeline.LogVertexShaderGraph();
+		//this->dxLinkageGraphPipeline.CreateVertexShader();
 	}
 
 	void SceneShaderEffects::CreateWindowSizeDependentResources() {
@@ -87,7 +122,7 @@ namespace DxSamples {
 
 		auto renderTargetView = this->swapChainPanel->GetRenderTargetView();
 		d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
-
+		
 		ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
 		d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
 
@@ -112,6 +147,7 @@ namespace DxSamples {
 		auto dxCtx = dxDev->LockContext();
 		auto d3dCtx = dxCtx->D3D();
 
+
 		//
 		// Render dxRenderObjImage texture to swapChain RTV.
 		//
@@ -131,19 +167,24 @@ namespace DxSamples {
 				this->dxLinkageGraphPipeline.GetVertexShader()
 			);
 
+			this->renderPipeline.SetPixelShader(
+				this->dxLinkageGraphPipeline.GetPixelShader()
+			);
+
 			//this->renderPipeline.SetVertexShader(
 			//	dxRenderObj->GetObj()->vertexShader,
 			//	dxRenderObj->GetObj()->vsConstantBuffer
 			//);
 
-			this->renderPipeline.SetPixelShader(
-				dxRenderObj->GetObj()->pixelShader,
-				dxRenderObj->GetObj()->psConstantBuffer
-			);
+			//this->renderPipeline.SetPixelShader(
+			//	dxRenderObj->GetObj()->pixelShader,
+			//	dxRenderObj->GetObj()->psConstantBuffer
+			//);
 
 			this->renderPipeline.Draw();
 		}
 
+		// TODO: write some stages for render pipiline to test performance for old logic
 
 		ID3D11ShaderResourceView* nullrtv[] = { nullptr };
 		d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);

@@ -7,10 +7,11 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 // This is the default code in the fixed header section.
-Texture2D Texture : register(t0);
-SamplerState Anisotropic : register(s0);
+Texture2DArray inTexture : register(t0);
+SamplerState samplerState : register(s0);
 
-export void VertexFunctionNew(inout float4 position, inout float2 uv)
+
+export float4 PixelFunctionB(float4 color)
 {
-    position.y += 0.3;
+    return color * 0.5f;
 }

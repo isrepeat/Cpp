@@ -99,10 +99,10 @@
     <ClInclude Include="[03] Shader Effects\DxLinkageGraphPipeline.h">
       <Filter>[03] Shader Effects</Filter>
     </ClInclude>
-    <ClInclude Include="[03] Shader Effects\Shaders\Function1.VS.hlsl">
+    <ClInclude Include="[03] Shader Effects\Shaders\FunctionA.VS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="[03] Shader Effects\Shaders\Function2.VS.hlsl">
+    <ClInclude Include="[03] Shader Effects\Shaders\FunctionB.VS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
