@@ -6,142 +6,87 @@ namespace DxSamples {
 	DxLinkageGraphPipeline::DxLinkageGraphPipeline(H::Dx::DxDeviceSafeObj* dxDeviceSafeObj)
 		: dxDeviceSafeObj{ dxDeviceSafeObj }
 	{
-		HRESULT hr = S_OK;
-
-		hr = D3DCreateLinker(this->vertexLinker.GetAddressOf());
-		H::System::ThrowIfFailed(hr);
-
-		hr = D3DCreateLinker(this->pixelLinker.GetAddressOf());
-		H::System::ThrowIfFailed(hr);
-
-		hr = D3DCreateFunctionLinkingGraph(0, this->vertexShaderGraph.GetAddressOf());
-		H::System::ThrowIfFailed(hr);
-
-		hr = D3DCreateFunctionLinkingGraph(0, this->pixelShaderGraph.GetAddressOf());
-		H::System::ThrowIfFailed(hr);
 	}
 
-	void DxLinkageGraphPipeline::AddVertexShaderFLG(const DxVertexShaderFLG& dxVertexShaderFLG) {
+	void DxLinkageGraphPipeline::CreateVertexShaderFromGraphDesc(const DxVertexShaderGraphDesc& dxVertexShaderGraphDesc) {
 		HRESULT hr = S_OK;
 
 		//
 		// Set input signature.
 		//
-		LOG_ASSERT(dxVertexShaderFLG.shaderInputParameters.size() == dxVertexShaderFLG.shaderOutputParameters.size()
-			, "Shader input/output params must be compatible with each other (slots and count)"
-			);
-
-		hr = this->vertexShaderGraph->SetInputSignature(
-			dxVertexShaderFLG.shaderInputParameters.data(),
-			dxVertexShaderFLG.shaderInputParameters.size(),
-			this->vertexShaderInputNode.GetAddressOf()
+		hr = this->dxVertexShaderGraph.shaderGraph->SetInputSignature(
+			dxVertexShaderGraphDesc.shaderInputParameters.data(),
+			dxVertexShaderGraphDesc.shaderInputParameters.size(),
+			this->dxVertexShaderGraph.shaderInputNode.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
 		//
-		// Add modules, call first functions and link passing params from prev function to next.
+		// Add modules, call functions and link passing params from previous function to next.
 		//
-		for (auto& hlslModule : dxVertexShaderFLG.hlslModules) {
-			LOG_ASSERT(hlslModule.callFunctions.size() <= 1
-				, "Hlsl module with callFunctions.size() > 1 not supported now"
-			);
+		std::vector<HlslFunction::ParamMatch> lastFunctionParamsMatch;
 
-			DxShaderMudule dxShaderModule;
+		for (auto& hlslModule : dxVertexShaderGraphDesc.hlslModules) {
+			auto dxShaderModule = this->LoadShaderModule(hlslModule);
 
-			auto hlslBlob = H::FS::ReadFile(hlslModule.hlslFile);
-
-			Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-			hr = D3DCompile(
-				hlslBlob.data(),
-				hlslBlob.size(),
-				("ShaderModule__" + hlslModule.hlslFile.filename().string()).c_str(),
-				NULL,
-				NULL,
-				NULL,
-				"lib_5_0",
-				D3DCOMPILE_OPTIMIZATION_LEVEL3,
-				0,
-				dxShaderModule.compiledCodeBlob.GetAddressOf(),
-				&errorBlob
-			);
-			if (errorBlob) {
-				LOG_ERROR_D("d3dCompileError = \"{}\"", (char*)errorBlob->GetBufferPointer());
-			}
+			hr = this->dxVertexShaderGraph.linker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
 			H::System::ThrowIfFailed(hr);
 
-			// Load the compiled library code into a module object.
-			hr = D3DLoadModule(
-				dxShaderModule.compiledCodeBlob->GetBufferPointer(),
-				dxShaderModule.compiledCodeBlob->GetBufferSize(),
-				dxShaderModule.shaderLibrary.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
+			// Call funcitons and match passed params.
+			for (auto& hlslFunction : hlslModule.hlslFunctions) {
+				lastFunctionParamsMatch = hlslFunction.paramsMatch; // remember last params for shaderOutputNode
 
-			// Create an instance of the library and define resource bindings for it.
-			// In this sample we use the same slots as the source library however this is not required.
-			hr = dxShaderModule.shaderLibrary->CreateInstance(
-				"",
-				dxShaderModule.shaderLibraryInstance.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
+				Microsoft::WRL::ComPtr<ID3D11LinkingNode> shaderCallFunctionNode;
+				hr = this->dxVertexShaderGraph.shaderGraph->CallFunction(
+					"",
+					dxShaderModule.shaderLibrary.Get(),
+					hlslFunction.functionName.c_str(),
+					shaderCallFunctionNode.GetAddressOf()
+				);
+				H::System::ThrowIfFailed(hr);
 
-			// TODO: add support ...
-			//dxShaderModule.shaderLibraryInstance->BindResource(0, 0, 1);
-			//dxShaderModule.shaderLibraryInstance->BindSampler(0, 0, 1);
-
-			// Hook up the shader library instance.
-			hr = this->vertexLinker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
-			H::System::ThrowIfFailed(hr);
-
-			// Create a node for the main VertexFunction call using the output of the helper functions.
-			hr = this->vertexShaderGraph->CallFunction(
-				"",
-				dxShaderModule.shaderLibrary.Get(),
-				hlslModule.callFunctions[0].c_str(), // TODO: add support passing output data between function in same module.
-				dxShaderModule.shaderCallFunctionNode.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
-
-
-			if (this->dxVertexShaderModules.empty()) {
-				for (int i = 0; i < dxVertexShaderFLG.shaderInputParameters.size(); i++) {
-					hr = this->vertexShaderGraph->PassValue(this->vertexShaderInputNode.Get(), i, dxShaderModule.shaderCallFunctionNode.Get(), i);
-					H::System::ThrowIfFailed(hr);
+				if (this->dxVertexShaderGraph.dxShaderModules.empty()) {
+					if (dxShaderModule.shaderCallFunctionNodes.empty()) {
+						LOG_ASSERT(dxVertexShaderGraphDesc.shaderInputParameters.size() == hlslFunction.paramsMatch.size()
+							, "Shader input params size doesn't match params for first added hlslFunction"
+						);
+						this->PassValues(&this->dxVertexShaderGraph, this->dxVertexShaderGraph.shaderInputNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
+					}
+					else {
+						auto lastFunctionNode = dxShaderModule.shaderCallFunctionNodes.back();
+						this->PassValues(&this->dxVertexShaderGraph, lastFunctionNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
+					}
 				}
-			}
-			else {
-				auto prevModule = this->dxVertexShaderModules.back();
-				// TODO: Pass returned value of previous function to next function.
-				for (int i = 0; i < dxVertexShaderFLG.shaderInputParameters.size(); i++) {
-					hr = this->vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), i, dxShaderModule.shaderCallFunctionNode.Get(), i);
-					H::System::ThrowIfFailed(hr);
+				else {
+					auto prevModule = this->dxVertexShaderGraph.dxShaderModules.back();
+					auto lastFunctionNode = prevModule.shaderCallFunctionNodes.back();
+					this->PassValues(&this->dxVertexShaderGraph, lastFunctionNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
 				}
+				dxShaderModule.shaderCallFunctionNodes.push_back(shaderCallFunctionNode);
 			}
-
-			this->dxVertexShaderModules.push_back(std::move(dxShaderModule));
+			this->dxVertexShaderGraph.dxShaderModules.push_back(std::move(dxShaderModule));
 		}
 
 		//
 		// Set output signature.
 		//
 		// Create the vertex output node.
-		hr = this->vertexShaderGraph->SetOutputSignature(
-			dxVertexShaderFLG.shaderOutputParameters.data(),
-			dxVertexShaderFLG.shaderOutputParameters.size(),
-			this->vertexShaderOutputNode.GetAddressOf()
+		hr = this->dxVertexShaderGraph.shaderGraph->SetOutputSignature(
+			dxVertexShaderGraphDesc.shaderOutputParameters.data(),
+			dxVertexShaderGraphDesc.shaderOutputParameters.size(),
+			this->dxVertexShaderGraph.shaderOutputNode.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
-		auto prevModule = this->dxVertexShaderModules.back();
-		for (int i = 0; i < dxVertexShaderFLG.shaderOutputParameters.size(); i++) {
-			hr = this->vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), i, this->vertexShaderOutputNode.Get(), i);
-			H::System::ThrowIfFailed(hr);
-		}
+		auto prevModule = this->dxVertexShaderGraph.dxShaderModules.back();
+		auto lastFunctionNode = prevModule.shaderCallFunctionNodes.back();
+		this->PassValues(&this->dxVertexShaderGraph, lastFunctionNode, this->dxVertexShaderGraph.shaderOutputNode, lastFunctionParamsMatch);
+		
 
 		// Logs generated shader.
 		{
 			Microsoft::WRL::ComPtr<ID3DBlob> blobHlsl;
-			hr = this->vertexShaderGraph->GenerateHlsl(0, &blobHlsl);
+			hr = this->dxVertexShaderGraph.shaderGraph->GenerateHlsl(0, &blobHlsl);
 			H::System::ThrowIfFailed(hr);
 
 			LOG_DEBUG_D("vertexShaderGraph --> hlsl:\n"
@@ -158,20 +103,20 @@ namespace DxSamples {
 		auto dxCtx = dxDev->LockContext();
 
 		// Finalize the the vertex shader graph.
-		hr = this->vertexShaderGraph->CreateModuleInstance(
-			this->vertexShaderGraphInstance.GetAddressOf(),
+		hr = this->dxVertexShaderGraph.shaderGraph->CreateModuleInstance(
+			this->dxVertexShaderGraph.shaderGraphInstance.GetAddressOf(),
 			nullptr
 		);
 		H::System::ThrowIfFailed(hr);
 
 		// Link the vertex shader.
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-		hr = this->vertexLinker->Link(
-			this->vertexShaderGraphInstance.Get(),
+		hr = this->dxVertexShaderGraph.linker->Link(
+			this->dxVertexShaderGraph.shaderGraphInstance.Get(),
 			"main",
 			"vs_5_0",
 			0,
-			this->vertexShaderBlob.GetAddressOf(),
+			this->dxVertexShaderGraph.shaderBlob.GetAddressOf(),
 			&errorBlob
 		);
 		if (errorBlob) {
@@ -180,135 +125,102 @@ namespace DxSamples {
 		H::System::ThrowIfFailed(hr);
 
 		hr = d3dDev->CreateInputLayout(
-			dxVertexShaderFLG.vertexInputLayout.data(),
-			dxVertexShaderFLG.vertexInputLayout.size(),
-			this->vertexShaderBlob->GetBufferPointer(),
-			this->vertexShaderBlob->GetBufferSize(),
-			this->inputLayout.GetAddressOf()
+			dxVertexShaderGraphDesc.vertexInputLayout.data(),
+			dxVertexShaderGraphDesc.vertexInputLayout.size(),
+			this->dxVertexShaderGraph.shaderBlob->GetBufferPointer(),
+			this->dxVertexShaderGraph.shaderBlob->GetBufferSize(),
+			this->dxVertexShaderGraph.inputLayout.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
 		hr = d3dDev->CreateVertexShader(
-			this->vertexShaderBlob->GetBufferPointer(),
-			this->vertexShaderBlob->GetBufferSize(),
+			this->dxVertexShaderGraph.shaderBlob->GetBufferPointer(),
+			this->dxVertexShaderGraph.shaderBlob->GetBufferSize(),
 			nullptr,
-			this->vertexShader.GetAddressOf()
+			this->dxVertexShaderGraph.vertexShader.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 	}
 
 
-	void DxLinkageGraphPipeline::AddPixelShaderFLG(const DxPixelShaderFLG& dxPixelShaderFLG) {
+	void DxLinkageGraphPipeline::CreatePixelShaderFromGraphDesc(const DxPixelShaderGraphDesc& dxPixelShaderGraphDesc) {
 		HRESULT hr = S_OK;
 
 		//
 		// Set input signature.
 		//
-		hr = this->pixelShaderGraph->SetInputSignature(
-			dxPixelShaderFLG.shaderInputParameters.data(),
-			dxPixelShaderFLG.shaderInputParameters.size(),
-			this->pixelShaderInputNode.GetAddressOf()
+		hr = this->dxPixelShaderGraph.shaderGraph->SetInputSignature(
+			dxPixelShaderGraphDesc.shaderInputParameters.data(),
+			dxPixelShaderGraphDesc.shaderInputParameters.size(),
+			this->dxPixelShaderGraph.shaderInputNode.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
 		//
-		// Add modules, call first functions and link passing params from prev function to next.
+		// Add modules, call functions and link passing params from previous function to next.
 		//
-		for (auto& hlslModule : dxPixelShaderFLG.hlslModules) {
-			LOG_ASSERT(hlslModule.callFunctions.size() <= 1
-				, "Hlsl module with callFunctions.size() > 1 not supported now"
-			);
+		std::vector<HlslFunction::ParamMatch> lastFunctionParamsMatch;
 
-			DxShaderMudule dxShaderModule;
+		for (auto& hlslModule : dxPixelShaderGraphDesc.hlslModules) {
+			auto dxShaderModule = this->LoadShaderModule(hlslModule);
 
-			auto hlslBlob = H::FS::ReadFile(hlslModule.hlslFile);
-
-			Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-			hr = D3DCompile(
-				hlslBlob.data(),
-				hlslBlob.size(),
-				("ShaderModule__" + hlslModule.hlslFile.filename().string()).c_str(),
-				NULL,
-				NULL,
-				NULL,
-				"lib_5_0",
-				D3DCOMPILE_OPTIMIZATION_LEVEL3,
-				0,
-				dxShaderModule.compiledCodeBlob.GetAddressOf(),
-				&errorBlob
-			);
-			if (errorBlob) {
-				LOG_ERROR_D("d3dCompileError = \"{}\"", (char*)errorBlob->GetBufferPointer());
-			}
+			hr = this->dxPixelShaderGraph.linker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
 			H::System::ThrowIfFailed(hr);
 
-			// Load the compiled library code into a module object.
-			hr = D3DLoadModule(
-				dxShaderModule.compiledCodeBlob->GetBufferPointer(),
-				dxShaderModule.compiledCodeBlob->GetBufferSize(),
-				dxShaderModule.shaderLibrary.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
+			// Call funcitons and match passed params.
+			for (auto& hlslFunction : hlslModule.hlslFunctions) {
+				lastFunctionParamsMatch = hlslFunction.paramsMatch; // remember last params for shaderOutputNode
 
-			// Create an instance of the library and define resource bindings for it.
-			// In this sample we use the same slots as the source library however this is not required.
-			hr = dxShaderModule.shaderLibrary->CreateInstance(
-				"",
-				dxShaderModule.shaderLibraryInstance.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
-
-			// TODO: add support ...
-			dxShaderModule.shaderLibraryInstance->BindResource(0, 0, 1);
-			dxShaderModule.shaderLibraryInstance->BindSampler(0, 0, 1);
-
-			// Hook up the shader library instance.
-			hr = this->pixelLinker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
-			H::System::ThrowIfFailed(hr);
-
-			hr = this->pixelShaderGraph->CallFunction(
-				"",
-				dxShaderModule.shaderLibrary.Get(),
-				hlslModule.callFunctions[0].c_str(), // TODO: add support passing output data between function in same module.
-				dxShaderModule.shaderCallFunctionNode.GetAddressOf()
-			);
-			H::System::ThrowIfFailed(hr);
-
-
-			if (this->dxPixelShaderModules.empty()) {
-				for (int i = 0; i < dxPixelShaderFLG.shaderInputParameters.size(); i++) {
-					hr = this->pixelShaderGraph->PassValue(this->pixelShaderInputNode.Get(), i, dxShaderModule.shaderCallFunctionNode.Get(), i);
-					H::System::ThrowIfFailed(hr);
-				}
-			}
-			else {
-				auto prevModule = this->dxPixelShaderModules.back();
-				hr = this->pixelShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), D3D_RETURN_PARAMETER_INDEX, dxShaderModule.shaderCallFunctionNode.Get(), 0);
+				Microsoft::WRL::ComPtr<ID3D11LinkingNode> shaderCallFunctionNode;
+				hr = this->dxPixelShaderGraph.shaderGraph->CallFunction(
+					"",
+					dxShaderModule.shaderLibrary.Get(),
+					hlslFunction.functionName.c_str(),
+					shaderCallFunctionNode.GetAddressOf()
+				);
 				H::System::ThrowIfFailed(hr);
-			}
 
-			this->dxPixelShaderModules.push_back(std::move(dxShaderModule));
+				if (this->dxPixelShaderGraph.dxShaderModules.empty()) {
+					if (dxShaderModule.shaderCallFunctionNodes.empty()) {
+						LOG_ASSERT(dxPixelShaderGraphDesc.shaderInputParameters.size() == hlslFunction.paramsMatch.size()
+							, "Shader input params size doesn't match params for first added hlslFunction"
+						);
+						this->PassValues(&this->dxPixelShaderGraph, this->dxPixelShaderGraph.shaderInputNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
+					}
+					else {
+						auto lastFunctionNode = dxShaderModule.shaderCallFunctionNodes.back();
+						this->PassValues(&this->dxPixelShaderGraph, lastFunctionNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
+					}
+				}
+				else {
+					auto prevModule = this->dxPixelShaderGraph.dxShaderModules.back();
+					auto lastFunctionNode = prevModule.shaderCallFunctionNodes.back();
+					this->PassValues(&this->dxPixelShaderGraph, lastFunctionNode, shaderCallFunctionNode, hlslFunction.paramsMatch);
+				}
+				dxShaderModule.shaderCallFunctionNodes.push_back(shaderCallFunctionNode);
+			}
+			this->dxPixelShaderGraph.dxShaderModules.push_back(std::move(dxShaderModule));
 		}
 
 		//
 		// Set output signature.
 		//
 		// Create the pixel output node.
-		hr = this->pixelShaderGraph->SetOutputSignature(
-			dxPixelShaderFLG.shaderOutputParameters.data(),
-			dxPixelShaderFLG.shaderOutputParameters.size(),
-			this->pixelShaderOutputNode.GetAddressOf()
+		hr = this->dxPixelShaderGraph.shaderGraph->SetOutputSignature(
+			dxPixelShaderGraphDesc.shaderOutputParameters.data(),
+			dxPixelShaderGraphDesc.shaderOutputParameters.size(),
+			this->dxPixelShaderGraph.shaderOutputNode.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 
-		auto prevModule = this->dxPixelShaderModules.back();
-		hr = this->pixelShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), D3D_RETURN_PARAMETER_INDEX, this->pixelShaderOutputNode.Get(), 0);
-		H::System::ThrowIfFailed(hr);
+		auto prevModule = this->dxPixelShaderGraph.dxShaderModules.back();
+		auto lastFunctionNode = prevModule.shaderCallFunctionNodes.back();
+		this->PassValues(&this->dxPixelShaderGraph, lastFunctionNode, this->dxPixelShaderGraph.shaderOutputNode, lastFunctionParamsMatch);
 
 		// Logs generated shader.
 		{
 			Microsoft::WRL::ComPtr<ID3DBlob> blobHlsl;
-			hr = this->pixelShaderGraph->GenerateHlsl(0, &blobHlsl);
+			hr = this->dxPixelShaderGraph.shaderGraph->GenerateHlsl(0, &blobHlsl);
 			H::System::ThrowIfFailed(hr);
 
 			LOG_DEBUG_D("pixelShaderGraph --> hlsl:\n"
@@ -325,20 +237,20 @@ namespace DxSamples {
 		auto dxCtx = dxDev->LockContext();
 
 		// Finalize the the pixel shader graph.
-		hr = this->pixelShaderGraph->CreateModuleInstance(
-			this->pixelShaderGraphInstance.GetAddressOf(),
+		hr = this->dxPixelShaderGraph.shaderGraph->CreateModuleInstance(
+			this->dxPixelShaderGraph.shaderGraphInstance.GetAddressOf(),
 			nullptr
 		);
 		H::System::ThrowIfFailed(hr);
 
 		// Link the pixel shader.
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-		hr = this->pixelLinker->Link(
-			this->pixelShaderGraphInstance.Get(),
+		hr = this->dxPixelShaderGraph.linker->Link(
+			this->dxPixelShaderGraph.shaderGraphInstance.Get(),
 			"main",
 			"ps_5_0",
 			0,
-			this->pixelShaderBlob.GetAddressOf(),
+			this->dxPixelShaderGraph.shaderBlob.GetAddressOf(),
 			&errorBlob
 		);
 		if (errorBlob) {
@@ -347,230 +259,108 @@ namespace DxSamples {
 		H::System::ThrowIfFailed(hr);
 
 		hr = d3dDev->CreatePixelShader(
-			this->pixelShaderBlob->GetBufferPointer(),
-			this->pixelShaderBlob->GetBufferSize(),
+			this->dxPixelShaderGraph.shaderBlob->GetBufferPointer(),
+			this->dxPixelShaderGraph.shaderBlob->GetBufferSize(),
 			nullptr,
-			this->pixelShader.GetAddressOf()
+			this->dxPixelShaderGraph.pixelShader.GetAddressOf()
 		);
 		H::System::ThrowIfFailed(hr);
 	}
 
 
-	//void DxLinkageGraphPipeline::SetInputSignature() {
-	//	HRESULT hr = S_OK;
-
-	//	// Define the vertex shader input layout.
-	//	static const D3D11_PARAMETER_DESC vertexShaderInputParameters[] =
-	//	{
-	//		{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_LINEAR, D3D_PF_IN,0,0,0,0 },
-	//		{ "inputUV", "TEXCOORD0", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,2,D3D_INTERPOLATION_LINEAR,D3D_PF_IN,0,0,0,0}
-	//	};
-
-	//	hr = this->vertexShaderGraph->SetInputSignature(
-	//		vertexShaderInputParameters,
-	//		ARRAYSIZE(vertexShaderInputParameters),
-	//		this->vertexShaderInputNode.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-	//}
-
-	//DxShaderMudule DxLinkageGraphPipeline::AddModule(
-	//	const std::filesystem::path& hlslFile,
-	//	const std::string& callFunctionName)
-	//{
-	//	HRESULT hr = S_OK;
-	//	DxShaderMudule dxShaderModule;
-
-	//	auto hlslBlob = H::FS::ReadFile(hlslFile);
-
-	//	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-	//	hr = D3DCompile(
-	//		hlslBlob.data(),
-	//		hlslBlob.size(),
-	//		("ShaderModule__" + hlslFile.filename().string()).c_str(),
-	//		NULL,
-	//		NULL,
-	//		NULL,
-	//		"lib_5_0",
-	//		D3DCOMPILE_OPTIMIZATION_LEVEL3,
-	//		0,
-	//		dxShaderModule.compiledCodeBlob.GetAddressOf(),
-	//		&errorBlob
-	//	);
-	//	if (errorBlob) {
-	//		LOG_ERROR_D("d3dCompileError = \"{}\"", (char*)errorBlob->GetBufferPointer());
-	//	}
-	//	H::System::ThrowIfFailed(hr);
-
-	//	// Load the compiled library code into a module object.
-	//	hr = D3DLoadModule(
-	//		dxShaderModule.compiledCodeBlob->GetBufferPointer(),
-	//		dxShaderModule.compiledCodeBlob->GetBufferSize(),
-	//		dxShaderModule.shaderLibrary.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	// Create an instance of the library and define resource bindings for it.
-	//	// In this sample we use the same slots as the source library however this is not required.
-	//	hr = dxShaderModule.shaderLibrary->CreateInstance(
-	//		"",
-	//		dxShaderModule.shaderLibraryInstance.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	// TODO: add support ...
-	//	//dxShaderModule.shaderLibraryInstance->BindResource(0, 0, 1);
-	//	//dxShaderModule.shaderLibraryInstance->BindSampler(0, 0, 1);
-
-	//	// Hook up the shader library instance.
-	//	hr = this->vertexLinker->UseLibrary(dxShaderModule.shaderLibraryInstance.Get());
-	//	H::System::ThrowIfFailed(hr);
-
-	//	// Create a node for the main VertexFunction call using the output of the helper functions.
-	//	hr = this->vertexShaderGraph->CallFunction(
-	//		"",
-	//		dxShaderModule.shaderLibrary.Get(),
-	//		callFunctionName.c_str(),
-	//		dxShaderModule.shaderCallFunctionNode.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	if (this->dxVertexShaderModules.empty()) {
-	//		hr = this->vertexShaderGraph->PassValue(this->vertexShaderInputNode.Get(), 0, dxShaderModule.shaderCallFunctionNode.Get(), 0);
-	//		H::System::ThrowIfFailed(hr);
-	//		hr = this->vertexShaderGraph->PassValue(this->vertexShaderInputNode.Get(), 1, dxShaderModule.shaderCallFunctionNode.Get(), 1);
-	//		H::System::ThrowIfFailed(hr);
-	//	}
-	//	else {
-	//		auto prevModule = this->dxVertexShaderModules.back();
-	//		hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 0, dxShaderModule.shaderCallFunctionNode.Get(), 0);
-	//		H::System::ThrowIfFailed(hr);
-	//		hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 1, dxShaderModule.shaderCallFunctionNode.Get(), 1);
-	//		H::System::ThrowIfFailed(hr);
-	//	}
-
-	//	this->dxVertexShaderModules.push_back(std::move(dxShaderModule));
-	//	return this->dxVertexShaderModules.back();
-	//}
-
-	//void DxLinkageGraphPipeline::CallFunction(DxShaderMudule& dxShaderModule, const std::string& functionName) {
-	//	HRESULT hr = S_OK;
-
-	//	// Create a node for the main VertexFunction call using the output of the helper functions.
-	//	Microsoft::WRL::ComPtr<ID3D11LinkingNode> shaderCallFunctionNode;
-	//	hr = this->vertexShaderGraph->CallFunction(
-	//		"",
-	//		dxShaderModule.shaderLibrary.Get(),
-	//		functionName.c_str(),
-	//		dxShaderModule.shaderCallFunctionNode.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-	//}
-
-	//// Call after vertexShaderGraph link all moules via CallFunction()
-	//void DxLinkageGraphPipeline::SetOutputSignature() {
-	//	HRESULT hr = S_OK;
-
-	//	// Define the output layout for the vertex function.
-	//	static const D3D11_PARAMETER_DESC vertexShaderOutputParameters[] =
-	//	{
-	//		{ "outputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0,0,0,0},
-	//		{ "outputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR,1,2,D3D_INTERPOLATION_UNDEFINED,D3D_PF_OUT,0,0,0,0 },
-	//	};
-
-	//	// Create the vertex output node.
-	//	hr = this->vertexShaderGraph->SetOutputSignature(
-	//		vertexShaderOutputParameters,
-	//		ARRAYSIZE(vertexShaderOutputParameters),
-	//		this->vertexShaderOutputNode.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	auto prevModule = this->dxVertexShaderModules.back();
-	//	hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 0, this->vertexShaderOutputNode.Get(), 0);
-	//	H::System::ThrowIfFailed(hr);
-	//	hr = vertexShaderGraph->PassValue(prevModule.shaderCallFunctionNode.Get(), 1, this->vertexShaderOutputNode.Get(), 1);
-	//	H::System::ThrowIfFailed(hr);
-	//}
-
-	//void DxLinkageGraphPipeline::LogVertexShaderGraph() {
-	//	HRESULT hr = S_OK;
-
-	//	Microsoft::WRL::ComPtr<ID3DBlob> blobHlsl;
-	//	hr = this->vertexShaderGraph->GenerateHlsl(0, &blobHlsl);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	LOG_DEBUG_D("vertexShaderGraph --> hlsl:\n"
-	//		"{}"
-	//		, std::string{ static_cast<const char*>(blobHlsl->GetBufferPointer()), blobHlsl->GetBufferSize() }
-	//	);
-	//}
-
-
-	//Microsoft::WRL::ComPtr<ID3D11VertexShader> DxLinkageGraphPipeline::CreateVertexShader() {
-	//	auto dxDev = this->dxDeviceSafeObj->Lock();
-	//	auto d3dDev = dxDev->GetD3DDevice();
-	//	auto dxCtx = dxDev->LockContext();
-
-	//	HRESULT hr = S_OK;
-
-	//	// Finalize the the vertex shader graph.
-	//	hr = this->vertexShaderGraph->CreateModuleInstance(
-	//		this->vertexShaderGraphInstance.GetAddressOf(),
-	//		nullptr
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	// Link the vertex shader.
-	//	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-	//	hr = this->vertexLinker->Link(
-	//		this->vertexShaderGraphInstance.Get(),
-	//		"main",
-	//		"vs_5_0",
-	//		0,
-	//		this->vertexShaderBlob.GetAddressOf(),
-	//		&errorBlob
-	//	);
-	//	if (errorBlob) {
-	//		LOG_ERROR_D("d3dLinkerError = \"{}\"", (char*)errorBlob->GetBufferPointer());
-	//	}
-	//	H::System::ThrowIfFailed(hr);
-
-	//	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[2] = {
-	//		{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//		{ "TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	};
-
-	//	hr = d3dDev->CreateInputLayout(
-	//		inputElementDesc,
-	//		ARRAYSIZE(inputElementDesc),
-	//		this->vertexShaderBlob->GetBufferPointer(),
-	//		this->vertexShaderBlob->GetBufferSize(),
-	//		this->inputLayout.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	hr = d3dDev->CreateVertexShader(
-	//		this->vertexShaderBlob->GetBufferPointer(),
-	//		this->vertexShaderBlob->GetBufferSize(),
-	//		nullptr,
-	//		this->vertexShader.GetAddressOf()
-	//	);
-	//	H::System::ThrowIfFailed(hr);
-
-	//	return this->vertexShader;
-	//}
-
-
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> DxLinkageGraphPipeline::GetInputLayout() {
-		return this->inputLayout;
+		return this->dxVertexShaderGraph.inputLayout;
 	}
 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> DxLinkageGraphPipeline::GetVertexShader() {
-		return this->vertexShader;
+		return this->dxVertexShaderGraph.vertexShader;
 	}
 	
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> DxLinkageGraphPipeline::GetPixelShader() {
-		return this->pixelShader;
+		return this->dxPixelShaderGraph.pixelShader;
+	}
+
+
+
+	DxShaderMudule DxLinkageGraphPipeline::LoadShaderModule(HlslModule hlslModule) {
+		HRESULT hr = S_OK;
+		DxShaderMudule dxShaderModule;
+
+		auto hlslBlob = H::FS::ReadFile(hlslModule.hlslFile);
+
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+		hr = D3DCompile(
+			hlslBlob.data(),
+			hlslBlob.size(),
+			("ShaderModule__" + hlslModule.hlslFile.filename().string()).c_str(),
+			NULL,
+			NULL,
+			NULL,
+			"lib_5_0",
+			D3DCOMPILE_OPTIMIZATION_LEVEL3,
+			0,
+			dxShaderModule.compiledCodeBlob.GetAddressOf(),
+			&errorBlob
+		);
+		if (errorBlob) {
+			LOG_ERROR_D("d3dCompileError = \"{}\"", (char*)errorBlob->GetBufferPointer());
+		}
+		H::System::ThrowIfFailed(hr);
+
+		// Load the compiled library code into a module object.
+		hr = D3DLoadModule(
+			dxShaderModule.compiledCodeBlob->GetBufferPointer(),
+			dxShaderModule.compiledCodeBlob->GetBufferSize(),
+			dxShaderModule.shaderLibrary.GetAddressOf()
+		);
+		H::System::ThrowIfFailed(hr);
+
+		// Create an instance of the library and define resource bindings for it.
+		// In this sample we use the same slots as the source library however this is not required.
+		hr = dxShaderModule.shaderLibrary->CreateInstance(
+			"",
+			dxShaderModule.shaderLibraryInstance.GetAddressOf()
+		);
+		H::System::ThrowIfFailed(hr);
+
+		if (hlslModule.bindResource) {
+			dxShaderModule.shaderLibraryInstance->BindResource(
+				hlslModule.bindResource->srcSlot,
+				hlslModule.bindResource->dstSlot,
+				hlslModule.bindResource->count
+			);
+		}
+		if (hlslModule.bindSampler) {
+			dxShaderModule.shaderLibraryInstance->BindSampler(
+				hlslModule.bindSampler->srcSlot,
+				hlslModule.bindSampler->dstSlot,
+				hlslModule.bindSampler->count
+			);
+		}
+		for (auto& bindConstantBuffer : hlslModule.bindConstantBuffers) {
+			dxShaderModule.shaderLibraryInstance->BindConstantBuffer(
+				bindConstantBuffer.srcSlot,
+				bindConstantBuffer.dstSlot,
+				bindConstantBuffer.cbDstOffset
+			);
+		}
+
+		return dxShaderModule;
+	}
+
+	void DxLinkageGraphPipeline::PassValues(
+		DxShaderGraph* dxShaderGraph,
+		Microsoft::WRL::ComPtr<ID3D11LinkingNode> prevNode,
+		Microsoft::WRL::ComPtr<ID3D11LinkingNode> currentNode,
+		std::vector<HlslFunction::ParamMatch> paramsMatch)
+	{
+		HRESULT hr = S_OK;
+		LOG_ASSERT(dxShaderGraph);
+
+		for (auto& paramMatch : paramsMatch) {
+			LOG_ASSERT(paramMatch.to != Param::_Return);
+			hr = dxShaderGraph->shaderGraph->PassValue(prevNode.Get(), paramMatch.from, currentNode.Get(), paramMatch.to);
+			H::System::ThrowIfFailed(hr);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Helpers/Dx/SwapChainPanel.h>
 #include <Helpers/Dx/RenderPipeline.h>
+#include <Helpers/Dx/DxLinkingGraph.h>
 
 #include "IScene.h"
 #include "DxLinkageGraphPipeline.h"
@@ -39,7 +40,8 @@ namespace DxSamples {
 	private:
 		std::mutex mx;
 		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
-		DxLinkageGraphPipeline dxLinkageGraphPipeline;
+		//DxLinkageGraphPipeline dxLinkageGraphPipeline;
+		H::Dx::DxLinkingGraph dxLinkageGraphPipeline;
 		H::Dx::RenderPipeline renderPipeline;
 
 		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;

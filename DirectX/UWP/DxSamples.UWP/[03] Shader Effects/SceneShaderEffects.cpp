@@ -56,49 +56,98 @@ namespace DxSamples {
 		dxRenderObjImageParams.pixelShader = g_ProjectRootNamespace / L"Image_PS.cso";
 		this->dxRenderObjImage = std::make_unique<DxRenderObjImage>(this->swapChainPanel, dxRenderObjImageParams);
 
+		using H::Dx::DxVertexShaderGraphDesc;
+		using H::Dx::DxPixelShaderGraphDesc;
+		using H::Dx::HlslModule;
+		using H::Dx::HlslFunction;
+		using H::Dx::Param;
 
-		DxVertexShaderFLG vertexShaderFLG;
-		vertexShaderFLG.vertexInputLayout = {
+		//
+		// Vertex Shader Graph Description
+		//
+		DxVertexShaderGraphDesc vertexShaderGraphDesc;
+		vertexShaderGraphDesc.vertexInputLayout = {
 			{ "SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		vertexShaderFLG.shaderInputParameters = {
-			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_LINEAR, D3D_PF_IN,0,0,0,0 },
-			{ "inputUV", "TEXCOORD0", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,2,D3D_INTERPOLATION_LINEAR,D3D_PF_IN,0,0,0,0}
+		vertexShaderGraphDesc.shaderInputParameters = {
+			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_LINEAR, D3D_PF_IN, 0, 0, 0, 0 },
+			{ "inputUV", "TEXCOORD0", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 2, D3D_INTERPOLATION_LINEAR, D3D_PF_IN, 0, 0, 0, 0}
 		};
-		vertexShaderFLG.shaderOutputParameters = {
-			{ "outputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0,0,0,0},
-			{ "outputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR,1,2,D3D_INTERPOLATION_UNDEFINED,D3D_PF_OUT,0,0,0,0 },
+		vertexShaderGraphDesc.shaderOutputParameters = {
+			{ "outputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0},
+			{ "outputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 2, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0 },
 		};
-		vertexShaderFLG.hlslModules = {
-			{ g_ProjectRootNamespace / "VertexFunctionA.VS.hlsl", {"VertexFunctionA"} },
-			{ g_ProjectRootNamespace / "VertexFunctionB.VS.hlsl", {"VertexFunctionB"} },
-		};
-		this->dxLinkageGraphPipeline.AddVertexShaderFLG(vertexShaderFLG);
+		{
+			HlslModule hlslModule;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexFunctionA.VS.hlsl";
+			hlslModule.hlslFunctions = {
+				{
+					"VertexFunctionA", {
+						{Param::_0, Param::_0},
+						{Param::_1, Param::_1},
+					}
+				},
+			};
+			hlslModule.bindConstantBuffers = {
+				HlslModule::BindConstantBuffer{ 0, 0, 1 },
+			};
+			vertexShaderGraphDesc.hlslModules.push_back(hlslModule);
+		}
+		{
+			HlslModule hlslModule;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexFunctionB.VS.hlsl";
+			hlslModule.hlslFunctions = {
+				{
+					"VertexFunctionB", {
+						{Param::_0, Param::_0},
+						{Param::_1, Param::_1},
+					}
+				},
+			};
+			vertexShaderGraphDesc.hlslModules.push_back(hlslModule);
+		}
+		this->dxLinkageGraphPipeline.CreateVertexShaderFromGraphDesc(vertexShaderGraphDesc);
 
-
-		DxPixelShaderFLG pixelShaderFLG;
-		pixelShaderFLG.shaderInputParameters = {
-			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1,4,D3D_INTERPOLATION_UNDEFINED, D3D_PF_IN, 0,0,0,0},
-			{ "inputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR,1,2,D3D_INTERPOLATION_UNDEFINED,D3D_PF_IN,0,0,0,0 },
+		//
+		// Pixel Shader Graph Description
+		//
+		DxPixelShaderGraphDesc pixelShaderGraphDesc;
+		pixelShaderGraphDesc.shaderInputParameters = {
+			{ "inputPosition", "SV_POSITION", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_UNDEFINED, D3D_PF_IN, 0, 0, 0, 0},
+			{ "inputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 2, D3D_INTERPOLATION_UNDEFINED, D3D_PF_IN, 0, 0, 0, 0 },
 		};
-		pixelShaderFLG.shaderOutputParameters = {
+		pixelShaderGraphDesc.shaderOutputParameters = {
 			{"outputColor", "SV_TARGET", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0}
 		};
-		pixelShaderFLG.hlslModules = {
-			{ g_ProjectRootNamespace / "PixelFunctionA.PS.hlsl", {"PixelFunctionA"} },
-			{ g_ProjectRootNamespace / "PixelFunctionB.PS.hlsl", {"PixelFunctionB"} },
-		};
-		this->dxLinkageGraphPipeline.AddPixelShaderFLG(pixelShaderFLG);
-
-
-		//this->dxLinkageGraphPipeline.SetInputSignature();
-		//this->dxLinkageGraphPipeline.AddModule(g_ProjectRootNamespace / "FunctionA.VS.hlsl", "VertexFunctionA");
-		//this->dxLinkageGraphPipeline.AddModule(g_ProjectRootNamespace / "FunctionB.VS.hlsl", "VertexFunctionB");
-		//this->dxLinkageGraphPipeline.SetOutputSignature();
-		//
-		//this->dxLinkageGraphPipeline.LogVertexShaderGraph();
-		//this->dxLinkageGraphPipeline.CreateVertexShader();
+		{
+			HlslModule hlslModule;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelFunctionA.PS.hlsl";
+			hlslModule.hlslFunctions = {
+				{
+					"PixelFunctionA", {
+						{Param::_0, Param::_0},
+						{Param::_1, Param::_1},
+					}
+				},
+			};
+			hlslModule.bindResource = HlslModule::BindResource{ 0, 0, 1 };
+			hlslModule.bindSampler = HlslModule::BindSampler{ 0, 0, 1 };
+			pixelShaderGraphDesc.hlslModules.push_back(hlslModule);
+		}
+		{
+			HlslModule hlslModule;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelFunctionB.PS.hlsl";
+			hlslModule.hlslFunctions = {
+				{
+					"PixelFunctionB", {
+						{Param::_Return, Param::_0}
+					}
+				},
+			};
+			pixelShaderGraphDesc.hlslModules.push_back(hlslModule);
+		}
+		this->dxLinkageGraphPipeline.CreatePixelShaderFromGraphDesc(pixelShaderGraphDesc);
 	}
 
 	void SceneShaderEffects::CreateWindowSizeDependentResources() {

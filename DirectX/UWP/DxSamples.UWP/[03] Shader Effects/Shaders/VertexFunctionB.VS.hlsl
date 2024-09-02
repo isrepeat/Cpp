@@ -1,16 +1,5 @@
-//--------------------------------------------------------------------------------------
-// VertexShader.hlsl
-//
-// Simple vertex shader for rendering a textured quad
-//
-// Advanced Technology Group (ATG)
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//--------------------------------------------------------------------------------------
-// This is the default code in the fixed header section.
-//Texture2D Texture : register(t0);
-//SamplerState Anisotropic : register(s0);
 
-export void VertexFunctionB(inout float4 position, inout float2 uv)
+export void VertexFunctionB(inout float4 rPosition, inout float2 rUV)
 {
-    position.y += 0.3;
+    rPosition.y += 0.3;
 }

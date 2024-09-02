@@ -99,12 +99,6 @@
     <ClInclude Include="[03] Shader Effects\DxLinkageGraphPipeline.h">
       <Filter>[03] Shader Effects</Filter>
     </ClInclude>
-    <ClInclude Include="[03] Shader Effects\Shaders\FunctionA.VS.hlsl">
-      <Filter>[03] Shader Effects\Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="[03] Shader Effects\Shaders\FunctionB.VS.hlsl">
-      <Filter>[03] Shader Effects\Shaders</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxSamples.UWP_CompiledFiles.targets" />
@@ -137,5 +131,19 @@
     <FxCompile Include="Common Shaders\Default_VS.hlsl">
       <Filter>Common Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelFunctionA.PS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelFunctionB.PS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexFunctionA.VS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexFunctionB.VS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
