@@ -4,7 +4,6 @@
 #include <Helpers/Dx/DxLinkingGraph.h>
 
 #include "IScene.h"
-#include "DxLinkageGraphPipeline.h"
 #include "DxRenderObjImage.h"
 #include "StepTimer.h"
 
@@ -15,6 +14,12 @@
 // https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/constructing-a-function-linking-graph
 // https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/direct3dhlsl/constructing-a-function-linking-graph.md
 // https://qiita.com/ryutorion/items/6dc733265a7d7c5f5ef6
+
+
+struct VS_CONSTANT_BUFFER_MUDULE_A {
+	DirectX::XMFLOAT4X4 mWorldViewProj;
+};
+
 
 namespace DxSamples {
 	class SceneShaderEffects : public IScene {
@@ -40,13 +45,15 @@ namespace DxSamples {
 	private:
 		std::mutex mx;
 		Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel;
-		//DxLinkageGraphPipeline dxLinkageGraphPipeline;
-		H::Dx::DxLinkingGraph dxLinkageGraphPipeline;
+		std::shared_ptr<H::Dx::DxLinkingGraph> dxLinkingGraph;
 		H::Dx::RenderPipeline renderPipeline;
 
 		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;
 
 		// Rendering loop timer.
 		DX::StepTimer renderLoopTimer;
+
+		std::shared_ptr<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>> cbVertexModuleA_1;
+		std::shared_ptr<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>> cbVertexModuleA_2;
 	};
 }

@@ -32,7 +32,6 @@
     <ClCompile Include="[02] HDR Scene\QuadRenderer.cpp" />
     <ClCompile Include="[02] HDR Scene\HDRScene.cpp" />
     <ClCompile Include="[02] HDR Scene\Tools.cpp" />
-    <ClCompile Include="[03] Shader Effects\DxLinkageGraphPipeline.cpp" />
     <ClCompile Include="[03] Shader Effects\SceneShaderEffects.cpp" />
     <ClCompile Include="[03] Shader Effects\DxRenderObjImage.cpp" />
     <ClCompile Include="[03] Shader Effects\Tools.cpp" />
@@ -49,7 +48,6 @@
     <ClInclude Include="[02] HDR Scene\HDRScene.h" />
     <ClInclude Include="[02] HDR Scene\StepTimer.h" />
     <ClInclude Include="[02] HDR Scene\Tools.h" />
-    <ClInclude Include="[03] Shader Effects\DxLinkageGraphPipeline.h" />
     <ClInclude Include="[03] Shader Effects\DxRenderObjImage.h" />
     <ClInclude Include="[03] Shader Effects\SceneShaderEffects.h" />
     <ClInclude Include="[03] Shader Effects\StepTimer.h" />

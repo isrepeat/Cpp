@@ -15,8 +15,10 @@ const std::filesystem::path g_ProjectRootNamespace = L"" PP_STRINGIFY(MSBuildPro
 namespace DxSamples {
 	SceneShaderEffects::SceneShaderEffects(Microsoft::WRL::ComPtr<H::Dx::ISwapChainPanel> swapChainPanel)
 		: swapChainPanel{ swapChainPanel }
-		, dxLinkageGraphPipeline{ this->swapChainPanel->GetDxDevice() }
+		, dxLinkingGraph{ std::make_shared<H::Dx::DxLinkingGraph>(this->swapChainPanel->GetDxDevice()) }
 		, renderPipeline{ this->swapChainPanel }
+		, cbVertexModuleA_1{ std::make_shared<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>>(this->swapChainPanel->GetDxDevice()) }
+		, cbVertexModuleA_2{ std::make_shared<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>>(this->swapChainPanel->GetDxDevice()) }
 	{
 		HRESULT hr = S_OK;
 
@@ -58,9 +60,10 @@ namespace DxSamples {
 
 		using H::Dx::DxVertexShaderGraphDesc;
 		using H::Dx::DxPixelShaderGraphDesc;
+		using H::Dx::DxConstantBufferBase;
 		using H::Dx::HlslModule;
 		using H::Dx::HlslFunction;
-		using H::Dx::Param;
+		using H::Dx::Slot;
 
 		//
 		// Vertex Shader Graph Description
@@ -82,15 +85,22 @@ namespace DxSamples {
 			HlslModule hlslModule;
 			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexFunctionA.VS.hlsl";
 			hlslModule.hlslFunctions = {
-				{
+				HlslFunction{
 					"VertexFunctionA", {
-						{Param::_0, Param::_0},
-						{Param::_1, Param::_1},
+						{Slot::_0, Slot::_0},
+						{Slot::_1, Slot::_1},
+					}
+				},
+				HlslFunction{
+					"VertexFunctionAA", {
+						{Slot::_0, Slot::_0},
+						{Slot::_1, Slot::_1},
 					}
 				},
 			};
 			hlslModule.bindConstantBuffers = {
-				HlslModule::BindConstantBuffer{ 0, 0, 1 },
+				HlslModule::BindConstantBuffer{ this->cbVertexModuleA_1, 0, 0, 0 },
+				HlslModule::BindConstantBuffer{ this->cbVertexModuleA_2, 1, 1, 0 },
 			};
 			vertexShaderGraphDesc.hlslModules.push_back(hlslModule);
 		}
@@ -100,14 +110,15 @@ namespace DxSamples {
 			hlslModule.hlslFunctions = {
 				{
 					"VertexFunctionB", {
-						{Param::_0, Param::_0},
-						{Param::_1, Param::_1},
+						{Slot::_0, Slot::_0},
+						{Slot::_1, Slot::_1},
 					}
 				},
 			};
 			vertexShaderGraphDesc.hlslModules.push_back(hlslModule);
 		}
-		this->dxLinkageGraphPipeline.CreateVertexShaderFromGraphDesc(vertexShaderGraphDesc);
+		this->dxLinkingGraph->CreateVertexShaderFromGraphDesc(vertexShaderGraphDesc);
+		
 
 		//
 		// Pixel Shader Graph Description
@@ -126,8 +137,8 @@ namespace DxSamples {
 			hlslModule.hlslFunctions = {
 				{
 					"PixelFunctionA", {
-						{Param::_0, Param::_0},
-						{Param::_1, Param::_1},
+						{Slot::_0, Slot::_0},
+						{Slot::_1, Slot::_1},
 					}
 				},
 			};
@@ -141,13 +152,13 @@ namespace DxSamples {
 			hlslModule.hlslFunctions = {
 				{
 					"PixelFunctionB", {
-						{Param::_Return, Param::_0}
+						{Slot::_Return, Slot::_0}
 					}
 				},
 			};
 			pixelShaderGraphDesc.hlslModules.push_back(hlslModule);
 		}
-		this->dxLinkageGraphPipeline.CreatePixelShaderFromGraphDesc(pixelShaderGraphDesc);
+		this->dxLinkingGraph->CreatePixelShaderFromGraphDesc(pixelShaderGraphDesc);
 	}
 
 	void SceneShaderEffects::CreateWindowSizeDependentResources() {
@@ -159,6 +170,19 @@ namespace DxSamples {
 	}
 
 	void SceneShaderEffects::Update() {
+		DirectX::XMStoreFloat4x4(
+			&this->cbVertexModuleA_1->constantBufferData.mWorldViewProj,
+			DirectX::XMMatrixTranspose(
+				DirectX::XMMatrixIdentity()
+			)
+		);	
+
+		DirectX::XMStoreFloat4x4(
+			&this->cbVertexModuleA_2->constantBufferData.mWorldViewProj,
+			DirectX::XMMatrixTranspose(
+				DirectX::XMMatrixTranslation(0.5, 0, 0)
+			)
+		);
 	}
 
 	void SceneShaderEffects::Clear() {
@@ -197,41 +221,47 @@ namespace DxSamples {
 		auto d3dCtx = dxCtx->D3D();
 
 
-		//
-		// Render dxRenderObjImage texture to swapChain RTV.
-		//
-		{
-			auto& dxRenderObj = this->dxRenderObjImage;
-			dxRenderObj->UpdateBuffers();
 
-			this->renderPipeline.SetTexture(dxRenderObj->GetObj()->textureSRV);
+		this->renderPipeline.SetTexture(this->dxRenderObjImage->GetObj()->textureSRV);
+		this->renderPipeline.SetLinkingGraph(this->dxLinkingGraph);
+		this->renderPipeline.Draw();
 
-			this->renderPipeline.SetInputLayout(
-				//this->inputLayout
-				this->dxLinkageGraphPipeline.GetInputLayout()
-			);
 
-			this->renderPipeline.SetVertexShader(
-				//this->vertexShader
-				this->dxLinkageGraphPipeline.GetVertexShader()
-			);
+		////
+		//// Render dxRenderObjImage texture to swapChain RTV.
+		////
+		//{
+		//	auto& dxRenderObj = this->dxRenderObjImage;
+		//	dxRenderObj->UpdateBuffers();
 
-			this->renderPipeline.SetPixelShader(
-				this->dxLinkageGraphPipeline.GetPixelShader()
-			);
+		//	this->renderPipeline.SetTexture(dxRenderObj->GetObj()->textureSRV);
 
-			//this->renderPipeline.SetVertexShader(
-			//	dxRenderObj->GetObj()->vertexShader,
-			//	dxRenderObj->GetObj()->vsConstantBuffer
-			//);
+		//	this->renderPipeline.SetInputLayout(
+		//		//this->inputLayout
+		//		this->dxLinkageGraphPipeline.GetInputLayout()
+		//	);
 
-			//this->renderPipeline.SetPixelShader(
-			//	dxRenderObj->GetObj()->pixelShader,
-			//	dxRenderObj->GetObj()->psConstantBuffer
-			//);
+		//	this->renderPipeline.SetVertexShader(
+		//		//this->vertexShader
+		//		this->dxLinkageGraphPipeline.GetVertexShader()
+		//	);
 
-			this->renderPipeline.Draw();
-		}
+		//	this->renderPipeline.SetPixelShader(
+		//		this->dxLinkageGraphPipeline.GetPixelShader()
+		//	);
+
+		//	//this->renderPipeline.SetVertexShader(
+		//	//	dxRenderObj->GetObj()->vertexShader,
+		//	//	dxRenderObj->GetObj()->vsConstantBuffer
+		//	//);
+
+		//	//this->renderPipeline.SetPixelShader(
+		//	//	dxRenderObj->GetObj()->pixelShader,
+		//	//	dxRenderObj->GetObj()->psConstantBuffer
+		//	//);
+
+		//	this->renderPipeline.Draw();
+		//}
 
 		// TODO: write some stages for render pipiline to test performance for old logic
 
