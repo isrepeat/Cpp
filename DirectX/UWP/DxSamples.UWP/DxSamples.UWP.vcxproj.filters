@@ -127,16 +127,16 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelFunctionA.PS.hlsl">
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelModule1.PS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelFunctionB.PS.hlsl">
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelModule2.PS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexFunctionA.VS.hlsl">
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexModule1.VS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexFunctionB.VS.hlsl">
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexModule2.VS.hlsl">
       <Filter>[03] Shader Effects\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>

@@ -4,14 +4,14 @@ struct ConstData
     matrix mWorldViewProj;
 };
 
-cbuffer VS_ConstBufferA : register(b0)
+cbuffer ConstantBufferA : register(b0)
 {
     ConstData constDataA;
 };
 
-cbuffer VS_ConstBufferAA : register(b1)
+cbuffer ConstantBufferB : register(b1)
 {
-    ConstData constDataAA;
+    ConstData constDataB;
 };
 
 export void VertexFunctionA(inout float4 rPosition, inout float2 rUV)
@@ -19,7 +19,7 @@ export void VertexFunctionA(inout float4 rPosition, inout float2 rUV)
     rPosition = mul(rPosition, constDataA.mWorldViewProj);
 }
 
-export void VertexFunctionAA(inout float4 rPosition, inout float2 rUV)
+export void VertexFunctionB(inout float4 rPosition, inout float2 rUV)
 {
-    rPosition = mul(rPosition, constDataAA.mWorldViewProj);
+    rPosition = mul(rPosition, constDataB.mWorldViewProj);
 }

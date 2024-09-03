@@ -53,7 +53,10 @@ namespace DxSamples {
 		// Rendering loop timer.
 		DX::StepTimer renderLoopTimer;
 
-		std::shared_ptr<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>> cbVertexModuleA_1;
-		std::shared_ptr<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>> cbVertexModuleA_2;
+		H::Dx::HlslModule hlslVertexModule1;
+		H::Dx::HlslModule hlslVertexModule2;
+
+		H::Dx::HlslModule hlslPixelModule1;
+		H::Dx::HlslModule hlslPixelModule2;
 	};
 }

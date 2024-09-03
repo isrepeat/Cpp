@@ -17,8 +17,6 @@ namespace DxSamples {
 		: swapChainPanel{ swapChainPanel }
 		, dxLinkingGraph{ std::make_shared<H::Dx::DxLinkingGraph>(this->swapChainPanel->GetDxDevice()) }
 		, renderPipeline{ this->swapChainPanel }
-		, cbVertexModuleA_1{ std::make_shared<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>>(this->swapChainPanel->GetDxDevice()) }
-		, cbVertexModuleA_2{ std::make_shared<H::Dx::DxConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>>(this->swapChainPanel->GetDxDevice()) }
 	{
 		HRESULT hr = S_OK;
 
@@ -82,8 +80,8 @@ namespace DxSamples {
 			{ "outputUV","TEXCOORD0",D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 2, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0 },
 		};
 		{
-			HlslModule hlslModule;
-			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexFunctionA.VS.hlsl";
+			HlslModule& hlslModule = this->hlslVertexModule1;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexModule1.VS.hlsl";
 			hlslModule.hlslFunctions = {
 				HlslFunction{
 					"VertexFunctionA", {
@@ -92,24 +90,22 @@ namespace DxSamples {
 					}
 				},
 				HlslFunction{
-					"VertexFunctionAA", {
+					"VertexFunctionB", {
 						{Slot::_0, Slot::_0},
 						{Slot::_1, Slot::_1},
 					}
 				},
 			};
-			hlslModule.bindConstantBuffers = {
-				HlslModule::BindConstantBuffer{ this->cbVertexModuleA_1, 0, 0, 0 },
-				HlslModule::BindConstantBuffer{ this->cbVertexModuleA_2, 1, 1, 0 },
-			};
+			hlslModule.AddConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("first", 0, 0, 0, this->swapChainPanel->GetDxDevice());
+			hlslModule.AddConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("second", 1, 1, 0, this->swapChainPanel->GetDxDevice());
 			vertexShaderGraphDesc.hlslModules.push_back(hlslModule);
 		}
 		{
-			HlslModule hlslModule;
-			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexFunctionB.VS.hlsl";
+			HlslModule& hlslModule = this->hlslVertexModule2;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "VertexModule2.VS.hlsl";
 			hlslModule.hlslFunctions = {
 				{
-					"VertexFunctionB", {
+					"VertexFunctionA", {
 						{Slot::_0, Slot::_0},
 						{Slot::_1, Slot::_1},
 					}
@@ -132,8 +128,8 @@ namespace DxSamples {
 			{"outputColor", "SV_TARGET", D3D_SVT_FLOAT, D3D_SVC_VECTOR, 1, 4, D3D_INTERPOLATION_UNDEFINED, D3D_PF_OUT, 0, 0, 0, 0}
 		};
 		{
-			HlslModule hlslModule;
-			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelFunctionA.PS.hlsl";
+			HlslModule& hlslModule = this->hlslPixelModule1;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelModule1.PS.hlsl";
 			hlslModule.hlslFunctions = {
 				{
 					"PixelFunctionA", {
@@ -142,16 +138,16 @@ namespace DxSamples {
 					}
 				},
 			};
-			hlslModule.bindResource = HlslModule::BindResource{ 0, 0, 1 };
-			hlslModule.bindSampler = HlslModule::BindSampler{ 0, 0, 1 };
+			hlslModule.bindedResource = HlslModule::BindResource{ 0, 0, 1 };
+			hlslModule.bindedSampler = HlslModule::BindSampler{ 0, 0, 1 };
 			pixelShaderGraphDesc.hlslModules.push_back(hlslModule);
 		}
 		{
-			HlslModule hlslModule;
-			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelFunctionB.PS.hlsl";
+			HlslModule& hlslModule = this->hlslPixelModule2;
+			hlslModule.hlslFile = g_ProjectRootNamespace / "PixelModule1.PS.hlsl";
 			hlslModule.hlslFunctions = {
 				{
-					"PixelFunctionB", {
+					"PixelFunctionA", {
 						{Slot::_Return, Slot::_0}
 					}
 				},
@@ -171,14 +167,14 @@ namespace DxSamples {
 
 	void SceneShaderEffects::Update() {
 		DirectX::XMStoreFloat4x4(
-			&this->cbVertexModuleA_1->constantBufferData.mWorldViewProj,
+			&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("first")->constantBufferData.mWorldViewProj,
 			DirectX::XMMatrixTranspose(
 				DirectX::XMMatrixIdentity()
 			)
 		);	
 
 		DirectX::XMStoreFloat4x4(
-			&this->cbVertexModuleA_2->constantBufferData.mWorldViewProj,
+			&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("second")->constantBufferData.mWorldViewProj,
 			DirectX::XMMatrixTranspose(
 				DirectX::XMMatrixTranslation(0.5, 0, 0)
 			)
