@@ -27,8 +27,6 @@ struct Interpolants
 Interpolants main(Vertex In)
 {
     Interpolants output;
-    In.position.x += 0.3;
-    
     output.position = mul(In.position, mWorldViewProj);
     output.texcoord = In.texcoord;
     return output;

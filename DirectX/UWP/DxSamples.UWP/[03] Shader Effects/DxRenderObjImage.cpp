@@ -14,27 +14,27 @@ namespace DxSamples {
 	}
 
 	void DxRenderObjImage::CreateWindowSizeDependentResources() {
-		auto dxDev = this->swapChainPanel->GetDxDevice()->Lock();
-		auto d3dDev = dxDev->GetD3DDevice();
+		//auto dxDev = this->swapChainPanel->GetDxDevice()->Lock();
+		//auto d3dDev = dxDev->GetD3DDevice();
 
-		auto outputSize = this->swapChainPanel->GetOutputSize();
-		float outputAR = outputSize.width / outputSize.height;
+		//auto outputSize = this->swapChainPanel->GetOutputSize();
+		//float outputAR = outputSize.width / outputSize.height;
 
-		D3D11_TEXTURE2D_DESC texDesc;
-		this->dxRenderObjData->texture->GetDesc(&texDesc);
-		float texAR = float(texDesc.Width) / texDesc.Height;
+		//D3D11_TEXTURE2D_DESC texDesc;
+		//this->dxRenderObjData->texture->GetDesc(&texDesc);
+		//float texAR = float(texDesc.Width) / texDesc.Height;
 
-		float scaleFactor = 1.0f;
-		DirectX::XMStoreFloat4x4(
-			&this->dxRenderObjData->vsConstantBufferData.mWorldViewProj,
-			DirectX::XMMatrixTranspose(
-				DirectX::XMMatrixScaling(
-					(scaleFactor / outputAR) * texAR,
-					scaleFactor,
-					scaleFactor
-				)
-			)
-		);
+		//float scaleFactor = 1.0f;
+		//DirectX::XMStoreFloat4x4(
+		//	&this->dxRenderObjData->vsConstantBufferData.mWorldViewProj,
+		//	DirectX::XMMatrixTranspose(
+		//		DirectX::XMMatrixScaling(
+		//			(scaleFactor / outputAR) * texAR,
+		//			scaleFactor,
+		//			scaleFactor
+		//		)
+		//	)
+		//);
 	}
 
 	void DxRenderObjImage::ReleaseDeviceDependentResources() {

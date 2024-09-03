@@ -54,7 +54,17 @@ namespace DxSamples {
 		dxRenderObjImageParams.imagePath = L"Textures\\Dune_screenshot_24s.png";
 		dxRenderObjImageParams.vertexShader = g_ProjectRootNamespace / L"Image_VS.cso";
 		dxRenderObjImageParams.pixelShader = g_ProjectRootNamespace / L"Image_PS.cso";
-		this->dxRenderObjImage = std::make_unique<DxRenderObjImage>(this->swapChainPanel, dxRenderObjImageParams);
+		this->dxRenderImageObj = std::make_unique<DxRenderObjImage>(this->swapChainPanel, dxRenderObjImageParams);
+		
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+		this->dxRenderProxyObjects.push_back(std::make_unique<H::Dx::details::DxRenderObjProxy>(this->swapChainPanel));
+
 
 		using H::Dx::DxVertexShaderGraphDesc;
 		using H::Dx::DxPixelShaderGraphDesc;
@@ -158,45 +168,51 @@ namespace DxSamples {
 	}
 
 	void SceneShaderEffects::CreateWindowSizeDependentResources() {
-		this->dxRenderObjImage->CreateWindowSizeDependentResources();
+		this->dxRenderImageObj->CreateWindowSizeDependentResources();
+		for (auto& dxRenderProxyObj : this->dxRenderProxyObjects) {
+			dxRenderProxyObj->CreateWindowSizeDependentResources();
+		}
 	}
 
 	void SceneShaderEffects::ReleaseDeviceDependentResources() {
-		this->dxRenderObjImage->ReleaseDeviceDependentResources();
+		this->dxRenderImageObj->ReleaseDeviceDependentResources();
+		for (auto& dxRenderProxyObj : this->dxRenderProxyObjects) {
+			dxRenderProxyObj->ReleaseDeviceDependentResources();
+		}
 	}
 
 	void SceneShaderEffects::Update() {
-		DirectX::XMStoreFloat4x4(
-			&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("first")->constantBufferData.mWorldViewProj,
-			DirectX::XMMatrixTranspose(
-				DirectX::XMMatrixIdentity()
-			)
-		);	
+		//DirectX::XMStoreFloat4x4(
+		//	&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("first")->constantBufferData.mWorldViewProj,
+		//	DirectX::XMMatrixTranspose(
+		//		DirectX::XMMatrixIdentity()
+		//	)
+		//);	
 
-		DirectX::XMStoreFloat4x4(
-			&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("second")->constantBufferData.mWorldViewProj,
-			DirectX::XMMatrixTranspose(
-				DirectX::XMMatrixTranslation(0.5, 0, 0)
-			)
-		);
+		//DirectX::XMStoreFloat4x4(
+		//	&this->hlslVertexModule1.GetConstantBuffer<VS_CONSTANT_BUFFER_MUDULE_A>("second")->constantBufferData.mWorldViewProj,
+		//	DirectX::XMMatrixTranspose(
+		//		DirectX::XMMatrixTranslation(0.0, 0, 0)
+		//	)
+		//);
 	}
 
 	void SceneShaderEffects::Clear() {
-		HRESULT hr = S_OK;
+		//HRESULT hr = S_OK;
 
-		// Clear the views.
-		auto dxDev = this->swapChainPanel->GetDxDevice()->Lock();
-		auto dxCtx = dxDev->LockContext();
-		auto d3dCtx = dxCtx->D3D();
+		//// Clear the views.
+		//auto dxDev = this->swapChainPanel->GetDxDevice()->Lock();
+		//auto dxCtx = dxDev->LockContext();
+		//auto d3dCtx = dxCtx->D3D();
 
-		auto renderTargetView = this->swapChainPanel->GetRenderTargetView();
-		d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
-		
-		ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
-		d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
+		//auto renderTargetView = this->swapChainPanel->GetRenderTargetView();
+		//d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
+		//
+		//ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
+		//d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
 
-		auto viewport = this->swapChainPanel->GetScreenViewport();
-		d3dCtx->RSSetViewports(1, &viewport);
+		//auto viewport = this->swapChainPanel->GetScreenViewport();
+		//d3dCtx->RSSetViewports(1, &viewport);
 	}
 
 	void SceneShaderEffects::RenderInternal() {
@@ -218,51 +234,117 @@ namespace DxSamples {
 
 
 
-		this->renderPipeline.SetTexture(this->dxRenderObjImage->GetObj()->textureSRV);
-		this->renderPipeline.SetLinkingGraph(this->dxLinkingGraph);
-		this->renderPipeline.Draw();
+		//this->renderPipeline.SetTexture(this->dxRenderObjImage->GetObj()->textureSRV);
+		//this->renderPipeline.SetLinkingGraph(this->dxLinkingGraph);
+		//this->renderPipeline.Draw();
 
+		//
+		// Render dxRenderImageObj texture to dxRenderProxyObjects[0].
+		//
+		{
+			auto& dxRenderObj = this->dxRenderImageObj;
+			auto& targetObject = this->dxRenderProxyObjects[0];
 
-		////
-		//// Render dxRenderObjImage texture to swapChain RTV.
-		////
-		//{
-		//	auto& dxRenderObj = this->dxRenderObjImage;
-		//	dxRenderObj->UpdateBuffers();
+			auto renderTargetView = targetObject->GetObjData()->textureRTV;
+			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
 
-		//	this->renderPipeline.SetTexture(dxRenderObj->GetObj()->textureSRV);
+			ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
+			d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
 
-		//	this->renderPipeline.SetInputLayout(
-		//		//this->inputLayout
-		//		this->dxLinkageGraphPipeline.GetInputLayout()
-		//	);
+			D3D11_TEXTURE2D_DESC texDesc;
+			targetObject->GetObjData()->texture->GetDesc(&texDesc);
+			auto viewport = CD3D11_VIEWPORT(
+				0.0f,
+				0.0f,
+				texDesc.Width,
+				texDesc.Height
+			);
+			d3dCtx->RSSetViewports(1, &viewport);
 
-		//	this->renderPipeline.SetVertexShader(
-		//		//this->vertexShader
-		//		this->dxLinkageGraphPipeline.GetVertexShader()
-		//	);
+			this->renderPipeline.SetTexture(dxRenderObj->GetObjData()->textureSRV);
+			this->renderPipeline.SetVertexShader(
+				dxRenderObj->GetObjData()->vertexShader,
+				dxRenderObj->GetObjData()->vsConstantBuffer
+			);
+			this->renderPipeline.SetPixelShader(
+				dxRenderObj->GetObjData()->pixelShader,
+				dxRenderObj->GetObjData()->psConstantBuffer
+			);
+			dxRenderObj->UpdateBuffers();
+			this->renderPipeline.Draw();
 
-		//	this->renderPipeline.SetPixelShader(
-		//		this->dxLinkageGraphPipeline.GetPixelShader()
-		//	);
+			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+		}
 
-		//	//this->renderPipeline.SetVertexShader(
-		//	//	dxRenderObj->GetObj()->vertexShader,
-		//	//	dxRenderObj->GetObj()->vsConstantBuffer
-		//	//);
+		//
+		// Render dxRenderProxyObjPrev to dxRenderProxyObjCurrent.
+		//
+		for (int i = 0; i < this->dxRenderProxyObjects.size() - 1; i++) {
+			auto& dxRenderProxyObjCurrent = this->dxRenderProxyObjects[i];
+			auto& dxRenderProxyObjNext = this->dxRenderProxyObjects[i+1];
 
-		//	//this->renderPipeline.SetPixelShader(
-		//	//	dxRenderObj->GetObj()->pixelShader,
-		//	//	dxRenderObj->GetObj()->psConstantBuffer
-		//	//);
+			auto renderTargetView = dxRenderProxyObjNext->GetObjData()->textureRTV;
+			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
 
-		//	this->renderPipeline.Draw();
-		//}
+			ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
+			d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
 
-		// TODO: write some stages for render pipiline to test performance for old logic
+			D3D11_TEXTURE2D_DESC texDesc;
+			dxRenderProxyObjNext->GetObjData()->texture->GetDesc(&texDesc);
+			auto viewport = CD3D11_VIEWPORT(
+				0.0f,
+				0.0f,
+				texDesc.Width,
+				texDesc.Height
+			);
+			d3dCtx->RSSetViewports(1, &viewport);
 
-		ID3D11ShaderResourceView* nullrtv[] = { nullptr };
-		d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+			this->renderPipeline.SetTexture(dxRenderProxyObjCurrent->GetObjData()->textureSRV);
+			this->renderPipeline.SetVertexShader(
+				dxRenderProxyObjCurrent->GetObjData()->vertexShader,
+				dxRenderProxyObjCurrent->GetObjData()->vsConstantBuffer
+			);
+			this->renderPipeline.SetPixelShader(
+				dxRenderProxyObjCurrent->GetObjData()->pixelShader,
+				dxRenderProxyObjCurrent->GetObjData()->psConstantBuffer
+			);
+			dxRenderProxyObjCurrent->UpdateBuffers();
+			this->renderPipeline.Draw();
+
+			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+		}
+
+		//
+		// Render last dxRenderProxyObject to swapChain RTV.
+		//
+		{
+			auto renderTargetView = this->swapChainPanel->GetRenderTargetView();
+			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
+
+			ID3D11RenderTargetView* pRTVs[] = { renderTargetView.Get() };
+			d3dCtx->OMSetRenderTargets(1, pRTVs, nullptr);
+
+			auto viewport = this->swapChainPanel->GetScreenViewport();
+			d3dCtx->RSSetViewports(1, &viewport);
+
+			auto& dxRenderProxyObjLast = this->dxRenderProxyObjects.back();
+			this->renderPipeline.SetTexture(dxRenderProxyObjLast->GetObjData()->textureSRV);
+			this->renderPipeline.SetVertexShader(
+				dxRenderProxyObjLast->GetObjData()->vertexShader,
+				dxRenderProxyObjLast->GetObjData()->vsConstantBuffer
+			);
+			this->renderPipeline.SetPixelShader(
+				dxRenderProxyObjLast->GetObjData()->pixelShader,
+				dxRenderProxyObjLast->GetObjData()->psConstantBuffer
+			);
+			dxRenderProxyObjLast->UpdateBuffers();
+			this->renderPipeline.Draw();
+
+			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+		}
 
 		// ...
 		// swapChain proxy texture (16:16:16:16) to swapChain RTV (10:10:10:2).

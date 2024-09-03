@@ -1,4 +1,5 @@
 #include "SceneRenderer.h"
+#include <Helpers/Time.h>
 //#include "[01] Simple Scene\SimpleScene.h"
 //#include "[02] HDR Scene\HDRScene.h"
 #include "[03] Shader Effects\SceneShaderEffects.h"
@@ -13,8 +14,19 @@ namespace DxSamples {
 
 		this->renderThread = std::thread([&] {
 			while (true /*isRenderRunning*/) {
+				auto tpStart = std::chrono::high_resolution_clock::now();
 				this->scene->Render();
+				auto tpA1 = std::chrono::high_resolution_clock::now();
 				this->swapChainPanelNative->Present();
+				auto tpEnd = std::chrono::high_resolution_clock::now();
+				LOG_DEBUG_D("\n"
+					"dt [Render] = {}\n"
+					"dt [Present] = {}\n"
+					"dt [Render iteration] = {}\n"
+					, tpA1 - tpStart
+					, tpEnd - tpA1
+					, tpEnd - tpStart
+				);
 			}
 			});
 	}

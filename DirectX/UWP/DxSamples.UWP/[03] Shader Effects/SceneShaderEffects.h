@@ -48,7 +48,8 @@ namespace DxSamples {
 		std::shared_ptr<H::Dx::DxLinkingGraph> dxLinkingGraph;
 		H::Dx::RenderPipeline renderPipeline;
 
-		std::unique_ptr<DxRenderObjImage> dxRenderObjImage;
+		std::unique_ptr<DxRenderObjImage> dxRenderImageObj;
+		std::vector<std::unique_ptr<H::Dx::details::DxRenderObjProxy>> dxRenderProxyObjects;
 
 		// Rendering loop timer.
 		DX::StepTimer renderLoopTimer;
