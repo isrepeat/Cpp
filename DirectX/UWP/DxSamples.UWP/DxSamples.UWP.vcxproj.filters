@@ -8,11 +8,23 @@
     <Filter Include="[02] HDR Scene">
       <UniqueIdentifier>{04681fa1-8788-49b4-9fca-4080b555e5cd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="[02] HDR Scene\Shaders">
-      <UniqueIdentifier>{c1dff167-1675-4a58-809e-c3219a6e833d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="[02] HDR Scene\Common">
       <UniqueIdentifier>{0966c0cd-4ccf-4a9b-a1c6-838ee15a5005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[03] Shader Effects">
+      <UniqueIdentifier>{3eebdffb-b578-485e-8e75-75abbda0344d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[03] Shader Effects\Common">
+      <UniqueIdentifier>{b47b8242-2e68-4e79-8384-2cdb6e7e3eee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[03] Shader Effects\Shaders">
+      <UniqueIdentifier>{c3e96d3d-b58e-4c7d-9362-b0faf0cbacdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="[02] HDR Scene\Shaders">
+      <UniqueIdentifier>{65f65ab6-8083-4fb2-8b05-d72f32270730}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Shaders">
+      <UniqueIdentifier>{f7605b9d-4473-44e2-9dcf-4488680d94e5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,6 +40,15 @@
     </ClCompile>
     <ClCompile Include="[02] HDR Scene\Tools.cpp">
       <Filter>[02] HDR Scene\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Shader Effects\SceneShaderEffects.cpp">
+      <Filter>[03] Shader Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Shader Effects\Tools.cpp">
+      <Filter>[03] Shader Effects\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="[03] Shader Effects\DxRenderObjImage.cpp">
+      <Filter>[03] Shader Effects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,25 +81,63 @@
     <ClInclude Include="[02] HDR Scene\Tools.h">
       <Filter>[02] HDR Scene\Common</Filter>
     </ClInclude>
+    <ClInclude Include="[03] Shader Effects\DxRenderObjImage.h">
+      <Filter>[03] Shader Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Shader Effects\SceneShaderEffects.h">
+      <Filter>[03] Shader Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Shader Effects\StepTimer.h">
+      <Filter>[03] Shader Effects\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="[03] Shader Effects\Tools.h">
+      <Filter>[03] Shader Effects\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DxSamples.UWP_CompiledFiles.targets" />
-    <None Include="[02] HDR Scene\HDRCommon.hlsli">
+    <None Include="[02] HDR Scene\Shaders\HDRCommon.hlsli">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="[02] HDR Scene\imagePS.hlsl">
+    <FxCompile Include="[02] HDR Scene\Shaders\Image_PS.hlsl">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="[02] HDR Scene\imageVS.hlsl">
+    <FxCompile Include="[02] HDR Scene\Shaders\Image_VS.hlsl">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="[02] HDR Scene\PrepareSwapChainBuffersPS.hlsl">
+    <FxCompile Include="[02] HDR Scene\Shaders\PrepareSwapChainBuffers_PS.hlsl">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="[02] HDR Scene\ToneMapPS.hlsl">
+    <FxCompile Include="[02] HDR Scene\Shaders\ToneMap_PS.hlsl">
       <Filter>[02] HDR Scene\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="[03] Shader Effects\Shaders\Image_PS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="[03] Shader Effects\Shaders\Image_VS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Common Shaders\Default_PS.hlsl">
+      <Filter>Common Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Common Shaders\Default_VS.hlsl">
+      <Filter>Common Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelModule1.PS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\PixelModule2.PS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexModule1.VS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="[03] Shader Effects\Shaders\VertexModule2.VS.hlsl">
+      <Filter>[03] Shader Effects\Shaders</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

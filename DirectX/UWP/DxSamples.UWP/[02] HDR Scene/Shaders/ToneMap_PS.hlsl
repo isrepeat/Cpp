@@ -9,7 +9,6 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-
 // https://github.com/thefranke/dirtchamber/blob/master/shader/tonemapping.hlsl
 #define TONEMAP_GAMMA 1.0
 //#define TONEMAP_GAMMA 1.0 / 2.2

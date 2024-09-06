@@ -4,7 +4,7 @@
     <!-- Expose own dir for other projects -->
     <PublicIncludeDirectories>$(MSBuildThisFileDirectory);$(PublicIncludeDirectories)</PublicIncludeDirectories>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <NewLine>%0D%0A</NewLine>
   </PropertyGroup>
@@ -13,9 +13,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>
-        <!--DISABLE_COMMON_LOGGING;-->
-        <!--DISABLE_ERROR_LOGGING;-->
-        <!--DISABLE_VERBOSE_LOGGING;-->
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
     </ClCompile>
@@ -24,47 +21,69 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <Target Name="RemoveNonPlatformItems" BeforeTargets="InitializeBuildStatus">
-
+  <!--<Target Name="__ExcludeCustomSourcesFromBuild" BeforeTargets="InitializeBuildStatus">-->
+  <Target Name="__ExcludeCustomSourcesFromBuild" BeforeTargets="BeforeResolveReferences">
     <ItemGroup>
       <!-- Comment folder that need to be build -->
       <ExcludedDirsFromBuild Include="[01] Simple Scene" />
-      <!--<ExcludedDirsFromBuild Include="[02] HDR Scene" />-->
+      <ExcludedDirsFromBuild Include="[02] HDR Scene" />
+      <!--<ExcludedDirsFromBuild Include="[03] Shader Effects" />-->
 
+      <!-- Cl Compile -->
       <!--<NonBuildFiles Include="*.h;*.cpp" />-->
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
 
-      <!--<BuildFiles Include="IScene.h" />
-      <BuildFiles Include="SceneRenderer.h" />
-      <BuildFiles Include="SceneRenderer.cpp" />-->
-
       <FilesExcludedFromBuild Include="@(NonBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
+
+      <!-- Fx Compile -->
+      <FxNonBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\**\*.hlsl"/>
+      <FxFilesExcludedFromBuild Include="@(FxNonBuildFiles)"/>
+      <FxCompile Remove="@(FxFilesExcludedFromBuild)" />
     </ItemGroup>
 
-    <Message Importance="High" Text="$(NewLine)" />
-    <Message Importance="High" Text="-------------------------------------" />
-    <Message Importance="High" Text="FilesExcludedFromBuild:"/>
+    <Message Importance="High" Text = "$(NewLine)" />
+    <Message Importance="High" Text = "-------------------------------------" />
+    <Message Importance="High" Text = "FilesExcludedFromBuild:"/>
     <Message Importance="High" Text = "%(FilesExcludedFromBuild.Identity)"/>
 
-    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "$(NewLine)" />
+    <Message Importance="High" Text = "FxFilesExcludedFromBuild:"/>
+    <Message Importance="High" Text = "%(FxFilesExcludedFromBuild.Identity)"/>
+
+    <Message Importance="High" Text = "$(NewLine)" />
+    <Message Importance="High" Text = "$(NewLine)" />
     <Message Importance="High" Text = "CLCompile files:"/>
     <Message Importance="High" Text = "%(ClCompile.Identity)"/>
-    <Message Importance="High" Text="-------------------------------------" />
-    <Message Importance="High" Text=  "$(NewLine)" />
-    <Message Importance="High" Text=  "$(NewLine)" />
+
+    <Message Importance="High" Text = "$(NewLine)" />
+    <Message Importance="High" Text = "FxCompile files:"/>
+    <Message Importance="High" Text = "%(FxCompile.Identity)"/>
+    <Message Importance="High" Text = "-------------------------------------" />
+    <Message Importance="High" Text =  "$(NewLine)" />
+    <Message Importance="High" Text =  "$(NewLine)" />
   </Target>
 
   <ItemGroup>
     <Textures Include="$(MSBuildThisFileDirectory)Textures\*.*" />
   </ItemGroup>
+  <ItemGroup>
+    <!--<__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.VS.hlsl" />
+    <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function2.VS.hlsl" />
+    <__HLSLFiles Include="$(MSBuildThisFileDirectory)[03] Shader Effects\Shaders\Function1.PS.hlsl" />-->
+  </ItemGroup>
 
-
+  <!-- Mark Textures as content -->
   <ItemGroup>
     <ContentWithTargetPath Include="@(Textures)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Textures\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+
+    <ContentWithTargetPath Include="@(__HLSLFiles)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
 </Project>

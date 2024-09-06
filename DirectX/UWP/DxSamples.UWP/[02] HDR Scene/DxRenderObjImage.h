@@ -50,7 +50,7 @@ namespace DxSamples {
 			auto dxRenderObj = std::make_unique<DxRenderObj>();
 
 			// Load and create shaders.
-			auto vertexShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"imageVS.cso");
+			auto vertexShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"Default_VS.cso");
 			hr = d3dDev->CreateVertexShader(
 				vertexShaderBlob.data(),
 				vertexShaderBlob.size(),
@@ -59,7 +59,7 @@ namespace DxSamples {
 			);
 			H::System::ThrowIfFailed(hr);
 
-			auto pixelShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"imagePS.cso");
+			auto pixelShaderBlob = Tools::ReadFile(g_shaderLoadDir / L"Default_PS.cso");
 			hr = d3dDev->CreatePixelShader(
 				pixelShaderBlob.data(),
 				pixelShaderBlob.size(),
