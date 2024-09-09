@@ -25,6 +25,9 @@
     <ProjectReference Include="..\Temp.Dynamic\Temp.Dynamic.vcxproj">
       <Project>{32ea6b6c-57e5-4cd9-878b-0571653e5339}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Temp.Static\Temp.Static.vcxproj">
+      <Project>{c99c2242-d38a-4e7a-925e-bdb32cf888a4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
