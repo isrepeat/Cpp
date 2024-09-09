@@ -42,6 +42,7 @@
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
 
       <!--<BuildFiles Include="main_1_*.cpp" />-->
+      <!--<BuildFiles Include="main_23_regex_*.cpp" />-->
       <!--<BuildFiles Include="main_27_*.cpp" />-->
       <!--<BuildFiles Include="main_45_*.cpp" />-->
       <!--<BuildFiles Include="main_56_*.cpp" />-->

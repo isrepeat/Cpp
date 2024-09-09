@@ -1,12 +1,17 @@
 #include <JsonParser/JsonParser.h>
 #include <MagicEnum/MagicEnum.h>
 #include <Helpers/JSONConfigLoader.hpp>
+#include <Helpers/SystemInfo.h>
 #include <Helpers/Config.h>
 #include <Helpers/Logger.h>
+#include <Helpers/String.h>
 #include <Helpers/Flags.h>
+#include <Helpers/Regex.h>
+#include <utility>
 #include <fstream>
 #include <format>
 #include <ranges>
+#include <regex>
 
 
 #define _Enum__ShellExtensionType \
@@ -35,7 +40,7 @@ namespace TestConfigParsing {
 			struct ShellBase : ShellBaseParams {
 				JS_OBJECT(
 					JS_MEMBER_ALIASES(shellExtensionType, "ShellExtensionType", "shell_extension_type"),
-					JS_MEMBER_ALIASES(activationProtocol, "ActivationProtocol", "activation_protocol")
+					JS_MEMBER_ALIASES(activationProtocol, "ActivationProtoco", "activation_protoco")
 				);
 
 				ShellBase() = default;
@@ -44,6 +49,10 @@ namespace TestConfigParsing {
 				{}
 			};
 
+
+			/* ------------------------------------ */
+			/*                Settings              */
+			/* ------------------------------------ */
 			struct ShellMenu {
 				std::wstring title;
 				std::wstring command;
@@ -69,6 +78,33 @@ namespace TestConfigParsing {
 					, menus{ menus }
 				{}
 			};
+
+			/* ------------------------------------ */
+			/*             Localization             */
+			/* ------------------------------------ */
+			struct ShellExtensionTranslation {
+				std::map<std::string, std::wstring> translationMap;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(translationMap, "TranslationMap", "translation_map")
+				);
+			};
+
+			struct ShellExtensionLocalization {
+				std::map<std::string, ShellExtensionTranslation> localizationMap;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(localizationMap, "LocalizationMap", "localization_map")
+				);
+			};
+
+			struct SupportedLocales {
+				std::set<std::string> locales;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(locales, "Locales")
+				);
+			};
 		} // namespace json
 
 
@@ -82,9 +118,13 @@ namespace TestConfigParsing {
 		struct H::ConfigData<PP_LAST_NAMESPACE::ShellExtensionConfig> {
 			struct Data {
 				PP_LAST_NAMESPACE::json::ShellExtensionSettings shellExtensionSettings;
+				PP_LAST_NAMESPACE::json::ShellExtensionLocalization shellExtensionLocalization;
+				PP_LAST_NAMESPACE::json::SupportedLocales supportedLocales;
 
 				JS_OBJECT(
-					JS_MEMBER_ALIASES(shellExtensionSettings, "ShellExtensionSettings", "shell_extension_settings")
+					JS_MEMBER_ALIASES(shellExtensionSettings, "ShellExtensionSettings", "shell_extension_settings"),
+					JS_MEMBER_ALIASES(shellExtensionLocalization, "ShellExtensionLocalization", "shell_extension_localization"),
+					JS_MEMBER_ALIASES(supportedLocales, "SupportedLocales", "supported_locales")
 				);
 			};
 		};
@@ -103,7 +143,7 @@ namespace TestConfigParsing {
 				shellBaseParams.shellExtensionType = enums::ShellExtensionType::Archivator;
 				shellBaseParams.activationProtocol = L"dct-archivator";
 
-				json::ShellMenu menuA = { L"MenuA", L"MenuA_command" };
+				json::ShellMenu menuA = { L"<translate:MenuA>", L"MenuA_command" };
 				json::ShellMenu menuB = {
 					L"MenuB",
 					L"MenuB_command",
@@ -121,21 +161,36 @@ namespace TestConfigParsing {
 							menuB,
 						}
 					},
+					json::ShellExtensionLocalization{
+						std::map<std::string, json::ShellExtensionTranslation>{
+							{
+								"en",
+								json::ShellExtensionTranslation{
+									std::map<std::string, std::wstring> {
+										{"MenuA", L"en_MenuA"}
+									}
+								}
+							},
+							{
+								"ru",
+								json::ShellExtensionTranslation{
+									std::map<std::string, std::wstring> {
+										{"MenuA", L"ru_MenuA"}
+									}
+								}
+							},
+						}
+					},
+					
+					json::SupportedLocales{
+						std::set<std::string>{
+							{"en"},
+							{"ru"},
+						}
+					},
 				};
 			}
 		};
-
-
-		const char jsonShellExtensionConfig[] = R"json(
-			{
-				"shellExtensionType": "Archivator",
-				"menu": {
-					"title": "Archivator [Directory]",
-					"command": "Pack"
-				}
-			}
-			)json";
-
 
 
 		class AppFeatures {
@@ -171,14 +226,61 @@ namespace TestConfigParsing {
 
 		AppFeatures::AppFeatures()
 			: configName{ JSONObject::Filename }
-			, configFolder{ L"D:\\TEST_CONFIGS\\" }
+			, configFolder{ "D:\\TEST_CONFIGS\\" }
 			//, configFolder{ H::ExePath() }
 		{
 			lg::DefaultLoggers::InitSingleton();
+			bool wasSomethingTranslated = false;
 
-			if (!H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
-				LOG_ERROR("Config not loaded");
+			if (H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
+				auto shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataLocked();
+				auto shellExtensionConfigMutable = const_cast<ShellExt::ShellExtensionConfig::_Data*>(&shellExtensionConfig.Get());
+
+				for (auto& shellMenu : shellExtensionConfigMutable->shellExtensionSettings.menus) {
+					// For example if string = "<translate: My 'title'>" regex must capture "My 'title'"
+					auto matches = H::Regex::GetRegexMatches<wchar_t>(shellMenu.title, std::wregex{ L"<translate:[ ]*(.*)>" });
+					if (!matches.empty()) {
+						auto sourceWString = matches[0].capturedGroups.at(1);
+						auto sourceString = H::WStrToStr(sourceWString);
+
+						std::string capturedLocale = "en";
+						auto prefferedLanguages = H::GetUserPreferredUILanguages();
+						if (!prefferedLanguages.empty()) {
+							//auto firstPrefferedLanguage = H::WStrToStr(prefferedLanguages.front());
+							auto firstPrefferedLanguage = prefferedLanguages.front();
+							auto matches = H::Regex::GetRegexMatches<wchar_t>(firstPrefferedLanguage, std::wregex{ L"(\\w\\w)([-_]\\w\\w)?" });
+							if (!matches.empty()) {
+								auto mainLocale = matches[0].capturedGroups.at(1);
+								//capturedLocale = H::to_lower(mainLocale);
+								capturedLocale = H::to_lower(H::WStrToStr(mainLocale));
+							}
+						}
+
+						auto localeIt = shellExtensionConfig->shellExtensionLocalization.localizationMap.find(capturedLocale);
+						if (localeIt != shellExtensionConfig->shellExtensionLocalization.localizationMap.end()) {
+							auto& [locale, shellExtensionTranslation] = *localeIt;
+
+							auto sourceStringIt = shellExtensionTranslation.translationMap.find(sourceString);
+							if (sourceStringIt != shellExtensionTranslation.translationMap.end()) {
+								auto& [_, translatedString] = *sourceStringIt;
+								shellMenu.title = translatedString;
+								wasSomethingTranslated = true;
+							}
+						}
+					}
+				}
 			}
+			else {
+				LOG_ERROR_D("Config not loaded");
+			}
+
+			//if (wasSomethingTranslated) {
+			//	LOG_DEBUG_D("{} [translated]:\n"
+			//		"{}"
+			//		, JSONObject::Filename
+			//		, ::JS::serializeStruct(ShellExt::ShellExtensionConfig::GetDataLocked().Get())
+			//	);
+			//}
 		}
 	} // namespace ShellExt
 
@@ -186,23 +288,7 @@ namespace TestConfigParsing {
 	void TestLoadShellExtensionConfig() {
 		LOG_FUNCTION_ENTER("TestLoadShellExtensionConfig()");
 
-		//ShellExt::json::ShellExtensionSettings shellExtensionSettings;
-		//LOG_DEBUG_D("ShellExtensionSettings [src]:\n"
-		//	"{}"
-		//	, ::JS::serializeStruct(shellExtensionSettings).c_str()
-		//);
-
-		//std::string jsonString = ShellExt::jsonShellExtensionConfig;
-		//::JS::ParseTo(jsonString.c_str(), jsonString.size(), shellExtensionSettings);
-
-		//LOG_DEBUG_D("ShellExtensionSettings [parsed]:\n"
-		//	"{}"
-		//	, ::JS::serializeStruct(shellExtensionSettings).c_str()
-		//);
-
-
 		ShellExt::AppFeatures::GetInstance(); // Entry point to load config
-		auto shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataLocked();
 		NOOP;
 	}
 } // namespace TestConfigParsing
@@ -216,7 +302,9 @@ int main() {
 		lg::InitFlags::DefaultFlags |
 		lg::InitFlags::EnableLogToStdout;
 
-	lg::DefaultLoggers::Init(L"D:\\main_60_Json.log", loggerInitFlags);
+	lg::DefaultLoggers::Init("D:\\main_60_Json.log", loggerInitFlags);
+
+	LOG_DEBUG_D("Упаковать [Папка]");
 
 	JS::LoggerCallback::Register([](std::string msg) {
 		LOG_DEBUG_D("[JsonParser] {}", msg);
