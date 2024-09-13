@@ -9,6 +9,7 @@
         MSBuildProject__RootNamespace=$(RootNamespace);
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
   </ItemDefinitionGroup>
   

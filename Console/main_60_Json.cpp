@@ -1,49 +1,18 @@
-#include <Helpers/ThreadSafeObject.hpp>
-#include <Helpers/JSONConfigLoader.hpp>
 #include <JsonParser/JsonParser.h>
 #include <MagicEnum/MagicEnum.h>
+#include <Helpers/JSONConfigLoader.hpp>
+#include <Helpers/SystemInfo.h>
+#include <Helpers/Config.h>
 #include <Helpers/Logger.h>
+#include <Helpers/String.h>
 #include <Helpers/Flags.h>
+#include <Helpers/Regex.h>
+#include <utility>
 #include <fstream>
 #include <format>
 #include <ranges>
+#include <regex>
 
-
-#define __JSONPARSER_ENUM_DECLARE_STRING_PARSER(namespaceName, enumName, ...) \
-namespace namespaceName { \
-	struct js_##enumName##_string_struct \
-	{ \
-	  template <size_t N> \
-	  explicit js_##enumName##_string_struct(const char(&data)[N]) \
-	  { \
-		JS::Internal::populateEnumNames(_strings, data); \
-	  } \
-	  std::vector<JS::DataRef> _strings; \
-	  \
-	  static const std::vector<JS::DataRef>& strings() \
-	  { \
-		static js_##enumName##_string_struct ret(#__VA_ARGS__); \
-		return ret._strings; \
-	  } \
-	}; \
-} \
-namespace JS \
-{ \
-	template <> \
-	struct TypeHandler<namespaceName::enumName> \
-	{ \
-		static inline Error to(namespaceName::enumName& to_type, ParseContext& context) \
-		{ \
-			return Internal::EnumHandler<namespaceName::enumName, namespaceName::js_##enumName##_string_struct>::to(to_type, context); \
-		} \
-		static inline void from(const namespaceName::enumName& from_type, Token& token, Serializer& serializer) \
-		{ \
-			return Internal::EnumHandler<namespaceName::enumName, namespaceName::js_##enumName##_string_struct>::from(from_type, token, serializer); \
-		} \
-	}; \
-}
-
-#define JSONPARSER_ENUM_DECLARE_STRING_PARSER(...) PP_EXPAND(__JSONPARSER_ENUM_DECLARE_STRING_PARSER(__VA_ARGS__))
 
 #define _Enum__ShellExtensionType \
 	Unknown, \
@@ -63,99 +32,165 @@ JSONPARSER_ENUM_DECLARE_STRING_PARSER(TestConfigParsing::ShellExt::enums, ShellE
 namespace TestConfigParsing {
 	namespace ShellExt {
 		namespace json {
-			struct ShellBase {
+			struct ShellBaseParams {
 				enums::ShellExtensionType shellExtensionType = enums::ShellExtensionType::Unknown;
-
-				JS_OBJECT(
-					JS_MEMBER_ALIASES(shellExtensionType, "ShellExtensionType", "shell_extension_type")
-				);
+				std::wstring activationProtocol = L"test";
 			};
 
+			struct ShellBase : ShellBaseParams {
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(shellExtensionType, "ShellExtensionType", "shell_extension_type"),
+					JS_MEMBER_ALIASES(activationProtocol, "ActivationProtoco", "activation_protoco")
+				);
+
+				ShellBase() = default;
+				ShellBase(ShellBaseParams shellBaseParams)
+					: ShellBaseParams(shellBaseParams)
+				{}
+			};
+
+
+			/* ------------------------------------ */
+			/*                Settings              */
+			/* ------------------------------------ */
 			struct ShellMenu {
 				std::wstring title;
 				std::wstring command;
-				//std::vector<ShellMenu> subMenus;
+				std::vector<ShellMenu> subMenus;
 
 				JS_OBJECT(
 					JS_MEMBER_ALIASES(title, "Title"),
-					JS_MEMBER_ALIASES(command, "Command")
-					//JS_MEMBER_ALIASES(subMenus, "SubMenus", "sub_menus")
+					JS_MEMBER_ALIASES(command, "Command"),
+					JS_MEMBER_ALIASES(subMenus, "SubMenus", "sub_menus")
 				);
-
 			};
 
 			struct ShellExtensionSettings : ShellBase {
-				ShellMenu menu;
+				std::vector<ShellMenu> menus;
 
 				JS_OBJECT_WITH_SUPER(
 					JS_SUPER(ShellBase),
-					JS_MEMBER_ALIASES(menu, "Menu")
+					JS_MEMBER_ALIASES(menus, "Menus")
 				);
 
-				ShellExtensionSettings(ShellMenu menu)
-					: menu{ menu }
+				ShellExtensionSettings(ShellBaseParams shellBaseParams, std::vector<ShellMenu> menus)
+					: ShellBase(shellBaseParams)
+					, menus{ menus }
 				{}
+			};
+
+			/* ------------------------------------ */
+			/*             Localization             */
+			/* ------------------------------------ */
+			struct ShellExtensionTranslation {
+				std::map<std::string, std::wstring> translationMap;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(translationMap, "TranslationMap", "translation_map")
+				);
+			};
+
+			struct ShellExtensionLocalization {
+				std::map<std::string, ShellExtensionTranslation> localizationMap;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(localizationMap, "LocalizationMap", "localization_map")
+				);
+			};
+
+			struct SupportedLocales {
+				std::set<std::string> locales;
+
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(locales, "Locales")
+				);
 			};
 		} // namespace json
 
 
-		class ShellExtensionConfig {
-		private:
-			static ShellExtensionConfig& GetInstance();
-			ShellExtensionConfig();
-		public:
-			~ShellExtensionConfig() = default;
-
-			struct Data {
-				json::ShellExtensionSettings shellExtensionSettings;
-
-				JS_OBJECT(
-					JS_MEMBER_ALIASES(shellExtensionSettings, "ShellExtensionSettings", "shell_extension_settings")
-				);
-			};
-
-			// TODO: move to base class
-			static H::ThreadSafeObject<std::recursive_mutex, const Data>::_Locked GetDataLocked();
-			static Data GetDataCopy();
-
-		private:
-			H::ThreadSafeObject<std::recursive_mutex, const Data> data;
+#define __NAMESPACE__ TestConfigParsing, ShellExt
+		PP_INLINE_TEMPLATE_SPECIALIZATION_BEGIN();
+		namespace PP_LAST_NAMESPACE {
+			class ShellExtensionConfig;
 		};
 
-		ShellExtensionConfig& ShellExtensionConfig::GetInstance() {
-			static ShellExtensionConfig instance;
-			return instance;
-		}
+		template <>
+		struct H::ConfigData<PP_LAST_NAMESPACE::ShellExtensionConfig> {
+			struct Data {
+				PP_LAST_NAMESPACE::json::ShellExtensionSettings shellExtensionSettings;
+				PP_LAST_NAMESPACE::json::ShellExtensionLocalization shellExtensionLocalization;
+				PP_LAST_NAMESPACE::json::SupportedLocales supportedLocales;
 
-		ShellExtensionConfig::ShellExtensionConfig()
-			: data{
-				json::ShellExtensionSettings{
-					json::ShellMenu{L"defaultTitle", L"defaultCommand"}
-				},
+				JS_OBJECT(
+					JS_MEMBER_ALIASES(shellExtensionSettings, "ShellExtensionSettings", "shell_extension_settings"),
+					JS_MEMBER_ALIASES(shellExtensionLocalization, "ShellExtensionLocalization", "shell_extension_localization"),
+					JS_MEMBER_ALIASES(supportedLocales, "SupportedLocales", "supported_locales")
+				);
+			};
+		};
+		PP_INLINE_TEMPLATE_SPECIALIZATION_END();
+
+
+		class ShellExtensionConfig : public H::ConfigBase<class ShellExtensionConfig> {
+		public:
+			ShellExtensionConfig()
+				: _Base(this->CreateDefaultData())
+			{}
+
+		private:
+			_Data CreateDefaultData() {
+				json::ShellBaseParams shellBaseParams;
+				shellBaseParams.shellExtensionType = enums::ShellExtensionType::Archivator;
+				shellBaseParams.activationProtocol = L"dct-archivator";
+
+				json::ShellMenu menuA = { L"<translate:MenuA>", L"MenuA_command" };
+				json::ShellMenu menuB = {
+					L"MenuB",
+					L"MenuB_command",
+					{
+						json::ShellMenu{L"subMenuB1", L"subMenuB1_command"},
+						json::ShellMenu{L"subMenuB2", L"subMenuB2_command"},
+					}
+				};
+
+				return _Data{
+					json::ShellExtensionSettings{
+						shellBaseParams,
+						std::vector<json::ShellMenu>{
+							menuA,
+							menuB,
+						}
+					},
+					json::ShellExtensionLocalization{
+						std::map<std::string, json::ShellExtensionTranslation>{
+							{
+								"en",
+								json::ShellExtensionTranslation{
+									std::map<std::string, std::wstring> {
+										{"MenuA", L"en_MenuA"}
+									}
+								}
+							},
+							{
+								"ru",
+								json::ShellExtensionTranslation{
+									std::map<std::string, std::wstring> {
+										{"MenuA", L"ru_MenuA"}
+									}
+								}
+							},
+						}
+					},
+					
+					json::SupportedLocales{
+						std::set<std::string>{
+							{"en"},
+							{"ru"},
+						}
+					},
+				};
 			}
-		{
-		}
-
-		H::ThreadSafeObject<std::recursive_mutex, const ShellExtensionConfig::Data>::_Locked ShellExtensionConfig::GetDataLocked() {
-			return GetInstance().data.Lock();
-		}
-
-		ShellExtensionConfig::Data ShellExtensionConfig::GetDataCopy() {
-			auto locked = GetDataLocked();
-			auto copy = locked.Get();
-			return copy;
-		}
-
-		const char jsonShellExtensionConfig[] = R"json(
-			{
-				"shellExtensionType": "Archivator",
-				"menu": {
-					"title": "Archivator [Directory]",
-					"command": "Pack"
-				}
-			}
-			)json";
-
+		};
 
 
 		class AppFeatures {
@@ -168,14 +203,14 @@ namespace TestConfigParsing {
 			struct JSONObject {
 				static constexpr const char* Filename = "ShellExtensionConfig.txt";
 
-				ShellExt::ShellExtensionConfig::Data shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataCopy();
+				ShellExt::ShellExtensionConfig::_Data shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataCopy();
 
 				JS_OBJ(
 					shellExtensionConfig
 				);
 
 				static void AfterLoadHandler(const JSONObject& jsonObject) {
-					const_cast<ShellExt::ShellExtensionConfig::Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = jsonObject.shellExtensionConfig;
+					const_cast<ShellExt::ShellExtensionConfig::_Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = jsonObject.shellExtensionConfig;
 				}
 			};
 
@@ -191,14 +226,61 @@ namespace TestConfigParsing {
 
 		AppFeatures::AppFeatures()
 			: configName{ JSONObject::Filename }
-			, configFolder{ L"D:\\TEST_CONFIGS\\" }
+			, configFolder{ "D:\\TEST_CONFIGS\\" }
 			//, configFolder{ H::ExePath() }
 		{
 			lg::DefaultLoggers::InitSingleton();
+			bool wasSomethingTranslated = false;
 
-			if (!H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
-				LOG_ERROR("Config not loaded");
+			if (H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
+				auto shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataLocked();
+				auto shellExtensionConfigMutable = const_cast<ShellExt::ShellExtensionConfig::_Data*>(&shellExtensionConfig.Get());
+
+				for (auto& shellMenu : shellExtensionConfigMutable->shellExtensionSettings.menus) {
+					// For example if string = "<translate: My 'title'>" regex must capture "My 'title'"
+					auto matches = H::Regex::GetRegexMatches<wchar_t>(shellMenu.title, std::wregex{ L"<translate:[ ]*(.*)>" });
+					if (!matches.empty()) {
+						auto sourceWString = matches[0].capturedGroups.at(1);
+						auto sourceString = H::WStrToStr(sourceWString);
+
+						std::string capturedLocale = "en";
+						auto prefferedLanguages = H::GetUserPreferredUILanguages();
+						if (!prefferedLanguages.empty()) {
+							//auto firstPrefferedLanguage = H::WStrToStr(prefferedLanguages.front());
+							auto firstPrefferedLanguage = prefferedLanguages.front();
+							auto matches = H::Regex::GetRegexMatches<wchar_t>(firstPrefferedLanguage, std::wregex{ L"(\\w\\w)([-_]\\w\\w)?" });
+							if (!matches.empty()) {
+								auto mainLocale = matches[0].capturedGroups.at(1);
+								//capturedLocale = H::to_lower(mainLocale);
+								capturedLocale = H::to_lower(H::WStrToStr(mainLocale));
+							}
+						}
+
+						auto localeIt = shellExtensionConfig->shellExtensionLocalization.localizationMap.find(capturedLocale);
+						if (localeIt != shellExtensionConfig->shellExtensionLocalization.localizationMap.end()) {
+							auto& [locale, shellExtensionTranslation] = *localeIt;
+
+							auto sourceStringIt = shellExtensionTranslation.translationMap.find(sourceString);
+							if (sourceStringIt != shellExtensionTranslation.translationMap.end()) {
+								auto& [_, translatedString] = *sourceStringIt;
+								shellMenu.title = translatedString;
+								wasSomethingTranslated = true;
+							}
+						}
+					}
+				}
 			}
+			else {
+				LOG_ERROR_D("Config not loaded");
+			}
+
+			//if (wasSomethingTranslated) {
+			//	LOG_DEBUG_D("{} [translated]:\n"
+			//		"{}"
+			//		, JSONObject::Filename
+			//		, ::JS::serializeStruct(ShellExt::ShellExtensionConfig::GetDataLocked().Get())
+			//	);
+			//}
 		}
 	} // namespace ShellExt
 
@@ -206,23 +288,7 @@ namespace TestConfigParsing {
 	void TestLoadShellExtensionConfig() {
 		LOG_FUNCTION_ENTER("TestLoadShellExtensionConfig()");
 
-		//ShellExt::json::ShellExtensionSettings shellExtensionSettings;
-		//LOG_DEBUG_D("ShellExtensionSettings [src]:\n"
-		//	"{}"
-		//	, ::JS::serializeStruct(shellExtensionSettings).c_str()
-		//);
-
-		//std::string jsonString = ShellExt::jsonShellExtensionConfig;
-		//::JS::ParseTo(jsonString.c_str(), jsonString.size(), shellExtensionSettings);
-
-		//LOG_DEBUG_D("ShellExtensionSettings [parsed]:\n"
-		//	"{}"
-		//	, ::JS::serializeStruct(shellExtensionSettings).c_str()
-		//);
-
 		ShellExt::AppFeatures::GetInstance(); // Entry point to load config
-
-		auto shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataLocked();
 		NOOP;
 	}
 } // namespace TestConfigParsing
@@ -236,7 +302,9 @@ int main() {
 		lg::InitFlags::DefaultFlags |
 		lg::InitFlags::EnableLogToStdout;
 
-	lg::DefaultLoggers::Init(L"D:\\main_60_Json.log", loggerInitFlags);
+	lg::DefaultLoggers::Init("D:\\main_60_Json.log", loggerInitFlags);
+
+	LOG_DEBUG_D("Упаковать [Папка]");
 
 	JS::LoggerCallback::Register([](std::string msg) {
 		LOG_DEBUG_D("[JsonParser] {}", msg);

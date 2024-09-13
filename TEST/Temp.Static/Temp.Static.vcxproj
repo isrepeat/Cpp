@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyClass_Static.h" />
+    <ClInclude Include="MyClass_Static_copy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyClass_Static.cpp" />
+    <ClCompile Include="MyClass_Static_copy.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

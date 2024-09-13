@@ -302,6 +302,9 @@
     <ClCompile Include="main_60_Json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_61_Ext_std_memory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">

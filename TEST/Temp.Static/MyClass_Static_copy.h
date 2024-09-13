@@ -46,7 +46,7 @@ namespace HELPERS_NS {
 
 		template<typename T>
 		struct MyTemplate {
-			static constexpr std::string_view templateNotes = "Static template";
+			static constexpr std::string_view templateNotes = "Static template [old]";
 		};
 	}
 }

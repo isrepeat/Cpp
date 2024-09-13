@@ -227,16 +227,19 @@ namespace DxSamples {
 
 	void SceneShaderEffects::RenderScene() {
 		HRESULT hr = S_OK;
+
 		auto dxDev = this->swapChainPanel->GetDxDevice()->Lock();
 		auto d3dDevice = dxDev->GetD3DDevice();
 		auto dxCtx = dxDev->LockContext();
 		auto d3dCtx = dxCtx->D3D();
 
-
-
 		//this->renderPipeline.SetTexture(this->dxRenderObjImage->GetObj()->textureSRV);
 		//this->renderPipeline.SetLinkingGraph(this->dxLinkingGraph);
 		//this->renderPipeline.Draw();
+
+		for (auto& dxRenderProxyObj : this->dxRenderProxyObjects) {
+			dxRenderProxyObj->UpdateBuffers();
+		}
 
 		//
 		// Render dxRenderImageObj texture to dxRenderProxyObjects[0].
@@ -244,6 +247,7 @@ namespace DxSamples {
 		{
 			auto& dxRenderObj = this->dxRenderImageObj;
 			auto& targetObject = this->dxRenderProxyObjects[0];
+			dxRenderObj->UpdateBuffers();
 
 			auto renderTargetView = targetObject->GetObjData()->textureRTV;
 			d3dCtx->ClearRenderTargetView(renderTargetView.Get(), DirectX::Colors::Gray);
@@ -270,11 +274,10 @@ namespace DxSamples {
 				dxRenderObj->GetObjData()->pixelShader,
 				dxRenderObj->GetObjData()->psConstantBuffer
 			);
-			dxRenderObj->UpdateBuffers();
 			this->renderPipeline.Draw();
 
-			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
-			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+			//ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			//d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
 		}
 
 		//
@@ -309,11 +312,11 @@ namespace DxSamples {
 				dxRenderProxyObjCurrent->GetObjData()->pixelShader,
 				dxRenderProxyObjCurrent->GetObjData()->psConstantBuffer
 			);
-			dxRenderProxyObjCurrent->UpdateBuffers();
+			//dxRenderProxyObjCurrent->UpdateBuffers();
 			this->renderPipeline.Draw();
 
-			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
-			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+			//ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			//d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
 		}
 
 		//
@@ -339,11 +342,11 @@ namespace DxSamples {
 				dxRenderProxyObjLast->GetObjData()->pixelShader,
 				dxRenderProxyObjLast->GetObjData()->psConstantBuffer
 			);
-			dxRenderProxyObjLast->UpdateBuffers();
+			//dxRenderProxyObjLast->UpdateBuffers();
 			this->renderPipeline.Draw();
 
-			ID3D11ShaderResourceView* nullrtv[] = { nullptr };
-			d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
+			//ID3D11ShaderResourceView* nullrtv[] = { nullptr };
+			//d3dCtx->PSSetShaderResources(0, _countof(nullrtv), nullrtv);
 		}
 
 		// ...
