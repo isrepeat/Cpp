@@ -19,14 +19,14 @@ namespace DxSamples {
 				auto tpA1 = std::chrono::high_resolution_clock::now();
 				this->swapChainPanelNative->Present();
 				auto tpEnd = std::chrono::high_resolution_clock::now();
-				LOG_DEBUG_D("\n"
-					"dt [Render] = {}\n"
-					"dt [Present] = {}\n"
-					"dt [Render iteration] = {}\n"
-					, tpA1 - tpStart
-					, tpEnd - tpA1
-					, tpEnd - tpStart
-				);
+				//LOG_DEBUG_D("\n"
+				//	"dt [Render] = {}\n"
+				//	"dt [Present] = {}\n"
+				//	"dt [Render iteration] = {}\n"
+				//	, tpA1 - tpStart
+				//	, tpEnd - tpA1
+				//	, tpEnd - tpStart
+				//);
 			}
 			});
 	}
@@ -37,6 +37,7 @@ namespace DxSamples {
 	}
 	
 	void SceneRenderer::OnWindowSizeChanged(H::Size newSize) {
+		LOG_DEBUG_D("OnWindowSizeChanged(width = {}, height = {})", newSize.width, newSize.height);
 		this->scene->OnWindowSizeChanged(newSize);
 	}
 }
