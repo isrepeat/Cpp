@@ -8,6 +8,7 @@
 #include <string>
 #include <memory>
 #include <regex>
+#include <type_traits>
 
 #include <Helpers/Logger.h>
 
@@ -20,68 +21,71 @@
 	T* Try() { \
 		if (this == nullptr) { \
 			__LOG_NULLPTR_OBJECT(T); \
-			throw ex::std::bad_pointer(); \
+			throw std::ex::bad_pointer(); \
 		} \
 		return this; \
 	}
 
-namespace Helpers {
+
+// This is an alternative to "using _MyBase::_MyBase"
+#define PP_FORWARD_CTOR(From, To) \
+	template <typename... _Args> \
+	From(_Args&&... args) \
+		: To(::std::forward<_Args&&>(args)...) \
+	{}
+
+namespace std {
 	namespace ex {
-		namespace std {
-			struct bad_pointer {};
+		struct bad_pointer {};
 
-			template <typename T>
-			struct unique_ptr : public ::std::unique_ptr<T> {
-				using _MyBase = ::std::unique_ptr<T>;
-				using _MyBase::unique_ptr;
+		template <typename T>
+		struct unique_ptr : public ::std::unique_ptr<T> {
+			PP_FORWARD_CTOR(unique_ptr, ::std::unique_ptr<T>);
 
-				unique_ptr<T>& Try() {
-					if (this == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					if (this->get() == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					return *this;
+			unique_ptr<T>& Try() {
+				if (this == nullptr) {
+					throw std::ex::bad_pointer{};
 				}
-			};
-
-			template <typename T>
-			struct shared_ptr : public ::std::shared_ptr<T> {
-				using _MyBase = ::std::shared_ptr<T>;
-				using _MyBase::shared_ptr;
-
-				shared_ptr<T>& Try() {
-					if (this == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					if (this->get() == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					return *this;
+				if (this->get() == nullptr) {
+					throw std::ex::bad_pointer{};
 				}
-			};
+				return *this;
+			}
+		};
 
-			template <typename T>
-			struct weak_ptr : public ::std::weak_ptr<T> {
-				using _MyBase = ::std::weak_ptr<T>;
-				using _MyBase::weak_ptr;
+		template <typename T>
+		struct shared_ptr : public ::std::shared_ptr<T> {
+			PP_FORWARD_CTOR(shared_ptr, ::std::shared_ptr<T>);
 
-				shared_ptr<T> Try() {
-					if (this == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					auto sharedPtr = this->lock();
-					if (sharedPtr == nullptr) {
-						throw ex::std::bad_pointer{};
-					}
-					return sharedPtr;
+			shared_ptr<T>& Try() {
+				if (this == nullptr) {
+					throw std::ex::bad_pointer{};
 				}
-			};
+				if (this->get() == nullptr) {
+					throw std::ex::bad_pointer{};
+				}
+				return *this;
+			}
+		};
 
-			// Also you can expose std methods to be available outside through this namespace.
-			//using ::std::make_unique;
-		}
+		template <typename T>
+		struct weak_ptr : public ::std::weak_ptr<T> {
+			PP_FORWARD_CTOR(weak_ptr, ::std::weak_ptr<T>);
+
+			shared_ptr<T> Try() {
+				if (this == nullptr) {
+					throw std::ex::bad_pointer{};
+				}
+				auto sharedPtr = this->lock();
+				if (sharedPtr == nullptr) {
+					throw std::ex::bad_pointer{};
+				}
+				return sharedPtr;
+			}
+		};
+
+		// Also you can expose std methods to be available outside through this namespace.
+		//using ::std::make_unique;
 	}
 }
 
@@ -105,7 +109,7 @@ namespace Helpers {
 	};
 
 	struct ObjectC {
-		ex::std::weak_ptr<ObjectB> GetObjectB() {
+		std::ex::weak_ptr<ObjectB> GetObjectB() {
 			//return nullptr;
 			return this->objB;
 		}
@@ -115,20 +119,20 @@ namespace Helpers {
 	};
 
 	struct ObjectD {
-		ex::std::unique_ptr<ObjectC>& GetObjectC() {
+		std::ex::unique_ptr<ObjectC>& GetObjectC() {
 			//return nullptr;
 			return this->objC;
 		}
 
 	private:
-		ex::std::unique_ptr<ObjectC> objC = std::make_unique<ObjectC>();
+		std::ex::unique_ptr<ObjectC> objC = std::make_unique<ObjectC>();
 	};
 
 	bool SafeConditionResult(::std::function<bool()> fnCondition) {
 		try {
 			return static_cast<bool>(fnCondition());
 		}
-		catch (ex::std::bad_pointer&) {
+		catch (std::ex::bad_pointer&) {
 			return false;
 		}
 		catch (...) {
@@ -140,108 +144,10 @@ namespace Helpers {
 #define SAFE_RESULT(condition) Helpers::SafeConditionResult([&] { return condition;})
 
 int main() {
-	Helpers::ObjectD* objectD = new Helpers::ObjectD;
+	std::ex::shared_ptr<Helpers::ObjectD> objectD = std::shared_ptr<Helpers::ObjectD>{new Helpers::ObjectD };
 
 	if (!SAFE_RESULT(objectD->GetObjectC().Try()->GetObjectB().Try()->GetObjectA()->Try()->MethodA())) {
 		NOOP;
 	}
 	return 0;
 }
-
-
-//namespace Standart {
-//	template <typename T>
-//	struct vector {
-//		static constexpr std::string_view templateNotes = "Primary";
-//	};
-//
-//	template <>
-//	struct vector<float> {
-//		static constexpr std::string_view templateNotes = "<float>";
-//	};
-//
-//	template <typename T>
-//	struct pointer {
-//		static constexpr std::string_view templateNotes = "Primary";
-//		pointer(T*)
-//		{}
-//		pointer(pointer<T>&& other)
-//		{}
-//
-//	};
-//
-//	template <>
-//	struct pointer<float> {
-//		static constexpr std::string_view templateNotes = "<float>";
-//	};
-//}
-//
-//namespace Helpers {
-//	namespace Ext {
-//		namespace Standart {
-//			//using ::Standart::vector;
-//			template <typename T>
-//			struct pointer : public ::Standart::pointer<T> {
-//				static constexpr std::string_view templateNotes = "Primary extended";
-//				//using _MyBase = ::Standart::pointer<T>;
-//				//using ::Standart::pointer<T>::pointer;
-//				//pointer(::Standart::pointer<T>&& other) 
-//				//	: _MyBase(other)
-//				//{
-//				//}
-//			};
-//		}
-//	}
-//}
-//
-////namespace Standart {
-////	using Helpers::Ext::Standart::pointer;
-////}
-//
-//namespace Helpers {
-//	//using namespace ex;
-//	//using ex::Standart::pointer;
-//	//namespace Standart = ::Standart;
-//	
-//	//using namespace ::Standart;
-//	//using Helpers::Standart::MyTemplate;
-//
-//
-//	//Standart::pointer<int> Foo() {
-//	//	return nullptr;
-//	//}
-//
-//	void Do(Standart::pointer<int> ptr) {
-//	}
-//
-//	void InternalTest() {
-//		static_assert(Standart::vector<int>::templateNotes == "Primary");
-//		static_assert(Standart::vector<float>::templateNotes == "<float>");
-//
-//		static_assert(Ext::Standart::pointer<int>::templateNotes == "Primary extended");
-//		static_assert(Standart::pointer<float>::templateNotes == "<float>");
-//
-//		//Do(nullptr);
-//	}
-//}
-////namespace Standart = Helpers::Standart;
-//
-////Standart::pointer<int> Foo() {
-////	return nullptr;
-////}
-//
-//void Test() {
-//	//Standart::pointer<int>{ nullptr };
-//	//Foo();
-//	static_assert(Standart::vector<int>::templateNotes == "Primary");
-//	static_assert(Standart::vector<float>::templateNotes == "<float>");
-//
-//	static_assert(Standart::pointer<int>::templateNotes == "Primary extended");
-//	static_assert(Standart::pointer<float>::templateNotes == "<float>");
-//
-//	int* ptr;
-//	//Standart::pointer<int>{ptr};
-//	//Helpers::Standart::pointer<int>{ptr};
-//
-//	Helpers::Do(Standart::pointer<int>{ptr});
-//}
