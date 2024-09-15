@@ -8,7 +8,11 @@
 #include <string>
 #include <memory>
 #include <regex>
-#include <type_traits>
+
+//#pragma push_macro("STD_EXT_NS")
+//#define STD_EXT_NS std::ex
+//#include <Helpers/ExtStdMemory.h>
+//#pragma pop_macro("STD_EXT_NS")
 
 #include <Helpers/Logger.h>
 
@@ -34,59 +38,54 @@
 		: To(::std::forward<_Args&&>(args)...) \
 	{}
 
-namespace std {
-	namespace ex {
-		struct bad_pointer {};
+namespace std::ex {
+	struct bad_pointer {};
 
-		template <typename T>
-		struct unique_ptr : public ::std::unique_ptr<T> {
-			PP_FORWARD_CTOR(unique_ptr, ::std::unique_ptr<T>);
+	template <typename T>
+	struct unique_ptr : public ::std::unique_ptr<T> {
+		PP_FORWARD_CTOR(unique_ptr, ::std::unique_ptr<T>);
 
-			unique_ptr<T>& Try() {
-				if (this == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				if (this->get() == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				return *this;
+		unique_ptr<T>& Try() {
+			if (this == nullptr) {
+				throw std::ex::bad_pointer{};
 			}
-		};
-
-		template <typename T>
-		struct shared_ptr : public ::std::shared_ptr<T> {
-			PP_FORWARD_CTOR(shared_ptr, ::std::shared_ptr<T>);
-
-			shared_ptr<T>& Try() {
-				if (this == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				if (this->get() == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				return *this;
+			if (this->get() == nullptr) {
+				throw std::ex::bad_pointer{};
 			}
-		};
+			return *this;
+		}
+	};
 
-		template <typename T>
-		struct weak_ptr : public ::std::weak_ptr<T> {
-			PP_FORWARD_CTOR(weak_ptr, ::std::weak_ptr<T>);
+	template <typename T>
+	struct shared_ptr : public ::std::shared_ptr<T> {
+		PP_FORWARD_CTOR(shared_ptr, ::std::shared_ptr<T>);
 
-			shared_ptr<T> Try() {
-				if (this == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				auto sharedPtr = this->lock();
-				if (sharedPtr == nullptr) {
-					throw std::ex::bad_pointer{};
-				}
-				return sharedPtr;
+		shared_ptr<T>& Try() {
+			if (this == nullptr) {
+				throw std::ex::bad_pointer{};
 			}
-		};
+			if (this->get() == nullptr) {
+				throw std::ex::bad_pointer{};
+			}
+			return *this;
+		}
+	};
 
-		// Also you can expose std methods to be available outside through this namespace.
-		//using ::std::make_unique;
-	}
+	template <typename T>
+	struct weak_ptr : public ::std::weak_ptr<T> {
+		PP_FORWARD_CTOR(weak_ptr, ::std::weak_ptr<T>);
+
+		shared_ptr<T> Try() {
+			if (this == nullptr) {
+				throw std::ex::bad_pointer{};
+			}
+			auto sharedPtr = this->lock();
+			if (sharedPtr == nullptr) {
+				throw std::ex::bad_pointer{};
+			}
+			return sharedPtr;
+		}
+	};
 }
 
 namespace Helpers {
@@ -147,7 +146,7 @@ int main() {
 	std::ex::shared_ptr<Helpers::ObjectD> objectD = std::shared_ptr<Helpers::ObjectD>{new Helpers::ObjectD };
 
 	if (!SAFE_RESULT(objectD->GetObjectC().Try()->GetObjectB().Try()->GetObjectA()->Try()->MethodA())) {
-		NOOP;
+		LOG_DEBUG_D("Some pointer is null in calls chain");
 	}
 	return 0;
 }
