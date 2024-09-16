@@ -50,8 +50,8 @@
       <!--<BuildFiles Include="main_57_Time.cpp" />-->
       <!--<BuildFiles Include="main_58_Remote_debug.cpp" />-->
       <!--<BuildFiles Include="main_59_*.cpp" />-->
-      <!--<BuildFiles Include="main_60_Json.cpp" />-->
-      <BuildFiles Include="main_61_Ext_std_*.cpp" />
+      <BuildFiles Include="main_60_Json.cpp" />
+      <!--<BuildFiles Include="main_61_Ext_std_*.cpp" />-->
       <!--<BuildFiles Include="main_62_Concepts.cpp" />-->
       <!--<BuildFiles Include="main.cpp" />-->
 

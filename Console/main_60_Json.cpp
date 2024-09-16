@@ -73,7 +73,8 @@ namespace TestConfigParsing {
 					JS_MEMBER_ALIASES(menus, "Menus")
 				);
 
-				ShellExtensionSettings(ShellBaseParams shellBaseParams, std::vector<ShellMenu> menus)
+				ShellExtensionSettings() = default;
+				ShellExtensionSettings(ShellBaseParams shellBaseParams, std::vector<ShellMenu> menus = {})
 					: ShellBase(shellBaseParams)
 					, menus{ menus }
 				{}
@@ -97,14 +98,6 @@ namespace TestConfigParsing {
 					JS_MEMBER_ALIASES(localizationMap, "LocalizationMap", "localization_map")
 				);
 			};
-
-			struct SupportedLocales {
-				std::set<std::string> locales;
-
-				JS_OBJECT(
-					JS_MEMBER_ALIASES(locales, "Locales")
-				);
-			};
 		} // namespace json
 
 
@@ -119,12 +112,10 @@ namespace TestConfigParsing {
 			struct Data {
 				PP_LAST_NAMESPACE::json::ShellExtensionSettings shellExtensionSettings;
 				PP_LAST_NAMESPACE::json::ShellExtensionLocalization shellExtensionLocalization;
-				PP_LAST_NAMESPACE::json::SupportedLocales supportedLocales;
 
 				JS_OBJECT(
 					JS_MEMBER_ALIASES(shellExtensionSettings, "ShellExtensionSettings", "shell_extension_settings"),
-					JS_MEMBER_ALIASES(shellExtensionLocalization, "ShellExtensionLocalization", "shell_extension_localization"),
-					JS_MEMBER_ALIASES(supportedLocales, "SupportedLocales", "supported_locales")
+					JS_MEMBER_ALIASES(shellExtensionLocalization, "ShellExtensionLocalization", "shell_extension_localization")
 				);
 			};
 		};
@@ -181,107 +172,178 @@ namespace TestConfigParsing {
 							},
 						}
 					},
-					
-					json::SupportedLocales{
-						std::set<std::string>{
-							{"en"},
-							{"ru"},
-						}
-					},
 				};
 			}
 		};
 
 
-		class AppFeatures {
+
+
+		struct Constants : H::_Singleton<struct Constants> {
+			const H::Locale userLocale;
+
+			Constants()
+				: userLocale{ this->GetFirstUserPreferredUILocaleOrDefault() }
+			{
+			}
+
 		private:
+			H::Locale GetFirstUserPreferredUILocaleOrDefault() {
+				// NOTE: Log user default locale for information, but use "en-US" as default locale for app
+				//       regardless of user default locale (at most cases these locales are the same).
+				LOG_DEBUG_D("User default locale:");
+				H::GetUserDefaultLocale().Log();
+
+				H::Locale defaultLocale{
+					.localName = "en-US",
+					.languageCode = "en",
+					.scriptCode = "",
+					.countryCode = "US"
+				};
+
+				LOG_DEBUG_D("User preferred UI locales:");
+				auto userPreferredUILocales = H::GetUserPreferredUILocales();
+				for (auto& userPreferredUILocale : userPreferredUILocales) {
+					userPreferredUILocale.Log();
+					LOG_RAW("");
+				}
+				return userPreferredUILocales.size() > 0 ? userPreferredUILocales[0] : defaultLocale;
+			}
+		};
+
+
+		class AppFeatures : public H::_Singleton<class AppFeatures> {
+		private:
+			friend _Base;
 			AppFeatures();
+
 		public:
 			~AppFeatures() = default;
-			static AppFeatures& GetInstance();
 
 			struct JSONObject {
 				static constexpr const char* Filename = "ShellExtensionConfig.txt";
 
-				ShellExt::ShellExtensionConfig::_Data shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataCopy();
+				// Keep config data empty for loader becuse it will parse JSON data here from config file.
+				ShellExt::ShellExtensionConfig::_Data shellExtensionConfig;
 
 				JS_OBJ(
 					shellExtensionConfig
 				);
 
-				static void AfterLoadHandler(const JSONObject& jsonObject) {
-					const_cast<ShellExt::ShellExtensionConfig::_Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = jsonObject.shellExtensionConfig;
+				////// Static handlers where you can change associated singleton's data.
+				//void static LoadErrorHandler() {
+				//	Dbreak;
+				//	// Do nothing, because ShellExtensionConfig already have default data.
+				//}
+
+				static void AfterLoadHandler(const JSONObject& parsedJsonObject) {
+					// Replace default ShellExtensionConfig's data with parsed data.
+					const_cast<ShellExt::ShellExtensionConfig::_Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = parsedJsonObject.shellExtensionConfig;
 				}
 			};
+
+		private:
+			bool TranslateConfig();
+			bool TranslateShellMenuRecursive(json::ShellMenu& shellMenu);
 
 		private:
 			const std::filesystem::path configName;
 			const std::filesystem::path configFolder;
 		};
 
-		AppFeatures& AppFeatures::GetInstance() {
-			static AppFeatures instance;
-			return instance;
-		}
 
 		AppFeatures::AppFeatures()
 			: configName{ JSONObject::Filename }
 			, configFolder{ "D:\\TEST_CONFIGS\\" }
-			//, configFolder{ H::ExePath() }
 		{
 			lg::DefaultLoggers::InitSingleton();
 			bool wasSomethingTranslated = false;
 
 			if (H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
-				auto shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataLocked();
-				auto shellExtensionConfigMutable = const_cast<ShellExt::ShellExtensionConfig::_Data*>(&shellExtensionConfig.Get());
-
-				for (auto& shellMenu : shellExtensionConfigMutable->shellExtensionSettings.menus) {
-					// For example if string = "<translate: My 'title'>" regex must capture "My 'title'"
-					auto matches = H::Regex::GetRegexMatches<wchar_t>(shellMenu.title, std::wregex{ L"<translate:[ ]*(.*)>" });
-					if (!matches.empty()) {
-						auto sourceWString = matches[0].capturedGroups.at(1);
-						auto sourceString = H::WStrToStr(sourceWString);
-
-						std::string capturedLocale = "en";
-						auto prefferedLanguages = H::GetUserPreferredUILanguages();
-						if (!prefferedLanguages.empty()) {
-							//auto firstPrefferedLanguage = H::WStrToStr(prefferedLanguages.front());
-							auto firstPrefferedLanguage = prefferedLanguages.front();
-							auto matches = H::Regex::GetRegexMatches<wchar_t>(firstPrefferedLanguage, std::wregex{ L"(\\w\\w)([-_]\\w\\w)?" });
-							if (!matches.empty()) {
-								auto mainLocale = matches[0].capturedGroups.at(1);
-								//capturedLocale = H::to_lower(mainLocale);
-								capturedLocale = H::to_lower(H::WStrToStr(mainLocale));
-							}
-						}
-
-						auto localeIt = shellExtensionConfig->shellExtensionLocalization.localizationMap.find(capturedLocale);
-						if (localeIt != shellExtensionConfig->shellExtensionLocalization.localizationMap.end()) {
-							auto& [locale, shellExtensionTranslation] = *localeIt;
-
-							auto sourceStringIt = shellExtensionTranslation.translationMap.find(sourceString);
-							if (sourceStringIt != shellExtensionTranslation.translationMap.end()) {
-								auto& [_, translatedString] = *sourceStringIt;
-								shellMenu.title = translatedString;
-								wasSomethingTranslated = true;
-							}
-						}
-					}
+				if (this->TranslateConfig()) {
+					LOG_DEBUG_D("\"{}\" translated [{}]:\n"
+						"{}"
+						, JSONObject::Filename, Constants::GetInstance().userLocale.localName
+						, ::JS::serializeStruct(ShellExtensionConfig::GetDataLocked().Get())
+					);
 				}
 			}
 			else {
 				LOG_ERROR_D("Config not loaded");
 			}
-
-			//if (wasSomethingTranslated) {
-			//	LOG_DEBUG_D("{} [translated]:\n"
-			//		"{}"
-			//		, JSONObject::Filename
-			//		, ::JS::serializeStruct(ShellExt::ShellExtensionConfig::GetDataLocked().Get())
-			//	);
-			//}
 		}
+
+
+		bool AppFeatures::TranslateConfig() {
+			LOG_FUNCTION_SCOPE("TranslateConfig()");
+			LOG_DEBUG_D("userLocale = \"{}\"", Constants::GetInstance().userLocale.localName);
+
+			auto shellExtensionConfig = ShellExtensionConfig::GetDataLocked();
+			auto shellExtensionConfigMutable = const_cast<ShellExtensionConfig::_Data*>(&shellExtensionConfig.Get());
+			bool wasSomethingTranslated = false;
+
+			for (auto& shellMenu : shellExtensionConfigMutable->shellExtensionSettings.menus) {
+				wasSomethingTranslated |= this->TranslateShellMenuRecursive(shellMenu);
+			}
+			return wasSomethingTranslated;
+			//return true;
+		}
+
+
+		bool AppFeatures::TranslateShellMenuRecursive(json::ShellMenu& shellMenu) {
+			LOG_FUNCTION_SCOPE(L"TranslateShellMenuRecursive(shellMenu.title = \"{}\")", shellMenu.title);
+
+			auto shellExtensionConfig = ShellExtensionConfig::GetDataLocked();
+			auto shellExtensionConfigMutable = const_cast<ShellExtensionConfig::_Data*>(&shellExtensionConfig.Get());
+			bool wasSomethingTranslated = false;
+
+			// For example if string = "<translate: My 'title'>" regex must capture "My 'title'"
+			auto matches = H::Regex::GetRegexMatches<wchar_t>(shellMenu.title, std::wregex{ L"<translate:[ ]*(.*)>" });
+			if (!matches.empty()) {
+				auto sourceWString = matches[0].capturedGroups.at(1);
+				auto sourceString = H::WStrToStr(sourceWString);
+				LOG_DEBUG_D("sourceString = \"{}\"", sourceString);
+
+				//auto userLocale = H::Locale{ Constants::GetInstance().userLocale }.ToLower();
+				auto userLocale = Constants::GetInstance().userLocale;
+
+				// [strict] Try find full locale name.
+				auto localeIt = shellExtensionConfig->shellExtensionLocalization.localizationMap.find(userLocale.localName);
+				if (localeIt == shellExtensionConfig->shellExtensionLocalization.localizationMap.end()) {
+					// [not strict] Try find only main language code.
+					localeIt = shellExtensionConfig->shellExtensionLocalization.localizationMap.find(userLocale.languageCode);
+				}
+
+				if (localeIt != shellExtensionConfig->shellExtensionLocalization.localizationMap.end()) {
+					auto& [__locale, shellExtensionTranslation] = *localeIt;
+					LOG_DEBUG_D("suitable locale = \"{}\"", __locale);
+
+					auto sourceStringIt = shellExtensionTranslation.translationMap.find(sourceString);
+					if (sourceStringIt != shellExtensionTranslation.translationMap.end()) {
+						auto& [__sourceString, translatedString] = *sourceStringIt;
+						LOG_DEBUG_D(L"translatedString = \"{}\"", translatedString);
+						shellMenu.title = translatedString;
+						wasSomethingTranslated = true;
+					}
+					else {
+						LOG_WARNING_D("not found match for sourceString in translationMap");
+					}
+				}
+				else {
+					LOG_WARNING_D("not found suitable locale in localizationMap");
+				}
+			}
+
+			if (!shellMenu.subMenus.empty()) {
+				LOG_DEBUG_D("Translate sub menus ...");
+
+				for (auto& subMenu : shellMenu.subMenus) {
+					wasSomethingTranslated |= this->TranslateShellMenuRecursive(subMenu);
+				}
+			}
+			return wasSomethingTranslated;
+		}
+
 	} // namespace ShellExt
 
 
@@ -298,13 +360,13 @@ namespace TestConfigParsing {
 
 
 int main() {
+	_set_error_mode(_OUT_TO_MSGBOX);
+
 	H::Flags<lg::InitFlags> loggerInitFlags =
 		lg::InitFlags::DefaultFlags |
 		lg::InitFlags::EnableLogToStdout;
 
 	lg::DefaultLoggers::Init("D:\\main_60_Json.log", loggerInitFlags);
-
-	LOG_DEBUG_D("Упаковать [Папка]");
 
 	JS::LoggerCallback::Register([](std::string msg) {
 		LOG_DEBUG_D("[JsonParser] {}", msg);
@@ -312,6 +374,7 @@ int main() {
 
 	TestConfigParsing::TestLoadShellExtensionConfig();
 
-	Sleep(15'000);
+	//Sleep(15'000);
+	system("pause");
 	return 0;
 }
