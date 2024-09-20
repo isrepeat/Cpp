@@ -97,6 +97,7 @@ namespace TestRequests {
 
 
     void TestRequestsChain() {
+
         // Create http_client to send the request.
         http_client client(U("http://www.google.com/"));
 
@@ -189,9 +190,9 @@ namespace TestRequests {
 
         auto HandlerB = [] {};
 
-        auto HandlerC = []() -> Concurrency::task<web::http::http_response> {};
-        auto HandlerC_1 = []() -> Concurrency::task<web::http::http_response> {};
-        auto HandlerC_2 = []() -> Concurrency::task<web::http::http_response> {};
+        auto HandlerC = []() -> Concurrency::task<web::http::http_response> { return {}; };
+        auto HandlerC_1 = []() -> Concurrency::task<web::http::http_response> { return {}; };
+        auto HandlerC_2 = []() -> Concurrency::task<web::http::http_response> { return {}; };
         auto HandlerC_finish = [] {};
 
         auto HandlerD = [] {};
@@ -216,7 +217,6 @@ namespace TestRequests {
             .wait();
 
         // [Depends on]: [always] 'requestChainB'.
-        // [Child dependent requests]:.
         Concurrency::task<web::http::http_response> RequestC;
         auto requestChainC = RequestC
             .then([&](http_response response) { return HandlerC(); })
@@ -226,17 +226,64 @@ namespace TestRequests {
             .wait();
 
         // [Depends on]: [once] 'requestChainB'.
-        // [Child dependent requests]:.
         Concurrency::task<web::http::http_response> RequestD;
         auto requestChainD = RequestD
             .then([&](http_response response) { HandlerD(); })
             .wait();
 
         // [Depends on]: [once] 'requestChainA', [always] 'requestChainB'.
-        // [Child dependent requests]:.
         Concurrency::task<web::http::http_response> RequestE;
         auto requestChainE = RequestE
             .then([&](http_response response) { HandlerD(); })
+            .wait();
+    }
+
+    void PseusoRequests() {
+        //
+        // --- Handlers ---
+        //
+        auto HandlerA = [] {};
+
+        auto HandlerB = [] {};
+
+        auto HandlerC = []() -> Concurrency::task<web::http::http_response> { return {}; };
+        auto HandlerC_1 = []() -> Concurrency::task<web::http::http_response> { return {}; };
+        auto HandlerC_2 = []() -> Concurrency::task<web::http::http_response> { return {}; };
+        auto HandlerC_finish = [] {};
+
+        auto HandlerD = [] {};
+
+        auto HandlerE = [] {};
+
+        //
+        // --- Requests ---
+        // 
+        Concurrency::task<web::http::http_response> RequestC;
+        auto requestChainC = RequestC
+            .then([&](http_response response) { return HandlerC(); })
+            .then([&](http_response response) { return HandlerC_1(); })
+            .then([&](http_response response) { return HandlerC_2(); })
+            .then([&](http_response response) { HandlerC_finish(); })
+            .wait();
+
+        Concurrency::task<web::http::http_response> RequestD;
+        auto requestChainD = RequestD
+            .then([&](http_response response) { HandlerD(); })
+            .wait();
+
+        Concurrency::task<web::http::http_response> RequestA;
+        auto requestChainA = RequestA
+            .then([&](http_response response) { HandlerA(); })
+            .wait();
+
+        Concurrency::task<web::http::http_response> RequestE;
+        auto requestChainE = RequestE
+            .then([&](http_response response) { HandlerD(); })
+            .wait();
+
+        Concurrency::task<web::http::http_response> RequestB;
+        auto requestChainB = RequestB
+            .then([&](http_response response) { HandlerB(); })
             .wait();
     }
 }
