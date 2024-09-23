@@ -45,6 +45,9 @@
     <Filter Include="Source Files\[12] Doxygen">
       <UniqueIdentifier>{81e871d4-db8a-457a-9864-b0ecd3c98b96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\[13] Nuget CppRestSdk">
+      <UniqueIdentifier>{948974d7-40d7-477b-88ae-5a2f46b76417}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -308,6 +311,15 @@
     <ClCompile Include="main_62_Concepts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="[13] Nuget CppRestSdk\main_63_Nuget_cpprestsdk.cpp">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClCompile>
+    <ClCompile Include="[13] Nuget CppRestSdk\RequestManager.cpp">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClCompile>
+    <ClCompile Include="[13] Nuget CppRestSdk\Tests.cpp">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
@@ -376,8 +388,21 @@
     <ClInclude Include="[12] Doxygen\Classes.h">
       <Filter>Source Files\[12] Doxygen</Filter>
     </ClInclude>
+    <ClInclude Include="[13] Nuget CppRestSdk\RequestManager.h">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="[13] Nuget CppRestSdk\Tests.h">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="[13] Nuget CppRestSdk\Common.h">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="[13] Nuget CppRestSdk\HttpModel.h">
+      <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -246,6 +246,9 @@
     <ClCompile Include="[11] C++20 Coroutine\main_AsyncTasks_Coroutine.cpp" />
     <ClCompile Include="[12] Doxygen\Classes.cpp" />
     <ClCompile Include="[12] Doxygen\main_Doxygen.cpp" />
+    <ClCompile Include="[13] Nuget CppRestSdk\main_63_Nuget_cpprestsdk.cpp" />
+    <ClCompile Include="[13] Nuget CppRestSdk\RequestManager.cpp" />
+    <ClCompile Include="[13] Nuget CppRestSdk\Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h" />
@@ -270,9 +273,14 @@
     <ClInclude Include="[11] C++20 Coroutine\AsyncTasksCo.h" />
     <ClInclude Include="[11] C++20 Coroutine\Awaitables.h" />
     <ClInclude Include="[12] Doxygen\Classes.h" />
+    <ClInclude Include="[13] Nuget CppRestSdk\Common.h" />
+    <ClInclude Include="[13] Nuget CppRestSdk\HttpModel.h" />
+    <ClInclude Include="[13] Nuget CppRestSdk\RequestManager.h" />
+    <ClInclude Include="[13] Nuget CppRestSdk\Tests.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Console_IncludeToCompile.targets" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UtilityHelpersLib\Helpers\ComAPI\ComAPI.vcxproj">
@@ -284,7 +292,14 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets" Condition="Exists('..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets')" />
   </ImportGroup>
   <!-- Custom targets -->
   <Import Project="$(ProjectDir)\Console_IncludeToCompile.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets'))" />
+  </Target>
 </Project>

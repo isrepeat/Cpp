@@ -115,6 +115,8 @@ namespace TestExistance {
 		};
 		int Method(float) {}
 		static void StaticMethod() {}
+		static int CreateWithDefaultData() { return {}; }
+		//static Object CreateWithDefaultData() { return {}; }
 	};
 
 	template <typename ObjectT> 
@@ -126,6 +128,12 @@ namespace TestExistance {
 	struct JsonLoader {
 		static void Load() {
 			ObjectT::StaticMethod();
+
+			if constexpr (requires {
+				requires concepts::HasStaticMethodWithSignature<decltype(&ObjectT::CreateWithDefaultData), ObjectT(*)()>;
+			}) {
+				auto jsonObject = ObjectT::CreateWithDefaultData();
+			}
 		};
 	};
 

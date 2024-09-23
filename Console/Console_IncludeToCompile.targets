@@ -8,6 +8,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>
+        <!-- Expose project properties through macros: -->
+        __TEST_OUTPUT_FOLDER="D:\\TEST_CONSOLE";
         <!--DISABLE_COMMON_LOGGING;-->
         <!--DISABLE_ERROR_LOGGING;-->
         <!--DISABLE_VERBOSE_LOGGING;-->
@@ -36,6 +38,7 @@
       <ExcludedDirsFromBuild Include="[10] Socket NAT" />
       <ExcludedDirsFromBuild Include="[11] C++20 Coroutine" />
       <ExcludedDirsFromBuild Include="[12] Doxygen" />
+      <ExcludedDirsFromBuild Include="[13] Nuget CppRestSdk" />
 
       <NotBuildFiles Include="*.h;*.cpp" />
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>

@@ -1,6 +1,7 @@
 #include <JsonParser/JsonParser.h>
 #include <MagicEnum/MagicEnum.h>
-#include <Helpers/JSONConfigLoader.hpp>
+#include <Helpers/JSONLoader.hpp>
+#include <Helpers/AppFeaturesBase.h>
 #include <Helpers/SystemInfo.h>
 #include <Helpers/Config.h>
 #include <Helpers/Logger.h>
@@ -13,6 +14,8 @@
 #include <ranges>
 #include <regex>
 
+const std::filesystem::path g_TestOutputFolder =
+	std::filesystem::path(__TEST_OUTPUT_FOLDER) / std::filesystem::path(__FILE__).stem();
 
 #define _Enum__ShellExtensionType \
 	Unknown, \
@@ -166,7 +169,7 @@ namespace TestConfigParsing {
 								"ru",
 								json::ShellExtensionTranslation{
 									std::map<std::string, std::wstring> {
-										{"MenuA", L"ru_MenuA"}
+										{"MenuA", L"Привет"}
 									}
 								}
 							},
@@ -205,42 +208,42 @@ namespace TestConfigParsing {
 				auto userPreferredUILocales = H::GetUserPreferredUILocales();
 				for (auto& userPreferredUILocale : userPreferredUILocales) {
 					userPreferredUILocale.Log();
-					LOG_RAW("");
+					LOG_DEBUG_D("");
 				}
 				return userPreferredUILocales.size() > 0 ? userPreferredUILocales[0] : defaultLocale;
 			}
 		};
 
 
-		class AppFeatures : public H::_Singleton<class AppFeatures> {
+
+		struct ShellExtensionConfigJSON {
+			//static constexpr const char* Filename = "ShellExtensionConfig.txt";
+			static constexpr const char* Filename = "ShellExtensionConfig_UTF8_WithBOM.txt";
+
+			ShellExt::ShellExtensionConfig::_Data shellExtensionConfig;
+
+			JS_OBJ(
+				shellExtensionConfig
+			);
+
+			static ShellExtensionConfigJSON CreateWithDefaultData() {
+				return ShellExtensionConfigJSON {
+					.shellExtensionConfig = ShellExt::ShellExtensionConfig::GetDataCopy()
+				};
+			}
+			static void AfterLoadHandler(const ShellExtensionConfigJSON& parsedJsonObject) {
+				const_cast<ShellExt::ShellExtensionConfig::_Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = parsedJsonObject.shellExtensionConfig;
+			}
+		};
+
+		class AppFeatures : public H::AppFeaturesBase<class AppFeatures> {
+			friend _InheritedBase;	
+
 		private:
-			friend _Base;
 			AppFeatures();
 
 		public:
 			~AppFeatures() = default;
-
-			struct JSONObject {
-				static constexpr const char* Filename = "ShellExtensionConfig.txt";
-
-				// Keep config data empty for loader becuse it will parse JSON data here from config file.
-				ShellExt::ShellExtensionConfig::_Data shellExtensionConfig;
-
-				JS_OBJ(
-					shellExtensionConfig
-				);
-
-				////// Static handlers where you can change associated singleton's data.
-				//void static LoadErrorHandler() {
-				//	Dbreak;
-				//	// Do nothing, because ShellExtensionConfig already have default data.
-				//}
-
-				static void AfterLoadHandler(const JSONObject& parsedJsonObject) {
-					// Replace default ShellExtensionConfig's data with parsed data.
-					const_cast<ShellExt::ShellExtensionConfig::_Data&>(ShellExt::ShellExtensionConfig::GetDataLocked().Get()) = parsedJsonObject.shellExtensionConfig;
-				}
-			};
 
 		private:
 			bool TranslateConfig();
@@ -253,17 +256,16 @@ namespace TestConfigParsing {
 
 
 		AppFeatures::AppFeatures()
-			: configName{ JSONObject::Filename }
-			, configFolder{ "D:\\TEST_CONFIGS\\" }
+			: configName{ ShellExtensionConfigJSON::Filename }
+			, configFolder{ g_TestOutputFolder }
 		{
-			lg::DefaultLoggers::InitSingleton();
 			bool wasSomethingTranslated = false;
 
-			if (H::JSONConfigLoader<AppFeatures::JSONObject, AppFeatures>::Load(this->configFolder / this->configName)) {
+			if (this->AppFeaturesBase::LoadConfig<ShellExtensionConfigJSON>(this->configFolder / this->configName)) {
 				if (this->TranslateConfig()) {
 					LOG_DEBUG_D("\"{}\" translated [{}]:\n"
 						"{}"
-						, JSONObject::Filename, Constants::GetInstance().userLocale.localName
+						, ShellExtensionConfigJSON::Filename, Constants::GetInstance().userLocale.localName
 						, ::JS::serializeStruct(ShellExtensionConfig::GetDataLocked().Get())
 					);
 				}
@@ -286,7 +288,6 @@ namespace TestConfigParsing {
 				wasSomethingTranslated |= this->TranslateShellMenuRecursive(shellMenu);
 			}
 			return wasSomethingTranslated;
-			//return true;
 		}
 
 
@@ -304,7 +305,6 @@ namespace TestConfigParsing {
 				auto sourceString = H::WStrToStr(sourceWString);
 				LOG_DEBUG_D("sourceString = \"{}\"", sourceString);
 
-				//auto userLocale = H::Locale{ Constants::GetInstance().userLocale }.ToLower();
 				auto userLocale = Constants::GetInstance().userLocale;
 
 				// [strict] Try find full locale name.
@@ -366,7 +366,7 @@ int main() {
 		lg::InitFlags::DefaultFlags |
 		lg::InitFlags::EnableLogToStdout;
 
-	lg::DefaultLoggers::Init("D:\\main_60_Json.log", loggerInitFlags);
+	lg::DefaultLoggers::Init(g_TestOutputFolder / (g_TestOutputFolder.stem().string() + ".log"), loggerInitFlags);
 
 	JS::LoggerCallback::Register([](std::string msg) {
 		LOG_DEBUG_D("[JsonParser] {}", msg);
