@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(ProjectDir)..\InlineTasks.targets" />
+
+  <PropertyGroup>
+    <Tab>%09</Tab>
+    <NewLine>%0D%0A</NewLine>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Special characters that must be escaped for original url: 
+         https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-special-characters?view=vs-2022
+         https://learn.microsoft.com/en-us/visualstudio/msbuild/how-to-use-reserved-xml-characters-in-project-files?view=vs-2022
+    -->
+    <!--<MyUrl>https://raw.githubusercontent.com/Microsoft/msbuild/master/LICENSE</MyUrl>-->
+    <MyUrl>http://tfsdct.com:8080/tfs/Desktop/CPP%20Libraries/_git/UtilityHelpersLib?path=%2FDCT.CppCommon.targets&amp;version=GBdevelop</MyUrl>
+    <PrivateAccessToken>z3cyxtdaiveissrlsjwfdwiunvmjqr6fnxbtxgialsqj36orl52a</PrivateAccessToken>
+    <PrivateAccessTokenBase64>OnozY3l4dGRhaXZlaXNzcmxzandmZHdpdW52bWpxcjZmbnhidHhnaWFsc3FqMzZvcmw1MmE= =</PrivateAccessTokenBase64>
+  </PropertyGroup>
+
+  <Target Name="DownloadContentFiles" BeforeTargets="Build">
+    <DownloadFile
+        SourceUrl="$(MyUrl)"
+        DestinationFolder="$(MSBuildThisFileDirectory)"
+        Headers="Authorization: Basic $(PrivateAccessTokenBase64)">
+      <Output TaskParameter="DownloadedFile" ItemName="DownloadedFile" />
+    </DownloadFile>
+
+    <Message Text="DownloadedFile = %(DownloadedFile.Identity)" Importance="High" />
+  </Target>
+
+</Project>

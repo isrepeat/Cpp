@@ -14,5 +14,6 @@
   <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_7_Conditions.targets" />-->
   <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_8_Replace.targets" />-->
   <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_9_CaptureConfigurationFromPartialName.targets" />-->
-  <Import Project="$(MSBuildProjectDirectory)\MSBuild_10_TargetWithResults.targets" />
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_10_TargetWithResults.targets" />-->
+  <Import Project="$(MSBuildProjectDirectory)\MSBuild_11_Download.targets" />
 </Project>

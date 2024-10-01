@@ -10,17 +10,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MSBuild_1_PercentPropertyBackref.targets" />
-    <None Include="MSBuild_2_ItemDefenitionGroup.targets" />
-    <None Include="MSBuild_3_ExcludeFromCompile.targets" />
-    <None Include="MSBuild_4_PublicIncludeDirectories.targets" />
-    <None Include="MSBuild_5_RebuildAdminTasks.targets" />
-    <None Include="MSBuild_6_DynamicImport.targets" />
-    <None Include="MSBuild_7_Conditions.targets" />
-    <None Include="MSBuild_8_Replace.targets" />
-    <None Include="MSBuild_9_CaptureConfigurationFromPartialName.targets" />
+    <None Include="MSBuild_01_PercentPropertyBackref.targets" />
+    <None Include="MSBuild_02_ItemDefenitionGroup.targets" />
+    <None Include="MSBuild_03_ExcludeFromCompile.targets" />
+    <None Include="MSBuild_04_PublicIncludeDirectories.targets" />
+    <None Include="MSBuild_05_RebuildAdminTasks.targets" />
+    <None Include="MSBuild_06_DynamicImport.targets" />
+    <None Include="MSBuild_07_Conditions.targets" />
+    <None Include="MSBuild_08_Replace.targets" />
+    <None Include="MSBuild_09_CaptureConfigurationFromPartialName.targets" />
     <None Include="MSBuild.props" />
     <None Include="MSBuild_10_TargetWithResults.targets" />
+    <None Include="MSBuild_11_Download.targets" />
+    <None Include="TestEncodePrivateAccessToken.ps1" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
