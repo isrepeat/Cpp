@@ -52,7 +52,7 @@ namespace MediaEngineWinRT {
 
 			concurrency::create_task(openPicker->PickSingleFileAsync()).then([&](Windows::Storage::StorageFile^ file) {
 				if (file) {
-					concurrency::create_task(file->OpenAsync(Windows::Storage::FileAccessMode::ReadWrite)).then([&](IRandomAccessStream^ stream) {
+					concurrency::create_task(file->OpenAsync(Windows::Storage::FileAccessMode::Read)).then([&](IRandomAccessStream^ stream) {
 						this->OpenMedia(stream);
 						});
 				}
