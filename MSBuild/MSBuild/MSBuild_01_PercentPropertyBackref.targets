@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestProp>Hello</TestProp>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <A>
+      <x>%(x);[SolutionAAA] $(TestProp)</x>
+    </A>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <A Include="SolutionAAA">
+      <files>test.htm;test_sol1.htm</files>
+      <!--<x>[SolutionAAA] $(TestProp)</x>-->
+      <y>b1</y>
+      <z>c1</z>
+    </A>
+    <A Include="SolutionBBB">
+      <files>test.proj</files>
+      <!--<x>[SolutionBBB] a2</x>-->
+      <y>b2</y>
+      <z>c2</z>
+    </A>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TestProp>Bye</TestProp>
+  </PropertyGroup>
+
+
+  <ItemDefinitionGroup>
+    <A>
+      <x>%(x);[SolutionAAA] $(TestProp)</x>
+    </A>
+  </ItemDefinitionGroup>
+
+
+  <Target Name="__Print" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <NL>%0D%0A</NL>
+    </PropertyGroup>
+    
+    <!--<Message Importance="High" Text="A: %(A.files)"/>-->
+    <Message Importance="High" Text="[%(A.Identity)]
+    A.x = %(A.x)
+    A.y = %(A.y)
+    A.z = %(A.z)
+             "/>
+    <Message Importance="High" Text="@(A->'%(Identity) x:%(x) y:%(y) z:%(z)', '$(NL)')" />
+  </Target>
+</Project>
