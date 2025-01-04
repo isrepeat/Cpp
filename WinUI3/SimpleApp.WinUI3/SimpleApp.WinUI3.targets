@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+    <ObjDir>$(MSBuildThisFileDirectory)obj\$(Platform)\$(Configuration)\$(TargetFramework)</ObjDir>
+  </PropertyGroup>
+
+
+  <Target Name="RemoveNonPlatformItems" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <NonBuildPages Include="Pages\*.xaml" />
+      
+      <BuildPages Include="Pages\MainWindow_1_AsyncLock.xaml" />
+
+      <PagesExcludedFromBuild Include="@(NonBuildPages)" Exclude="@(BuildPages)"/>
+      <Compile Remove="@(PagesExcludedFromBuild->'%(RelativeDir)%(Filename).xaml.cs')" />
+      <Page Remove="@(PagesExcludedFromBuild)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="=================================" />
+    <Message Importance="High" Text="NonBuildPages:"/>
+    <Message Importance="High" Text = "%(NonBuildPages.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)" />
+
+    <Message Importance="High" Text="BuildPages:"/>
+    <Message Importance="High" Text = "%(BuildPages.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)" />
+    
+    <Message Importance="High" Text="PagesExcludedFromBuild:"/>
+    <Message Importance="High" Text = "%(PagesExcludedFromBuild.Identity)"/>
+
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text = "Compile files:"/>
+    <Message Importance="High" Text = "%(Compile.Identity)"/>
+
+    <Message Importance="High" Text = "Page files:"/>
+    <Message Importance="High" Text = "%(Page.Identity)"/>
+    <Message Importance="High" Text="=================================" />
+    <Message Importance="High" Text=  "$(NewLine)" />
+    <Message Importance="High" Text=  "$(NewLine)" />
+  </Target>
+</Project>

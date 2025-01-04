@@ -48,20 +48,4 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
-
-  <Extensions>
-    <Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>TestLibrary.WinRt.WinUI3.dll</Path>
-        <ActivatableClass ActivatableClassId="TestLibrary_WinRt_WinUI3.MainTypesWinRt" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="TestLibrary_WinRt_WinUI3.DxSettingsWrapper" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension>
-    <Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>Helpers.WinRt.dll</Path>
-        <ActivatableClass ActivatableClassId="Helpers.WinRt.Dx.DxSettings" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension>
-  </Extensions>
 </Package>
