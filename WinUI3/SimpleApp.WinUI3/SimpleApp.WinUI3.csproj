@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240627000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -37,7 +37,7 @@
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
-
+  
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
@@ -47,19 +47,6 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <RestoreSources>
-      https://api.nuget.org/v3/index.json;
-      ../TestLibrary.WinRt.Projection/Nuget
-    </RestoreSources>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="TestLibraryComponent" Version="0.6.0-prerelease" />
-  </ItemGroup>
-
-  <Target Name="EnsureNugetRestoreBeforeResolveRefs"
-        DependsOnTargets="Restore"
-        BeforeTargets="BeforeResolveReferences"
-          />
+  <!-- Custom targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\SimpleApp.WinUI3.targets" />
 </Project>
