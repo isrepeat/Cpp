@@ -37,7 +37,8 @@ namespace SimpleApp.WinUI3 {
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args) {
             //m_window = new MainWindow();
             //m_window = new MainWindow_1_AsyncLock();
-            m_window = new MainWindow_2_AsyncTimeout();
+            //m_window = new MainWindow_2_AsyncTimeout();
+            m_window = new MainWindow_3_PostSharp();
             m_window.Activate();
         }
 
