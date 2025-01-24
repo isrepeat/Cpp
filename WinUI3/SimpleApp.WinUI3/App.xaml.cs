@@ -45,8 +45,6 @@ namespace SimpleApp.WinUI3 {
 
             // Registering a global handler for unhandled exceptions in asynchronous tasks.
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-
-            m_window = new MainWindow_4_CrashHandling();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) {
@@ -73,7 +71,7 @@ namespace SimpleApp.WinUI3 {
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args) {
-            //m_window = new MainWindow();
+            m_window = new MainWindow();
             //m_window = new MainWindow_1_AsyncLock();
             //m_window = new MainWindow_2_AsyncTimeout();
             //m_window = new MainWindow_3_PostSharp();

@@ -10,11 +10,11 @@
     <ItemGroup>
       <NonBuildPages Include="Pages\*.xaml" />
       
-      <!--<BuildPages Include="Pages\MainWindow.xaml" />-->
+      <BuildPages Include="Pages\MainWindow.xaml" />
       <!--<BuildPages Include="Pages\MainWindow_1_AsyncLock.xaml" />-->
       <!--<BuildPages Include="Pages\MainWindow_2_AsyncTimeout.xaml" />-->
       <!--<BuildPages Include="Pages\MainWindow_3_PostSharp.xaml" />-->
-      <BuildPages Include="Pages\MainWindow_4_CrashHandling.xaml" />
+      <!--<BuildPages Include="Pages\MainWindow_4_CrashHandling.xaml" />-->
 
       <PagesExcludedFromBuild Include="@(NonBuildPages)" Exclude="@(BuildPages)"/>
       <Compile Remove="@(PagesExcludedFromBuild->'%(RelativeDir)%(Filename).xaml.cs')" />

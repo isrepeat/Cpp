@@ -6,9 +6,82 @@
     xmlns:local="using:SimpleApp.WinUI3"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    >
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel.Resources>
+            <Style x:Key="SyncStatusIconViewboxStyle" TargetType="Viewbox">
+                <Setter Property="Width" Value="25"/>
+                <Setter Property="Height" Value="25"/>
+                <Setter Property="Stretch" Value="Uniform"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+            </Style>
+        </StackPanel.Resources>
+        <Viewbox Style="{StaticResource SyncStatusIconViewboxStyle}">
+            <Canvas Height="20" Width="20">
+                <Path Data="M5 17C3.62121 17 2.44318 16.5078 1.46591 15.5234C0.488636 14.5391 0 13.3359 0 11.9141C0 10.6953 0.356061 9.60938 1.06818 8.65625C1.7803 7.70312 2.71212 7.09375 3.86364 6.82812C4.24242 5.39062 5 4.22656 6.13636 3.33594C7.27273 2.44531 8.56061 2 10 2C11.7727 2 13.2765 2.63672 14.5114 3.91016C15.7462 5.18359 16.3636 6.73438 16.3636 8.5625C17.4091 8.6875 18.2765 9.15234 18.9659 9.95703C19.6553 10.7617 20 11.7031 20 12.7812C20 13.9531 19.6023 14.9492 18.8068 15.7695C18.0114 16.5898 17.0455 17 15.9091 17H5Z" Fill="white" />
+                <Path Data="M6 10.5L8.5 13L13.5 7.5" Stroke="black" StrokeThickness="2" StrokeLineJoin="round" Fill="#00000000" />
+            </Canvas>
+        </Viewbox>
+        <Viewbox Style="{StaticResource SyncStatusIconViewboxStyle}">
+            <Canvas Height="20" Width="20">
+                <Path Data="M5 17C3.62121 17 2.44318 16.5078 1.46591 15.5234C0.488636 14.5391 0 13.3359 0 11.9141C0 10.6953 0.356061 9.60938 1.06818 8.65625C1.7803 7.70312 2.71212 7.09375 3.86364 6.82812C4.24242 5.39062 5 4.22656 6.13636 3.33594C7.27273 2.44531 8.56061 2 10 2C11.7727 2 13.2765 2.63672 14.5114 3.91016C15.7462 5.18359 16.3636 6.73438 16.3636 8.5625C17.4091 8.6875 18.2765 9.15234 18.9659 9.95703C19.6553 10.7617 20 11.7031 20 12.7812C20 13.9531 19.6023 14.9492 18.8068 15.7695C18.0114 16.5898 17.0455 17 15.9091 17H5Z" Fill="white" />
+                <Path Data="M10 6V14" Stroke="black" StrokeThickness="1.5" Fill="#00000000" />
+                <Path Data="M14 10L10 6L6 10" Stroke="black" StrokeThickness="1.5" StrokeLineJoin="bevel" Fill="#00000000" />
+            </Canvas>
+        </Viewbox>
+        <Viewbox Style="{StaticResource SyncStatusIconViewboxStyle}">
+            <Canvas Height="20" Width="20">
+                <Path Data="M5 17C3.62121 17 2.44318 16.5078 1.46591 15.5234C0.488636 14.5391 0 13.3359 0 11.9141C0 10.6953 0.356061 9.60938 1.06818 8.65625C1.7803 7.70312 2.71212 7.09375 3.86364 6.82812C4.24242 5.39062 5 4.22656 6.13636 3.33594C7.27273 2.44531 8.56061 2 10 2C11.7727 2 13.2765 2.63672 14.5114 3.91016C15.7462 5.18359 16.3636 6.73438 16.3636 8.5625C17.4091 8.6875 18.2765 9.15234 18.9659 9.95703C19.6553 10.7617 20 11.7031 20 12.7812C20 13.9531 19.6023 14.9492 18.8068 15.7695C18.0114 16.5898 17.0455 17 15.9091 17H5Z" Fill="white" />
+                <Path Data="M10 6V14" Stroke="#1E1E1E" StrokeThickness="1.5" Fill="#00000000" />
+                <Path Data="M6 10L10 14L14 10" Stroke="#1E1E1E" StrokeThickness="1.5" StrokeLineJoin="bevel" Fill="#00000000" />
+            </Canvas>
+        </Viewbox>
+        <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            Width="20" Height="20">
+            <!-- Определение радиального градиента -->
+            <Canvas.Resources>
+                <RadialGradientBrush x:Key="paint0_angular_9710_12304" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                    <GradientStop Color="#FFFFFFFF" Offset="0" />
+                    <GradientStop Color="#66FFFFFF" Offset="1" />
+                </RadialGradientBrush>
+            </Canvas.Resources>
+
+            <!-- Круг с градиентной обводкой -->
+            <Ellipse Canvas.Left="1" Canvas.Top="1" Width="18" Height="18"
+             Stroke="{StaticResource paint0_angular_9710_12304}" StrokeThickness="2" Fill="Transparent" />
+
+            <!-- Вертикальная линия -->
+            <Path Data="M10 6V14" Stroke="White" StrokeThickness="1.5" Fill="Transparent" />
+
+            <!-- Стрелка вниз -->
+            <Path Data="M14 10L10 6L6 10" Stroke="White" StrokeThickness="1.5" StrokeLineJoin="Bevel" Fill="Transparent" />
+        </Canvas>
+
+        <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Width="20" Height="20">
+            <!-- Определение радиального градиента -->
+            <Canvas.Resources>
+                <RadialGradientBrush x:Key="paint0_angular_9710_12232" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                    <GradientStop Color="#FFFFFFFF" Offset="0" />
+                    <GradientStop Color="#66FFFFFF" Offset="1" />
+                </RadialGradientBrush>
+            </Canvas.Resources>
+
+            <!-- Круг с градиентной обводкой -->
+            <Ellipse Canvas.Left="1" Canvas.Top="1" Width="18" Height="18"
+             Stroke="{StaticResource paint0_angular_9710_12232}" StrokeThickness="2" Fill="Transparent" />
+
+            <!-- Вертикальная линия -->
+            <Path Data="M10 6V14" Stroke="White" StrokeThickness="1.5" Fill="Transparent" />
+
+            <!-- Стрелка вниз -->
+            <Path Data="M6 10L10 14L14 10" Stroke="White" StrokeThickness="1.5" StrokeLineJoin="Bevel" Fill="Transparent" />
+        </Canvas>
+
         <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
     </StackPanel>
 </Window>
