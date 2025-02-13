@@ -8,7 +8,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="c07e3a2c-b738-488d-bd1d-9075e287b434"
+    Name="SimpleApp.WinUI3"
     Publisher="CN=isrepeat"
     Version="1.0.0.0" />
 
