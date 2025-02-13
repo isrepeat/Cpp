@@ -76,7 +76,8 @@ namespace SimpleApp.WinUI3 {
             //m_window = new MainWindow_2_AsyncTimeout();
             //m_window = new MainWindow_3_PostSharp();
             //m_window = new MainWindow_4_CrashHandling();
-            m_window = new MainWindow_5_Intercom();
+            //m_window = new MainWindow_5_Intercom();
+            m_window = new MainWindow_6_Dx();
             m_window.Activate();
         }
 
