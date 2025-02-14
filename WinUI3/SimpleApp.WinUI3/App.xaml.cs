@@ -31,7 +31,7 @@ namespace SimpleApp.WinUI3 {
         public App() {
             this.InitializeComponent();
             var initFlags = CppFeatures.Cx.InitFlags.DefaultFlags | CppFeatures.Cx.InitFlags.CreateInPackageFolder;
-            CppFeatures.Cx.Logger.Init("Intublade.log", initFlags);
+            CppFeatures.Cx.Logger.Init("SimpleApp.WinUI3.log", initFlags);
 
 
             // Registering a global handler for unhandled UI thread exceptions.
