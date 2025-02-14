@@ -23,10 +23,12 @@ PSInput VSMain(VSInput input)
 }
 
 
-// Текстуры NV12 и Watermark
+// Текстуры NV12, Watermark и Text Overlay
 Texture2D inputY : register(t0); // Y-плоскость
 Texture2D inputUV : register(t1); // UV-плоскость
 Texture2D watermarkTexture : register(t2); // Watermark
+Texture2D textTexture : register(t3); // Текст
+
 SamplerState samplerState : register(s0);
 
 // Константный буфер для позиции watermark
@@ -35,7 +37,13 @@ cbuffer WatermarkData : register(b0)
     float4 watermarkPos; // x, y, width, height в нормализованных координатах (0-1)
 }
 
-// Функция преобразования NV12 в BGRA
+// Константный буфер для позиции текста
+cbuffer TextData : register(b1)
+{
+    float4 textPos; // x, y, width, height в нормализованных координатах (0-1)
+}
+
+// Функция конвертации NV12 в BGRA
 float4 ConvertNV12(float2 uv)
 {
     float y = inputY.Sample(samplerState, uv).r;
@@ -51,26 +59,36 @@ float4 ConvertNV12(float2 uv)
     return float4(r, g, b, 1.0);
 }
 
-// Проверяет, попадает ли пиксель в область watermark
-bool IsInsideWatermark(float2 uv)
+// Проверяет, находится ли пиксель в области watermark
+bool IsInsideRegion(float2 uv, float4 region)
 {
-    return (uv.x >= watermarkPos.x && uv.x <= (watermarkPos.x + watermarkPos.z) &&
-            uv.y >= watermarkPos.y && uv.y <= (watermarkPos.y + watermarkPos.w));
+    return (uv.x >= region.x && uv.x <= (region.x + region.z) &&
+            uv.y >= region.y && uv.y <= (region.y + region.w));
 }
 
-// Главный пиксельный шейдер
+// Основной пиксельный шейдер
 float4 PSMain(PSInput input) : SV_Target
 {
     float4 frameColor = ConvertNV12(input.uv);
 
-    // Применяем watermark только в указанной области
-    if (IsInsideWatermark(input.uv))
+    // Применяем watermark в указанной области
+    if (IsInsideRegion(input.uv, watermarkPos))
     {
         float2 wmUV = (input.uv - watermarkPos.xy) / watermarkPos.zw;
         float4 watermarkColor = watermarkTexture.Sample(samplerState, wmUV);
         
         // Альфа-композитинг watermark поверх кадра
-        return lerp(frameColor, watermarkColor, watermarkColor.a);
+        frameColor = lerp(frameColor, watermarkColor, watermarkColor.a);
+    }
+
+    // Применяем текст в указанной области
+    if (IsInsideRegion(input.uv, textPos))
+    {
+        float2 txtUV = (input.uv - textPos.xy) / textPos.zw;
+        float4 textColor = textTexture.Sample(samplerState, txtUV);
+
+        // Альфа-композитинг текста поверх кадра
+        frameColor = lerp(frameColor, textColor, textColor.a);
     }
 
     return frameColor;

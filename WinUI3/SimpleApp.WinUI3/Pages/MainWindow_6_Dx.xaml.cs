@@ -10,68 +10,7 @@ namespace SimpleApp.WinUI3 {
 
     namespace Helpers {
         namespace Dx {
-            public class TextureLoader {
-                /// <summary>
-                /// Loads a bitmap using WIC.
-                /// </summary>
-                /// <param name="deviceManager"></param>
-                /// <param name="filename"></param>
-                /// <returns></returns>
-                public static SharpDX.WIC.BitmapSource LoadBitmap(SharpDX.WIC.ImagingFactory2 factory, string filename) {
-                    var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(
-                        factory,
-                        filename,
-                        SharpDX.WIC.DecodeOptions.CacheOnDemand
-                        );
-
-                    var formatConverter = new SharpDX.WIC.FormatConverter(factory);
-
-                    formatConverter.Initialize(
-                        bitmapDecoder.GetFrame(0),
-                        SharpDX.WIC.PixelFormat.Format32bppPRGBA,
-                        SharpDX.WIC.BitmapDitherType.None,
-                        null,
-                        0.0,
-                        SharpDX.WIC.BitmapPaletteType.Custom);
-
-                    return formatConverter;
-                }
-
-                /// <summary>
-                /// Creates a <see cref="SharpDX.Direct3D11.Texture2D"/> from a WIC <see cref="SharpDX.WIC.BitmapSource"/>
-                /// </summary>
-                /// <param name="device">The Direct3D11 device</param>
-                /// <param name="bitmapSource">The WIC bitmap source</param>
-                /// <returns>A Texture2D</returns>
-                public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmap(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource) {
-                    // Allocate DataStream to receive the WIC image pixels
-                    int stride = bitmapSource.Size.Width * 4;
-                    using (var buffer = new SharpDX.DataStream(bitmapSource.Size.Height * stride, true, true)) {
-                        // Copy the content of the WIC to the buffer
-                        bitmapSource.CopyPixels(stride, buffer);
-                        return new SharpDX.Direct3D11.Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription() {
-                            Width = bitmapSource.Size.Width,
-                            Height = bitmapSource.Size.Height,
-                            ArraySize = 1,
-                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                            Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                            Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
-                            MipLevels = 1,
-                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                        }, new SharpDX.DataRectangle(buffer.DataPointer, stride));
-                    }
-                }
-
-                public static SharpDX.Direct3D11.Texture2D LoadTextureFromFile(SharpDX.WIC.ImagingFactory2 imagingFactory, SharpDX.Direct3D11.Device d3dDevice, string filename) {
-                    var bitmap = LoadBitmap(imagingFactory, filename);
-                    return CreateTexture2DFromBitmap(d3dDevice, bitmap);
-                }
-            } // class TextureLoader
-
-
-            public class Dx {
+            public class TextureSaver {
                 static public void SaveTextureToFile(SharpDX.Direct3D11.Device d3dDevice, SharpDX.Direct3D11.Texture2D texture, string name) {
                     string filename = Windows.Storage.ApplicationData.Current.LocalFolder.Path + $"\\{name}.png";
 
@@ -169,10 +108,58 @@ namespace SimpleApp.WinUI3 {
                         bitmap.Save(filePath, format);
                     }
                 }
-            } // class Dx
+            } // class TextureSaver
 
 
-            public class Test {
+            public class TextureLoader {
+                public static SharpDX.WIC.BitmapSource LoadBitmap(SharpDX.WIC.ImagingFactory2 factory, string filename) {
+                    var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(
+                        factory,
+                        filename,
+                        SharpDX.WIC.DecodeOptions.CacheOnDemand
+                        );
+
+                    var formatConverter = new SharpDX.WIC.FormatConverter(factory);
+
+                    formatConverter.Initialize(
+                        bitmapDecoder.GetFrame(0),
+                        SharpDX.WIC.PixelFormat.Format32bppPRGBA,
+                        SharpDX.WIC.BitmapDitherType.None,
+                        null,
+                        0.0,
+                        SharpDX.WIC.BitmapPaletteType.Custom);
+
+                    return formatConverter;
+                }
+
+                public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmap(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource) {
+                    // Allocate DataStream to receive the WIC image pixels
+                    int stride = bitmapSource.Size.Width * 4;
+                    using (var buffer = new SharpDX.DataStream(bitmapSource.Size.Height * stride, true, true)) {
+                        // Copy the content of the WIC to the buffer
+                        bitmapSource.CopyPixels(stride, buffer);
+                        return new SharpDX.Direct3D11.Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription() {
+                            Width = bitmapSource.Size.Width,
+                            Height = bitmapSource.Size.Height,
+                            ArraySize = 1,
+                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                            Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                            Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+                            MipLevels = 1,
+                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        }, new SharpDX.DataRectangle(buffer.DataPointer, stride));
+                    }
+                }
+
+                public static SharpDX.Direct3D11.Texture2D LoadTextureFromFile(SharpDX.WIC.ImagingFactory2 imagingFactory, SharpDX.Direct3D11.Device d3dDevice, string filename) {
+                    var bitmap = LoadBitmap(imagingFactory, filename);
+                    return CreateTexture2DFromBitmap(d3dDevice, bitmap);
+                }
+            } // class TextureLoader
+
+            public class TextureMaker {
                 static public byte[] GenerateNV12Bytes(int width, int height) {
                     int ySize = width * height;
                     int uvSize = (width / 2) * (height / 2) * 2; // UV èíòåðëèâèðîâàííûé
@@ -337,7 +324,69 @@ namespace SimpleApp.WinUI3 {
 
                     return new SharpDX.Direct3D11.Texture2D(d3dDevice, desc, dataRectangles);
                 }
-            } // class Test
+            } // class TextureMaker
+
+            public static class TextRenderer {
+                public class FontDesc {
+                    public int FontSize { get; set; } = 32;
+                    public string FontFamilyName { get; set; } = "Arial";
+                    public SharpDX.Mathematics.Interop.RawColor4 FontColor { get; set; } = new SharpDX.Mathematics.Interop.RawColor4(1, 1, 1, 1);
+                }
+                public static SharpDX.Direct3D11.Texture2D RenderTextToTexture(
+                    SharpDX.Direct3D11.Device d3dDevice,
+                    string text,
+                    int texWidth,
+                    int texHeight,
+                    FontDesc fontDesc
+                    ) {
+                    // Ñîçäàåì òåêñòóðó
+                    var textureDesc = new SharpDX.Direct3D11.Texture2DDescription {
+                        Width = texWidth,
+                        Height = texHeight,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                        BindFlags = SharpDX.Direct3D11.BindFlags.RenderTarget | SharpDX.Direct3D11.BindFlags.ShaderResource,
+                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None
+                    };
+                    var textTexture = new SharpDX.Direct3D11.Texture2D(d3dDevice, textureDesc);
+
+                    // Ñîçäàåì RenderTargetView
+                    var rtv = new SharpDX.Direct3D11.RenderTargetView(d3dDevice, textTexture);
+
+                    // Ñîçäàåì Direct2D RenderTarget
+                    using (var d2dFactory = new SharpDX.Direct2D1.Factory())
+                    using (var d2dRenderTarget = new SharpDX.Direct2D1.RenderTarget(
+                        d2dFactory,
+                        textTexture.QueryInterface<SharpDX.DXGI.Surface>(),
+                        new SharpDX.Direct2D1.RenderTargetProperties(new SharpDX.Direct2D1.PixelFormat(
+                            SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                            SharpDX.Direct2D1.AlphaMode.Premultiplied
+                            ))
+                        ))
+                    using (var textFormat = new SharpDX.DirectWrite.TextFormat(
+                        new SharpDX.DirectWrite.Factory(),
+                        fontDesc.FontFamilyName,
+                        SharpDX.DirectWrite.FontWeight.Bold,
+                        SharpDX.DirectWrite.FontStyle.Normal,
+                        fontDesc.FontSize
+                        ))
+                    using (var brush = new SharpDX.Direct2D1.SolidColorBrush(d2dRenderTarget, fontDesc.FontColor)) {
+                        // Î÷èùàåì òåêñòóðó (÷òîáû ôîí áûë ïðîçðà÷íûì)
+                        d2dRenderTarget.BeginDraw();
+                        d2dRenderTarget.Clear(new SharpDX.Mathematics.Interop.RawColor4(0, 0, 0, 0));
+
+                        // Ðèñóåì òåêñò
+                        d2dRenderTarget.DrawText(text, textFormat, new SharpDX.Mathematics.Interop.RawRectangleF(0, 0, texWidth, texHeight), brush);
+                        d2dRenderTarget.EndDraw();
+                    }
+                    Helpers.Dx.TextureSaver.SaveTextureToFile(d3dDevice, textTexture, "textTexture");
+                    return textTexture;
+                }
+            } // class TextRenderer
         } // namespace Dx
     } // namespace Helpers
 
@@ -346,6 +395,9 @@ namespace SimpleApp.WinUI3 {
         public SharpDX.Mathematics.Interop.RawVector2 TexCoord;
     }
     public struct WatermarkData {
+        public System.Numerics.Vector4 Position;
+    }
+    public struct TextData {
         public System.Numerics.Vector4 Position;
     }
 
@@ -362,8 +414,10 @@ namespace SimpleApp.WinUI3 {
         private SharpDX.Direct3D11.PixelShader pixelShader;
 
         private SharpDX.Direct3D11.Texture2D watermarkTexture;
-        private SharpDX.Direct3D11.Buffer watermarkVertexBuffer;
         private SharpDX.Direct3D11.Buffer watermarkÑonstantBuffer;
+
+        private SharpDX.Direct3D11.Texture2D textTexture;
+        private SharpDX.Direct3D11.Buffer textÑonstantBuffer;
 
         private int targetWidth = 1280;
         private int targetHeight = 720;
@@ -383,6 +437,7 @@ namespace SimpleApp.WinUI3 {
         private async void InitializeAsync() {
             this.InitializeDirectX();
             await this.InitializeWatermarkData();
+            this.InitializeTextData();
             this.Render();
         }
 
@@ -391,7 +446,9 @@ namespace SimpleApp.WinUI3 {
 #if DEBUG
             deviceCreationFlags |= SharpDX.Direct3D11.DeviceCreationFlags.Debug;
 #endif
-            this.d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, deviceCreationFlags);
+            var dxgiFactory = new SharpDX.DXGI.Factory1();
+            var adapter = dxgiFactory.GetAdapter(0);
+            this.d3dDevice = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags);
 
             // Ñîçäàíèå òåêñòóðû
             SharpDX.Direct3D11.Texture2DDescription textureDesc = new SharpDX.Direct3D11.Texture2DDescription {
@@ -509,11 +566,53 @@ namespace SimpleApp.WinUI3 {
         }
 
 
+
+        private void InitializeTextData() {
+            var fontDesc = new Helpers.Dx.TextRenderer.FontDesc {
+                FontSize = 32,
+                FontFamilyName = "Arial",
+            };
+            this.textTexture = Helpers.Dx.TextRenderer.RenderTextToTexture(this.d3dDevice, "Hello world", this.targetWidth, this.targetHeight, fontDesc);
+
+            this.textÑonstantBuffer = new SharpDX.Direct3D11.Buffer(this.d3dDevice, new SharpDX.Direct3D11.BufferDescription {
+                Usage = SharpDX.Direct3D11.ResourceUsage.Dynamic,
+                BindFlags = SharpDX.Direct3D11.BindFlags.ConstantBuffer,
+                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.Write,
+                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                SizeInBytes = System.Runtime.InteropServices.Marshal.SizeOf<TextData>()
+            });
+
+            // Ðàçìåð è ïîçèöèÿ text â ïèêñåëÿõ
+            float textWidth = this.targetWidth;
+            float textHeight = this.targetHeight;
+            float textX = 10;
+            float textY = this.targetHeight - 10 - fontDesc.FontSize;
+
+            // Ïðåîáðàçóåì â íîðìàëèçîâàííûå êîîðäèíàòû
+            float normX = textX / this.targetWidth;
+            float normY = textY / this.targetHeight;
+            float normWidth = textWidth / this.targetWidth;
+            float normHeight = textHeight / this.targetHeight;
+
+            this.UpdateTextPosition(normX, normY, normWidth, normHeight);
+        }
+
+        public void UpdateTextPosition(float x, float y, float width, float height) {
+            var d3dContext = this.d3dDevice.ImmediateContext;
+
+            var data = new WatermarkData { Position = new System.Numerics.Vector4(x, y, width, height) };
+            var dataBox = d3dContext.MapSubresource(this.textÑonstantBuffer, 0, SharpDX.Direct3D11.MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None);
+            System.Runtime.InteropServices.Marshal.StructureToPtr(data, dataBox.DataPointer, false);
+            d3dContext.UnmapSubresource(this.textÑonstantBuffer, 0);
+        }
+
+
+
         private void Render() {
             var d3dContext = this.d3dDevice.ImmediateContext;
 
-            var nv12Bytes = Helpers.Dx.Test.GenerateNV12Bytes(this.targetWidth, this.targetHeight);
-            var nv12Texture = Helpers.Dx.Test.MakeTextureFromBytes(this.d3dDevice, nv12Bytes, this.targetWidth, this.targetHeight, SharpDX.DXGI.Format.NV12);
+            var nv12Bytes = Helpers.Dx.TextureMaker.GenerateNV12Bytes(this.targetWidth, this.targetHeight);
+            var nv12Texture = Helpers.Dx.TextureMaker.MakeTextureFromBytes(this.d3dDevice, nv12Bytes, this.targetWidth, this.targetHeight, SharpDX.DXGI.Format.NV12);
 
             // Óñòàíàâëèâàåì RenderTarget
             var renderTargetView = new SharpDX.Direct3D11.RenderTargetView(this.d3dDevice, this.renderTexture);
@@ -546,7 +645,7 @@ namespace SimpleApp.WinUI3 {
             d3dContext.VertexShader.Set(null);
             renderTargetView.Dispose();
 
-            Helpers.Dx.Dx.SaveTextureToFile(this.d3dDevice, this.renderTexture, "outputTextureGPU");
+            Helpers.Dx.TextureSaver.SaveTextureToFile(this.d3dDevice, this.renderTexture, "outputTextureGPU");
         }
 
         private void RenderNV12Frame(SharpDX.Direct3D11.Texture2D nv12Texture) {
@@ -566,12 +665,15 @@ namespace SimpleApp.WinUI3 {
             });
 
             var watermarkTextureSRV = new SharpDX.Direct3D11.ShaderResourceView(this.d3dDevice, this.watermarkTexture);
+            var textTextureSRV = new SharpDX.Direct3D11.ShaderResourceView(this.d3dDevice, this.textTexture);
 
             d3dContext.PixelShader.SetShaderResources(0, nv12YTextureSRV);
             d3dContext.PixelShader.SetShaderResources(1, nv12UVTextureSRV);
             d3dContext.PixelShader.SetShaderResources(2, watermarkTextureSRV);
+            d3dContext.PixelShader.SetShaderResources(3, textTextureSRV);
             d3dContext.PixelShader.SetSamplers(0, this.samplerState);
             d3dContext.PixelShader.SetConstantBuffer(0, this.watermarkÑonstantBuffer);
+            d3dContext.PixelShader.SetConstantBuffer(1, this.textÑonstantBuffer);
 
             // Ðåíäåðèì
             d3dContext.Draw(6, 0);
@@ -580,6 +682,7 @@ namespace SimpleApp.WinUI3 {
             d3dContext.Flush();
 
             // Î÷èñòêà ðåñóðñîâ
+            d3dContext.PixelShader.SetShaderResource(3, null);
             d3dContext.PixelShader.SetShaderResource(2, null);
             d3dContext.PixelShader.SetShaderResource(1, null);
             d3dContext.PixelShader.SetShaderResource(0, null);
