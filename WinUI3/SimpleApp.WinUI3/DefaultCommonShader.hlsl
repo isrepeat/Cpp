@@ -23,11 +23,9 @@ PSInput VSMain(VSInput input)
 }
 
 
-// Текстуры NV12, Watermark и Text Overlay
-Texture2D inputY : register(t0); // Y-плоскость
-Texture2D inputUV : register(t1); // UV-плоскость
-Texture2D watermarkTexture : register(t2); // Watermark
-Texture2D textTexture : register(t3); // Текст
+Texture2D inputTexture : register(t0);
+Texture2D watermarkTexture : register(t1);
+Texture2D textTexture : register(t2);
 
 SamplerState samplerState : register(s0);
 
@@ -43,21 +41,6 @@ cbuffer TextData : register(b1)
     float4 textPos; // x, y, width, height в нормализованных координатах (0-1)
 }
 
-// Функция конвертации NV12 в BGRA
-float4 ConvertNV12(float2 uv)
-{
-    float y = inputY.Sample(samplerState, uv).r;
-    float2 uvSample = inputUV.Sample(samplerState, uv).rg;
-
-    float u = uvSample.x - 0.5;
-    float v = uvSample.y - 0.5;
-
-    float r = y + 1.402 * v;
-    float g = y - 0.344 * u - 0.714 * v;
-    float b = y + 1.772 * u;
-
-    return float4(r, g, b, 1.0);
-}
 
 // Проверяет, находится ли пиксель в области watermark
 bool IsInsideRegion(float2 uv, float4 region)
@@ -69,7 +52,7 @@ bool IsInsideRegion(float2 uv, float4 region)
 // Основной пиксельный шейдер
 float4 PSMain(PSInput input) : SV_Target
 {
-    float4 frameColor = ConvertNV12(input.uv);
+    float4 frameColor = inputTexture.Sample(samplerState, input.uv);
 
     // Применяем watermark в указанной области
     if (IsInsideRegion(input.uv, watermarkPos))
