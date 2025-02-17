@@ -12,21 +12,23 @@ using System.Runtime.CompilerServices;
 using System.ComponentModel;
 
 
-namespace SimpleApp.WinUI3.Helpers {
-    public class ObservableObject : INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
+namespace SimpleApp.WinUI3 {
+    namespace Helpers {
+        public class ObservableObject : INotifyPropertyChanged {
+            public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+            protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
 
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null) {
-            //if (Equals(field, value)) {
-            //    return false;
-            //}
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
+            protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null) {
+                //if (Equals(field, value)) {
+                //    return false;
+                //}
+                field = value;
+                OnPropertyChanged(propertyName);
+                return true;
+            }
         }
     }
 }
