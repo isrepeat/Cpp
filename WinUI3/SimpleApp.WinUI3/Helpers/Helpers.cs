@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using Windows.Storage;
 
 
 namespace SimpleApp.WinUI3 {
@@ -28,6 +29,75 @@ namespace SimpleApp.WinUI3 {
                 field = value;
                 OnPropertyChanged(propertyName);
                 return true;
+            }
+        }
+
+        public static class FS {
+            public static async Task<bool> SafeDeleteFile(FileInfo fileInfo) {
+                if (fileInfo == null) {
+                    Diagnostic.Logger.LogDebug($"passed 'fileInfo' is null");
+                    return false;
+                }
+
+                try {
+                    if (System.IO.File.Exists(fileInfo.Path)) {
+                        Diagnostic.Logger.LogDebug($"Delete file '{fileInfo.Path}'");
+                        StorageFile file = await StorageFile.GetFileFromPathAsync(fileInfo.Path);
+                        await file.DeleteAsync();
+                    }
+                    return true;
+                }
+                catch (Exception ex) {
+                    Diagnostic.Logger.LogDebug($"Exception [deletion file] = {ex.Message}");
+                }
+                return false;
+            }
+
+
+            public static async Task<bool> SafeDeleteStorageFileAsync(StorageFile storageFile) {
+                if (storageFile == null) {
+                    Diagnostic.Logger.LogDebug($"passed 'storageFile' is null");
+                    return false;
+                }
+
+                try {
+                    await storageFile.DeleteAsync();
+                    return true;
+                }
+                catch (Exception ex) {
+                    Diagnostic.Logger.LogDebug($"Exception [deletion file] = {ex}");
+                }
+                return false;
+            }
+
+            public static async Task<bool> SafeDeleteStorageFolderAsync(StorageFolder storageFolder) {
+                if (storageFolder == null) {
+                    Diagnostic.Logger.LogDebug($"passed 'storageFolder' is null");
+                    return false;
+                }
+
+                try {
+                    // Удаляем все файлы внутри папки
+                    var files = await storageFolder.GetFilesAsync();
+                    foreach (var file in files) {
+                        await file.DeleteAsync();
+                    }
+
+                    // Удаляем все подпапки внутри папки
+                    var subFolders = await storageFolder.GetFoldersAsync();
+                    foreach (var subFolder in subFolders) {
+                        await subFolder.DeleteAsync();
+                    }
+
+                    // Теперь удаляем саму папку
+                    await storageFolder.DeleteAsync();
+
+                    return true;
+                }
+                catch (Exception ex) {
+                    Diagnostic.Logger.LogDebug($"Exception [deletion folder] = {ex}");
+                }
+                return false;
             }
         }
     }
