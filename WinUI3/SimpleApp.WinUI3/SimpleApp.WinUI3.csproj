@@ -15,6 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="DefaultCommonShader.hlsl" />
+    <None Remove="Pages\Intercom.html" />
   </ItemGroup>
 
   <ItemGroup>
