@@ -52,27 +52,46 @@ bool IsInsideRegion(float2 uv, float4 region)
 // Основной пиксельный шейдер
 float4 PSMain(PSInput input) : SV_Target
 {
+    // Загружаем основное изображение (inputTexture)
     float4 frameColor = inputTexture.Sample(samplerState, input.uv);
 
-    // Применяем watermark в указанной области
+    // Применяем гамма-коррекцию
+    frameColor.rgb = pow(frameColor.rgb, 2.2);
+
     if (IsInsideRegion(input.uv, watermarkPos))
     {
         float2 wmUV = (input.uv - watermarkPos.xy) / watermarkPos.zw;
         float4 watermarkColor = watermarkTexture.Sample(samplerState, wmUV);
         
-        // Альфа-композитинг watermark поверх кадра
-        frameColor = lerp(frameColor, watermarkColor, watermarkColor.a);
+        // Усиливаем желтоватый оттенок (смещаем баланс RGB)
+        watermarkColor.r *= 1.3; // Усиливаем красный
+        watermarkColor.g *= 1.05; // Усиливаем зелёный
+        watermarkColor.b *= 0.95; // Немного ослабляем синий
+        
+        watermarkColor.rgb *= watermarkColor.a; // Предумножаем альфу
+        
+        if (watermarkColor.a > 0.2)
+        {
+            // Adding colors with different weights. You can experiment with weights.
+            frameColor.rgb = frameColor.rgb * 1.7f + watermarkColor.rgb * 0.5f;
+        }
     }
-
+    
     // Применяем текст в указанной области
     if (IsInsideRegion(input.uv, textPos))
     {
         float2 txtUV = (input.uv - textPos.xy) / textPos.zw;
         float4 textColor = textTexture.Sample(samplerState, txtUV);
 
+        // Гамма-коррекция текста
+        textColor.rgb = pow(textColor.rgb, 2.2);
+
         // Альфа-композитинг текста поверх кадра
-        frameColor = lerp(frameColor, textColor, textColor.a);
+        frameColor.rgb = frameColor.rgb * (1 - textColor.a) + textColor.rgb * textColor.a;
     }
+
+    // Обратная гамма-коррекция перед выводом
+    frameColor.rgb = pow(frameColor.rgb, 1.0 / 2.2);
 
     return frameColor;
 }

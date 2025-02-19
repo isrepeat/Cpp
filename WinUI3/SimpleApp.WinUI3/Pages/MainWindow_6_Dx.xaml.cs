@@ -96,7 +96,9 @@ namespace SimpleApp.WinUI3 {
                     var savedLocalFile = await StorageFile.GetFileFromPathAsync(savedLocalFileInfo.Path);
                     var outputMediaFile = await savedLocalFile.CopyAsync(storageFolder, savedLocalFileInfo.Name, NameCollisionOption.ReplaceExisting);
 
-                    var savedStorageFolderFile = await storageFolder.GetFileAsync(savedLocalFileInfo.Name);
+                    await Helpers.FS.SafeDeleteStorageFileAsync(savedLocalFile);
+
+                    var savedStorageFolderFile = await storageFolder.GetFileAsync(outputMediaFile.Name);
                     return savedStorageFolderFile;
                 }
 
@@ -159,28 +161,46 @@ namespace SimpleApp.WinUI3 {
             } // class TextureSaver
 
 
-            public class TextureLoader {
-                public static SharpDX.WIC.BitmapSource LoadBitmap(SharpDX.WIC.ImagingFactory2 factory, string filename) {
-                    var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(
+            public class BitmapLoader : IDisposable {
+                private SharpDX.WIC.BitmapDecoder bitmapDecoder;
+                private SharpDX.WIC.BitmapFrameDecode bitmapFrame;
+                private SharpDX.WIC.FormatConverter formatConverter;
+
+                public SharpDX.WIC.BitmapSource LoadBitmap(SharpDX.WIC.ImagingFactory2 factory, string filename) {
+                    // Создаем BitmapDecoder
+                    this.bitmapDecoder = new SharpDX.WIC.BitmapDecoder(
                         factory,
                         filename,
-                        SharpDX.WIC.DecodeOptions.CacheOnDemand
-                        );
+                        SharpDX.WIC.DecodeOptions.CacheOnLoad);
 
-                    var formatConverter = new SharpDX.WIC.FormatConverter(factory);
+                    // Получаем первый фрейм
+                    this.bitmapFrame = this.bitmapDecoder.GetFrame(0);
 
-                    formatConverter.Initialize(
-                        bitmapDecoder.GetFrame(0),
+                    // Создаем и инициализируем FormatConverter
+                    this.formatConverter = new SharpDX.WIC.FormatConverter(factory);
+                    this.formatConverter.Initialize(
+                        this.bitmapFrame,
                         SharpDX.WIC.PixelFormat.Format32bppPRGBA,
                         SharpDX.WIC.BitmapDitherType.None,
                         null,
                         0.0,
                         SharpDX.WIC.BitmapPaletteType.Custom);
 
-                    return formatConverter;
+                    // Возвращаем сконвертированный BitmapSource
+                    return (SharpDX.WIC.BitmapSource)this.formatConverter;
                 }
 
-                public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmap(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource) {
+                // Реализация интерфейса IDisposable для корректного освобождения ресурсов
+                public void Dispose() {
+                    this.formatConverter?.Dispose();
+                    this.bitmapFrame?.Dispose();
+                    this.bitmapDecoder?.Dispose();
+                }
+            } // class BitmapLoader
+
+
+            public class TextureLoader {
+                public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmap(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource, SharpDX.DXGI.Format format) {
                     // Allocate DataStream to receive the WIC image pixels
                     int stride = bitmapSource.Size.Width * 4;
                     using (var buffer = new SharpDX.DataStream(bitmapSource.Size.Height * stride, true, true)) {
@@ -193,7 +213,7 @@ namespace SimpleApp.WinUI3 {
                             BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
                             Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
                             CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                            Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+                            Format = format,
                             MipLevels = 1,
                             OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
                             SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
@@ -201,9 +221,18 @@ namespace SimpleApp.WinUI3 {
                     }
                 }
 
-                public static SharpDX.Direct3D11.Texture2D LoadTextureFromFile(SharpDX.WIC.ImagingFactory2 imagingFactory, SharpDX.Direct3D11.Device d3dDevice, string filename) {
-                    var bitmap = LoadBitmap(imagingFactory, filename);
-                    return CreateTexture2DFromBitmap(d3dDevice, bitmap);
+                public static SharpDX.Direct3D11.Texture2D LoadTextureFromFile(
+                    SharpDX.WIC.ImagingFactory2 imagingFactory,
+                    SharpDX.Direct3D11.Device d3dDevice,
+                    string filename,
+                    SharpDX.DXGI.Format format
+                    ) {
+                    using (var factory = new SharpDX.WIC.ImagingFactory2()) {
+                        using (var loader = new BitmapLoader()) {
+                            var bitmapSource = loader.LoadBitmap(factory, filename);
+                            return CreateTexture2DFromBitmap(d3dDevice, bitmapSource, format);
+                        }
+                    }
                 }
             } // class TextureLoader
 
@@ -419,6 +448,8 @@ namespace SimpleApp.WinUI3 {
                 public class FontDesc {
                     public int FontSize { get; set; } = 32;
                     public string FontFamilyName { get; set; } = "Arial";
+                    public SharpDX.DirectWrite.FontWeight FontWeight { get; set; } = SharpDX.DirectWrite.FontWeight.Normal;
+                    public SharpDX.DirectWrite.FontStyle FontStyle { get; set; } = SharpDX.DirectWrite.FontStyle.Normal;
                     public SharpDX.Mathematics.Interop.RawColor4 FontColor { get; set; } = new SharpDX.Mathematics.Interop.RawColor4(1, 1, 1, 1);
                 }
                 public static SharpDX.Direct3D11.Texture2D RenderTextToTexture(
@@ -459,8 +490,8 @@ namespace SimpleApp.WinUI3 {
                     using (var textFormat = new SharpDX.DirectWrite.TextFormat(
                         new SharpDX.DirectWrite.Factory(),
                         fontDesc.FontFamilyName,
-                        SharpDX.DirectWrite.FontWeight.Bold,
-                        SharpDX.DirectWrite.FontStyle.Normal,
+                        fontDesc.FontWeight,
+                        fontDesc.FontStyle,
                         fontDesc.FontSize
                         ))
                     using (var brush = new SharpDX.Direct2D1.SolidColorBrush(d2dRenderTarget, fontDesc.FontColor)) {
@@ -495,14 +526,10 @@ namespace SimpleApp.WinUI3 {
                 }
 
                 private Windows.Foundation.Size targetSize;
-                private int targetWidth = 1280;
-                private int targetHeight = 720;
-                private SharpDX.DXGI.Format targetFormat = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
+                private SharpDX.DXGI.Format targetFormat;
 
                 private SharpDX.Direct3D11.Device d3dDevice;
                 private SharpDX.Direct3D11.Texture2D renderTexture;
-                private SharpDX.Direct3D11.Texture2D stagingTexture;
-                private SharpDX.Direct3D11.BlendState blendState;
 
                 private SharpDX.Direct3D11.InputLayout inputLayout;
                 private SharpDX.Direct3D11.Buffer vertexBuffer;
@@ -527,6 +554,7 @@ namespace SimpleApp.WinUI3 {
                 public WatermarkRenderer(Windows.Foundation.Size targetSize, SharpDX.DXGI.Format targetFormat) {
                     try {
                         this.targetSize = targetSize;
+                        this.targetFormat = targetFormat;
                         this.InitializeDirectX();
                     }
                     catch (Exception ex) {
@@ -536,60 +564,37 @@ namespace SimpleApp.WinUI3 {
                 }
 
                 private void InitializeDirectX() {
-                    var deviceCreationFlags = SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport;
+                    using (var dxgiFactory = new SharpDX.DXGI.Factory1()) {
+                        for (int i = 0; i < dxgiFactory.GetAdapterCount(); i++) {
+                            using (var adapter = dxgiFactory.GetAdapter(i)) {
+                                var description = adapter.Description;
+
+                                Diagnostic.Logger.LogDebug($"Adapter [{i}]:");
+                                Diagnostic.Logger.LogDebug($"  Description: {description.Description}");
+                                Diagnostic.Logger.LogDebug($"  VendorId: {description.VendorId}");
+                                Diagnostic.Logger.LogDebug($"  DeviceId: {description.DeviceId}");
+                                Diagnostic.Logger.LogDebug($"  SubsystemId: {description.SubsystemId}");
+                                Diagnostic.Logger.LogDebug($"  Revision: {description.Revision}");
+                                Diagnostic.Logger.LogDebug($"  DedicatedVideoMemory: {description.DedicatedVideoMemory}");
+                                Diagnostic.Logger.LogDebug($"  DedicatedSystemMemory: {description.DedicatedSystemMemory}");
+                                Diagnostic.Logger.LogDebug($"  SharedSystemMemory: {description.SharedSystemMemory}");
+                            }
+                        }
+
+                        var deviceCreationFlags = SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport;
 #if DEBUG
-                    deviceCreationFlags |= SharpDX.Direct3D11.DeviceCreationFlags.Debug;
+                        deviceCreationFlags |= SharpDX.Direct3D11.DeviceCreationFlags.Debug;
 #endif
-                    var dxgiFactory = new SharpDX.DXGI.Factory1();
-                    var adapter = dxgiFactory.GetAdapter(0);
-                    this.d3dDevice = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags);
-
-
-
-                    // Создание BlendState
-                    var blendStateDesc = new SharpDX.Direct3D11.BlendStateDescription();
-                    blendStateDesc.RenderTarget[0].IsBlendEnabled = true;
-                    blendStateDesc.RenderTarget[0].SourceBlend = SharpDX.Direct3D11.BlendOption.SourceAlpha;
-                    blendStateDesc.RenderTarget[0].DestinationBlend = SharpDX.Direct3D11.BlendOption.InverseSourceAlpha;
-                    blendStateDesc.RenderTarget[0].BlendOperation = SharpDX.Direct3D11.BlendOperation.Add;
-                    blendStateDesc.RenderTarget[0].SourceAlphaBlend = SharpDX.Direct3D11.BlendOption.One;
-                    blendStateDesc.RenderTarget[0].DestinationAlphaBlend = SharpDX.Direct3D11.BlendOption.Zero;
-                    blendStateDesc.RenderTarget[0].AlphaBlendOperation = SharpDX.Direct3D11.BlendOperation.Add;
-                    blendStateDesc.RenderTarget[0].RenderTargetWriteMask = SharpDX.Direct3D11.ColorWriteMaskFlags.All;
-                    this.blendState = new SharpDX.Direct3D11.BlendState(this.d3dDevice, blendStateDesc);
-
-                    // Создание текстуры
-                    var textureDesc = new SharpDX.Direct3D11.Texture2DDescription {
-                        Width = this.targetWidth,
-                        Height = this.targetHeight,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        Format = this.targetFormat,
-                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                        Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-                        BindFlags = SharpDX.Direct3D11.BindFlags.RenderTarget | SharpDX.Direct3D11.BindFlags.ShaderResource,
-                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.Read, // 'Read' flag is neccessary for stagingTexture
-                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.Shared // 'Shared' flag is neccessary for stagingTexture
-                    };
-
-                    this.renderTexture = new SharpDX.Direct3D11.Texture2D(this.d3dDevice, textureDesc);
-
-                    var stagingDesc = new SharpDX.Direct3D11.Texture2DDescription {
-                        Width = this.targetWidth,
-                        Height = this.targetHeight,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        Format = this.targetFormat,
-                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                        Usage = SharpDX.Direct3D11.ResourceUsage.Staging,
-                        BindFlags = SharpDX.Direct3D11.BindFlags.None, // Staging текстуры не поддерживают BindFlags
-                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.Read,
-                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None
-                    };
-
-                    this.stagingTexture = new SharpDX.Direct3D11.Texture2D(d3dDevice, stagingDesc);
-
-
+                        //if (AppData.AppSettings.IsAutoSelectDxgiAdapter) {
+                            Diagnostic.Logger.LogDebug($"Create d3dDevice with 'DriverType.Hardware'");
+                            this.d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, deviceCreationFlags);
+                        //}
+                        //else {
+                        //    var adapter = dxgiFactory.GetAdapter(AppData.AppSettings.DxgiAdapterIdx);
+                        //    Diagnostic.Logger.LogDebug($"Create d3dDevice with adapter [{AppData.AppSettings.DxgiAdapterIdx}] = {adapter.Description.Description}");
+                        //    this.d3dDevice = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags);
+                        //}
+                    }
 
                     string defaultCommonShaderPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "DefaultCommonShader.hlsl");
                     if (!System.IO.File.Exists(defaultCommonShaderPath)) {
@@ -653,7 +658,7 @@ namespace SimpleApp.WinUI3 {
                 public async Task InitializeWatermarkData() {
                     using (var imagingFactory = new SharpDX.WIC.ImagingFactory2()) {
                         var watermarkFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Icons/WatermarkIcon.png"));
-                        this.watermarkTexture = Helpers.Dx.TextureLoader.LoadTextureFromFile(imagingFactory, this.d3dDevice, watermarkFile.Path);
+                        this.watermarkTexture = Helpers.Dx.TextureLoader.LoadTextureFromFile(imagingFactory, this.d3dDevice, watermarkFile.Path, SharpDX.DXGI.Format.R8G8B8A8_UNorm);
                     }
 
                     this.watermarkСonstantBuffer = new SharpDX.Direct3D11.Buffer(this.d3dDevice, new SharpDX.Direct3D11.BufferDescription {
@@ -665,17 +670,20 @@ namespace SimpleApp.WinUI3 {
                     });
 
 
+                    int targetWidth = (int)this.targetSize.Width;
+                    int targetHeight = (int)this.targetSize.Height;
+
                     // Размер и позиция watermark в пикселях
-                    float wmWidth = 150;
-                    float wmHeight = 150;
-                    float wmX = this.targetWidth - wmWidth;
-                    float wmY = this.targetHeight - wmHeight;
+                    float wmWidth = 190;
+                    float wmHeight = 160;
+                    float wmX = targetWidth - wmWidth - 15;
+                    float wmY = targetHeight - wmHeight - 15;
 
                     // Преобразуем в нормализованные координаты
-                    float normX = wmX / this.targetWidth;
-                    float normY = wmY / this.targetHeight;
-                    float normWidth = wmWidth / this.targetWidth;
-                    float normHeight = wmHeight / this.targetHeight;
+                    float normX = wmX / targetWidth;
+                    float normY = wmY / targetHeight;
+                    float normWidth = wmWidth / targetWidth;
+                    float normHeight = wmHeight / targetHeight;
 
                     this.UpdateWatermarkPosition(normX, normY, normWidth, normHeight);
                 }
@@ -693,10 +701,20 @@ namespace SimpleApp.WinUI3 {
 
                 public void InitializeTextData(string overlayedText) {
                     var fontDesc = new Helpers.Dx.TextRenderer.FontDesc {
-                        FontSize = 32,
-                        FontFamilyName = "Arial",
+                        FontSize = 28,
+                        FontWeight = SharpDX.DirectWrite.FontWeight.Medium,
+                        FontFamilyName = "Consolas",
                     };
-                    this.textTexture = Helpers.Dx.TextRenderer.RenderTextToTexture(this.d3dDevice, overlayedText, this.targetWidth, this.targetHeight, fontDesc);
+                    int targetWidth = (int)this.targetSize.Width;
+                    int targetHeight = (int)this.targetSize.Height;
+
+                    this.textTexture = Helpers.Dx.TextRenderer.RenderTextToTexture(
+                        this.d3dDevice,
+                        overlayedText,
+                        targetWidth,
+                        targetHeight,
+                        fontDesc
+                        );
 
                     this.textСonstantBuffer = new SharpDX.Direct3D11.Buffer(this.d3dDevice, new SharpDX.Direct3D11.BufferDescription {
                         Usage = SharpDX.Direct3D11.ResourceUsage.Dynamic,
@@ -707,16 +725,16 @@ namespace SimpleApp.WinUI3 {
                     });
 
                     // Размер и позиция text в пикселях
-                    float textWidth = this.targetWidth;
-                    float textHeight = this.targetHeight;
-                    float textX = 10;
-                    float textY = this.targetHeight - 10 - fontDesc.FontSize;
+                    float textWidth = targetWidth;
+                    float textHeight = targetHeight;
+                    float textX = 15;
+                    float textY = targetHeight - 55 - fontDesc.FontSize;
 
                     // Преобразуем в нормализованные координаты
-                    float normX = textX / this.targetWidth;
-                    float normY = textY / this.targetHeight;
-                    float normWidth = textWidth / this.targetWidth;
-                    float normHeight = textHeight / this.targetHeight;
+                    float normX = textX / targetWidth;
+                    float normY = textY / targetHeight;
+                    float normWidth = textWidth / targetWidth;
+                    float normHeight = textHeight / targetHeight;
 
                     this.UpdateTextPosition(normX, normY, normWidth, normHeight);
                 }
@@ -730,7 +748,7 @@ namespace SimpleApp.WinUI3 {
                     d3dContext.UnmapSubresource(this.textСonstantBuffer, 0);
                 }
 
-
+                // NOTE: caller must Dispose targetTexture.
                 public SharpDX.Direct3D11.Texture2D AddWatermarkToTexture(SharpDX.Direct3D11.Texture2D inputTexture) {
 #if __LOG_ENABLE_VERBOSE_LOGGING_MF
                     using var __logFunctionScoped = Diagnostic.Logger.LogFunctionScope("AddWatermarkToTexture()");
@@ -740,24 +758,27 @@ namespace SimpleApp.WinUI3 {
                     return targetTexture;
                 }
 
+                // NOTE: caller must Dispose returned texture.
                 public SharpDX.Direct3D11.Texture2D AddWatermarkToSoftwareBitmap(SoftwareBitmap inputBitmap) {
 #if __LOG_ENABLE_VERBOSE_LOGGING_MF
                     using var __logFunctionScoped = Diagnostic.Logger.LogFunctionScope("AddWatermarkToSoftwareBitmap()");
 #endif
-                    var inputTexture = this.ConvertSoftwareBitmapToTexture2D_BGRA8(inputBitmap);
-                    return this.AddWatermarkToTexture(inputTexture);
+                    using (var inputTexture = this.ConvertSoftwareBitmapToTexture2D_BGRA8(inputBitmap)) {
+                        return this.AddWatermarkToTexture(inputTexture);
+                    }
                 }
 
+                // NOTE: caller must Dispose returned texture.
                 public async Task<SharpDX.Direct3D11.Texture2D> AddWatermarkToImageFile(string imagePath) {
 #if __LOG_ENABLE_VERBOSE_LOGGING_MF
                     using var __logFunctionScoped = Diagnostic.Logger.LogFunctionScope("AddWatermarkToImageFile()");
 #endif
-                    SharpDX.Direct3D11.Texture2D imageTexture = null;
                     using (var imagingFactory = new SharpDX.WIC.ImagingFactory2()) {
                         var imageFile = await StorageFile.GetFileFromPathAsync(imagePath);
-                        imageTexture = Helpers.Dx.TextureLoader.LoadTextureFromFile(imagingFactory, this.d3dDevice, imageFile.Path);
+                        using (var imageTexture = Helpers.Dx.TextureLoader.LoadTextureFromFile(imagingFactory, this.d3dDevice, imageFile.Path, SharpDX.DXGI.Format.R8G8B8A8_UNorm)) {
+                            return this.AddWatermarkToTexture(imageTexture);
+                        }
                     }
-                    return this.AddWatermarkToTexture(imageTexture);
                 }
 
 
@@ -827,9 +848,8 @@ namespace SimpleApp.WinUI3 {
                 private void RenderWatermark(SharpDX.Direct3D11.Texture2D inputTexture, SharpDX.Direct3D11.Texture2D targetTexture) {
                     var d3dContext = this.d3dDevice.ImmediateContext;
 
-                    // Устанавливаем BlendState перед рендерингом
-                    var blendFactor = new SharpDX.Mathematics.Interop.RawColor4(1f, 1f, 1f, 1f);
-                    d3dContext.OutputMerger.SetBlendState(this.blendState, blendFactor, -1);
+                    int targetWidth = (int)this.targetSize.Width;
+                    int targetHeight = (int)this.targetSize.Height;
 
                     // Устанавливаем RenderTarget
                     var renderTargetView = new SharpDX.Direct3D11.RenderTargetView(this.d3dDevice, targetTexture);
@@ -840,8 +860,8 @@ namespace SimpleApp.WinUI3 {
                     SharpDX.Mathematics.Interop.RawViewportF viewport = new SharpDX.Mathematics.Interop.RawViewportF {
                         X = 0,
                         Y = 0,
-                        Width = this.targetWidth,
-                        Height = this.targetHeight,
+                        Width = targetWidth,
+                        Height = targetHeight,
                         MinDepth = 0.0f,
                         MaxDepth = 1.0f
                     };
@@ -884,26 +904,6 @@ namespace SimpleApp.WinUI3 {
                     d3dContext.VertexShader.Set(null);
                     renderTargetView.Dispose();
                 }
-
-                // TODO: move to Helpers
-                private byte[] ConvertTextureToByteArray(SharpDX.Direct3D11.Texture2D texture) {
-                    var d3dContext = this.d3dDevice.ImmediateContext;
-                    d3dContext.CopyResource(texture, this.stagingTexture);
-
-                    var mappedResource = d3dContext.MapSubresource(this.stagingTexture, 0, SharpDX.Direct3D11.MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-
-                    int rowPitch = mappedResource.RowPitch;
-                    int bufferSize = rowPitch * texture.Description.Height;
-                    byte[] pixelData = new byte[bufferSize];
-
-                    for (int y = 0; y < texture.Description.Height; y++) {
-                        IntPtr sourcePtr = mappedResource.DataPointer + (y * rowPitch);
-                        Marshal.Copy(sourcePtr, pixelData, y * rowPitch, rowPitch);
-                    }
-
-                    d3dContext.UnmapSubresource(this.stagingTexture, 0);
-                    return pixelData;
-                }
             } // class WatermarkRenderer
         } // namespace Dx
     } // namespace Helpers
@@ -926,6 +926,7 @@ namespace SimpleApp.WinUI3 {
                 var watermarkRenderer = new Helpers.Dx.WatermarkRenderer(
                     new Windows.Foundation.Size(1280, 720),
                     SharpDX.DXGI.Format.B8G8R8A8_UNorm
+                    //SharpDX.DXGI.Format.R8G8B8A8_UNorm_SRgb
                     );
                 await watermarkRenderer.InitializeWatermarkData();
                 watermarkRenderer.InitializeTextData("Hello world");
