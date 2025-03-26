@@ -56,6 +56,14 @@
         window.addEventListener('load', function () {
             Intercom('show');
         });
+
+        function onIntercomHide() {
+            location.reload(); // It is also treat as workaround to fit the intercom widjet to page with witdh <= 450.
+        }
+
+        window.addEventListener('load', function () {
+            window.Intercom('onHide', onIntercomHide);
+        });
     </script>
 
 </head>

@@ -11,9 +11,11 @@
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="DefaultCommonShader.hlsl" />
+    <None Remove="Pages\Intercom.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +37,7 @@
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
