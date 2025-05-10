@@ -75,11 +75,11 @@ namespace GHelper.Mode {
                 while (true) {
                     System.Diagnostics.Debug.WriteLine("set Turbo mode");
                     AsusDevice.acpi.SetVivoMode(1);
-                    await Task.Delay(TimeSpan.FromSeconds(10));
+                    await Task.Delay(TimeSpan.FromSeconds(15));
 
                     System.Diagnostics.Debug.WriteLine("set Silent mode");
                     AsusDevice.acpi.SetVivoMode(2);
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                 }
             });
         }
