@@ -46,5 +46,16 @@ IF ERRORLEVEL 1 (
     EXIT /B
 )
 
-ECHO Pull Request #%PR_Number% successfully merged.
+ECHO "Pull Request #%PR_Number% successfully merged."
+
+:: Delete merged branch
+ECHO Deleting source branch %Head%...
+gh api -X DELETE "repos/%GITHUB_USER%/%GITHUB_REPO%/git/refs/heads/%Head%"
+IF ERRORLEVEL 1 (
+    ECHO "Failed to delete branch %Head%."
+    PAUSE
+    EXIT /B
+)
+
+ECHO "Source branch %Head% successfully deleted."
 PAUSE
