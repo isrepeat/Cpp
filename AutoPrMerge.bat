@@ -101,4 +101,15 @@ IF ERRORLEVEL 1 (
 )
 
 ECHO "Source branch %Head% successfully deleted."
+
+:: Prune deleted branch from local repository
+ECHO Cleaning up local references...
+git fetch origin --prune
+IF ERRORLEVEL 1 (
+    ECHO "Failed to prune deleted branches."
+    PAUSE
+    EXIT /B
+)
+
+ECHO "Local references successfully pruned."
 PAUSE
