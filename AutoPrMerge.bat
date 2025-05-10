@@ -1,11 +1,50 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+:: Navigate to the current repository directory
+CD /D "%~dp0"
+
+:: Check if we are in a Git repository
+git rev-parse --is-inside-work-tree >nul 2>&1
+IF ERRORLEVEL 1 (
+    ECHO "Error: This is not a Git repository."
+    PAUSE
+    EXIT /B
+)
+
+:: Get repository URL (HTTPS only)
+FOR /F "tokens=*" %%I IN ('git config --get remote.origin.url') DO SET RepoURL=%%I
+
+:: Parse the owner and repo from the HTTPS URL
+:: Example: https://github.com/owner/repo.git
+FOR /F "tokens=1,2 delims=/" %%A IN ("%RepoURL:=https://github.com/%") DO (
+    SET Owner=%%A
+    SET RepoName=%%B
+)
+
+:: Remove .git from the end if present
+SET RepoName=%RepoName:.git=%
+
+:: Check if values were retrieved
+IF NOT DEFINED Owner (
+    ECHO "Error: Unable to determine repository owner."
+    PAUSE
+    EXIT /B
+)
+
+IF NOT DEFINED RepoName (
+    ECHO "Error: Unable to determine repository name."
+    PAUSE
+    EXIT /B
+)
+
+SET RepoPath=%Owner%/%RepoName%
+ECHO "Working in repository: %RepoPath%"
+
 :: Request parameters
 SET /P Head=Enter Source Branch (head): 
 SET /P Base=Enter Target Branch (base): 
 SET /P Title=Enter Pull Request Title: 
-:: SET /P Body=Enter Pull Request Description: 
 
 :: Check if GitHub CLI is installed
 gh --version >nul 2>&1
@@ -17,7 +56,7 @@ IF ERRORLEVEL 1 (
 
 :: Create Pull Request
 ECHO Creating Pull Request...
-gh pr create --title "%Title%" --body "%Body%" --base "%Base%" --head "%Head%"
+gh pr create --title "%Title%" --base "%Base%" --head "%Head%"
 IF ERRORLEVEL 1 (
     ECHO "Failed to create Pull Request."
     PAUSE
@@ -50,7 +89,7 @@ ECHO "Pull Request #%PR_Number% successfully merged."
 
 :: Delete merged branch
 ECHO Deleting source branch %Head%...
-gh api -X DELETE "repos/%GITHUB_USER%/%GITHUB_REPO%/git/refs/heads/%Head%"
+gh api repos/%RepoPath%/git/refs/heads/%Head% -X DELETE
 IF ERRORLEVEL 1 (
     ECHO "Failed to delete branch %Head%."
     PAUSE
