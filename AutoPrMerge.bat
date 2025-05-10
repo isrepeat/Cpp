@@ -1,11 +1,54 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+:: Navigate to the current repository directory
+CD /D "%~dp0"
+
+:: Check if we are in a Git repository
+git rev-parse --is-inside-work-tree >nul 2>&1
+IF ERRORLEVEL 1 (
+    ECHO "Error: This is not a Git repository."
+    PAUSE
+    EXIT /B
+)
+
+:: Get repository URL (HTTPS only)
+FOR /F "tokens=*" %%I IN ('git config --get remote.origin.url') DO SET RepoURL=%%I
+
+:: Parse the owner and repo from the HTTPS URL
+:: Example: https://github.com/owner/repo.git
+SET RepoURL=%RepoURL:git@github.com=%
+SET RepoURL=%RepoURL:https://github.com/=%
+SET RepoURL=%RepoURL:.git=%
+
+:: Split into owner and repo
+FOR /F "tokens=1,2 delims=/" %%A IN ("%RepoURL%") DO (
+    SET Owner=%%A
+    SET RepoName=%%B
+)
+
+:: Check if values were retrieved
+IF NOT DEFINED Owner (
+    ECHO "Error: Unable to determine repository owner."
+    PAUSE
+    EXIT /B
+)
+
+IF NOT DEFINED RepoName (
+    ECHO "Error: Unable to determine repository name."
+    PAUSE
+    EXIT /B
+)
+
+SET RepoPath=%Owner%/%RepoName%
+ECHO "Working in repository: %RepoPath%"
+
+
 :: Request parameters
 SET /P Head=Enter Source Branch (head): 
 SET /P Base=Enter Target Branch (base): 
 SET /P Title=Enter Pull Request Title: 
-:: SET /P Body=Enter Pull Request Description: 
+::SET /P Body=Enter Pull Request Body: 
 
 :: Check if GitHub CLI is installed
 gh --version >nul 2>&1
@@ -50,7 +93,7 @@ ECHO "Pull Request #%PR_Number% successfully merged."
 
 :: Delete merged branch
 ECHO Deleting source branch %Head%...
-gh api -X DELETE "repos/%GITHUB_USER%/%GITHUB_REPO%/git/refs/heads/%Head%"
+gh api repos/%RepoPath%/git/refs/heads/%Head% -X DELETE
 IF ERRORLEVEL 1 (
     ECHO "Failed to delete branch %Head%."
     PAUSE
