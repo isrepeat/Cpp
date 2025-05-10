@@ -119,6 +119,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test.WinRT.Static", "TEST\W
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution", "!Solution", "{4EF46011-9825-429E-BE7E-069EA094EDFC}"
 	ProjectSection(SolutionItems) = preProject
+		AutoPrMerge.bat = AutoPrMerge.bat
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Doxyfile = Doxyfile
@@ -175,7 +176,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxOverlay", "DirectX\Deskto
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxTextToImage", "DirectX\Desktop\DxTextToImage\DxTextToImage.vcxproj", "{A08A7B52-6DE6-44E1-B55D-621B6E5A1E6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsusFanControl", "WinUI3\AsusFanControl\AsusFanControl.csproj", "{89FEF167-68D4-46BB-BEBA-64948C4B6314}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsusFanControl", "WinUI3\AsusFanControl\AsusFanControl.csproj", "{89FEF167-68D4-46BB-BEBA-64948C4B6314}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
