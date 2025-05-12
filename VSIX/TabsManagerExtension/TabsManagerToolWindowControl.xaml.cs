@@ -15,40 +15,29 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 
 namespace TabsManagerExtension {
+    public class DocumentInfo {
+        public string DisplayName { get; set; }
+        public string FullName { get; set; }
+    }
+
     public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
         private DTE2 _dte;
         private DTEEvents _dteEvents;
         private WindowEvents _windowEvents;
         private SolutionEvents _solutionEvents;
+        private DocumentEvents _documentEvents;
 
         private const string SaveFilePath = "D:\\TabGroups.json";
-        public ObservableCollection<string> GroupNames { get; set; } = new ObservableCollection<string>();
-        public Dictionary<string, List<string>> TabGroups { get; set; } = new Dictionary<string, List<string>>();
+
+        public ObservableCollection<DocumentInfo> OpenDocuments { get; set; } = new ObservableCollection<DocumentInfo>();
         
-
-        private string _selectedGroup;
-        public string SelectedGroup {
-            get => _selectedGroup;
-            set {
-                _selectedGroup = value;
-                OnPropertyChanged();
-                UpdateTabList();
-            }
-        }
-
-        public ObservableCollection<string> SelectedGroupTabs { get; set; } = new ObservableCollection<string>();
-        public string NewGroupName { get; set; }
-
-        private DocumentEvents _documentEvents;
         private bool isVisualStudioClosing = false;
-        private IntPtr mainWindowHandle;
 
         public TabsManagerToolWindowControl() {
             InitializeComponent();
             InitializeDTE();
-            InitializeOpenDocuments();
             DataContext = this;
-            LoadGroups();
+            LoadOpenDocuments();
         }
 
 
@@ -58,126 +47,61 @@ namespace TabsManagerExtension {
 
             // Подключаемся к событиям
             _documentEvents = _dte.Events.DocumentEvents;
+            _documentEvents.DocumentOpened += DocumentOpenedHandler;
             _documentEvents.DocumentClosing += DocumentClosingHandler;
 
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.BeforeClosing += OnSolutionClosing;
         }
-        private void InitializeOpenDocuments() {
+
+        private void LoadOpenDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var openDocuments = _dte.Documents.Cast<Document>().ToList();
-
-            foreach (var doc in openDocuments) {
-                try {
-                    // Принудительно активируем каждый документ (инициализация)
-                    doc.Activate();
-                }
-                catch {
-                    // Игнорируем ошибки (возможно, документ недоступен)
+            OpenDocuments.Clear();
+            foreach (Document doc in _dte.Documents) {
+                if (!OpenDocuments.Any(d => d.FullName == doc.FullName)) {
+                    OpenDocuments.Add(new DocumentInfo {
+                        DisplayName = doc.Name,
+                        FullName = doc.FullName
+                    });
                 }
             }
         }
 
-
-        private void CreateGroup_Click(object sender, RoutedEventArgs e) {
-            if (!string.IsNullOrWhiteSpace(NewGroupName) && !TabGroups.ContainsKey(NewGroupName)) {
-                TabGroups[NewGroupName] = new List<string>();
-                GroupNames.Add(NewGroupName); // Обновляем ObservableCollection
-                SaveGroups();
-            }
-        }
-
-        private void AddActiveTabToGroup_Click(object sender, RoutedEventArgs e) {
+        private void DocumentOpenedHandler(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (!string.IsNullOrWhiteSpace(SelectedGroup) && TabGroups.ContainsKey(SelectedGroup)) {
-                var activeDocument = _dte.ActiveDocument;
-                if (activeDocument != null) {
-                    string docName = activeDocument.Name;
-                    if (!TabGroups[SelectedGroup].Contains(docName)) {
-                        TabGroups[SelectedGroup].Add(docName);
-                        UpdateTabList();
-                        SaveGroups();
-                    }
-                }
+
+            // Проверяем, если документ уже в списке — игнорируем
+            if (!OpenDocuments.Any(d => d.FullName == document.FullName)) {
+                OpenDocuments.Add(new DocumentInfo {
+                    DisplayName = document.Name,
+                    FullName = document.FullName
+                });
             }
         }
 
-
-
-        private void RemoveTabFromGroup_Click(object sender, RoutedEventArgs e) {
-            if (!string.IsNullOrWhiteSpace(SelectedGroup) && TabGroups.ContainsKey(SelectedGroup)) {
-                if (TabList.SelectedItem is string selectedTab) {
-                    TabGroups[SelectedGroup].Remove(selectedTab);
-                    UpdateTabList();
-                    SaveGroups();
-                }
-            }
-        }
-
-        private void UpdateTabList() {
+        private void DocumentClosingHandler(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            SelectedGroupTabs.Clear();
 
-            if (SelectedGroup != null && TabGroups.ContainsKey(SelectedGroup)) {
-                // Получаем все открытые документы
-                var openDocuments = _dte.Documents.Cast<Document>().ToList();
-                var openDocumentNames = openDocuments.Select(doc => doc.Name).ToList();
-
-                foreach (var tabName in TabGroups[SelectedGroup]) {
-                    if (openDocumentNames.Contains(tabName)) {
-                        // Вкладка открыта, отображаем её имя
-                        SelectedGroupTabs.Add(tabName);
-                    }
-                    else {
-                        // Вкладка закрыта, отображаем как [Закрыто] Имя
-                        SelectedGroupTabs.Add($"[Закрыто] {tabName}");
-                    }
-                }
+            // Удаляем все экземпляры документа (защита от дублирования)
+            var docsToRemove = OpenDocuments.Where(d => d.FullName == document.FullName).ToList();
+            foreach (var doc in docsToRemove) {
+                OpenDocuments.Remove(doc);
             }
         }
 
-        private void SaveGroups() {
-            try {
-                // Создаем директорию, если она не существует
-                var directory = Path.GetDirectoryName(SaveFilePath);
-                if (!Directory.Exists(directory)) {
-                    Directory.CreateDirectory(directory);
-                }
-
-                // Записываем данные в файл JSON
-                string json = JsonConvert.SerializeObject(TabGroups, Formatting.Indented);
-                File.WriteAllText(SaveFilePath, json);
-            }
-            catch (Exception ex) {
-                MessageBox.Show($"Ошибка при сохранении групп вкладок: {ex.Message}");
+        private void CloseDocument_Click(object sender, RoutedEventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (sender is Button button && button.CommandParameter is string fullName) {
+                var document = _dte.Documents.Cast<Document>().FirstOrDefault(doc => doc.FullName == fullName);
+                document?.Close();
             }
         }
 
-        private void LoadGroups() {
-            try {
-                // Проверяем, существует ли файл
-                if (File.Exists(SaveFilePath)) {
-                    string json = File.ReadAllText(SaveFilePath);
-                    if (!string.IsNullOrWhiteSpace(json)) {
-                        TabGroups = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json)
-                                    ?? new Dictionary<string, List<string>>();
-                    }
-                }
-                else {
-                    TabGroups = new Dictionary<string, List<string>>();
-                }
-
-                // Обновляем список групп
-                GroupNames.Clear();
-                foreach (var group in TabGroups.Keys) {
-                    GroupNames.Add(group);
-                }
-
-                // Обновляем список вкладок для выбранной группы
-                UpdateTabList();
-            }
-            catch (Exception ex) {
-                MessageBox.Show($"Ошибка при загрузке групп вкладок: {ex.Message}");
+        private void DocumentList_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (DocumentList.SelectedItem is DocumentInfo docInfo) {
+                var document = _dte.Documents.Cast<Document>().FirstOrDefault(d => d.FullName == docInfo.FullName);
+                document?.Activate();
             }
         }
 
@@ -187,37 +111,10 @@ namespace TabsManagerExtension {
             isVisualStudioClosing = true;
 
             // Принудительно сохраняем группы до закрытия документов
-            SaveGroups();
+            // ...
         }
 
 
-        private void DocumentClosingHandler(Document document) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Проверяем, закрывается ли Visual Studio
-            if (isVisualStudioClosing) 
-                return;
-
-            // Получаем имя закрываемого документа
-            string docName = document.Name;
-
-            // Проверяем все группы и удаляем документ
-            bool updated = false;
-            foreach (var group in TabGroups.Keys.ToList()) {
-                if (TabGroups[group].Contains(docName)) {
-                    TabGroups[group].Remove(docName);
-                    updated = true;
-                }
-            }
-
-            // Если были изменения, сохраняем и обновляем UI
-            if (updated) {
-                SaveGroups();
-                if (SelectedGroup != null) {
-                    UpdateTabList();
-                }
-            }
-        }
 
 
         // Реализация INotifyPropertyChanged для автоматического обновления UI

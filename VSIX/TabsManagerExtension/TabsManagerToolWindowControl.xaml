@@ -10,36 +10,21 @@
              d:DesignHeight="300" d:DesignWidth="300"
              Name="MyToolWindow"
              >
-    <Grid Margin="10">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <!-- Список групп -->
-        <StackPanel>
-            <TextBlock Text="Группы вкладок" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
-            <ListBox x:Name="GroupList" 
-                     Height="300"
-                     ItemsSource="{Binding GroupNames}"
-                     SelectedItem="{Binding SelectedGroup, Mode=TwoWay}"
-                     />
-            <TextBox Margin="0,10,0,0"
-                     Text="{Binding NewGroupName, UpdateSourceTrigger=PropertyChanged}"
-                     />
-            <Button Content="Создать группу" Click="CreateGroup_Click"/>
-        </StackPanel>
-
-        <!-- Список вкладок в группе -->
-        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-            <TextBlock Text="Вкладки в группе" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
-            <ListBox x:Name="TabList"
-                     Height="300"
-                     ItemsSource="{Binding SelectedGroupTabs}" 
-                     DisplayMemberPath="."
-                     />
-            <Button Content="Добавить активную вкладку в группу" Click="AddActiveTabToGroup_Click"/>
-            <Button Content="Удалить выбранную вкладку" Click="RemoveTabFromGroup_Click" Margin="0,10,0,0"/>
-        </StackPanel>
-    </Grid>
+    <StackPanel>
+        <TextBlock Text="Открытые документы" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+        <ListBox x:Name="DocumentList" 
+                 ItemsSource="{Binding OpenDocuments}" 
+                 SelectionChanged="DocumentList_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="{Binding DisplayName}" FontSize="14"/>
+                        <Button Content="✖" Margin="10,0,0,0" 
+                                CommandParameter="{Binding FullName}"
+                                Click="CloseDocument_Click"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
 </UserControl>
