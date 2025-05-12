@@ -8,23 +8,42 @@
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
-             Name="MyToolWindow"
-             >
+             Name="MyToolWindow">
     <StackPanel>
-        <TextBlock Text="Открытые документы" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
-        <ListBox x:Name="DocumentList" 
-                 ItemsSource="{Binding OpenDocuments}" 
-                 SelectionChanged="DocumentList_SelectionChanged">
-            <ListBox.ItemTemplate>
+        <TextBlock Text="Открытые документы (по проектам)" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+        <ItemsControl ItemsSource="{Binding GroupedDocuments}">
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                        <TextBlock Text="{Binding DisplayName}" FontSize="14"/>
-                        <Button Content="✖" Margin="10,0,0,0" 
-                                CommandParameter="{Binding FullName}"
-                                Click="CloseDocument_Click"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Margin="0,5"/>
+                        <ListBox ItemsSource="{Binding Items}"
+                                 HorizontalContentAlignment="Stretch"
+                                 SelectionChanged="DocumentList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="{Binding DisplayName}" 
+                                                   FontSize="14" 
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="0"/>
+
+                                        <Button Content="✖" 
+                                                Grid.Column="2"
+                                                CommandParameter="{Binding FullName}"
+                                                Click="CloseDocument_Click"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </StackPanel>
 </UserControl>
