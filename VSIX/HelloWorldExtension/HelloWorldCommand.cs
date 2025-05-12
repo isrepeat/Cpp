@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
@@ -50,6 +52,10 @@ namespace HelloWorldExtension {
 
         private void Execute(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var _dte = (DTE2)Package.GetGlobalService(typeof(DTE));
+            string documentName = _dte.ActiveDocument?.Name ?? "Нет активного документа";
+
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title = "HelloWorldCommand";
 

@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="TabsManagerExtension.TabsManagerToolWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Name="MyToolWindow"
+             >
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Список групп -->
+        <StackPanel>
+            <TextBlock Text="Группы вкладок" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+            <ListBox x:Name="GroupList" 
+                     Height="300"
+                     ItemsSource="{Binding GroupNames}"
+                     SelectedItem="{Binding SelectedGroup, Mode=TwoWay}"
+                     />
+            <TextBox Margin="0,10,0,0"
+                     Text="{Binding NewGroupName, UpdateSourceTrigger=PropertyChanged}"
+                     />
+            <Button Content="Создать группу" Click="CreateGroup_Click"/>
+        </StackPanel>
+
+        <!-- Список вкладок в группе -->
+        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+            <TextBlock Text="Вкладки в группе" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+            <ListBox x:Name="TabList"
+                     Height="300"
+                     ItemsSource="{Binding SelectedGroupTabs}" 
+                     DisplayMemberPath="."
+                     />
+            <Button Content="Добавить активную вкладку в группу" Click="AddActiveTabToGroup_Click"/>
+            <Button Content="Удалить выбранную вкладку" Click="RemoveTabFromGroup_Click" Margin="0,10,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
