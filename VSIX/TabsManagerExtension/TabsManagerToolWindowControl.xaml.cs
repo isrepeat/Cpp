@@ -1,6 +1,8 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace TabsManagerExtension {
@@ -62,15 +65,18 @@ namespace TabsManagerExtension {
         private DocumentEvents _documentEvents;
         private SolutionEvents _solutionEvents;
         private FileSystemWatcher _fileWatcher;
-        private DispatcherTimer _saveStateChecker;
 
+        private DispatcherTimer _saveStateCheckTimer;
+        private DispatcherTimer _previewStateCheckTimer;
+        public ObservableCollection<DocumentInfo> PreviewDocuments { get; set; } = new ObservableCollection<DocumentInfo>();
         public ObservableCollection<ProjectGroup> GroupedDocuments { get; set; } = new ObservableCollection<ProjectGroup>();
+
 
         public TabsManagerToolWindowControl() {
             InitializeComponent();
             InitializeDTE();
             InitializeFileWatcher();
-            InitializeSaveStateChecker();
+            InitializeTimers();
             DataContext = this;
             LoadOpenDocuments();
         }
@@ -105,14 +111,14 @@ namespace TabsManagerExtension {
             _fileWatcher.EnableRaisingEvents = true;
         }
 
-        private void InitializeSaveStateChecker() {
-            _saveStateChecker = new DispatcherTimer();
-            _saveStateChecker.Interval = TimeSpan.FromMilliseconds(200);
-            _saveStateChecker.Tick += CheckDocumentSaveStateHandler;
-            _saveStateChecker.Start();
+        private void InitializeTimers() {
+            _saveStateCheckTimer = new DispatcherTimer();
+            _saveStateCheckTimer.Interval = TimeSpan.FromMilliseconds(200);
+            _saveStateCheckTimer.Tick += SaveStateCheckTimerHandler;
+            _saveStateCheckTimer.Start();
         }
 
-        private void CheckDocumentSaveStateHandler(object sender, EventArgs e) {
+        private void SaveStateCheckTimerHandler(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Создаем копию для безопасного перебора
@@ -135,21 +141,39 @@ namespace TabsManagerExtension {
                     }
                 }
             }
+
+
+            foreach (var docInfo in PreviewDocuments.ToList()) {
+                if (!IsDocumentInPreviewTab(docInfo.FullName)) {
+                    // Перемещаем документ из предварительного просмотра в основную группу
+                    MoveDocumentToGroup(docInfo);
+                    PreviewDocuments.Remove(docInfo);
+                }
+            }
         }
+
 
 
         private void DocumentOpenedHandler(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            AddDocumentToGroup(document);
+
+            // Проверяем, находится ли документ в режиме предварительного просмотра
+            if (IsDocumentInPreviewTab(document.FullName)) {
+                AddDocumentToPreview(document);
+            }
+            else {
+                AddDocumentToGroup(document);
+            }
         }
 
         private void DocumentSavedHandler(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            CheckDocumentSaveStateHandler(null, null);
+            SaveStateCheckTimerHandler(null, null);
         }
 
         private void DocumentClosingHandler(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
+            RemoveDocumentFromPreview(document.FullName);
             RemoveDocumentFromGroup(document.FullName);
         }
 
@@ -199,6 +223,45 @@ namespace TabsManagerExtension {
             }
         }
 
+
+        private void AddDocumentToPreview(Document document) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Проверяем, нет ли уже этого документа в Preview
+            var existing = PreviewDocuments.FirstOrDefault(d => d.FullName == document.FullName);
+            if (existing == null) {
+                PreviewDocuments.Clear(); // Только один документ в режиме предварительного просмотра
+                PreviewDocuments.Add(new DocumentInfo {
+                    DisplayName = document.Name,
+                    FullName = document.FullName,
+                    ProjectName = GetDocumentProjectName(document)
+                });
+            }
+        }
+
+        private void RemoveDocumentFromPreview(string fullName) {
+            var doc = PreviewDocuments.FirstOrDefault(d => d.FullName == fullName);
+            if (doc != null) {
+                PreviewDocuments.Remove(doc);
+            }
+        }
+
+        private void MoveDocumentToGroup(DocumentInfo docInfo) {
+            string projectName = docInfo.ProjectName;
+
+            // Ищем группу
+            var group = GroupedDocuments.FirstOrDefault(g => g.Name == projectName);
+            if (group == null) {
+                group = new ProjectGroup { Name = projectName };
+                GroupedDocuments.Add(group);
+            }
+
+            // Проверяем, что документа еще нет в группе
+            if (!group.Items.Any(d => d.FullName == docInfo.FullName)) {
+                group.Items.Add(docInfo);
+            }
+        }
+
         private void AddDocumentToGroup(Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
             string projectName = GetDocumentProjectName(document);
@@ -235,7 +298,7 @@ namespace TabsManagerExtension {
             }
         }
 
-
+        
 
         // Обновление документа в UI после изменения или переименования
         private void UpdateDocumentUI(string oldPath, string newPath = null) {
@@ -279,6 +342,98 @@ namespace TabsManagerExtension {
             string extension = Path.GetExtension(fullPath);
             return extension.Equals(".TMP", StringComparison.OrdinalIgnoreCase) ||
                    fullPath.Contains("~") && fullPath.Contains(".TMP");
+        }
+
+
+        private bool IsDocumentInPreviewTab(string documentFullPath) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsUIShell shell = Package.GetGlobalService(typeof(SVsUIShell)) as IVsUIShell;
+            if (shell == null)
+                return false;
+
+            shell.GetDocumentWindowEnum(out IEnumWindowFrames windowFramesEnum);
+            IVsWindowFrame[] frameArray = new IVsWindowFrame[1];
+            uint fetched;
+
+            while (windowFramesEnum.Next(1, frameArray, out fetched) == VSConstants.S_OK && fetched == 1) {
+                IVsWindowFrame frame = frameArray[0];
+                if (frame == null) 
+                    continue;
+
+                // Получаем путь к документу
+                if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID.VSFPROPID_pszMkDocument, out object docPathObj)) &&
+                    docPathObj is string docPath &&
+                    string.Equals(docPath, documentFullPath, StringComparison.OrdinalIgnoreCase)) {
+                    // Проверяем, является ли окно временным (предварительный просмотр)
+                    if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID5.VSFPROPID_IsProvisional, out object isProvisionalObj)) &&
+                        isProvisionalObj is bool isProvisional) {
+                        return isProvisional;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+
+        // Метод для получения всех открытых окон документов
+        private IVsWindowFrame[] GetAllDocumentFrames(IVsUIShell shell) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            shell.GetDocumentWindowEnum(out IEnumWindowFrames windowFramesEnum);
+            List<IVsWindowFrame> frames = new List<IVsWindowFrame>();
+            IVsWindowFrame[] frameArray = new IVsWindowFrame[1];
+
+            while (windowFramesEnum.Next(1, frameArray, out uint fetched) == VSConstants.S_OK && fetched == 1) {
+                frames.Add(frameArray[0]);
+            }
+
+            return frames.ToArray();
+        }
+
+        private void OpenDocumentAsPinned(string documentFullPath) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsUIShellOpenDocument openDoc = Package.GetGlobalService(typeof(SVsUIShellOpenDocument)) as IVsUIShellOpenDocument;
+            if (openDoc == null)
+                return;
+
+            Guid logicalView = VSConstants.LOGVIEWID_Primary;
+            IVsUIHierarchy hierarchy;
+            uint itemId;
+            IVsWindowFrame windowFrame;
+            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider;
+
+            // Повторное открытие документа
+            int hr = openDoc.OpenDocumentViaProject(
+                documentFullPath,
+                ref logicalView,
+                out serviceProvider,
+                out hierarchy,
+                out itemId,
+                out windowFrame);
+
+            if (ErrorHandler.Succeeded(hr) && windowFrame != null) {
+                windowFrame.Show();
+            }
+        }
+
+
+
+
+        private void PinDocument_Click(object sender, RoutedEventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (sender is Button button && button.CommandParameter is string fullName) {
+                // Проверяем, находится ли документ в режиме предварительного просмотра
+                var previewDoc = PreviewDocuments.FirstOrDefault(d => d.FullName == fullName);
+                if (previewDoc != null) {
+                    // Открываем документ повторно в режиме Opened (закрепленный)
+                    OpenDocumentAsPinned(fullName);
+                    // Перемещаем документ в основную группу
+                    MoveDocumentToGroup(previewDoc);
+                    PreviewDocuments.Remove(previewDoc);
+                }
+            }
         }
 
 
