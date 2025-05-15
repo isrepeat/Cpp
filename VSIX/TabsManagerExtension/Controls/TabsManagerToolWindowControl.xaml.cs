@@ -17,50 +17,6 @@ using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace TabsManagerExtension {
-    public class DocumentInfo : INotifyPropertyChanged {
-        private string _displayName;
-        private string _fullName;
-
-        public string DisplayName {
-            get => _displayName;
-            set {
-                if (_displayName != value) {
-                    _displayName = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string FullName {
-            get => _fullName;
-            set {
-                if (_fullName != value) {
-                    _fullName = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string ProjectName { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-
-    public class ProjectGroup : INotifyPropertyChanged {
-        public string Name { get; set; }
-        public ObservableCollection<DocumentInfo> Items { get; set; } = new ObservableCollection<DocumentInfo>();
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-
     public partial class TabsManagerToolWindowControl : UserControl {
         private DTE2 _dte;
         private DocumentEvents _documentEvents;
@@ -100,7 +56,9 @@ namespace TabsManagerExtension {
 
         private void InitializeFileWatcher() {
             string solutionDir = GetSolutionDirectory();
-            if (string.IsNullOrEmpty(solutionDir)) return;
+            if (string.IsNullOrEmpty(solutionDir)) {
+                return;
+            }
 
             _fileWatcher = new FileSystemWatcher {
                 Path = solutionDir,
@@ -122,7 +80,6 @@ namespace TabsManagerExtension {
             _saveStateCheckTimer.Start();
         }
 
-
         public void InitializeDocumentsViewSource() {
             // Создаем представление с сортировкой
             GroupedDocumentsViewSource = new CollectionViewSource { Source = GroupedDocuments };
@@ -134,6 +91,74 @@ namespace TabsManagerExtension {
             GroupedDocumentsViewSource.View.CollectionChanged += (s, e) => SortDocumentsInGroups();
         }
 
+
+        //
+        // Event handlers
+        //
+        private void DocumentOpenedHandler(Document document) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Проверяем, находится ли документ в режиме предварительного просмотра
+            if (IsDocumentInPreviewTab(document.FullName)) {
+                AddDocumentToPreview(document);
+            }
+            else {
+                AddDocumentToGroup(document);
+            }
+        }
+
+        private void DocumentSavedHandler(Document document) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            SaveStateCheckTimerHandler(null, null);
+        }
+
+        private void DocumentClosingHandler(Document document) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            RemoveDocumentFromPreview(document.FullName);
+            RemoveDocumentFromGroup(document.FullName);
+        }
+
+        private void OnSolutionClosing() {
+            GroupedDocuments.Clear();
+            _fileWatcher?.Dispose();
+        }
+
+
+        // Обработчик изменения файла (без TMP-файлов)
+        private void OnFileChanged(object sender, FileSystemEventArgs e) {
+            if (IsTemporaryFile(e.FullPath)) {
+                return; // Игнорируем временные файлы
+            }
+
+            ThreadHelper.JoinableTaskFactory.Run(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpdateDocumentUI(e.FullPath);
+            });
+        }
+
+        // Обработчик переименования файла (без TMP-файлов)
+        private void OnFileRenamed(object sender, RenamedEventArgs e) {
+            if (IsTemporaryFile(e.FullPath) || IsTemporaryFile(e.OldFullPath)) {
+                return;
+            }
+
+            ThreadHelper.JoinableTaskFactory.Run(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpdateDocumentUI(e.OldFullPath, e.FullPath);
+            });
+        }
+
+        // Обработчик удаления файла (без TMP-файлов)
+        private void OnFileDeleted(object sender, FileSystemEventArgs e) {
+            if (IsTemporaryFile(e.FullPath)) {
+                return;
+            }
+
+            ThreadHelper.JoinableTaskFactory.Run(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                RemoveDocumentFromGroup(e.FullPath);
+            });
+        }
 
         private void SaveStateCheckTimerHandler(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -170,67 +195,7 @@ namespace TabsManagerExtension {
         }
 
 
-
-        private void DocumentOpenedHandler(Document document) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Проверяем, находится ли документ в режиме предварительного просмотра
-            if (IsDocumentInPreviewTab(document.FullName)) {
-                AddDocumentToPreview(document);
-            }
-            else {
-                AddDocumentToGroup(document);
-            }
-        }
-
-        private void DocumentSavedHandler(Document document) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            SaveStateCheckTimerHandler(null, null);
-        }
-
-        private void DocumentClosingHandler(Document document) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            RemoveDocumentFromPreview(document.FullName);
-            RemoveDocumentFromGroup(document.FullName);
-        }
-
-        private void OnSolutionClosing() {
-            GroupedDocuments.Clear();
-            _fileWatcher?.Dispose();
-        }
-
-        // Обработчик изменения файла (без TMP-файлов)
-        private void OnFileChanged(object sender, FileSystemEventArgs e) {
-            if (IsTemporaryFile(e.FullPath)) return; // Игнорируем временные файлы
-
-            ThreadHelper.JoinableTaskFactory.Run(async () => {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpdateDocumentUI(e.FullPath);
-            });
-        }
-
-        // Обработчик переименования файла (без TMP-файлов)
-        private void OnFileRenamed(object sender, RenamedEventArgs e) {
-            if (IsTemporaryFile(e.FullPath) || IsTemporaryFile(e.OldFullPath)) return;
-
-            ThreadHelper.JoinableTaskFactory.Run(async () => {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpdateDocumentUI(e.OldFullPath, e.FullPath);
-            });
-        }
-
-        // Обработчик удаления файла (без TMP-файлов)
-        private void OnFileDeleted(object sender, FileSystemEventArgs e) {
-            if (IsTemporaryFile(e.FullPath)) return;
-
-            ThreadHelper.JoinableTaskFactory.Run(async () => {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                RemoveDocumentFromGroup(e.FullPath);
-            });
-        }
-
-
-
+       
 
         private void LoadOpenDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -313,7 +278,9 @@ namespace TabsManagerExtension {
 
             // Ищем документ
             var docInfo = GroupedDocuments.SelectMany(g => g.Items).FirstOrDefault(d => d.FullName == fullName);
-            if (docInfo == null) return;
+            if (docInfo == null) {
+                return;
+            }
 
             // Перемещаем документ в выбранную группу
             RemoveDocumentFromGroup(fullName);
@@ -550,8 +517,9 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             IVsUIShellOpenDocument openDoc = Package.GetGlobalService(typeof(SVsUIShellOpenDocument)) as IVsUIShellOpenDocument;
-            if (openDoc == null)
+            if (openDoc == null) {
                 return;
+            }
 
             Guid logicalView = VSConstants.LOGVIEWID_Primary;
             IVsUIHierarchy hierarchy;
@@ -575,12 +543,17 @@ namespace TabsManagerExtension {
 
 
 
+        //
+        // UI click handlers
+        //
         private void ShowProjectsFlyout_Click(object sender, RoutedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (sender is Button button && button.Tag is string fullName) {
                 var document = _dte.Documents.Cast<Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
-                if (document == null) return;
+                if (document == null) {
+                    return;
+                }
 
                 var projects = GetDocumentProjects(document);
 
@@ -640,17 +613,17 @@ namespace TabsManagerExtension {
                     document.Activate();
 
                     // Логируем основные поля документа
-                    System.Diagnostics.Debug.WriteLine("=== Document Selected ===");
-                    System.Diagnostics.Debug.WriteLine($"Name: {document.Name}");
-                    System.Diagnostics.Debug.WriteLine($"FullName: {document.FullName}");
-                    System.Diagnostics.Debug.WriteLine($"Path: {Path.GetDirectoryName(document.FullName)}");
-                    System.Diagnostics.Debug.WriteLine($"ProjectName (Primary): {docInfo.ProjectName}");
+                    Helpers.Diagnostic.Logger.LogDebug("=== Document Selected ===");
+                    Helpers.Diagnostic.Logger.LogDebug($"Name: {document.Name}");
+                    Helpers.Diagnostic.Logger.LogDebug($"FullName: {document.FullName}");
+                    Helpers.Diagnostic.Logger.LogDebug($"Path: {Path.GetDirectoryName(document.FullName)}");
+                    Helpers.Diagnostic.Logger.LogDebug($"ProjectName (Primary): {docInfo.ProjectName}");
 
                     // Проверяем принадлежность к нескольким проектам (Shared Project)
                     var projects = GetDocumentProjects(document);
-                    System.Diagnostics.Debug.WriteLine($"Projects ({projects.Count}):");
+                    Helpers.Diagnostic.Logger.LogDebug($"Projects ({projects.Count}):");
                     foreach (var project in projects) {
-                        System.Diagnostics.Debug.WriteLine($" - {project.Name}");
+                        Helpers.Diagnostic.Logger.LogDebug($" - {project.Name}");
                     }
                 }
 
