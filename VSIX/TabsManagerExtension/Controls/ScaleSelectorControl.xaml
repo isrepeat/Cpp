@@ -3,19 +3,141 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:TabsManagerExtension"
+             xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+             xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
              mc:Ignorable="d"
              d:DesignHeight="30" d:DesignWidth="150"
              >
+    <UserControl.Resources>
+        <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
+        <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Текстовое поле (Editable) -->
+                            <TextBox x:Name="PART_EditableTextBox"
+                                     Background="#333333"
+                                     Foreground="White"
+                                     BorderThickness="0"
+                                     Padding="4,2"
+                                     VerticalContentAlignment="Center"
+                                     HorizontalAlignment="Stretch"
+                                     Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                     Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                     IsReadOnly="False"
+                                     IsHitTestVisible="True"
+                                     Focusable="True"
+                                     />
+
+                            <!-- ContentPresenter для текста при IsEditable="False" -->
+                            <ContentPresenter 
+                                x:Name="ContentSite"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                Margin="4,0"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                IsHitTestVisible="False"
+                                Visibility="{Binding IsEditable, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                />
+                            <!-- Кнопка открытия списка -->
+                            <ToggleButton x:Name="PART_DropDownToggle" 
+                                          Grid.Column="1"
+                                          Width="20"
+                                          Background="#555555"
+                                          Foreground="#cccccc"
+                                          BorderBrush="#555555"
+                                          Padding="4,2"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"
+                                          HorizontalAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          Content="▼"
+                                          />
+                            <!-- Popup (выпадающий список) -->
+                            <Popup x:Name="PART_Popup" 
+                                   Placement="Bottom" 
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" 
+                                   Focusable="False" 
+                                   PopupAnimation="Slide"
+                                   StaysOpen="False"
+                                   >
+                                <Border Background="#333333" 
+                                        BorderBrush="#555555" 
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        >
+                                    <ScrollViewer Background="#333333" Foreground="White">
+                                        <StackPanel IsItemsHost="True" Background="#333333"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DarkComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border Background="{TemplateBinding Background}" Padding="4">
+                            <ContentPresenter 
+                                Content="{TemplateBinding Content}" 
+                                VerticalAlignment="Center" 
+                                HorizontalAlignment="Left"
+                                />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter Property="Background" Value="#555555"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#0078D7"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    
     <StackPanel Orientation="Horizontal">
         <TextBlock Text="Масштаб: " VerticalAlignment="Center" />
-        <ComboBox x:Name="ScaleComboBox" 
+        <ComboBox x:Name="ScaleComboBox"
+                  Style="{StaticResource DarkComboBoxStyle}"
+                  ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}"
                   Width="100"
                   IsEditable="True" 
                   IsTextSearchEnabled="False" 
                   Loaded="ScaleComboBox_Loaded"
                   LostFocus="ScaleComboBox_LostFocus"
                   PreviewKeyDown="ScaleComboBox_PreviewKeyDown"
-                  SelectionChanged="ScaleComboBox_SelectionChanged" 
+                  SelectionChanged="ScaleComboBox_SelectionChanged"
                   >
             <ComboBoxItem Content="20%" Tag="0.2" />
             <ComboBoxItem Content="50%" Tag="0.5" />

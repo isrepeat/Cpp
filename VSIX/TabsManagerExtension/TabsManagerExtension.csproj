@@ -48,6 +48,7 @@
     <Compile Include="Controls\ScaleSelectorControl.xaml.cs">
       <DependentUpon>ScaleSelectorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
     <Compile Include="Helpers\Math.cs" />
     <Compile Include="Helpers\Diagnostic.cs" />

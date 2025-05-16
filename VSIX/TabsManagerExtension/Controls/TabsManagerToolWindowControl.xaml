@@ -17,10 +17,15 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
             <localConverters:MultiConditionVisibilityConverter x:Key="MultiConditionVisibilityConverter"/>
 
             <Style x:Key="CustomListBoxStyle" TargetType="ListBox">
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+            <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
+                <!--<Setter Property="Background" Value="Red"/>-->
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
         </ResourceDictionary>
@@ -34,7 +39,10 @@
 
 
         <!-- Контейнер с документами -->
-        <ScrollViewer Grid.Row="0">
+        <ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Auto"
+                      >
             <Grid x:Name="DocumentContainer">
                 <Grid.LayoutTransform>
                     <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
@@ -148,6 +156,7 @@
 
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="1"
+                                            Style="{StaticResource CustomScaleSelectorControlStyle}"
                                             ScaleFactor="{Binding ScaleFactor, Mode=TwoWay}" 
                                             ScaleChanged="ScaleSelectorControl_ScaleChanged" 
                                             />

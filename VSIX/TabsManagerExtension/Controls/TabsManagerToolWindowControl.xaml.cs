@@ -19,7 +19,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace TabsManagerExtension {
-    public partial class TabsManagerToolWindowControl : UserControl {
+    public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
         private DTE2 _dte;
         private DocumentEvents _documentEvents;
         private SolutionEvents _solutionEvents;
@@ -33,6 +33,26 @@ namespace TabsManagerExtension {
 
         private ShellDocument _activeShellDocument;
         private double _currentScaleFactor = 1.0;
+
+
+        private double _scaleFactor = 1.0;
+
+        public double ScaleFactor {
+            get => _scaleFactor;
+            set {
+                if (_scaleFactor != value) {
+                    _scaleFactor = value;
+                    OnPropertyChanged(nameof(ScaleFactor));
+                    ApplyDocumentScale();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
 
         public TabsManagerToolWindowControl() {
@@ -311,8 +331,10 @@ namespace TabsManagerExtension {
         }
 
         private void ApplyDocumentScale() {
-            DocumentScaleTransform.ScaleX = _currentScaleFactor;
-            DocumentScaleTransform.ScaleY = _currentScaleFactor;
+            if (DocumentScaleTransform != null) {
+                DocumentScaleTransform.ScaleX = ScaleFactor;
+                DocumentScaleTransform.ScaleY = ScaleFactor;
+            }
         }
 
 
