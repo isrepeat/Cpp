@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -31,6 +32,7 @@ namespace TabsManagerExtension {
         private CollectionViewSource GroupedDocumentsViewSource { get; set; }
 
         private ShellDocument _activeShellDocument;
+        private double _currentScaleFactor = 1.0;
 
 
         public TabsManagerToolWindowControl() {
@@ -302,6 +304,16 @@ namespace TabsManagerExtension {
             }
         }
 
+
+        private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {
+            _currentScaleFactor = scaleFactor;
+            ApplyDocumentScale();
+        }
+
+        private void ApplyDocumentScale() {
+            DocumentScaleTransform.ScaleX = _currentScaleFactor;
+            DocumentScaleTransform.ScaleY = _currentScaleFactor;
+        }
 
 
         //

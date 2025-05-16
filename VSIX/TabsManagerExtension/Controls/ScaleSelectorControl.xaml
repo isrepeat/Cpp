@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="TabsManagerExtension.Controls.ScaleSelectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="30" d:DesignWidth="150"
+             >
+    <StackPanel Orientation="Horizontal">
+        <TextBlock Text="Масштаб: " VerticalAlignment="Center" />
+        <ComboBox x:Name="ScaleComboBox" 
+                  Width="100"
+                  IsEditable="True" 
+                  IsTextSearchEnabled="False" 
+                  Loaded="ScaleComboBox_Loaded"
+                  LostFocus="ScaleComboBox_LostFocus"
+                  PreviewKeyDown="ScaleComboBox_PreviewKeyDown"
+                  SelectionChanged="ScaleComboBox_SelectionChanged" 
+                  >
+            <ComboBoxItem Content="20%" Tag="0.2" />
+            <ComboBoxItem Content="50%" Tag="0.5" />
+            <ComboBoxItem Content="70%" Tag="0.7" />
+            <ComboBoxItem Content="100%" Tag="1.0" IsSelected="True"/>
+            <ComboBoxItem Content="150%" Tag="1.5" />
+            <ComboBoxItem Content="200%" Tag="2.0" />
+            <ComboBoxItem Content="400%" Tag="4.0" />
+        </ComboBox>
+    </StackPanel>
+</UserControl>

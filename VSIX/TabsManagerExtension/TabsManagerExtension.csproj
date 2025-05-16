@@ -45,7 +45,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controls\ScaleSelectorControl.xaml.cs">
+      <DependentUpon>ScaleSelectorControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
+    <Compile Include="Helpers\Math.cs" />
     <Compile Include="Helpers\Diagnostic.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -87,7 +91,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Styles\BrushResources.xaml">
+    <Page Include="Controls\ScaleSelectorControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\StyleResources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:local="clr-namespace:TabsManagerExtension"
+             xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
              Background="#1F1F1F"
              Foreground="#d4d4d4"
@@ -13,80 +15,47 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
+                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <localConverters:MultiConditionVisibilityConverter x:Key="MultiConditionVisibilityConverter"/>
+
+            <Style x:Key="CustomListBoxStyle" TargetType="ListBox">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    
-    <StackPanel>
-        <StackPanel Visibility="{Binding PreviewDocuments.Count, 
-                                 Converter={StaticResource MultiConditionVisibilityConverter}, 
-                                 ConverterParameter='=0:Collapsed;>0:Visible'}"
-                >
-            <TextBlock Margin="0,5"
-                   FontSize="14"
-                   FontWeight="Bold"
-                   Text="Предварительный просмотр"
-                   />
-            <ListBox ItemsSource="{Binding PreviewDocuments}"
-                 HorizontalContentAlignment="Stretch"
-                 SelectionChanged="DocumentList_SelectionChanged"
-                 >
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                            </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-                            <!-- Название документа -->
-                            <TextBlock Grid.Column="0"
+
+        <!-- Контейнер с документами -->
+        <ScrollViewer Grid.Row="0">
+            <Grid x:Name="DocumentContainer">
+                <Grid.LayoutTransform>
+                    <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
+                </Grid.LayoutTransform>
+
+                <!-- Здесь будут ваши PreviewDocuments и GroupedDocuments -->
+                <StackPanel>
+                    <StackPanel Visibility="{Binding PreviewDocuments.Count, 
+                                             Converter={StaticResource MultiConditionVisibilityConverter}, 
+                                             ConverterParameter='=0:Collapsed;>0:Visible'}"
+                                >
+                        <TextBlock Margin="0,5"
                                    FontSize="14"
-                                   VerticalAlignment="Center"
-                                   Text="{Binding DisplayName}"
-                                   ToolTip="{Binding FullName}"
-                                   />
-                            <!-- Кнопка перемещения в основную группу -->
-                            <Button Grid.Column="2"
-                                Margin="5,0"
-                                Click="PinDocument_Click"
-                                ToolTip="Закрепить документ"
-                                CommandParameter="{Binding FullName}"
-                                Content="📌"
-                                />
-                            <!-- Кнопка закрытия документа -->
-                            <Button Grid.Column="3"
-                                Click="CloseDocument_Click"
-                                CommandParameter="{Binding FullName}"
-                                Content="✖"
-                                />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-
-            <Separator Margin="0,10"/>
-        </StackPanel>
-
-        <ItemsControl ItemsSource="{Binding GroupedDocuments}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock FontSize="14"
                                    FontWeight="Bold"
-                                   Text="{Binding Name}"
+                                   Text="Предварительный просмотр"
                                    />
-                        <ListBox ItemsSource="{Binding Items}"
-                                 ItemContainerStyle="{StaticResource TabItemStyle}"
+                        <ListBox ItemsSource="{Binding PreviewDocuments}"
+                                 Style="{StaticResource CustomListBoxStyle}"
+                                 ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                                  HorizontalContentAlignment="Stretch"
                                  SelectionChanged="DocumentList_SelectionChanged"
-                                 Background="Transparent"
-                                 BorderThickness="0"
                                  >
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -98,27 +67,90 @@
                                             <ColumnDefinition Width="auto"/>
                                         </Grid.ColumnDefinitions>
 
+                                        <!-- Название документа -->
                                         <TextBlock Grid.Column="0"
                                                    FontSize="14"
                                                    VerticalAlignment="Center"
                                                    Text="{Binding DisplayName}"
                                                    ToolTip="{Binding FullName}"
                                                    />
-                                        <!-- Flyout с проектами -->
-                                        <Button Grid.Column="2" Content="📂" Click="ShowProjectsFlyout_Click" Tag="{Binding FullName}" />
-
-                                        <Button Content="✖" 
-                                                Grid.Column="3"
+                                        <!-- Кнопка перемещения в основную группу -->
+                                        <Button Grid.Column="2"
+                                                Margin="5,0"
+                                                Click="PinDocument_Click"
+                                                ToolTip="Закрепить документ"
                                                 CommandParameter="{Binding FullName}"
+                                                Content="📌"
+                                                />
+                                        <!-- Кнопка закрытия документа -->
+                                        <Button Grid.Column="3"
                                                 Click="CloseDocument_Click"
+                                                CommandParameter="{Binding FullName}"
+                                                Content="✖"
                                                 />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+
+                        <Separator Margin="0,10"/>
                     </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding GroupedDocuments}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock FontSize="14"
+                                               FontWeight="Bold"
+                                               Text="{Binding Name}"
+                                               />
+                                    <ListBox ItemsSource="{Binding Items}"
+                                             Style="{StaticResource CustomListBoxStyle}"
+                                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                             HorizontalContentAlignment="Stretch"
+                                             SelectionChanged="DocumentList_SelectionChanged"
+                                             >
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="auto"/>
+                                                        <ColumnDefinition Width="auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0"
+                                                               FontSize="14"
+                                                               VerticalAlignment="Center"
+                                                               Text="{Binding DisplayName}"
+                                                               ToolTip="{Binding FullName}"
+                                                               />
+                                                    <!-- Flyout с проектами -->
+                                                    <Button Grid.Column="2" Content="📂" Click="ShowProjectsFlyout_Click" Tag="{Binding FullName}" />
+
+                                                    <Button Content="✖" 
+                                                            Grid.Column="3"
+                                                            CommandParameter="{Binding FullName}"
+                                                            Click="CloseDocument_Click"
+                                                            />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Контейнер с выбором масштаба -->
+        <localControls:ScaleSelectorControl Grid.Row="1"
+                                            ScaleFactor="{Binding ScaleFactor, Mode=TwoWay}" 
+                                            ScaleChanged="ScaleSelectorControl_ScaleChanged" 
+                                            />
+
+    </Grid>
 </UserControl>

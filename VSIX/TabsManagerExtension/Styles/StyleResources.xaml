@@ -3,7 +3,7 @@
                     xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
                     xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters">
 
-    <Style x:Key="TabItemStyle" TargetType="ListBoxItem">
+    <Style x:Key="CustomListBoxItemStyle" TargetType="ListBoxItem">
         <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
