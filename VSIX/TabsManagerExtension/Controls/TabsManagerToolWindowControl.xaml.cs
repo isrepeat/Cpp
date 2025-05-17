@@ -1,6 +1,4 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio;
+﻿using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -20,9 +18,10 @@ using System.Windows.Threading;
 
 namespace TabsManagerExtension {
     public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
-        private DTE2 _dte;
-        private DocumentEvents _documentEvents;
-        private SolutionEvents _solutionEvents;
+        private EnvDTE80.DTE2 _dte;
+        private EnvDTE.WindowEvents _windowEvents;
+        private EnvDTE.DocumentEvents _documentEvents;
+        private EnvDTE.SolutionEvents _solutionEvents;
         private FileSystemWatcher _fileWatcher;
 
         private DispatcherTimer _saveStateCheckTimer;
@@ -31,12 +30,10 @@ namespace TabsManagerExtension {
         public ObservableCollection<ProjectGroup> GroupedDocuments { get; set; } = new ObservableCollection<ProjectGroup>();
         private CollectionViewSource GroupedDocumentsViewSource { get; set; }
 
-        private ShellDocument _activeShellDocument;
-        private double _currentScaleFactor = 1.0;
+        private DocumentInfo _activeDocument;
 
 
         private double _scaleFactor = 1.0;
-
         public double ScaleFactor {
             get => _scaleFactor;
             set {
@@ -62,18 +59,22 @@ namespace TabsManagerExtension {
             InitializeTimers();
             InitializeDocumentsViewSource();
 
-            DataContext = this;
+            this.DataContext = this;
             LoadOpenDocuments();
         }
 
         private void InitializeDTE() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _dte = (DTE2)Package.GetGlobalService(typeof(DTE));
+            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
 
             _documentEvents = _dte.Events.DocumentEvents;
             _documentEvents.DocumentOpened += DocumentOpenedHandler;
             _documentEvents.DocumentSaved += DocumentSavedHandler;
             _documentEvents.DocumentClosing += DocumentClosingHandler;
+
+            // Подписываемся на событие смены активного окна (вкладки)
+            _windowEvents = _dte.Events.WindowEvents;
+            _windowEvents.WindowActivated += OnWindowActivated;
 
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.BeforeClosing += OnSolutionClosing;
@@ -107,20 +108,20 @@ namespace TabsManagerExtension {
 
         public void InitializeDocumentsViewSource() {
             // Создаем представление с сортировкой
-            GroupedDocumentsViewSource = new CollectionViewSource { Source = GroupedDocuments };
+            this.GroupedDocumentsViewSource = new CollectionViewSource { Source = GroupedDocuments };
 
             // Сортировка групп по имени (по алфавиту)
-            GroupedDocumentsViewSource.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            this.GroupedDocumentsViewSource.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
 
             // Применяем сортировку внутри групп через метод
-            GroupedDocumentsViewSource.View.CollectionChanged += (s, e) => SortDocumentsInGroups();
+            this.GroupedDocumentsViewSource.View.CollectionChanged += (s, e) => SortDocumentsInGroups();
         }
 
 
         //
         // Event handlers
         //
-        private void DocumentOpenedHandler(Document document) {
+        private void DocumentOpenedHandler(EnvDTE.Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var shellDocument = new ShellDocument(document);
@@ -134,16 +135,28 @@ namespace TabsManagerExtension {
             }
         }
 
-        private void DocumentSavedHandler(Document document) {
+        private void DocumentSavedHandler(EnvDTE.Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            SaveStateCheckTimerHandler(null, null);
+            this.SaveStateCheckTimerHandler(null, null);
         }
 
-        private void DocumentClosingHandler(Document document) {
+        private void DocumentClosingHandler(EnvDTE.Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            RemoveDocumentFromPreview(document.FullName);
-            RemoveDocumentFromGroup(document.FullName);
+            this.RemoveDocumentFromPreview(document.FullName);
+            this.RemoveDocumentFromGroup(document.FullName);
         }
+
+        private void OnWindowActivated(EnvDTE.Window gotFocus, EnvDTE.Window lostFocus) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"OnWindowActivated()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Проверяем, что окно имеет связанный документ
+            if (gotFocus?.Document != null) {
+                this.ActivateDocument(gotFocus.Document);
+            }
+        }
+
+
 
         private void OnSolutionClosing() {
             GroupedDocuments.Clear();
@@ -153,37 +166,37 @@ namespace TabsManagerExtension {
 
         // Обработчик изменения файла (без TMP-файлов)
         private void OnFileChanged(object sender, FileSystemEventArgs e) {
-            if (IsTemporaryFile(e.FullPath)) {
+            if (this.IsTemporaryFile(e.FullPath)) {
                 return; // Игнорируем временные файлы
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async () => {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpdateDocumentUI(e.FullPath);
+                this.UpdateDocumentUI(e.FullPath);
             });
         }
 
         // Обработчик переименования файла (без TMP-файлов)
         private void OnFileRenamed(object sender, RenamedEventArgs e) {
-            if (IsTemporaryFile(e.FullPath) || IsTemporaryFile(e.OldFullPath)) {
+            if (this.IsTemporaryFile(e.FullPath) || this.IsTemporaryFile(e.OldFullPath)) {
                 return;
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async () => {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                UpdateDocumentUI(e.OldFullPath, e.FullPath);
+                this.UpdateDocumentUI(e.OldFullPath, e.FullPath);
             });
         }
 
         // Обработчик удаления файла (без TMP-файлов)
         private void OnFileDeleted(object sender, FileSystemEventArgs e) {
-            if (IsTemporaryFile(e.FullPath)) {
+            if (this.IsTemporaryFile(e.FullPath)) {
                 return;
             }
 
             ThreadHelper.JoinableTaskFactory.Run(async () => {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                RemoveDocumentFromGroup(e.FullPath);
+                this.RemoveDocumentFromGroup(e.FullPath);
             });
         }
 
@@ -197,7 +210,7 @@ namespace TabsManagerExtension {
                 var itemsCopy = group.Items.ToList();
 
                 foreach (var docInfo in itemsCopy) {
-                    var document = _dte.Documents.Cast<Document>().FirstOrDefault(d => d.FullName == docInfo.FullName);
+                    var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => d.FullName == docInfo.FullName);
                     if (document != null) {
                         if (document.Saved) {
                             docInfo.DisplayName = docInfo.DisplayName.TrimEnd('*');
@@ -230,7 +243,7 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (sender is Button button && button.Tag is string fullName) {
-                var document = _dte.Documents.Cast<Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
+                var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
                 if (document == null) {
                     return;
                 }
@@ -283,41 +296,24 @@ namespace TabsManagerExtension {
 
         private void DocumentList_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             if (sender is ListBox listBox && listBox.SelectedItem is DocumentInfo docInfo) {
-                var document = _dte.Documents.Cast<Document>()
+                var document = _dte.Documents.Cast<EnvDTE.Document>()
                     .FirstOrDefault(d => string.Equals(d.FullName, docInfo.FullName, StringComparison.OrdinalIgnoreCase));
 
                 if (document != null) {
-                    var shellDocument = new ShellDocument(document);
-
-                    // Активируем документ
-                    shellDocument.Document.Activate();
-                    _activeShellDocument = shellDocument;
-
-                    // Сбрасываем выделение во всех группах кроме активного
-                    this.DeselectNonActiveDocuments();
-
-                    // Логируем основные поля документа
-                    Helpers.Diagnostic.Logger.LogDebug("=== Document Selected ===");
-                    Helpers.Diagnostic.Logger.LogDebug($"Name: {shellDocument.Document.Name}");
-                    Helpers.Diagnostic.Logger.LogDebug($"FullName: {shellDocument.Document.FullName}");
-                    Helpers.Diagnostic.Logger.LogDebug($"Path: {Path.GetDirectoryName(shellDocument.Document.FullName)}");
-                    Helpers.Diagnostic.Logger.LogDebug($"ProjectName (Primary): {docInfo.ProjectName}");
-
-                    // Проверяем принадлежность к нескольким проектам (Shared Project)
-                    var projects = shellDocument.GetDocumentProjects();
-                    Helpers.Diagnostic.Logger.LogDebug($"Projects ({projects.Count}):");
-                    foreach (var project in projects) {
-                        Helpers.Diagnostic.Logger.LogDebug($" - {project.Name}");
+                    if (this.ActivateDocument(document)) {
+                        document.Activate();
                     }
                 }
             }
         }
 
+
         private void CloseDocument_Click(object sender, RoutedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (sender is Button button && button.CommandParameter is string fullName) {
-                var document = _dte.Documents.Cast<Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
+                var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
                 if (document != null) {
                     document.Close();
                 }
@@ -326,7 +322,6 @@ namespace TabsManagerExtension {
 
 
         private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {
-            _currentScaleFactor = scaleFactor;
             ApplyDocumentScale();
         }
 
@@ -344,7 +339,7 @@ namespace TabsManagerExtension {
         private void LoadOpenDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.GroupedDocuments.Clear();
-            foreach (Document doc in _dte.Documents) {
+            foreach (EnvDTE.Document doc in _dte.Documents) {
                 this.AddDocumentToGroup(new ShellDocument(doc));
             }
         }
@@ -520,12 +515,41 @@ namespace TabsManagerExtension {
             }
         }
 
+        private bool ActivateDocument(EnvDTE.Document document) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Проверяем, уже ли этот документ активен
+            if (_activeDocument != null && string.Equals(_activeDocument.FullName, document.FullName, StringComparison.OrdinalIgnoreCase)) {
+                return false;
+            }
+            _activeDocument = new DocumentInfo(new ShellDocument(document));
+
+            this.SelectDocumentInUI(_activeDocument.ShellDocument.Document);
+            this.DeselectNonActiveDocuments();
+            return true;
+        }
+
+
+        // Метод выбора документа в UI ListBox (без активации)
+        private void SelectDocumentInUI(EnvDTE.Document document) {
+            foreach (var group in GroupedDocuments) {
+                var activeDoc = group.Items.FirstOrDefault(d => d.FullName == document.FullName);
+                if (activeDoc != null) {
+                    var listBox = FindListBoxContainingDocument(document.FullName);
+                    if (listBox != null) {
+                        listBox.SelectedItem = activeDoc;
+                    }
+                    return;
+                }
+            }
+        }
+
         private void DeselectNonActiveDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Находим группу, содержащую активный документ
             var activeGroup = this.GroupedDocuments
-                .FirstOrDefault(g => g.Items.Any(d => d.FullName == _activeShellDocument.Document.FullName));
+                .FirstOrDefault(g => g.Items.Any(d => d.FullName == _activeDocument.FullName));
 
             // Проходим по всем группам
             foreach (var group in this.GroupedDocuments) {
