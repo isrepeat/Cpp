@@ -1,5 +1,4 @@
 ﻿using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -11,15 +10,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TabsManagerExtension {
+    public class ShellProject {
+        public EnvDTE.Project Project { get; private set; }
+        private EnvDTE80.DTE2 _dte;
+
+        public ShellProject(EnvDTE.Project project) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            this.Project = project;
+            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
+        }
+    }
+
     public class ShellDocument {
         public EnvDTE.Document Document { get; private set; }
-        private DTE2 _dte;
+        private EnvDTE80.DTE2 _dte;
 
         public ShellDocument(EnvDTE.Document document) {
             ThreadHelper.ThrowIfNotOnUIThread();
             
             this.Document = document;
-            _dte = (DTE2)Package.GetGlobalService(typeof(DTE));
+            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
         }
 
 
@@ -33,9 +44,9 @@ namespace TabsManagerExtension {
             }
         }
 
-        public List<Project> GetDocumentProjects() {
+        public List<ProjectInfo> GetDocumentProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var projects = new List<Project>();
+            var projects = new List<EnvDTE.Project>();
 
             try {
                 // Проверяем основной проект
@@ -46,7 +57,7 @@ namespace TabsManagerExtension {
 
                 // Проверяем дополнительные проекты через Shared Project (если есть)
                 var solution = _dte.Solution;
-                foreach (Project project in solution.Projects) {
+                foreach (EnvDTE.Project project in solution.Projects) {
                     if (this.ProjectContainsDocumentInProject(project)) {
                         if (!projects.Contains(project)) {
                             projects.Add(project);
@@ -58,14 +69,14 @@ namespace TabsManagerExtension {
                 System.Diagnostics.Debug.WriteLine($"[ERROR] GetDocumentProjects: {ex.Message}");
             }
 
-            return projects;
+            return projects.Select(p => new ProjectInfo(new ShellProject(p))).ToList();
         }
 
-        private bool ProjectContainsDocumentInProject(Project project) {
+        private bool ProjectContainsDocumentInProject(EnvDTE.Project project) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             try {
-                foreach (ProjectItem item in project.ProjectItems) {
+                foreach (EnvDTE.ProjectItem item in project.ProjectItems) {
                     if (this.ProjectItemContainsDocument(item)) {
                         return true;
                     }
@@ -79,7 +90,7 @@ namespace TabsManagerExtension {
         }
 
         // Метод проверки документа внутри ProjectItem (включая вложенные)
-        private bool ProjectItemContainsDocument(ProjectItem item) {
+        private bool ProjectItemContainsDocument(EnvDTE.ProjectItem item) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             try {
@@ -94,7 +105,7 @@ namespace TabsManagerExtension {
 
                 // Проверяем вложенные элементы (вложенные папки, ссылки)
                 if (item.ProjectItems?.Count > 0) {
-                    foreach (ProjectItem subItem in item.ProjectItems) {
+                    foreach (EnvDTE.ProjectItem subItem in item.ProjectItems) {
                         if (this.ProjectItemContainsDocument(subItem)) {
                             return true;
                         }
@@ -141,6 +152,27 @@ namespace TabsManagerExtension {
         }
     }
 
+    public class ProjectInfo : Helpers.ObservableObject {
+
+        private string _name;
+        public string Name {
+            get => _name;
+            set {
+                if (_name != value) {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ShellProject ShellProject { get; private set; }
+        public ProjectInfo(ShellProject shellProject) {
+            this.ShellProject = shellProject;
+
+            this.Name = shellProject.Project.Name;
+        }
+    }
+
 
     public class DocumentInfo : Helpers.ObservableObject {
 
@@ -168,6 +200,15 @@ namespace TabsManagerExtension {
 
         public string ProjectName { get; set; }
 
+        private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
+        public ObservableCollection<DocumentProjectReferenceInfo> ProjectReferenceList {
+            get => _projectReferenceList;
+            set {
+                _projectReferenceList = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ShellDocument ShellDocument { get; private set; }
         public DocumentInfo(ShellDocument shellDocument) {
             this.ShellDocument = shellDocument;
@@ -175,6 +216,33 @@ namespace TabsManagerExtension {
             this.DisplayName = shellDocument.Document.Name;
             this.FullName = shellDocument.Document.FullName;
             this.ProjectName = shellDocument.GetDocumentProjectName();
+
+            this.UpdateProjectReferenceList();
+        }
+
+        public void UpdateProjectReferenceList() {
+            this.ProjectReferenceList.Clear();
+
+            var projects = this.ShellDocument.GetDocumentProjects()
+                .Select(p => new DocumentProjectReferenceInfo(
+                    projectInfo: p,
+                    documentInfo: this
+                ));
+
+            foreach (var project in projects) {
+                this.ProjectReferenceList.Add(project);
+            }
+        }
+    }
+
+
+    public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
+        public ProjectInfo ProjectInfo { get; private set; }
+        public DocumentInfo DocumentInfo { get; private set; }
+
+        public DocumentProjectReferenceInfo(ProjectInfo projectInfo, DocumentInfo documentInfo) {
+            this.ProjectInfo = projectInfo;
+            this.DocumentInfo = documentInfo;
         }
     }
 
