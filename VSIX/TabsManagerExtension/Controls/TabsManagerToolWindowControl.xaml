@@ -25,7 +25,6 @@
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
             <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
-                <!--<Setter Property="Background" Value="Red"/>-->
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
         </ResourceDictionary>
@@ -48,8 +47,73 @@
                     <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
                 </Grid.LayoutTransform>
 
-                <!-- Здесь будут ваши PreviewDocuments и GroupedDocuments -->
-                <StackPanel>
+
+                <ListBox Margin="10"
+                         Style="{StaticResource CustomListBoxStyle}"
+                         ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                         HorizontalContentAlignment="Stretch"
+                         >
+                    <ListBoxItem>
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Text="Document 1" />
+
+                            <Grid Grid.Column="1" HorizontalAlignment="Right">
+                                <Border Background="Transparent"
+                                        MouseEnter="InteractiveArea_MouseEnter"
+                                        MouseLeave="InteractiveArea_MouseLeave">
+                                    <TextBlock Text="🖱️ Наведите на меня" />
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </ListBoxItem>
+
+                    <ListBoxItem>
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Text="Document 2" />
+
+                            <Grid Grid.Column="1" HorizontalAlignment="Right">
+                                <Border Background="Transparent"
+                                        MouseEnter="InteractiveArea_MouseEnter"
+                                        MouseLeave="InteractiveArea_MouseLeave">
+                                    <TextBlock Text="🖱️ Наведите на меня" />
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </ListBoxItem>
+                </ListBox>
+
+
+                <!-- VirtualPopupControl с настраиваемым контентом -->
+                <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
+                    <localControls:VirtualPopupControl.PopupContent>
+                        <StackPanel>
+                            <TextBlock Text="Этот контент настраиваемый!" FontWeight="Bold"/>
+                            <Button Content="📂 Открыть проект"/>
+                            <Button Content="📌 Закрепить"/>
+                            <Button Content="✖ Закрыть"/>
+                        </StackPanel>
+                    </localControls:VirtualPopupControl.PopupContent>
+                </localControls:VirtualPopupControl>
+
+
+
+                <!--<StackPanel>
                     <StackPanel Visibility="{Binding PreviewDocuments.Count, 
                                              Converter={StaticResource MultiConditionVisibilityConverter}, 
                                              ConverterParameter='=0:Collapsed;>0:Visible'}"
@@ -80,14 +144,12 @@
                                                 <ColumnDefinition Width="auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Название документа -->
                                             <TextBlock Grid.Column="0"
                                                        FontSize="14"
                                                        VerticalAlignment="Center"
                                                        Text="{Binding DisplayName}"
                                                        ToolTip="{Binding FullName}"
                                                        />
-                                            <!-- Кнопка перемещения в основную группу -->
                                             <Button Grid.Column="2"
                                                     Margin="5,0"
                                                     Click="PinDocument_Click"
@@ -95,7 +157,6 @@
                                                     CommandParameter="{Binding FullName}"
                                                     Content="📌"
                                                     />
-                                            <!-- Кнопка закрытия документа -->
                                             <Button Grid.Column="3"
                                                     Click="CloseDocument_Click"
                                                     CommandParameter="{Binding FullName}"
@@ -144,15 +205,46 @@
                                                                    VerticalAlignment="Center"
                                                                    Text="{Binding DisplayName}"
                                                                    />
-                                                        <!-- Flyout с проектами -->
-                                                        <Button Grid.Column="2" Content="📂" Click="ShowProjectsFlyout_Click" Tag="{Binding FullName}" />
-
-                                                        <Button Content="✖" 
-                                                                Grid.Column="3"
-                                                                CommandParameter="{Binding FullName}"
-                                                                Click="CloseDocument_Click"
-                                                                />
+                                                        <Grid Grid.Column="1" HorizontalAlignment="Right">
+                                                            <Popup Placement="Right"
+                                                                   StaysOpen="False"
+                                                                   PopupAnimation="Fade"
+                                                                   AllowsTransparency="True"
+                                                                   >
+                                                                <StackPanel Background="LightGray">
+                                                                    <Button Content="📂" 
+                                                                            Click="ShowProjectsFlyout_Click" 
+                                                                            Tag="{Binding FullName}" />
+                                                                    <Button Content="📌" 
+                                                                            Click="PinDocument_Click" 
+                                                                            CommandParameter="{Binding FullName}" />
+                                                                    <Button Content="✖" 
+                                                                            Click="CloseDocument_Click" 
+                                                                            CommandParameter="{Binding FullName}" />
+                                                                </StackPanel>
+                                                            </Popup>
+                                                        </Grid>
                                                     </Grid>
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Tag" Value="False" />
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Tag" Value="True" />
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Border.Resources>
+                                                        <Style TargetType="Popup">
+                                                            <Setter Property="IsOpen" Value="False" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
+                                                                    <Setter Property="IsOpen" Value="True" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Resources>
                                                 </Border>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
@@ -161,7 +253,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </StackPanel>
+                </StackPanel>-->
             </Grid>
         </ScrollViewer>
 

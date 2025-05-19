@@ -47,3 +47,25 @@ namespace TabsManagerExtension.Helpers {
         }
     }
 }
+
+namespace TabsManagerExtension.Helpers.Ex {
+    // TODO: move to extensions file.
+    public static class VisualTreeExtensions {
+        // Метод расширения для поиска всех потомков указанного типа (универсальный)
+        public static IEnumerable<T> GetVisualDescendants<T>(this DependencyObject parent) where T : DependencyObject {
+            if (parent == null) yield break;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T typedChild) {
+                    yield return typedChild;
+                }
+
+                foreach (var descendant in GetVisualDescendants<T>(child)) {
+                    yield return descendant;
+                }
+            }
+        }
+    }
+}

@@ -11,10 +11,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+
+using TabsManagerExtension.Helpers.Ex;
 
 namespace TabsManagerExtension {
     public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
@@ -33,7 +36,7 @@ namespace TabsManagerExtension {
         private DocumentInfo _activeDocument;
 
 
-        private double _scaleFactor = 1.0;
+        private double _scaleFactor = 0.9;
         public double ScaleFactor {
             get => _scaleFactor;
             set {
@@ -156,8 +159,6 @@ namespace TabsManagerExtension {
             }
         }
 
-
-
         private void OnSolutionClosing() {
             GroupedDocuments.Clear();
             _fileWatcher?.Dispose();
@@ -239,6 +240,65 @@ namespace TabsManagerExtension {
         //
         // UI click handlers
         //
+        private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
+            if (sender is Border interactiveArea) {
+                string documentName = GetDocumentNameFromListBoxItem(interactiveArea);
+                ShowVirtualPopup(interactiveArea, documentName);
+            }
+        }
+
+        private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
+
+            // Проверяем, существует ли Popup и не находится ли мышь над ним
+            var popup = MyVirtualPopup;
+            if (popup != null && !popup.IsMouseOver) {
+                // Запускаем таймер на закрытие
+                popup.StartClosePopupTimer();
+            }
+        }
+
+        // Метод для отображения VirtualPopup
+        private void ShowVirtualPopup(Border interactiveArea, string documentName) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"ShowVirtualPopup()");
+            var position = interactiveArea.PointToScreen(new Point(0, interactiveArea.ActualHeight));
+            var mainWindow = Application.Current.MainWindow;
+            var relativePoint = mainWindow.PointFromScreen(position);
+
+            MyVirtualPopup.ShowPopup(relativePoint, documentName);
+        }
+
+        // [TEST] Метод для получения имени документа
+        private string GetDocumentNameFromListBoxItem(Border interactiveArea) {
+            var listBoxItem = FindParent<ListBoxItem>(interactiveArea);
+            if (listBoxItem == null) return "Без имени";
+
+            // Используем метод расширения для поиска всех TextBlock
+            var textBlocks = listBoxItem.GetVisualDescendants<TextBlock>();
+            foreach (var textBlock in textBlocks) {
+                // Проверяем, является ли текст блока названием документа
+                if (textBlock.Text.StartsWith("Document")) {
+                    return textBlock.Text;
+                }
+            }
+
+            return "Без имени";
+        }
+
+
+        // Универсальный метод поиска родителя
+        private T FindParent<T>(DependencyObject child) where T : DependencyObject {
+            while (child != null) {
+                if (child is T parent)
+                    return parent;
+
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+
         private void ShowProjectsFlyout_Click(object sender, RoutedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
