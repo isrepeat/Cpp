@@ -24,7 +24,7 @@
                 <Border Padding="10,0,10,0">
                     <StackPanel>
                         <TextBlock Text="{Binding DocumentName, ElementName=PopupControl}"
-                                   FontSize="12"
+                                   FontSize="14"
                                    FontWeight="Bold"
                                    Foreground="#dddddd"/>
                     </StackPanel>

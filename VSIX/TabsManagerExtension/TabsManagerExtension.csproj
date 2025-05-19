@@ -49,6 +49,9 @@
     <Compile Include="Controls\ScaleSelectorControl.xaml.cs">
       <DependentUpon>ScaleSelectorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\DocumentItemControl.xaml.cs">
+      <DependentUpon>DocumentItemControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\VirtualPopupControl.xaml.cs">
       <DependentUpon>VirtualPopupControl.xaml</DependentUpon>
     </Compile>
@@ -97,6 +100,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ScaleSelectorControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DocumentItemControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

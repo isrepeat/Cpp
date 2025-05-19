@@ -20,10 +20,6 @@
 
             <localConverters:MultiConditionVisibilityConverter x:Key="MultiConditionVisibilityConverter"/>
 
-            <Style x:Key="CustomListBoxStyle" TargetType="ListBox">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-            </Style>
             <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
@@ -36,246 +32,227 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <Grid x:Name="DocumentContainer"
+                Grid.Row="0"
+                >
+            <Grid.LayoutTransform>
+                <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
+            </Grid.LayoutTransform>
 
-        <!-- Контейнер с документами -->
-        <ScrollViewer Grid.Row="0"
-                      VerticalScrollBarVisibility="Auto" 
-                      HorizontalScrollBarVisibility="Auto"
-                      >
-            <Grid x:Name="DocumentContainer">
-                <Grid.LayoutTransform>
-                    <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
-                </Grid.LayoutTransform>
+            <ListBox Margin="0"
+                    Style="{StaticResource CustomListBoxStyle}"
+                    ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                    >
+                <ListBoxItem>
+                    <localControls:DocumentItemControl Title="Document AAA BBB CCC DDD EEE">
+                        <localControls:DocumentItemControl.ControlContent>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                        Content="📌"
+                                        />
+                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                        Content="✖"
+                                        MouseEnter="InteractiveArea_MouseEnter"
+                                        MouseLeave="InteractiveArea_MouseLeave"
+                                        />
+                            </StackPanel>
+                        </localControls:DocumentItemControl.ControlContent>
+                    </localControls:DocumentItemControl>
+                </ListBoxItem>
 
-
-                <ListBox Margin="10"
-                         Style="{StaticResource CustomListBoxStyle}"
-                         ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                         HorizontalContentAlignment="Stretch"
-                         >
-                    <ListBoxItem>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       Text="Document 1"
-                                       />
-                            <Button Grid.Column="2"
-                                    FontSize="12"
+                <ListBoxItem>
+                    <localControls:DocumentItemControl Title="Document 2">
+                        <localControls:DocumentItemControl.ControlContent>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                     Content="📌"
                                     />
-                            <Button Grid.Column="3"
-                                    FontSize="12"
+                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                     Content="✖"
                                     MouseEnter="InteractiveArea_MouseEnter"
                                     MouseLeave="InteractiveArea_MouseLeave"
                                     />
-                        </Grid>
-                    </ListBoxItem>
-
-                    <ListBoxItem>
-                        <Grid Margin="0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"
-                                       Text="Document 2"
-                                       />
-                            <Button Grid.Column="2"
-                                    FontSize="12"
-                                    Content="📌"
-                                    />
-                            <Button Grid.Column="3"
-                                    FontSize="12"
-                                    Content="✖"
-                                    MouseEnter="InteractiveArea_MouseEnter"
-                                    MouseLeave="InteractiveArea_MouseLeave"
-                                    />
-                        </Grid>
-                    </ListBoxItem>
-                </ListBox>
+                            </StackPanel>
+                        </localControls:DocumentItemControl.ControlContent>
+                    </localControls:DocumentItemControl>
+                </ListBoxItem>
+            </ListBox>
 
 
-                <!-- VirtualPopupControl с настраиваемым контентом -->
-                <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
-                    <localControls:VirtualPopupControl.PopupContent>
-                        <StackPanel>
-                            <Border Padding="10,0,10,5">
-                                <StackPanel>
-                                    <Separator Margin="0,5,0,2"/>
-                                    <TextBlock FontWeight="Normal" Text="Main actions" />
-                                </StackPanel>
-                            </Border>
-                            <Button Style="{StaticResource DarkPopupButtonStyle}" Content="📂 Open location"/>
+            <!-- VirtualPopupControl с настраиваемым контентом -->
+            <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
+                <localControls:VirtualPopupControl.PopupContent>
+                    <StackPanel>
+                        <Border Padding="10,0,10,5">
+                            <StackPanel>
+                                <Separator Margin="0,5,0,2"/>
+                                <TextBlock FontSize="12"
+                                           FontWeight="Normal"
+                                           Text="Main actions"
+                                           />
+                            </StackPanel>
+                        </Border>
+                        <Button Style="{StaticResource DarkPopupButtonStyle}" Content="📂 Open location"/>
 
-                            <Border Padding="10,0,10,5">
-                                <StackPanel>
-                                    <Separator Margin="0,5,0,2"/>
-                                    <TextBlock FontWeight="Normal" Text="Related projects" />
-                                </StackPanel>
-                            </Border>
-                            <Button Style="{StaticResource DarkPopupButtonStyle}" Content="Project 1"/>
-                            <Button Style="{StaticResource DarkPopupButtonStyle}" Content="Project 2"/>
-                        </StackPanel>
-                    </localControls:VirtualPopupControl.PopupContent>
-                </localControls:VirtualPopupControl>
-
-
-
-                <!--<StackPanel>
-                    <StackPanel Visibility="{Binding PreviewDocuments.Count, 
-                                             Converter={StaticResource MultiConditionVisibilityConverter}, 
-                                             ConverterParameter='=0:Collapsed;>0:Visible'}"
-                                >
-                        <TextBlock Margin="0,5"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Text="Предварительный просмотр"
-                                   />
-                        <ListBox ItemsSource="{Binding PreviewDocuments}"
-                                 Style="{StaticResource CustomListBoxStyle}"
-                                 ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                 HorizontalContentAlignment="Stretch"
-                                 SelectionChanged="DocumentList_SelectionChanged"
-                                 >
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="Transparent" 
-                                                        ToolTip="{Binding FullName}"
-                                                        ToolTipService.ShowOnDisabled="True"
-                                                        ToolTipService.Placement="Right"
-                                                        >
-                                        <Grid Margin="0,5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="auto"/>
-                                                <ColumnDefinition Width="auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <TextBlock Grid.Column="0"
-                                                       FontSize="14"
-                                                       VerticalAlignment="Center"
-                                                       Text="{Binding DisplayName}"
-                                                       ToolTip="{Binding FullName}"
-                                                       />
-                                            <Button Grid.Column="2"
-                                                    Margin="5,0"
-                                                    Click="PinDocument_Click"
-                                                    ToolTip="Закрепить документ"
-                                                    CommandParameter="{Binding FullName}"
-                                                    Content="📌"
-                                                    />
-                                            <Button Grid.Column="3"
-                                                    Click="CloseDocument_Click"
-                                                    CommandParameter="{Binding FullName}"
-                                                    Content="✖"
-                                                    />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <Separator Margin="0,10"/>
+                        <Border Padding="10,0,10,5">
+                            <StackPanel>
+                                <Separator Margin="0,5,0,2"/>
+                                <TextBlock FontSize="12"
+                                           FontWeight="Normal"
+                                           Text="Related projects"
+                                           />
+                            </StackPanel>
+                        </Border>
+                        <Button Style="{StaticResource DarkPopupButtonStyle}" Content="Project 1"/>
+                        <Button Style="{StaticResource DarkPopupButtonStyle}" Content="Project 2"/>
                     </StackPanel>
+                </localControls:VirtualPopupControl.PopupContent>
+            </localControls:VirtualPopupControl>
 
-                    <ItemsControl ItemsSource="{Binding GroupedDocuments}">
-                        <ItemsControl.ItemTemplate>
+
+
+            <!--<StackPanel>
+                <StackPanel Visibility="{Binding PreviewDocuments.Count, 
+                                            Converter={StaticResource MultiConditionVisibilityConverter}, 
+                                            ConverterParameter='=0:Collapsed;>0:Visible'}"
+                            >
+                    <TextBlock Margin="0,5"
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Text="Предварительный просмотр"
+                                />
+                    <ListBox ItemsSource="{Binding PreviewDocuments}"
+                                Style="{StaticResource CustomListBoxStyle}"
+                                ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                HorizontalContentAlignment="Stretch"
+                                SelectionChanged="DocumentList_SelectionChanged"
+                                >
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock FontSize="14"
-                                               FontWeight="Bold"
-                                               Text="{Binding Name}"
-                                               />
-                                    <ListBox ItemsSource="{Binding Items}"
-                                             Style="{StaticResource CustomListBoxStyle}"
-                                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                             HorizontalContentAlignment="Stretch"
-                                             SelectionChanged="DocumentList_SelectionChanged"
-                                             >
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Background="Transparent" 
-                                                        ToolTip="{Binding FullName}"
-                                                        ToolTipService.ShowOnDisabled="True"
-                                                        ToolTipService.Placement="Right"
-                                                        >
-                                                    <Grid Margin="0,5">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="auto"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="auto"/>
-                                                            <ColumnDefinition Width="auto"/>
-                                                        </Grid.ColumnDefinitions>
+                                <Border Background="Transparent" 
+                                                    ToolTip="{Binding FullName}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    ToolTipService.Placement="Right"
+                                                    >
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                                        <TextBlock Grid.Column="0"
-                                                                   FontSize="14"
-                                                                   VerticalAlignment="Center"
-                                                                   Text="{Binding DisplayName}"
-                                                                   />
-                                                        <Grid Grid.Column="1" HorizontalAlignment="Right">
-                                                            <Popup Placement="Right"
-                                                                   StaysOpen="False"
-                                                                   PopupAnimation="Fade"
-                                                                   AllowsTransparency="True"
-                                                                   >
-                                                                <StackPanel Background="LightGray">
-                                                                    <Button Content="📂" 
-                                                                            Click="ShowProjectsFlyout_Click" 
-                                                                            Tag="{Binding FullName}" />
-                                                                    <Button Content="📌" 
-                                                                            Click="PinDocument_Click" 
-                                                                            CommandParameter="{Binding FullName}" />
-                                                                    <Button Content="✖" 
-                                                                            Click="CloseDocument_Click" 
-                                                                            CommandParameter="{Binding FullName}" />
-                                                                </StackPanel>
-                                                            </Popup>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Tag" Value="False" />
-                                                            <Style.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Tag" Value="True" />
-                                                                </Trigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <Border.Resources>
-                                                        <Style TargetType="Popup">
-                                                            <Setter Property="IsOpen" Value="False" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
-                                                                    <Setter Property="IsOpen" Value="True" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Resources>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-                                </StackPanel>
+                                        <TextBlock Grid.Column="0"
+                                                    FontSize="14"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding DisplayName}"
+                                                    ToolTip="{Binding FullName}"
+                                                    />
+                                        <Button Grid.Column="2"
+                                                Margin="5,0"
+                                                Click="PinDocument_Click"
+                                                ToolTip="Закрепить документ"
+                                                CommandParameter="{Binding FullName}"
+                                                Content="📌"
+                                                />
+                                        <Button Grid.Column="3"
+                                                Click="CloseDocument_Click"
+                                                CommandParameter="{Binding FullName}"
+                                                Content="✖"
+                                                />
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>-->
-            </Grid>
-        </ScrollViewer>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Separator Margin="0,10"/>
+                </StackPanel>
+
+                <ItemsControl ItemsSource="{Binding GroupedDocuments}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock FontSize="14"
+                                            FontWeight="Bold"
+                                            Text="{Binding Name}"
+                                            />
+                                <ListBox ItemsSource="{Binding Items}"
+                                            Style="{StaticResource CustomListBoxStyle}"
+                                            ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                            HorizontalContentAlignment="Stretch"
+                                            SelectionChanged="DocumentList_SelectionChanged"
+                                            >
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="Transparent" 
+                                                    ToolTip="{Binding FullName}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    ToolTipService.Placement="Right"
+                                                    >
+                                                <Grid Margin="0,5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="auto"/>
+                                                        <ColumnDefinition Width="auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0"
+                                                                FontSize="14"
+                                                                VerticalAlignment="Center"
+                                                                Text="{Binding DisplayName}"
+                                                                />
+                                                    <Grid Grid.Column="1" HorizontalAlignment="Right">
+                                                        <Popup Placement="Right"
+                                                                StaysOpen="False"
+                                                                PopupAnimation="Fade"
+                                                                AllowsTransparency="True"
+                                                                >
+                                                            <StackPanel Background="LightGray">
+                                                                <Button Content="📂" 
+                                                                        Click="ShowProjectsFlyout_Click" 
+                                                                        Tag="{Binding FullName}" />
+                                                                <Button Content="📌" 
+                                                                        Click="PinDocument_Click" 
+                                                                        CommandParameter="{Binding FullName}" />
+                                                                <Button Content="✖" 
+                                                                        Click="CloseDocument_Click" 
+                                                                        CommandParameter="{Binding FullName}" />
+                                                            </StackPanel>
+                                                        </Popup>
+                                                    </Grid>
+                                                </Grid>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Tag" Value="False" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Tag" Value="True" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Border.Resources>
+                                                    <Style TargetType="Popup">
+                                                        <Setter Property="IsOpen" Value="False" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=Border}}" Value="True">
+                                                                <Setter Property="IsOpen" Value="True" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Resources>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>-->
+        </Grid>
 
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="1"
