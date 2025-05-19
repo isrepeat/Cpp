@@ -242,35 +242,30 @@ namespace TabsManagerExtension {
         //
         private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
-            if (sender is Border interactiveArea) {
+            if (sender is FrameworkElement interactiveArea) {
                 string documentName = GetDocumentNameFromListBoxItem(interactiveArea);
-                ShowVirtualPopup(interactiveArea, documentName);
+                var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 20, 0));
+                var mainWindow = Application.Current.MainWindow;
+                var relativePoint = mainWindow.PointFromScreen(position);
+
+                // Уведомляем Popup о наведении и запускаем таймер на открытие
+                MyVirtualPopup.InteractiveArea_MouseEnter();
+                
+                //MyVirtualPopup.StartOpenPopupTimer(relativePoint, documentName);
+                MyVirtualPopup.ShowPopup(relativePoint, documentName);
             }
         }
 
         private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
 
-            // Проверяем, существует ли Popup и не находится ли мышь над ним
-            var popup = MyVirtualPopup;
-            if (popup != null && !popup.IsMouseOver) {
-                // Запускаем таймер на закрытие
-                popup.StartClosePopupTimer();
-            }
+            // Проверяем, существует ли Popup и уведомляем о покидании области
+            MyVirtualPopup.InteractiveArea_MouseLeave();
         }
 
-        // Метод для отображения VirtualPopup
-        private void ShowVirtualPopup(Border interactiveArea, string documentName) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"ShowVirtualPopup()");
-            var position = interactiveArea.PointToScreen(new Point(0, interactiveArea.ActualHeight));
-            var mainWindow = Application.Current.MainWindow;
-            var relativePoint = mainWindow.PointFromScreen(position);
-
-            MyVirtualPopup.ShowPopup(relativePoint, documentName);
-        }
 
         // [TEST] Метод для получения имени документа
-        private string GetDocumentNameFromListBoxItem(Border interactiveArea) {
+        private string GetDocumentNameFromListBoxItem(FrameworkElement interactiveArea) {
             var listBoxItem = FindParent<ListBoxItem>(interactiveArea);
             if (listBoxItem == null) return "Без имени";
 
