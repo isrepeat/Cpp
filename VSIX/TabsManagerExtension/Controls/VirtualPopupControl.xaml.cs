@@ -36,25 +36,6 @@ namespace TabsManagerExtension.Controls {
         public static readonly DependencyProperty PopupContentProperty =
             DependencyProperty.Register("PopupContent", typeof(object), typeof(VirtualPopupControl), new PropertyMetadata(null));
 
-        public string DocumentName {
-            get { return (string)GetValue(DocumentNameProperty); }
-            set { SetValue(DocumentNameProperty, value); }
-        }
-
-        public static readonly DependencyProperty DocumentNameProperty =
-            DependencyProperty.Register("DocumentName", typeof(string), typeof(VirtualPopupControl),
-                new PropertyMetadata(string.Empty, OnDocumentNameChanged));
-
-        private static void OnDocumentNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            var control = d as VirtualPopupControl;
-            control?.UpdateDocumentName();
-        }
-
-        private void UpdateDocumentName() {
-            if (PopupElement != null && PopupElement.IsOpen) {
-                Helpers.Diagnostic.Logger.LogDebug($"DocumentName updated to: {DocumentName}");
-            }
-        }
 
         // Запуск таймера закрытия Popup
         public void StartClosePopupTimer() {
@@ -73,12 +54,12 @@ namespace TabsManagerExtension.Controls {
         }
 
         // Метод для показа Popup
-        public void ShowPopup(Point position, string documentName) {
+        public void ShowPopup(Point position, object dataContext) {
             if (!isMouseOverInteractiveArea) {
                 return;
             }
 
-            DocumentName = documentName;
+            this.DataContext = dataContext;
             PopupElement.HorizontalOffset = position.X;
             PopupElement.VerticalOffset = position.Y;
             PopupElement.IsOpen = true;

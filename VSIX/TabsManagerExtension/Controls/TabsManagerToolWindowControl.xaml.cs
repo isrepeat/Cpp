@@ -21,14 +21,19 @@ using TabsManagerExtension.Helpers.Ex;
 
 namespace TabsManagerExtension {
     public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        // [Events]:
         private EnvDTE80.DTE2 _dte;
         private EnvDTE.WindowEvents _windowEvents;
         private EnvDTE.DocumentEvents _documentEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
+        
+        // [Timeres]:
         private FileSystemWatcher _fileWatcher;
-
         private DispatcherTimer _saveStateCheckTimer;
-        private DispatcherTimer _previewStateCheckTimer;
+
+        // [Document collections]:
         public ObservableCollection<DocumentInfo> PreviewDocuments { get; set; } = new ObservableCollection<DocumentInfo>();
         public ObservableCollection<ProjectGroup> GroupedDocuments { get; set; } = new ObservableCollection<ProjectGroup>();
         private CollectionViewSource GroupedDocumentsViewSource { get; set; }
@@ -42,18 +47,11 @@ namespace TabsManagerExtension {
             set {
                 if (_scaleFactor != value) {
                     _scaleFactor = value;
-                    OnPropertyChanged(nameof(ScaleFactor));
+                    OnPropertyChanged();
                     ApplyDocumentScale();
                 }
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string propertyName) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
 
         public TabsManagerToolWindowControl() {
             InitializeComponent();
@@ -62,7 +60,7 @@ namespace TabsManagerExtension {
             InitializeTimers();
             InitializeDocumentsViewSource();
 
-            this.DataContext = this;
+            base.DataContext = this;
             LoadOpenDocuments();
         }
 
@@ -242,17 +240,26 @@ namespace TabsManagerExtension {
         //
         private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
-            if (sender is FrameworkElement interactiveArea) {
-                string documentName = GetDocumentNameFromListBoxItem(interactiveArea);
-                var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 20, 0));
-                var mainWindow = Application.Current.MainWindow;
-                var relativePoint = mainWindow.PointFromScreen(position);
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-                // Уведомляем Popup о наведении и запускаем таймер на открытие
-                MyVirtualPopup.InteractiveArea_MouseEnter();
-                
-                //MyVirtualPopup.StartOpenPopupTimer(relativePoint, documentName);
-                MyVirtualPopup.ShowPopup(relativePoint, documentName);
+            if (sender is FrameworkElement interactiveArea) {
+                // Находим родительский ListBoxItem (где привязаны данные)
+                var listBoxItem = FindParent<ListBoxItem>(interactiveArea);
+                if (listBoxItem == null) return;
+
+                // Получаем привязанный объект (DocumentInfo)
+                if (listBoxItem.DataContext is DocumentInfo documentInfo) {
+                    var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 0, 0));
+                    var mainWindow = Application.Current.MainWindow;
+                    var relativePoint = mainWindow.PointFromScreen(position);
+
+                    if (documentInfo.ShellDocument != null) {
+                        documentInfo.UpdateProjectReferenceList();
+                    }
+
+                    MyVirtualPopup.InteractiveArea_MouseEnter();
+                    MyVirtualPopup.ShowPopup(relativePoint, documentInfo);
+                }
             }
         }
 
@@ -261,24 +268,6 @@ namespace TabsManagerExtension {
 
             // Проверяем, существует ли Popup и уведомляем о покидании области
             MyVirtualPopup.InteractiveArea_MouseLeave();
-        }
-
-
-        // [TEST] Метод для получения имени документа
-        private string GetDocumentNameFromListBoxItem(FrameworkElement interactiveArea) {
-            var listBoxItem = FindParent<ListBoxItem>(interactiveArea);
-            if (listBoxItem == null) return "Без имени";
-
-            // Используем метод расширения для поиска всех TextBlock
-            var textBlocks = listBoxItem.GetVisualDescendants<TextBlock>();
-            foreach (var textBlock in textBlocks) {
-                // Проверяем, является ли текст блока названием документа
-                if (textBlock.Text.StartsWith("Document")) {
-                    return textBlock.Text;
-                }
-            }
-
-            return "Без имени";
         }
 
 
@@ -294,47 +283,16 @@ namespace TabsManagerExtension {
         }
 
 
-        private void ShowProjectsFlyout_Click(object sender, RoutedEventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (sender is Button button && button.Tag is string fullName) {
-                var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
-                if (document == null) {
-                    return;
-                }
-
-                var shellDocument = new ShellDocument(document);
-                var projects = shellDocument.GetDocumentProjects();
-
-                // Создаем ContextMenu вместо Popup
-                var contextMenu = new ContextMenu();
-
-                foreach (var project in projects) {
-                    var projectMenuItem = new MenuItem {
-                        Header = project.Name,
-                        CommandParameter = new Tuple<string, string>(fullName, project.Name)
-                    };
-                    projectMenuItem.Click += ProjectMenuItem_Click;
-                    contextMenu.Items.Add(projectMenuItem);
-                }
-
-                // Отображаем ContextMenu
-                contextMenu.IsOpen = true;
-                contextMenu.PlacementTarget = button;
-                contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
-            }
-        }
-
         private void ProjectMenuItem_Click(object sender, RoutedEventArgs e) {
-            if (sender is MenuItem menuItem && menuItem.CommandParameter is Tuple<string, string> parameters) {
-                string fullName = parameters.Item1;
-                string projectName = parameters.Item2;
-
-                MoveDocumentToProjectGroup(fullName, projectName);
+            if (sender is Button button && button.CommandParameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
+                MoveDocumentToProjectGroup(
+                    documentProjectReferenceInfo.DocumentInfo.FullName,
+                    documentProjectReferenceInfo.ProjectInfo.Name
+                    );
             }
         }
 
-        private void PinDocument_Click(object sender, RoutedEventArgs e) {
+        private void KeepDocumentOpen_Click(object sender, RoutedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (sender is Button button && button.CommandParameter is string fullName) {
                 // Проверяем, находится ли документ в режиме предварительного просмотра
@@ -345,6 +303,18 @@ namespace TabsManagerExtension {
                     // Перемещаем документ в основную группу
                     MoveDocumentToGroup(previewDoc);
                     PreviewDocuments.Remove(previewDoc);
+                }
+            }
+        }
+
+        private void PinDocument_Click(object sender, RoutedEventArgs e) {
+        }
+        private void CloseDocument_Click(object sender, RoutedEventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (sender is Button button && button.CommandParameter is string fullName) {
+                var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
+                if (document != null) {
+                    document.Close();
                 }
             }
         }
@@ -360,17 +330,6 @@ namespace TabsManagerExtension {
                     if (this.ActivateDocument(document)) {
                         document.Activate();
                     }
-                }
-            }
-        }
-
-
-        private void CloseDocument_Click(object sender, RoutedEventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            if (sender is Button button && button.CommandParameter is string fullName) {
-                var document = _dte.Documents.Cast<EnvDTE.Document>().FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
-                if (document != null) {
-                    document.Close();
                 }
             }
         }
@@ -409,8 +368,8 @@ namespace TabsManagerExtension {
                 this.PreviewDocuments.Add(new DocumentInfo(shellDocument));
             }
         }
-        private void RemoveDocumentFromPreview(string fullName) {
-            var doc = this.PreviewDocuments.FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
+        private void RemoveDocumentFromPreview(string documentFullName) {
+            var doc = this.PreviewDocuments.FirstOrDefault(d => string.Equals(d.FullName, documentFullName, StringComparison.OrdinalIgnoreCase));
             if (doc != null) {
                 this.PreviewDocuments.Remove(doc);
             }
@@ -454,17 +413,17 @@ namespace TabsManagerExtension {
             }
         }
 
-        private void MoveDocumentToProjectGroup(string fullName, string projectName) {
+        private void MoveDocumentToProjectGroup(string documentFullName, string projectName) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Ищем документ
-            var docInfo = this.GroupedDocuments.SelectMany(g => g.Items).FirstOrDefault(d => d.FullName == fullName);
+            var docInfo = this.GroupedDocuments.SelectMany(g => g.Items).FirstOrDefault(d => d.FullName == documentFullName);
             if (docInfo == null) {
                 return;
             }
 
             // Перемещаем документ в выбранную группу
-            this.RemoveDocumentFromGroup(fullName);
+            this.RemoveDocumentFromGroup(documentFullName);
 
             // Создаем или находим группу
             var group = this.GroupedDocuments.FirstOrDefault(g => g.Name == projectName);
@@ -480,11 +439,11 @@ namespace TabsManagerExtension {
         }
 
 
-        private void RemoveDocumentFromGroup(string fullName) {
+        private void RemoveDocumentFromGroup(string documentFullName) {
             ThreadHelper.ThrowIfNotOnUIThread(); 
             
             foreach (var group in this.GroupedDocuments.ToList()) {
-                var docToRemove = group.Items.FirstOrDefault(d => string.Equals(d.FullName, fullName, StringComparison.OrdinalIgnoreCase));
+                var docToRemove = group.Items.FirstOrDefault(d => string.Equals(d.FullName, documentFullName, StringComparison.OrdinalIgnoreCase));
                 if (docToRemove != null) {
                     group.Items.Remove(docToRemove);
                     if (group.Items.Count == 0) {
@@ -621,12 +580,12 @@ namespace TabsManagerExtension {
             }
         }
 
-        private ListBox FindListBoxContainingDocument(string fullName) {
+        private ListBox FindListBoxContainingDocument(string documentFullName) {
             var listBoxes = Helpers.UI.FindVisualChildren<ListBox>(this);
 
             foreach (var listBox in listBoxes) {
                 if (listBox.ItemsSource is IEnumerable<DocumentInfo> documents) {
-                    if (documents.Any(d => d.FullName == fullName)) {
+                    if (documents.Any(d => d.FullName == documentFullName)) {
                         return listBox;
                     }
                 }
@@ -645,6 +604,12 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
             var solution = _dte.Solution;
             return string.IsNullOrEmpty(solution.FullName) ? null : Path.GetDirectoryName(solution.FullName);
+        }
+
+
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

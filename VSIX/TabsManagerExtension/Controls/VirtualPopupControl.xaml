@@ -20,17 +20,7 @@
                 MouseEnter="PopupContent_MouseEnter"
                 MouseLeave="PopupContent_MouseLeave"
                 >
-            <StackPanel>
-                <Border Padding="10,0,10,0">
-                    <StackPanel>
-                        <TextBlock Text="{Binding DocumentName, ElementName=PopupControl}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="#dddddd"/>
-                    </StackPanel>
-                </Border>
-                <ContentPresenter Content="{Binding PopupContent, ElementName=PopupControl}"/>
-            </StackPanel>
+            <ContentPresenter Content="{Binding PopupContent, ElementName=PopupControl}"/>
         </Border>
     </Popup>
 </UserControl>
