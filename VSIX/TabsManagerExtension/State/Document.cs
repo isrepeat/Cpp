@@ -44,7 +44,7 @@ namespace TabsManagerExtension {
             }
         }
 
-        public List<ProjectInfo> GetDocumentProjects() {
+        public List<TabItemProject> GetDocumentProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
             var projects = new List<EnvDTE.Project>();
 
@@ -69,7 +69,7 @@ namespace TabsManagerExtension {
                 System.Diagnostics.Debug.WriteLine($"[ERROR] GetDocumentProjects: {ex.Message}");
             }
 
-            return projects.Select(p => new ProjectInfo(new ShellProject(p))).ToList();
+            return projects.Select(p => new TabItemProject(new ShellProject(p))).ToList();
         }
 
         private bool ProjectContainsDocumentInProject(EnvDTE.Project project) {
@@ -152,7 +152,42 @@ namespace TabsManagerExtension {
         }
     }
 
-    public class ProjectInfo : Helpers.ObservableObject {
+    public class ShellWindow {
+        public EnvDTE.Window Window { get; private set; }
+        private EnvDTE80.DTE2 _dte;
+
+        public ShellWindow(EnvDTE.Window window) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            this.Window = window;
+            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
+        }
+
+        public bool IsTabWindow() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (this.Window == null) {
+                return false;
+            }
+
+            // Во вкладках редактора окна имеют Linkable == false, tool windows — true.
+            return !this.Window.Linkable;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public abstract class TabItemBase : Helpers.ObservableObject {
 
         private string _name;
         public string Name {
@@ -160,28 +195,6 @@ namespace TabsManagerExtension {
             set {
                 if (_name != value) {
                     _name = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public ShellProject ShellProject { get; private set; }
-        public ProjectInfo(ShellProject shellProject) {
-            this.ShellProject = shellProject;
-
-            this.Name = shellProject.Project.Name;
-        }
-    }
-
-
-    public class DocumentInfo : Helpers.ObservableObject {
-
-        private string _displayName;
-        public string DisplayName {
-            get => _displayName;
-            set {
-                if (_displayName != value) {
-                    _displayName = value;
                     OnPropertyChanged();
                 }
             }
@@ -197,8 +210,27 @@ namespace TabsManagerExtension {
                 }
             }
         }
+    }
 
-        public string ProjectName { get; set; }
+    public interface IActivatableTab {
+        void Activate();
+    }
+
+
+
+    public class TabItemProject : TabItemBase {
+        public ShellProject ShellProject { get; private set; }
+        public TabItemProject(ShellProject shellProject) {
+            base.Name = shellProject.Project.Name;
+            base.FullName = shellProject.Project.FullName;
+            this.ShellProject = shellProject;
+        }
+    }
+
+
+    public class TabItemDocument : TabItemBase, IActivatableTab {
+        public ShellDocument ShellDocument { get; private set; }
+
 
         private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
         public ObservableCollection<DocumentProjectReferenceInfo> ProjectReferenceList {
@@ -209,24 +241,25 @@ namespace TabsManagerExtension {
             }
         }
 
-        public ShellDocument ShellDocument { get; private set; }
-        public DocumentInfo(ShellDocument shellDocument) {
+        public TabItemDocument(ShellDocument shellDocument) {
+            base.Name = shellDocument.Document.Name;
+            base.FullName = shellDocument.Document.FullName;
             this.ShellDocument = shellDocument;
-
-            this.DisplayName = shellDocument.Document.Name;
-            this.FullName = shellDocument.Document.FullName;
-            this.ProjectName = shellDocument.GetDocumentProjectName();
 
             this.UpdateProjectReferenceList();
         }
 
+        public void Activate() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.ShellDocument.Document.Activate();
+        }
         public void UpdateProjectReferenceList() {
             this.ProjectReferenceList.Clear();
 
             var projects = this.ShellDocument.GetDocumentProjects()
                 .Select(p => new DocumentProjectReferenceInfo(
-                    projectInfo: p,
-                    documentInfo: this
+                    tabItemProject: p,
+                    tabItemDocument: this
                 ));
 
             foreach (var project in projects) {
@@ -236,19 +269,40 @@ namespace TabsManagerExtension {
     }
 
 
-    public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
-        public ProjectInfo ProjectInfo { get; private set; }
-        public DocumentInfo DocumentInfo { get; private set; }
+    public class TabItemWindow : TabItemBase, IActivatableTab {
+        public EnvDTE.Window Window { get; private set; }
 
-        public DocumentProjectReferenceInfo(ProjectInfo projectInfo, DocumentInfo documentInfo) {
-            this.ProjectInfo = projectInfo;
-            this.DocumentInfo = documentInfo;
+        public TabItemWindow(EnvDTE.Window window) {
+            base.Name = window.Caption;
+            base.FullName = window.Caption;
+            this.Window = window;
+        }
+
+        public void Activate() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.Window.Activate();
         }
     }
 
 
-    public class ProjectGroup : Helpers.ObservableObject {
+
+
+
+
+
+    public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
+        public TabItemProject TabItemProject { get; private set; }
+        public TabItemDocument TabItemDocument { get; private set; }
+
+        public DocumentProjectReferenceInfo(TabItemProject tabItemProject, TabItemDocument tabItemDocument) {
+            this.TabItemProject = tabItemProject;
+            this.TabItemDocument = tabItemDocument;
+        }
+    }
+
+
+    public class TabItemGroup : Helpers.ObservableObject {
         public string Name { get; set; }
-        public ObservableCollection<DocumentInfo> Items { get; set; } = new ObservableCollection<DocumentInfo>();
+        public ObservableCollection<TabItemBase> Items { get; set; } = new ObservableCollection<TabItemBase>();
     }
 }

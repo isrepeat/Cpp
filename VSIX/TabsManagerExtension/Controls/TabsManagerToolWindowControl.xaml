@@ -264,7 +264,7 @@
                              >
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <localControls:DocumentItemControl Title="{Binding DisplayName}">
+                                <localControls:DocumentItemControl Title="{Binding Name}">
                                      <localControls:DocumentItemControl.ControlContent>
                                          <StackPanel Orientation="Horizontal">
                                              <Button Style="{StaticResource DarkPopupButtonStyle2}"
@@ -289,7 +289,7 @@
                     <Separator Margin="0,10"/>
                 </StackPanel>
 
-                <ItemsControl ItemsSource="{Binding GroupedDocuments}">
+                <ItemsControl ItemsSource="{Binding GroupedTabItems}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
@@ -306,7 +306,7 @@
                                          >
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <localControls:DocumentItemControl Title="{Binding DisplayName}">
+                                            <localControls:DocumentItemControl Title="{Binding Name}">
                                                  <localControls:DocumentItemControl.ControlContent>
                                                      <StackPanel Orientation="Horizontal">
                                                          <Button Style="{StaticResource DarkPopupButtonStyle2}"
@@ -351,7 +351,7 @@
                                FontSize="14"
                                FontWeight="Bold"
                                Foreground="#dddddd"
-                               Text="{Binding DisplayName}"
+                               Text="{Binding Name}"
                                />
                     <Border Padding="10,0,10,5">
                         <StackPanel>
@@ -378,7 +378,7 @@
                              BorderThickness="0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding ProjectInfo.Name}" 
+                                <Button Content="{Binding TabItemProject.Name}" 
                                         Style="{StaticResource DarkPopupButtonStyle}"
                                         CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                         Click="ProjectMenuItem_Click" />
