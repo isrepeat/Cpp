@@ -35,6 +35,10 @@ namespace TabsManagerExtension.Helpers {
     }
 
     public class Logger {
+        private string logParamPrefix = "    * ";
+        private string logErrorPrefix = "ERROR: ";
+        private string logWarningPrefix = "WARNING: ";
+
         public void LogDebug(
             string logMessage,
             string caller = "",
@@ -62,12 +66,48 @@ namespace TabsManagerExtension.Helpers {
             ) {
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
             if (!String.IsNullOrEmpty(caller)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] WARNING: {logMessage} [{callerInfo.CallerName}]");
-                //CppFeatures.Cx.Logger.LogDebug($"WARNING: {logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logWarningPrefix}{logMessage} [{callerInfo.CallerName}]");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logWarningPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] WARNING: {logMessage}");
-                //CppFeatures.Cx.Logger.LogDebug($"WARNING: {logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logWarningPrefix}{logMessage}");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logWarningPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            }
+        }
+
+        public void LogError(
+            string logMessage,
+            string caller = "",
+            [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
+            [CallerLineNumber] int lineNumber = 0
+            ) {
+            var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
+            if (!String.IsNullOrEmpty(caller)) {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logErrorPrefix}{logMessage} [{callerInfo.CallerName}]");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logErrorPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            }
+            else {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logErrorPrefix}{logMessage}");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logErrorPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            }
+        }
+
+        public void LogParam(
+            string logMessage,
+            string caller = "",
+            [CallerFilePath] string filePath = "",
+            [CallerMemberName] string memberName = "",
+            [CallerLineNumber] int lineNumber = 0
+            ) {
+            var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
+            if (!String.IsNullOrEmpty(caller)) {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logParamPrefix}{logMessage} [{callerInfo.CallerName}]");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logParamPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            }
+            else {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logParamPrefix}{logMessage}");
+                //CppFeatures.Cx.Logger.LogDebug($"{this.logParamPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
         }
 

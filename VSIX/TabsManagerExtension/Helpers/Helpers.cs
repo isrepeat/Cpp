@@ -45,6 +45,17 @@ namespace TabsManagerExtension.Helpers {
 
             return result;
         }
+
+        // Универсальный метод поиска родителя
+        public static T FindParent<T>(DependencyObject child) where T : DependencyObject {
+            while (child != null) {
+                if (child is T parent) {
+                    return parent;
+                }
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
     }
 }
 
