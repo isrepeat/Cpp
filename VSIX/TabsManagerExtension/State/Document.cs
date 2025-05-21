@@ -69,8 +69,69 @@ namespace TabsManagerExtension {
                 System.Diagnostics.Debug.WriteLine($"[ERROR] GetDocumentProjects: {ex.Message}");
             }
 
-            return projects.Select(p => new TabItemProject(new ShellProject(p))).ToList();
+            return projects.Select(p => new TabItemProject(p)).ToList();
         }
+
+        public bool IsDocumentInPreviewTab() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsUIShell shell = Package.GetGlobalService(typeof(SVsUIShell)) as IVsUIShell;
+            if (shell == null)
+                return false;
+
+            shell.GetDocumentWindowEnum(out IEnumWindowFrames windowFramesEnum);
+            IVsWindowFrame[] frameArray = new IVsWindowFrame[1];
+            uint fetched;
+
+            while (windowFramesEnum.Next(1, frameArray, out fetched) == VSConstants.S_OK && fetched == 1) {
+                IVsWindowFrame frame = frameArray[0];
+                if (frame == null)
+                    continue;
+
+                // Получаем путь к документу
+                if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID.VSFPROPID_pszMkDocument, out object docPathObj)) &&
+                    docPathObj is string docPath &&
+                    string.Equals(docPath, this.Document.FullName, StringComparison.OrdinalIgnoreCase)) {
+                    // Проверяем, является ли окно временным (предварительный просмотр)
+                    if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID5.VSFPROPID_IsProvisional, out object isProvisionalObj)) &&
+                        isProvisionalObj is bool isProvisional) {
+                        return isProvisional;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+
+        public void OpenDocumentAsPinned() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsUIShellOpenDocument openDoc = Package.GetGlobalService(typeof(SVsUIShellOpenDocument)) as IVsUIShellOpenDocument;
+            if (openDoc == null) {
+                return;
+            }
+
+            Guid logicalView = VSConstants.LOGVIEWID_Primary;
+            IVsUIHierarchy hierarchy;
+            uint itemId;
+            IVsWindowFrame windowFrame;
+            Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider;
+
+            // Повторное открытие документа
+            int hr = openDoc.OpenDocumentViaProject(
+                this.Document.FullName,
+                ref logicalView,
+                out serviceProvider,
+                out hierarchy,
+                out itemId,
+                out windowFrame);
+
+            if (ErrorHandler.Succeeded(hr) && windowFrame != null) {
+                windowFrame.Show();
+            }
+        }
+
 
         private bool ProjectContainsDocumentInProject(EnvDTE.Project project) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -118,38 +179,6 @@ namespace TabsManagerExtension {
 
             return false;
         }
-
-
-        public bool IsDocumentInPreviewTab() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            IVsUIShell shell = Package.GetGlobalService(typeof(SVsUIShell)) as IVsUIShell;
-            if (shell == null)
-                return false;
-
-            shell.GetDocumentWindowEnum(out IEnumWindowFrames windowFramesEnum);
-            IVsWindowFrame[] frameArray = new IVsWindowFrame[1];
-            uint fetched;
-
-            while (windowFramesEnum.Next(1, frameArray, out fetched) == VSConstants.S_OK && fetched == 1) {
-                IVsWindowFrame frame = frameArray[0];
-                if (frame == null)
-                    continue;
-
-                // Получаем путь к документу
-                if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID.VSFPROPID_pszMkDocument, out object docPathObj)) &&
-                    docPathObj is string docPath &&
-                    string.Equals(docPath, this.Document.FullName, StringComparison.OrdinalIgnoreCase)) {
-                    // Проверяем, является ли окно временным (предварительный просмотр)
-                    if (ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID5.VSFPROPID_IsProvisional, out object isProvisionalObj)) &&
-                        isProvisionalObj is bool isProvisional) {
-                        return isProvisional;
-                    }
-                }
-            }
-
-            return false;
-        }
     }
 
     public class ShellWindow {
@@ -173,13 +202,24 @@ namespace TabsManagerExtension {
             // Во вкладках редактора окна имеют Linkable == false, tool windows — true.
             return !this.Window.Linkable;
         }
+
+        public static string GetWindowId(EnvDTE.Window window) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try {
+                // У каждого Tool Window — свой уникальный ObjectKind,
+                // потому что они создаются как отдельные компоненты, зарегистрированные в системе Visual Studio.
+                return window.ObjectKind;
+            }
+            catch (Exception ex) {
+                Helpers.Diagnostic.Logger.LogError($"GetWindowId(ObjectKind) failed: {ex.Message}");
+                return string.Empty;
+            }
+        }
+        public string GetWindowId() {
+            return GetWindowId(this.Window);
+        }
     }
-
-
-
-
-
-
 
 
 
@@ -189,12 +229,12 @@ namespace TabsManagerExtension {
 
     public abstract class TabItemBase : Helpers.ObservableObject {
 
-        private string _name;
-        public string Name {
-            get => _name;
+        private string _caption;
+        public string Caption {
+            get => _caption;
             set {
-                if (_name != value) {
-                    _name = value;
+                if (_caption != value) {
+                    _caption = value;
                     OnPropertyChanged();
                 }
             }
@@ -221,9 +261,13 @@ namespace TabsManagerExtension {
     public class TabItemProject : TabItemBase {
         public ShellProject ShellProject { get; private set; }
         public TabItemProject(ShellProject shellProject) {
-            base.Name = shellProject.Project.Name;
+            base.Caption = shellProject.Project.Name;
             base.FullName = shellProject.Project.FullName;
             this.ShellProject = shellProject;
+        }
+
+        public TabItemProject(EnvDTE.Project project)
+            : this(new ShellProject(project)) {
         }
     }
 
@@ -242,11 +286,15 @@ namespace TabsManagerExtension {
         }
 
         public TabItemDocument(ShellDocument shellDocument) {
-            base.Name = shellDocument.Document.Name;
+            base.Caption = shellDocument.Document.Name;
             base.FullName = shellDocument.Document.FullName;
             this.ShellDocument = shellDocument;
 
             this.UpdateProjectReferenceList();
+        }
+
+        public TabItemDocument(EnvDTE.Document document)
+            : this(new ShellDocument(document)) {
         }
 
         public void Activate() {
@@ -270,17 +318,24 @@ namespace TabsManagerExtension {
 
 
     public class TabItemWindow : TabItemBase, IActivatableTab {
-        public EnvDTE.Window Window { get; private set; }
+        public ShellWindow ShellWindow { get; private set; }
 
-        public TabItemWindow(EnvDTE.Window window) {
-            base.Name = window.Caption;
-            base.FullName = window.Caption;
-            this.Window = window;
+        public string WindowId { get; private set; }
+
+        public TabItemWindow(ShellWindow shellWindow) {
+            base.Caption = shellWindow.Window.Caption;
+            base.FullName = shellWindow.Window.Caption;
+            this.ShellWindow = shellWindow;
+            this.WindowId = shellWindow.GetWindowId();
+        }
+
+        public TabItemWindow(EnvDTE.Window window)
+            : this(new ShellWindow(window)) {
         }
 
         public void Activate() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this.Window.Activate();
+            this.ShellWindow.Window.Activate();
         }
     }
 
@@ -302,7 +357,7 @@ namespace TabsManagerExtension {
 
 
     public class TabItemGroup : Helpers.ObservableObject {
-        public string Name { get; set; }
-        public ObservableCollection<TabItemBase> Items { get; set; } = new ObservableCollection<TabItemBase>();
+        public string GroupName { get; set; }
+        public ObservableCollection<TabItemBase> TabItems { get; set; } = new ObservableCollection<TabItemBase>();
     }
 }
