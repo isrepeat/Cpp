@@ -2,8 +2,8 @@
 using System.Windows.Controls;
 
 namespace TabsManagerExtension.Controls {
-    public partial class DocumentItemControl : UserControl {
-        public DocumentItemControl() {
+    public partial class TabItemControl : UserControl {
+        public TabItemControl() {
             InitializeComponent();
         }
 
@@ -14,7 +14,7 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register("Title", typeof(string), typeof(DocumentItemControl), new PropertyMetadata("Document Title"));
+            DependencyProperty.Register("Title", typeof(string), typeof(TabItemControl), new PropertyMetadata("Document Title"));
 
         // Свойство для управления контентом панели (кнопки)
         public object ControlContent {
@@ -23,7 +23,7 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ControlContentProperty =
-            DependencyProperty.Register("ControlContent", typeof(object), typeof(DocumentItemControl), new PropertyMetadata(null));
+            DependencyProperty.Register("ControlContent", typeof(object), typeof(TabItemControl), new PropertyMetadata(null));
 
         // Свойство для управления видимостью ControlPanel
         public Visibility ControlPanelVisibility {
@@ -32,7 +32,7 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ControlPanelVisibilityProperty =
-            DependencyProperty.Register("ControlPanelVisibility", typeof(Visibility), typeof(DocumentItemControl), new PropertyMetadata(Visibility.Hidden));
+            DependencyProperty.Register("ControlPanelVisibility", typeof(Visibility), typeof(TabItemControl), new PropertyMetadata(Visibility.Hidden));
 
         // Свойство для управления прозрачностью ControlPanel
         public double ControlPanelOpacity {
@@ -41,6 +41,6 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ControlPanelOpacityProperty =
-            DependencyProperty.Register("ControlPanelOpacity", typeof(double), typeof(DocumentItemControl), new PropertyMetadata(0.0));
+            DependencyProperty.Register("ControlPanelOpacity", typeof(double), typeof(TabItemControl), new PropertyMetadata(0.0));
     }
 }
