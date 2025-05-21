@@ -51,8 +51,8 @@
                              ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                              >
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="ConsoleMain.cpp">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="ConsoleMain.cpp">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -67,12 +67,12 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="ConsoleMain.h">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="ConsoleMain.h">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -87,8 +87,8 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                     </ListBox>
                     <Border Background="Transparent" Height="5"></Border>
@@ -104,8 +104,8 @@
                              ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                              >
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="Main.cpp">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="Main.cpp">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -120,12 +120,12 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="Main.h">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="Main.h">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -140,8 +140,8 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                     </ListBox>
                     
@@ -158,8 +158,8 @@
                              ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                              >
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="Memory.cpp">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="Memory.cpp">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -174,12 +174,12 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                         <ListBoxItem>
-                            <localControls:DocumentItemControl Title="Memory.h">
-                                <localControls:DocumentItemControl.ControlContent>
+                            <localControls:TabItemControl Title="Memory.h">
+                                <localControls:TabItemControl.ControlContent>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                 Click="PinDocument_Click"
@@ -194,8 +194,8 @@
                                                 Content="✖"
                                                 />
                                     </StackPanel>
-                                </localControls:DocumentItemControl.ControlContent>
-                            </localControls:DocumentItemControl>
+                                </localControls:TabItemControl.ControlContent>
+                            </localControls:TabItemControl>
                         </ListBoxItem>
                     </ListBox>
                     <Border Background="Transparent" Height="10"></Border>
@@ -208,8 +208,8 @@
                     ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                     >
                 <ListBoxItem>
-                    <localControls:DocumentItemControl Title="Document AAA BBB CCC DDD EEE">
-                        <localControls:DocumentItemControl.ControlContent>
+                    <localControls:TabItemControl Title="Document AAA BBB CCC DDD EEE">
+                        <localControls:TabItemControl.ControlContent>
                             <StackPanel Orientation="Horizontal">
                                 <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                         Content="📌"
@@ -220,13 +220,13 @@
                                         MouseLeave="InteractiveArea_MouseLeave"
                                         />
                             </StackPanel>
-                        </localControls:DocumentItemControl.ControlContent>
-                    </localControls:DocumentItemControl>
+                        </localControls:TabItemControl.ControlContent>
+                    </localControls:TabItemControl>
                 </ListBoxItem>
 
                 <ListBoxItem>
-                    <localControls:DocumentItemControl Title="Document 2">
-                        <localControls:DocumentItemControl.ControlContent>
+                    <localControls:TabItemControl Title="Document 2">
+                        <localControls:TabItemControl.ControlContent>
                             <StackPanel Orientation="Horizontal">
                                 <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                         Content="📌"
@@ -237,8 +237,8 @@
                                         MouseLeave="InteractiveArea_MouseLeave"
                                         />
                             </StackPanel>
-                        </localControls:DocumentItemControl.ControlContent>
-                    </localControls:DocumentItemControl>
+                        </localControls:TabItemControl.ControlContent>
+                    </localControls:TabItemControl>
                 </ListBoxItem>
             </ListBox>-->
 
@@ -260,28 +260,28 @@
                              Style="{StaticResource CustomListBoxStyle}"
                              ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                              HorizontalContentAlignment="Stretch"
-                             SelectionChanged="DocumentList_SelectionChanged"
+                             SelectionChanged="TabList_SelectionChanged"
                              >
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <localControls:DocumentItemControl Title="{Binding Name}">
-                                     <localControls:DocumentItemControl.ControlContent>
+                                <localControls:TabItemControl Title="{Binding Caption}">
+                                     <localControls:TabItemControl.ControlContent>
                                          <StackPanel Orientation="Horizontal">
                                              <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                     Click="KeepDocumentOpen_Click"
-                                                     CommandParameter="{Binding FullName}"
+                                                     Click="KeepTabOpen_Click"
+                                                     CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                      Content="📂"
                                                      />
                                              <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                      MouseEnter="InteractiveArea_MouseEnter"
                                                      MouseLeave="InteractiveArea_MouseLeave"
-                                                     Click="CloseDocument_Click"
-                                                     CommandParameter="{Binding FullName}"
+                                                     Click="CloseTab_Click"
+                                                     CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                      Content="✖"
                                                      />
                                          </StackPanel>
-                                     </localControls:DocumentItemControl.ControlContent>
-                                 </localControls:DocumentItemControl>
+                                     </localControls:TabItemControl.ControlContent>
+                                 </localControls:TabItemControl>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
@@ -289,41 +289,41 @@
                     <Separator Margin="0,10"/>
                 </StackPanel>
 
-                <ItemsControl ItemsSource="{Binding GroupedTabItems}">
+                <ItemsControl ItemsSource="{Binding SortedTabItemGroups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
                                 <TextBlock FontSize="12"
                                            FontWeight="Normal"
                                            Foreground="#aaaaaa"
-                                           Text="{Binding Name}"
+                                           Text="{Binding GroupName}"
                                            />
-                                <ListBox ItemsSource="{Binding Items}"
+                                <ListBox ItemsSource="{Binding TabItems}"
                                          Style="{StaticResource CustomListBoxStyle}"
                                          ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
                                          HorizontalContentAlignment="Stretch"
-                                         SelectionChanged="DocumentList_SelectionChanged"
+                                         SelectionChanged="TabList_SelectionChanged"
                                          >
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <localControls:DocumentItemControl Title="{Binding Name}">
-                                                 <localControls:DocumentItemControl.ControlContent>
+                                            <localControls:TabItemControl Title="{Binding Caption}">
+                                                 <localControls:TabItemControl.ControlContent>
                                                      <StackPanel Orientation="Horizontal">
                                                          <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                                 Click="PinDocument_Click"
-                                                                 CommandParameter="{Binding FullName}"
+                                                                 Click="PinTab_Click"
+                                                                 CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                                  Content="📌"
                                                                  />
                                                          <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                                  MouseEnter="InteractiveArea_MouseEnter"
                                                                  MouseLeave="InteractiveArea_MouseLeave"
-                                                                 Click="CloseDocument_Click"
-                                                                 CommandParameter="{Binding FullName}"
+                                                                 Click="CloseTab_Click"
+                                                                 CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                                  Content="✖"
                                                                  />
                                                      </StackPanel>
-                                                 </localControls:DocumentItemControl.ControlContent>
-                                             </localControls:DocumentItemControl>
+                                                 </localControls:TabItemControl.ControlContent>
+                                             </localControls:TabItemControl>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
@@ -351,7 +351,7 @@
                                FontSize="14"
                                FontWeight="Bold"
                                Foreground="#dddddd"
-                               Text="{Binding Name}"
+                               Text="{Binding Caption}"
                                />
                     <Border Padding="10,0,10,5">
                         <StackPanel>
@@ -378,7 +378,7 @@
                              BorderThickness="0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding TabItemProject.Name}" 
+                                <Button Content="{Binding TabItemProject.Caption}" 
                                         Style="{StaticResource DarkPopupButtonStyle}"
                                         CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                         Click="ProjectMenuItem_Click" />
