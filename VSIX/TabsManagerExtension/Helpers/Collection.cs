@@ -115,10 +115,10 @@ namespace TabsManagerExtension.Helpers {
             });
         }
 
-        public IEnumerable<(TGroup Group, TItem Item)> GetAllSelectedItems() {
+        public IEnumerable<(TItem Item, TGroup Group)> GetAllSelectedItems() {
             foreach (var group in _groups) {
                 foreach (var item in group.SelectedItems) {
-                    yield return (group, item);
+                    yield return (item, group);
                 }
             }
         }

@@ -227,7 +227,7 @@ namespace TabsManagerExtension {
 
 
 
-
+    // TODO: mb use ref on TabItemGroup instead usage FindTabItemWithGroup?
     public abstract class TabItemBase : Helpers.ObservableObject {
 
         private string _caption;
@@ -247,6 +247,17 @@ namespace TabsManagerExtension {
             set {
                 if (_fullName != value) {
                     _fullName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isPreviewTab = false;
+        public bool IsPreviewTab {
+            get => _isPreviewTab;
+            set {
+                if (_isPreviewTab != value) {
+                    _isPreviewTab = value;
                     OnPropertyChanged();
                 }
             }
@@ -373,8 +384,30 @@ namespace TabsManagerExtension {
     }
 
 
-    public class TabItemGroup : Helpers.ISelectableGroup<TabItemBase> {
-        public string GroupName { get; set; }
+    public class TabItemGroup : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+        private string _groupName;
+        public string GroupName {
+            get => _groupName;
+            set {
+                if (_groupName != value) {
+                    _groupName = value;
+                    OnPropertyChanged();
+
+                    this.IsPreviewGroup = _groupName == "__Preview__";
+                }
+            }
+        }
+
+        private bool _isPreviewGroup = false;
+        public bool IsPreviewGroup {
+            get => _isPreviewGroup;
+            private set {
+                if (_isPreviewGroup != value) {
+                    _isPreviewGroup = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public ObservableCollection<TabItemBase> TabItems { get; set; } = new();
         public ObservableCollection<TabItemBase> SelectedItems { get; set; } = new();
     }
