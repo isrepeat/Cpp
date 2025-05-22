@@ -16,7 +16,7 @@
     <RootNamespace>TabsManagerExtension</RootNamespace>
     <AssemblyName>TabsManagerExtension</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -57,6 +57,9 @@
     </Compile>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
+    <Compile Include="Behaviours\ListBoxSelectedItemsBehavior.cs" />
+    <Compile Include="Helpers\Collection.cs" />
+    <Compile Include="Helpers\VisualTree.cs" />
     <Compile Include="Helpers\Math.cs" />
     <Compile Include="Helpers\Diagnostic.cs" />
     <Compile Include="Helpers\Helpers.cs" />
