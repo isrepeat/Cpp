@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -289,8 +290,6 @@ namespace TabsManagerExtension {
             base.Caption = shellDocument.Document.Name;
             base.FullName = shellDocument.Document.FullName;
             this.ShellDocument = shellDocument;
-
-            this.UpdateProjectReferenceList();
         }
 
         public TabItemDocument(EnvDTE.Document document)
@@ -299,7 +298,16 @@ namespace TabsManagerExtension {
 
         public void Activate() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this.ShellDocument.Document.Activate();
+
+            try {
+                this.ShellDocument.Document?.Activate();
+            }
+            catch (COMException ex) {
+                Helpers.Diagnostic.Logger.LogWarning($"Failed to activate document '{this.Caption}': {ex.Message}");
+            }
+            catch (Exception ex) {
+                Helpers.Diagnostic.Logger.LogError($"Unexpected error activating document '{this.Caption}': {ex.Message}");
+            }
         }
         public void UpdateProjectReferenceList() {
             this.ProjectReferenceList.Clear();
@@ -335,7 +343,16 @@ namespace TabsManagerExtension {
 
         public void Activate() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this.ShellWindow.Window.Activate();
+
+            try {
+                this.ShellWindow.Window?.Activate();
+            }
+            catch (COMException ex) {
+                Helpers.Diagnostic.Logger.LogWarning($"Failed to activate window '{this.Caption}': {ex.Message}");
+            }
+            catch (Exception ex) {
+                Helpers.Diagnostic.Logger.LogError($"Unexpected error activating window '{this.Caption}': {ex.Message}");
+            }
         }
     }
 
@@ -356,8 +373,9 @@ namespace TabsManagerExtension {
     }
 
 
-    public class TabItemGroup : Helpers.ObservableObject {
+    public class TabItemGroup : Helpers.ISelectableGroup<TabItemBase> {
         public string GroupName { get; set; }
-        public ObservableCollection<TabItemBase> TabItems { get; set; } = new ObservableCollection<TabItemBase>();
+        public ObservableCollection<TabItemBase> TabItems { get; set; } = new();
+        public ObservableCollection<TabItemBase> SelectedItems { get; set; } = new();
     }
 }

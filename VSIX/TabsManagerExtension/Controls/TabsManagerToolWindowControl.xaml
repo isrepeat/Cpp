@@ -7,6 +7,7 @@
              xmlns:local="clr-namespace:TabsManagerExtension"
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+             xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
              Background="#1F1F1F"
              Foreground="#d4d4d4"
              mc:Ignorable="d"
@@ -39,213 +40,6 @@
                 <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
             </Grid.LayoutTransform>
 
-            <!-- TEST Layout -->
-            <!--<StackPanel>
-                <StackPanel>
-                    <TextBlock FontSize="12"
-                               FontWeight="Normal"
-                               Foreground="#aaaaaa"
-                               Text="ConsoleProject"
-                               />
-                    <ListBox Style="{StaticResource CustomListBoxStyle}"
-                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                             >
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="ConsoleMain.cpp">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="ConsoleMain.h">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                    </ListBox>
-                    <Border Background="Transparent" Height="5"></Border>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock FontSize="12"
-                               FontWeight="Normal"
-                               Foreground="#aaaaaa"
-                               Text="Helpers.Desktop"
-                               />
-                    <ListBox Style="{StaticResource CustomListBoxStyle}"
-                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                             >
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="Main.cpp">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="Main.h">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                    </ListBox>
-                    
-                    <Border Background="Transparent" Height="5"></Border>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock FontSize="12"
-                               FontWeight="Normal"
-                               Foreground="#aaaaaa"
-                               Text="Helpers.Shared"
-                               />
-                    <ListBox Style="{StaticResource CustomListBoxStyle}"
-                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                             >
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="Memory.cpp">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <localControls:TabItemControl Title="Memory.h">
-                                <localControls:TabItemControl.ControlContent>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                Click="PinDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                MouseEnter="InteractiveArea_MouseEnter"
-                                                MouseLeave="InteractiveArea_MouseLeave"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </StackPanel>
-                                </localControls:TabItemControl.ControlContent>
-                            </localControls:TabItemControl>
-                        </ListBoxItem>
-                    </ListBox>
-                    <Border Background="Transparent" Height="10"></Border>
-                </StackPanel>
-            </StackPanel>-->
-
-
-            <!--<ListBox Margin="0"
-                    Style="{StaticResource CustomListBoxStyle}"
-                    ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                    >
-                <ListBoxItem>
-                    <localControls:TabItemControl Title="Document AAA BBB CCC DDD EEE">
-                        <localControls:TabItemControl.ControlContent>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                        Content="📌"
-                                        />
-                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                        Content="✖"
-                                        MouseEnter="InteractiveArea_MouseEnter"
-                                        MouseLeave="InteractiveArea_MouseLeave"
-                                        />
-                            </StackPanel>
-                        </localControls:TabItemControl.ControlContent>
-                    </localControls:TabItemControl>
-                </ListBoxItem>
-
-                <ListBoxItem>
-                    <localControls:TabItemControl Title="Document 2">
-                        <localControls:TabItemControl.ControlContent>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                        Content="📌"
-                                        />
-                                <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                        Content="✖"
-                                        MouseEnter="InteractiveArea_MouseEnter"
-                                        MouseLeave="InteractiveArea_MouseLeave"
-                                        />
-                            </StackPanel>
-                        </localControls:TabItemControl.ControlContent>
-                    </localControls:TabItemControl>
-                </ListBoxItem>
-            </ListBox>-->
-
-
-            
-            
-            
             <StackPanel>
                 <StackPanel Visibility="{Binding PreviewDocuments.Count, 
                                          Converter={StaticResource MultiConditionVisibilityConverter}, 
@@ -265,23 +59,23 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <localControls:TabItemControl Title="{Binding Caption}">
-                                     <localControls:TabItemControl.ControlContent>
-                                         <StackPanel Orientation="Horizontal">
-                                             <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                    <localControls:TabItemControl.ControlContent>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                      Click="KeepTabOpen_Click"
                                                      CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                      Content="📂"
                                                      />
-                                             <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                            <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                      MouseEnter="InteractiveArea_MouseEnter"
                                                      MouseLeave="InteractiveArea_MouseLeave"
                                                      Click="CloseTab_Click"
                                                      CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                      Content="✖"
                                                      />
-                                         </StackPanel>
-                                     </localControls:TabItemControl.ControlContent>
-                                 </localControls:TabItemControl>
+                                        </StackPanel>
+                                    </localControls:TabItemControl.ControlContent>
+                                </localControls:TabItemControl>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
@@ -298,32 +92,33 @@
                                            Foreground="#aaaaaa"
                                            Text="{Binding GroupName}"
                                            />
-                                <ListBox ItemsSource="{Binding TabItems}"
-                                         Style="{StaticResource CustomListBoxStyle}"
+                                <ListBox Style="{StaticResource CustomListBoxStyle}"
                                          ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                         ItemsSource="{Binding TabItems}"
+                                         SelectionMode="Extended"
+                                         localBehaviours:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}"
                                          HorizontalContentAlignment="Stretch"
-                                         SelectionChanged="TabList_SelectionChanged"
                                          >
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <localControls:TabItemControl Title="{Binding Caption}">
-                                                 <localControls:TabItemControl.ControlContent>
-                                                     <StackPanel Orientation="Horizontal">
-                                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                <localControls:TabItemControl.ControlContent>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                                  Click="PinTab_Click"
                                                                  CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                                  Content="📌"
                                                                  />
-                                                         <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                        <Button Style="{StaticResource DarkPopupButtonStyle2}"
                                                                  MouseEnter="InteractiveArea_MouseEnter"
                                                                  MouseLeave="InteractiveArea_MouseLeave"
                                                                  Click="CloseTab_Click"
                                                                  CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                                  Content="✖"
                                                                  />
-                                                     </StackPanel>
-                                                 </localControls:TabItemControl.ControlContent>
-                                             </localControls:TabItemControl>
+                                                    </StackPanel>
+                                                </localControls:TabItemControl.ControlContent>
+                                            </localControls:TabItemControl>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
