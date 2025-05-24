@@ -8,4 +8,6 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
+
 </Project>
