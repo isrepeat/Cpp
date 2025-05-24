@@ -6,24 +6,42 @@
         xmlns:local="clr-namespace:WpfTestApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <StackPanel>
-    <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding Groups}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="10">
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                        <ListBox ItemsSource="{Binding Items}"
-                                 SelectionMode="Extended"
-                                 local:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <Grid>
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+                
+                <ItemsControl Grid.Column="0"
+                              ItemsSource="{Binding Groups}"
+                              >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="10">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <ListBox ItemsSource="{Binding Items}"
+                                         SelectionMode="Extended"
+                                         local:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-    <Button Content="Показать все выбранные элементы"
-            Margin="0,10,0,0"
-            Click="ShowSelectedItems_Click" />
-    </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Margin="10"
+                            >
+                    <TextBlock Text="Info:" />
+                    <TextBlock>
+                        <Run Text="Selection state = "/>
+                        <Run Text="{Binding SelectionState, Mode=OneWay}" FontWeight="Bold"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        <Button Content="Test button"
+                Margin="0,10,0,0"
+                Click="TestButton_Click" />
+        </StackPanel>
+    </Grid>
 </Window>
