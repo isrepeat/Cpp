@@ -262,6 +262,17 @@ namespace TabsManagerExtension {
                 }
             }
         }
+
+        private bool _isActiveTab = false;
+        public bool IsActiveTab {
+            get => _isActiveTab;
+            set {
+                if (_isActiveTab != value) {
+                    _isActiveTab = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
     }
 
     public interface IActivatableTab {
@@ -408,7 +419,7 @@ namespace TabsManagerExtension {
                 }
             }
         }
-        public ObservableCollection<TabItemBase> TabItems { get; set; } = new();
+        public ObservableCollection<TabItemBase> Items { get; set; } = new();
         public ObservableCollection<TabItemBase> SelectedItems { get; set; } = new();
     }
 }

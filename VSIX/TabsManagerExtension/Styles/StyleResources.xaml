@@ -48,9 +48,12 @@
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Foreground" Value="#d4d4d4"/>
                 <Setter Property="Background" Value="#3c3c3c"/>
-                <Setter Property="BorderBrush" Value="#6f42c1"/>
                 <Setter Property="FontWeight" Value="Bold" />
             </Trigger>
+            <DataTrigger Binding="{Binding IsActiveTab}" Value="True">
+                <Setter Property="BorderBrush" Value="#6f42c1"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 

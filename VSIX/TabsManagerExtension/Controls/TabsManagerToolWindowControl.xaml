@@ -52,12 +52,12 @@
                                        Text="{Binding GroupName}"
                                        />
                             <ListBox Style="{StaticResource CustomListBoxStyle}"
-                                        ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                        ItemsSource="{Binding TabItems}"
-                                        SelectionMode="Extended"
-                                        localBehaviours:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}"
-                                        HorizontalContentAlignment="Stretch"
-                                        >
+                                     ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                     ItemsSource="{Binding Items}"
+                                     SelectionMode="Extended"
+                                     localBehaviours:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}"
+                                     HorizontalContentAlignment="Stretch"
+                                     >
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <localControls:TabItemControl Title="{Binding Caption}">
