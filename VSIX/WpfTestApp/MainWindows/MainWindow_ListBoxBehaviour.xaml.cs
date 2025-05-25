@@ -19,8 +19,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-
-// TODO: Сделай такую же структуру проекта как и у SimpleApp.WinUI3
 namespace WpfTestApp {
     public interface IVisualRefreshNotifiable {
         event Action? ForceVisualRefreshRequested;
@@ -609,9 +607,8 @@ namespace WpfTestApp {
 
 
 
-    public partial class MainWindow : Window, INotifyPropertyChanged {
+    public partial class MainWindow_ListBoxBehaviour : Window, INotifyPropertyChanged {
         public event PropertyChangedEventHandler? PropertyChanged;
-
 
         public ObservableCollection<GroupModel> Groups { get; }
         private GroupsSelectionCoordinator<GroupModel, MyItem> _groupsSelectionCoordinator;
@@ -620,7 +617,7 @@ namespace WpfTestApp {
             get => _groupsSelectionCoordinator.SelectionState.ToString();
         }
 
-        public MainWindow() {
+        public MainWindow_ListBoxBehaviour() {
             InitializeComponent();
 
             Groups = new ObservableCollection<GroupModel> {
