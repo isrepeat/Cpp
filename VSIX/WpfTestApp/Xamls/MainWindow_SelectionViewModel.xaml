@@ -1,0 +1,46 @@
+﻿<Window x:Class="WpfTestApp.MainWindow_SelectionViewModel"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfTestApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+
+                <ItemsControl Grid.Column="0"
+                              ItemsSource="{Binding Groups}"
+                              >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="10">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <ListBox ItemsSource="{Binding Items}"
+                                         />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Grid.Column="1"
+                            Margin="10"
+                            >
+                    <TextBlock Text="Info:" />
+                    <TextBlock>
+                        <Run Text="Selection state = "/>
+                        <Run Text="{Binding SelectionState, Mode=OneWay}" FontWeight="Bold"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+            <Button Content="Test button"
+                    Margin="0,10,0,0"
+                    Click="TestButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

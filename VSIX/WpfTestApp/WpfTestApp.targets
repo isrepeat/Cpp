@@ -2,36 +2,41 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <NewLine>%0D%0A</NewLine>
-	  <MainWindowsDir>$(MSBuildThisFileDirectory)\MainWindows</MainWindowsDir>
+	  <!--<XamlsDir>$(MSBuildThisFileDirectory)\Xamls</XamlsDir>-->
+	  <XamlsDir>Xamls</XamlsDir>
 
 	  <!-- Здесь выбирается нужное окно -->
-	  <SelectedMainWindow>$(MainWindowsDir)\MainWindow_ListBoxBehaviour</SelectedMainWindow>
+	  <!--<SelectedMainWindow>MainWindow_ListBoxBehaviour</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_SelectionViewModel</SelectedMainWindow>
   </PropertyGroup>
 
 
   
-	<Target Name="ExcludeNonSelectedMainWindowsFromCompile" BeforeTargets="PrepareForBuild">
+	<Target Name="ExcludeNonSelectedXamlsFromCompile" BeforeTargets="PrepareForBuild">
 		<ItemGroup>
 			<!-- Все XAML окна -->
-			<AllMainWindows Include="$(MainWindowsDir)\MainWindow_*.xaml" />
-			<AllMainWindows Include="$(MainWindowsDir)\MainWindow.xaml" />
+			<AllXamls Include="$(XamlsDir)\*.xaml" />
 
 			<!-- Оставляем только выбранное -->
-			<BuildMainWindow Include="$(WindowFolder)\$(SelectedMainWindow).xaml" />
+			<BuildXamls Include="$(XamlsDir)\$(SelectedMainWindow).xaml" />
 
 			<!-- Всё остальное исключаем -->
-			<MainWindowsToExclude Include="@(AllMainWindows)" Exclude="@(BuildMainWindow)" />
+			<XamlsToExclude Include="@(AllXamls)" Exclude="@(BuildXamls)" />
 
 			<!-- Удаляем из компиляции .xaml.cs -->
-			<Compile Remove="@(MainWindowsToExclude->'%(RelativeDir)%(Filename).xaml.cs')" />
+			<Compile Remove="@(XamlsToExclude->'%(RelativeDir)%(Filename).xaml.cs')" />
 			
 			<!-- Удаляем из Page компиляции .xaml -->
-			<Page Remove="@(MainWindowsToExclude)" />
+			<Page Remove="@(XamlsToExclude)" />
 		</ItemGroup>
 
 		<Message Importance="High" Text="$(NewLine)" />
-		<Message Importance="High" Text="Selected MainWindow: @(BuildMainWindow)" />
-		<Message Importance="High" Text="Excluded Windows: @(MainWindowsToExclude)" />
+		<Message Importance="High" Text="Selected Xamls:" />
+    <Message Importance="High" Text="%(BuildXamls.Identity)"/>
+    
+    <Message Importance="High" Text="$(NewLine)" />
+		<Message Importance="High" Text="Excluded Xamls:" />
+    <Message Importance="High" Text="%(XamlsToExclude.Identity)"/>
 	</Target>
 	
 	
