@@ -9,6 +9,7 @@
     <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
