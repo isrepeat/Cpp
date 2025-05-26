@@ -91,10 +91,65 @@ namespace WpfTestApp {
     }
 
 
-
     public interface ISelectableItem {
         bool IsSelected { get; set; }
+        void SetSelectedDirectly(bool value);
+
+        // Глобальный перехватчик установки значения
+        static Func<ISelectableItem, bool, bool>? SelectionInterceptor { get; set; }
     }
+
+    public abstract class SelectableItemBase : ISelectableItem, INotifyPropertyChanged {
+        private bool _isSelected;
+
+        // 🔒 Флаг защиты от рекурсии
+        private bool _isProcessingSelection;
+
+        public bool IsSelected {
+            get => _isSelected;
+            set {
+                if (_isProcessingSelection) {
+                    Helpers.Diagnostic.Logger.LogWarning("You call setter from SelectableItem.SelectionInterceptor");
+                    System.Diagnostics.Debugger.Break();
+                    return;
+                }
+
+                _isProcessingSelection = true;
+                try {
+                    bool proposed = ISelectableItem.SelectionInterceptor?.Invoke(this, value) ?? value;
+
+                    if (_isSelected != proposed) {
+                        _isSelected = proposed;
+                        OnPropertyChanged();
+                    }
+                }
+                finally {
+                    _isProcessingSelection = false;
+                }
+            }
+        }
+
+
+        // Для прямого обновления без перехвата
+        public void SetSelectedDirectly(bool value) {
+            if (_isSelected != value) {
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
+
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+
+
+
+
     public interface ISelectableGroup<TItem> {
         RangeObservableCollection<TItem> Items { get; }
     }
@@ -102,18 +157,7 @@ namespace WpfTestApp {
 
 
 
-    public class MyItem : Helpers.ObservableObject, ISelectableItem {
-        private bool _isSelected;
-        public bool IsSelected {
-            get => _isSelected;
-            set {
-                if (_isSelected != value) {
-                    _isSelected = value;
-                    this.OnPropertyChanged();
-                }
-            }
-        }
-
+    public class MyItem : SelectableItemBase {
         public string Name { get; }
 
         public MyItem(string name) {
@@ -145,10 +189,16 @@ namespace WpfTestApp {
             Single,
             Multiple
         }
+
+        public enum SelectionAction {
+            Select,
+            Unselect
+        }
     }
 
 
-    public class GroupsSelectionCoordinator<TGroup, TItem>
+
+    public class GroupsSelectionCoordinator<TGroup, TItem> : Helpers.ObservableObject
         where TGroup : ISelectableGroup<TItem>
         where TItem : ISelectableItem, INotifyPropertyChanged {
 
@@ -156,14 +206,62 @@ namespace WpfTestApp {
         public Action<TGroup, TItem, bool>? OnItemSelectionChanged;
         public Action<Enums.SelectionState>? OnSelectionStateChanged;
 
+        // Properties:
+        private Enums.SelectionState _selectionState = Enums.SelectionState.None;
+        public Enums.SelectionState SelectionState {
+            get => _selectionState;
+            set {
+                if (_selectionState != value) {
+                    _selectionState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        // Internal:
         private readonly ObservableCollection<TGroup> _groups;
         private readonly Dictionary<TGroup, NotifyCollectionChangedEventHandler> _collectionChangedHandlers = new();
         private readonly Dictionary<TItem, PropertyChangedEventHandler> _itemHandlers = new();
-
+        private readonly Dictionary<TItem, TGroup> _itemToGroupMap = new();
+        private readonly HashSet<(TGroup Group, TItem Item)> _selectedItems = new();
+        private (TGroup Group, TItem Item)? _anchor = null;
 
         public GroupsSelectionCoordinator(ObservableCollection<TGroup> groups) {
             _groups = groups;
+
+            // Централизованный перехват выбора
+            ISelectableItem.SelectionInterceptor = (item, proposed) => {
+                if (item is TItem typed && _itemToGroupMap.TryGetValue(typed, out var group)) {
+                    var requestedAction = proposed
+                        ? Enums.SelectionAction.Select
+                        : Enums.SelectionAction.Unselect;
+
+                    var resultAction = this.HandleSelection(group, typed, requestedAction);
+                    var isSelected = resultAction == Enums.SelectionAction.Select;
+
+                    if (isSelected) {
+                        _selectedItems.Add((group, typed));
+                    }
+                    else {
+                        _selectedItems.Remove((group, typed));
+                    }
+
+                    var oldSelectionState = this.SelectionState;
+                    this.SelectionState = _selectedItems.Count switch {
+                        0 => Enums.SelectionState.None,
+                        1 => Enums.SelectionState.Single,
+                        _ => Enums.SelectionState.Multiple
+                    };
+
+                    if (this.SelectionState != oldSelectionState) {
+                        OnSelectionStateChanged?.Invoke(this.SelectionState);
+                    }
+
+                    this.OnItemSelectionChanged?.Invoke(group, typed, isSelected);
+                    return isSelected;
+                }
+                return proposed;
+            };
 
             foreach (var group in _groups) {
                 this.AttachGroup(group);
@@ -183,8 +281,101 @@ namespace WpfTestApp {
             };
         }
 
+        public Enums.SelectionAction HandleSelection(TGroup group, TItem item, Enums.SelectionAction requestedAction) {
+            bool isShift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            bool isCtrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+
+            if (isShift && isCtrl) {
+                // Such case doesn't supported. Return inverted action (it's mean do nothing).
+                return requestedAction == Enums.SelectionAction.Select
+                    ? Enums.SelectionAction.Unselect 
+                    : Enums.SelectionAction.Select;
+            }
+
+            var resultAction = requestedAction;
+
+            if (requestedAction == Enums.SelectionAction.Select) {
+                resultAction = Enums.SelectionAction.Select;
+
+                if (isShift) {
+                    if (_anchor != null) {
+                        this.ApplyShiftRange(_anchor.Value, (group, item));
+                    }
+                }
+                else {
+                    _anchor = (group, item);
+
+                    if (isCtrl) {
+                    }
+                    else {
+                        this.ClearAllSelection();
+                    }
+                }
+            }
+            else if (requestedAction == Enums.SelectionAction.Unselect) {
+                resultAction = Enums.SelectionAction.Select; // Unselect allowable only for CTRL
+
+                if (isShift) {
+                    if (_anchor != null) {
+                        this.ApplyShiftRange(_anchor.Value, (group, item));
+                    }
+                }
+                else {
+                    if (isCtrl) {
+                        if (_selectedItems.Count > 1) {
+                            resultAction = Enums.SelectionAction.Unselect;
+                        }
+                    }
+                    else {
+                        this.ClearAllSelection();
+                        resultAction = Enums.SelectionAction.Select;
+                    }
+                }
+            }
+
+            return resultAction;
+        }
+
+        // TODO: add comments
+        private void ApplyShiftRange((TGroup Group, TItem Item) from, (TGroup Group, TItem Item) to) {
+            var flat = _groups.SelectMany(g => g.Items.Select(i => (Group: g, Item: i))).ToList();
+
+            int i1 = flat.IndexOf(from);
+            int i2 = flat.IndexOf(to);
+            if (i1 == -1 || i2 == -1) {
+                return;
+            }
+
+            int min = Math.Min(i1, i2);
+            int max = Math.Max(i1, i2);
+
+            _selectedItems.Clear();
+
+            for (int i = 0; i < flat.Count; i++) {
+                bool inRange = i >= min && i <= max;
+                flat[i].Item.SetSelectedDirectly(inRange);
+
+                if (inRange) {
+                    _selectedItems.Add(flat[i]);
+                }
+            }
+            _anchor = from;
+        }
+
+
+        public void ClearAllSelection() {
+            foreach (var (group, item) in _selectedItems.ToList()) {
+                item.SetSelectedDirectly(false);
+            }
+            _selectedItems.Clear();
+        }
+
+
+
         private void AttachGroup(TGroup group) {
             foreach (var item in group.Items) {
+                _itemToGroupMap[item] = group;
+
                 var handler = new PropertyChangedEventHandler((_, e) => this.OnItemChanged(group, item, e));
                 _itemHandlers[item] = handler;
                 item.PropertyChanged += handler;
@@ -193,6 +384,8 @@ namespace WpfTestApp {
             NotifyCollectionChangedEventHandler collectionHandler = (s, e) => {
                 if (e.NewItems != null) {
                     foreach (var item in e.NewItems.Cast<TItem>()) {
+                        _itemToGroupMap[item] = group;
+
                         var handler = new PropertyChangedEventHandler((_, ev) => this.OnItemChanged(group, item, ev));
                         _itemHandlers[item] = handler;
                         item.PropertyChanged += handler;
@@ -201,6 +394,8 @@ namespace WpfTestApp {
 
                 if (e.OldItems != null) {
                     foreach (var item in e.OldItems.Cast<TItem>()) {
+                        _itemToGroupMap.Remove(item);
+
                         if (_itemHandlers.TryGetValue(item, out var handler)) {
                             item.PropertyChanged -= handler;
                             _itemHandlers.Remove(item);
@@ -220,6 +415,8 @@ namespace WpfTestApp {
             }
 
             foreach (var item in group.Items) {
+                _itemToGroupMap.Remove(item);
+
                 if (_itemHandlers.TryGetValue(item, out var handler)) {
                     item.PropertyChanged -= handler;
                     _itemHandlers.Remove(item);
@@ -228,9 +425,10 @@ namespace WpfTestApp {
         }
 
         private void OnItemChanged(TGroup group, TItem item, PropertyChangedEventArgs e) {
-            if (e.PropertyName == nameof(ISelectableItem.IsSelected)) {
-                this.OnItemSelectionChanged?.Invoke(group, item, item.IsSelected);
-            }
+            if (e.PropertyName != nameof(ISelectableItem.IsSelected))
+                return;
+
+            // тут ничего не делаем — вся логика в перехватчике
         }
     }
 
@@ -241,15 +439,14 @@ namespace WpfTestApp {
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<GroupModel> Groups { get; }
-        private GroupsSelectionCoordinator<GroupModel, MyItem> _groupsSelectionCoordinator;
 
-        public string SelectionState {
-            //get => _groupsSelectionCoordinator.SelectionState.ToString();
-            get => "...";
+        private GroupsSelectionCoordinator<GroupModel, MyItem> _groupsSelectionCoordinator;
+        public GroupsSelectionCoordinator<GroupModel, MyItem> GroupsSelectionCoordinator {
+            get => _groupsSelectionCoordinator;
         }
 
         public MainWindow_SelectionViewModel() {
-            InitializeComponent();
+            this.InitializeComponent();
 
             Groups = new ObservableCollection<GroupModel> {
                 new ("Group A", new[] { new MyItem("A3"), new MyItem("A2"), new MyItem("A1"), new MyItem("A4") }),
@@ -257,7 +454,6 @@ namespace WpfTestApp {
                 new ("Group C", new[] { new MyItem("C1"), new MyItem("C2") })
             };
 
-            Groups[0].Items[2].IsSelected = true;
 
             _groupsSelectionCoordinator = new GroupsSelectionCoordinator<GroupModel, MyItem>(Groups);
             _groupsSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
@@ -267,6 +463,8 @@ namespace WpfTestApp {
             //    OnPropertyChanged(nameof(SelectionState));
             //};
             DataContext = this;
+
+            Groups[0].Items[2].IsSelected = true;
         }
 
         private async void TestButton_Click(object sender, RoutedEventArgs e) {

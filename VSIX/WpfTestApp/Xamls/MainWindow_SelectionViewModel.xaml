@@ -194,7 +194,7 @@
                     <TextBlock Text="Info:" />
                     <TextBlock>
                         <Run Text="Selection state = "/>
-                        <Run Text="{Binding SelectionState, Mode=OneWay}" FontWeight="Bold"/>
+                        <Run Text="{Binding GroupsSelectionCoordinator.SelectionState, Mode=OneWay}" FontWeight="Bold"/>
                     </TextBlock>
                 </StackPanel>
             </Grid>
