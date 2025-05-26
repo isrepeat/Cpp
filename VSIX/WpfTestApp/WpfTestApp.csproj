@@ -11,4 +11,7 @@
 
 	<!-- Custom targets -->
 	<Import Project="$(MSBuildThisFileDirectory)\WpfTestApp.targets" />
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.14.0" />
+	</ItemGroup>
 </Project>

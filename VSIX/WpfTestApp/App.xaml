@@ -6,6 +6,16 @@
     <!-- StartupUri="MainWindow.xaml" -->
     <!-- StartupUri удалён, чтобы избежать конфликтов. -->
     <Application.Resources>
-         
+        <!-- Общие цвета -->
+        <SolidColorBrush x:Key="AppBackgroundColor" Color="#FF2A2A2A"/>
+        <SolidColorBrush x:Key="AppTextColor" Color="#FFDADADA"/>
+
+        <!-- Стиль окна -->
+        <Style x:Key="DarkWindowStyle" TargetType="Window">
+            <Setter Property="Background" Value="{StaticResource AppBackgroundColor}" />
+            <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
     </Application.Resources>
 </Application>
