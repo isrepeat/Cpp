@@ -31,6 +31,11 @@
     group; your package should define its own command set in order to avoid collisions
     with command ids defined by other packages. -->
 
+    <Groups>
+      <Group guid="guidTabsManagerExtensionPackageCmdSet" id="MyCommandGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+    </Groups>
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -42,11 +47,21 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidTabsManagerExtensionPackageCmdSet" id="TabsManagerToolWindowCommandId" priority="0x0100" type="Button">
+      
+      
+      <!--<Button guid="guidTabsManagerExtensionPackageCmdSet" id="TabsManagerToolWindowCommandId" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
           <ButtonText>TabsManagerToolWindow</ButtonText>
+        </Strings>
+      </Button>-->
+
+      <Button guid="guidTabsManagerExtensionPackageCmdSet" id="TabsManagerToolWindowCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidTabsManagerExtensionPackageCmdSet" id="MyCommandGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Tabs Manager</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -68,6 +83,7 @@
 
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidTabsManagerExtensionPackageCmdSet" value="{8a30806a-edfc-4c91-8182-025665145a07}">
+      <IDSymbol name="MyCommandGroup" value="0x1020" />
       <IDSymbol name="TabsManagerToolWindowCommandId" value="0x0100" />
     </GuidSymbol>
 
