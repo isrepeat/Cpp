@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Globalization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.Threading;
+using System.Windows.Threading;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
-
-namespace TabsManagerExtension.Helpers {
+namespace Helpers {
     public class Diagnostic {
         private static readonly Diagnostic _instance = new Diagnostic();
         public static Diagnostic Instance => _instance;

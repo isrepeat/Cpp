@@ -7,6 +7,7 @@
              xmlns:local="clr-namespace:TabsManagerExtension"
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+             xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
              Background="#1F1F1F"
              Foreground="#d4d4d4"
              mc:Ignorable="d"
@@ -19,13 +20,10 @@
             </ResourceDictionary.MergedDictionaries>
 
             <localConverters:MultiConditionVisibilityConverter x:Key="MultiConditionVisibilityConverter"/>
+            <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
+            <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-            <Style x:Key="CustomListBoxStyle" TargetType="ListBox">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-            </Style>
             <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
-                <!--<Setter Property="Background" Value="Red"/>-->
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
         </ResourceDictionary>
@@ -37,122 +35,72 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <Grid x:Name="DocumentContainer"
+                Grid.Row="0"
+                >
+            <Grid.LayoutTransform>
+                <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
+            </Grid.LayoutTransform>
 
-        <!-- Контейнер с документами -->
-        <ScrollViewer Grid.Row="0"
-                      VerticalScrollBarVisibility="Auto" 
-                      HorizontalScrollBarVisibility="Auto"
-                      >
-            <Grid x:Name="DocumentContainer">
-                <Grid.LayoutTransform>
-                    <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
-                </Grid.LayoutTransform>
-
-                <!-- Здесь будут ваши PreviewDocuments и GroupedDocuments -->
-                <StackPanel>
-                    <StackPanel Visibility="{Binding PreviewDocuments.Count, 
-                                             Converter={StaticResource MultiConditionVisibilityConverter}, 
-                                             ConverterParameter='=0:Collapsed;>0:Visible'}"
-                                >
-                        <TextBlock Margin="0,5"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Text="Предварительный просмотр"
-                                   />
-                        <ListBox ItemsSource="{Binding PreviewDocuments}"
-                                 Style="{StaticResource CustomListBoxStyle}"
-                                 ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                 HorizontalContentAlignment="Stretch"
-                                 SelectionChanged="DocumentList_SelectionChanged"
-                                 >
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,5">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="auto"/>
-                                            <ColumnDefinition Width="auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Название документа -->
-                                        <TextBlock Grid.Column="0"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center"
-                                                   Text="{Binding DisplayName}"
-                                                   ToolTip="{Binding FullName}"
-                                                   />
-                                        <!-- Кнопка перемещения в основную группу -->
-                                        <Button Grid.Column="2"
-                                                Margin="5,0"
-                                                Click="PinDocument_Click"
-                                                ToolTip="Закрепить документ"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="📌"
-                                                />
-                                        <!-- Кнопка закрытия документа -->
-                                        <Button Grid.Column="3"
-                                                Click="CloseDocument_Click"
-                                                CommandParameter="{Binding FullName}"
-                                                Content="✖"
-                                                />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <Separator Margin="0,10"/>
-                    </StackPanel>
-
-                    <ItemsControl ItemsSource="{Binding GroupedDocuments}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock FontSize="14"
-                                               FontWeight="Bold"
-                                               Text="{Binding Name}"
-                                               />
-                                    <ListBox ItemsSource="{Binding Items}"
-                                             Style="{StaticResource CustomListBoxStyle}"
-                                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                             HorizontalContentAlignment="Stretch"
-                                             SelectionChanged="DocumentList_SelectionChanged"
-                                             >
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="0,5">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="auto"/>
-                                                        <ColumnDefinition Width="auto"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <TextBlock Grid.Column="0"
-                                                               FontSize="14"
-                                                               VerticalAlignment="Center"
-                                                               Text="{Binding DisplayName}"
-                                                               ToolTip="{Binding FullName}"
-                                                               />
-                                                    <!-- Flyout с проектами -->
-                                                    <Button Grid.Column="2" Content="📂" Click="ShowProjectsFlyout_Click" Tag="{Binding FullName}" />
-
-                                                    <Button Content="✖" 
-                                                            Grid.Column="3"
-                                                            CommandParameter="{Binding FullName}"
-                                                            Click="CloseDocument_Click"
+            <ItemsControl ItemsSource="{Binding SortedTabItemGroups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock FontSize="12"
+                                       FontWeight="Normal"
+                                       Foreground="#aaaaaa"
+                                       Text="{Binding GroupName}"
+                                       />
+                            <ListBox Style="{StaticResource CustomListBoxStyle}"
+                                        ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                                        ItemsSource="{Binding TabItems}"
+                                        SelectionMode="Extended"
+                                        localBehaviours:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}"
+                                        HorizontalContentAlignment="Stretch"
+                                        >
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <localControls:TabItemControl Title="{Binding Caption}">
+                                            <localControls:TabItemControl.ControlContent>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            Click="KeepTabOpen_Click"
+                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                                            Content="📂"
+                                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Grid>
-        </ScrollViewer>
+                                                        
+                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            Click="PinTab_Click"
+                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                                            Content="📌"
+                                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                                                            />
+                                                        
+                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            MouseEnter="InteractiveArea_MouseEnter"
+                                                            MouseLeave="InteractiveArea_MouseLeave"
+                                                            Click="CloseTab_Click"
+                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                                            Content="✖"
+                                                            />
+                                                </StackPanel>
+                                            </localControls:TabItemControl.ControlContent>
+                                        </localControls:TabItemControl>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Separator Margin="0,10"
+                                       Visibility="{Binding IsPreviewGroup, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                       />
+
+                            <Border Background="Transparent" Height="5"></Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
 
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="1"
@@ -160,6 +108,53 @@
                                             ScaleFactor="{Binding ScaleFactor, Mode=TwoWay}" 
                                             ScaleChanged="ScaleSelectorControl_ScaleChanged" 
                                             />
+
+
+        <!-- VirtualPopupControl с настраиваемым контентом -->
+        <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
+            <localControls:VirtualPopupControl.PopupContent>
+                <StackPanel>
+                    <TextBlock Padding="10,0,10,0"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="#dddddd"
+                               Text="{Binding Caption}"
+                               />
+                    <Border Padding="10,0,10,5">
+                        <StackPanel>
+                            <Separator Margin="0,5,0,2"/>
+                            <TextBlock FontSize="12"
+                                       FontWeight="Normal"
+                                       Text="Main actions"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Style="{StaticResource DarkPopupButtonStyle}" Content="📂 Open location"/>
+
+                    <Border Padding="10,0,10,5">
+                        <StackPanel>
+                            <Separator Margin="0,5,0,2"/>
+                            <TextBlock FontSize="12"
+                                       FontWeight="Normal"
+                                       Text="Related projects"/>
+                        </StackPanel>
+                    </Border>
+                    <ListBox ItemsSource="{Binding ProjectReferenceList}" 
+                             Style="{StaticResource CustomListBoxStyle}"
+                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                             Background="Transparent" 
+                             BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding TabItemProject.Caption}" 
+                                        Style="{StaticResource DarkPopupButtonStyle}"
+                                        CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                        Click="ProjectMenuItem_Click" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </localControls:VirtualPopupControl.PopupContent>
+        </localControls:VirtualPopupControl>
 
     </Grid>
 </UserControl>

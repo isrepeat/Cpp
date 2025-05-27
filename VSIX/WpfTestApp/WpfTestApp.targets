@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NewLine>%0D%0A</NewLine>
+	  <!--<XamlsDir>$(MSBuildThisFileDirectory)\Xamls</XamlsDir>-->
+	  <XamlsDir>Xamls</XamlsDir>
+
+	  <!-- Здесь выбирается нужное окно -->
+	  <!--<SelectedMainWindow>MainWindow_ListBoxBehaviour</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_SelectionViewModel</SelectedMainWindow>
+  </PropertyGroup>
+
+
+  
+	<Target Name="ExcludeNonSelectedXamlsFromCompile" BeforeTargets="PrepareForBuild">
+		<ItemGroup>
+			<!-- Все XAML окна -->
+			<AllXamls Include="$(XamlsDir)\*.xaml" />
+
+			<!-- Оставляем только выбранное -->
+			<BuildXamls Include="$(XamlsDir)\$(SelectedMainWindow).xaml" />
+
+			<!-- Всё остальное исключаем -->
+			<XamlsToExclude Include="@(AllXamls)" Exclude="@(BuildXamls)" />
+
+			<!-- Удаляем из компиляции .xaml.cs -->
+			<Compile Remove="@(XamlsToExclude->'%(RelativeDir)%(Filename).xaml.cs')" />
+			
+			<!-- Удаляем из Page компиляции .xaml -->
+			<Page Remove="@(XamlsToExclude)" />
+		</ItemGroup>
+
+		<Message Importance="High" Text="$(NewLine)" />
+		<Message Importance="High" Text="Selected Xamls:" />
+    <Message Importance="High" Text="%(BuildXamls.Identity)"/>
+    
+    <Message Importance="High" Text="$(NewLine)" />
+		<Message Importance="High" Text="Excluded Xamls:" />
+    <Message Importance="High" Text="%(XamlsToExclude.Identity)"/>
+	</Target>
+	
+	
+  
+	<Target Name="GenerateMainWindowFactory" BeforeTargets="PrepareForBuild">
+		<PropertyGroup>
+			<GeneratedFile>$(IntermediateOutputPath)\MainWindowFactory.g.cs</GeneratedFile>
+		</PropertyGroup>	
+		
+		<!-- Используем ItemGroup, чтобы применять %(Filename) и получить имя файла -->
+		<ItemGroup>
+			<SelectedWindowItem Include="$(SelectedMainWindow)" />
+		</ItemGroup>
+		
+		<WriteLinesToFile File="$(GeneratedFile)"
+						  Overwrite="true"
+						  Lines=
+"namespace WpfTestApp {
+  public static class MainWindowFactory {
+    public static System.Windows.Window Create() {
+      return new %(SelectedWindowItem.Filename)()%3B
+    }
+  }
+}" /> 
+
+		<ItemGroup>
+			<Compile Include="$(GeneratedFile)" />
+		</ItemGroup>
+
+		<Message Importance="High" Text="$(NewLine)" />
+		<Message Importance="High" Text="Compile files:"/>
+		<Message Importance="High" Text="%(Compile.Identity)"/>
+	</Target>
+</Project>

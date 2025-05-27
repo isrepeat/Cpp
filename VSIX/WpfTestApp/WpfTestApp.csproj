@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+	</PropertyGroup>
+
+	<Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
+
+	<!-- Custom targets -->
+	<Import Project="$(MSBuildThisFileDirectory)\WpfTestApp.targets" />
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.14.0" />
+	</ItemGroup>
+</Project>
