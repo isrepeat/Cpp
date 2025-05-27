@@ -29,19 +29,9 @@
             UseAeroCaptionButtons="False" />
     </shell:WindowChrome.WindowChrome>
     <Window.Resources>
-        <!--<SolidColorBrush x:Key="AppPanelColor" Color="#FF2C2C2C"/>-->
         <SolidColorBrush x:Key="AppPanelColor" Color="Transparent"/>
         <SolidColorBrush x:Key="AppBorderColor" Color="#FF3C3C3C"/>
         <SolidColorBrush x:Key="AppAccentColor" Color="#FF10A37F"/>
-
-        <!--<SolidColorBrush x:Key="AppIsMouseOverColor" Color="#FF404040"/>
-        <SolidColorBrush x:Key="AppSelectedFocusedColor" Color="#FF404040"/>
-        <SolidColorBrush x:Key="AppSelectedUnfocusedColor" Color="#80404040"/>-->
-
-        <!--<SolidColorBrush x:Key="AppIsMouseOverColor" Color="#FF404040"/>
-        <SolidColorBrush x:Key="AppSelectedFocusedColor" Color="#FF2E8B57"/>
-        <SolidColorBrush x:Key="AppSelectedUnfocusedColor" Color="#662E8B57"/>-->
-
         <SolidColorBrush x:Key="AppIsMouseOverColor" Color="#FF3C3C3C"/>
         <SolidColorBrush x:Key="AppSelectedFocusedColor" Color="#FF2D5B86"/>
         <SolidColorBrush x:Key="AppSelectedUnfocusedColor" Color="#662D5B86"/>
@@ -164,18 +154,15 @@
                                 <TextBlock Text="{Binding Name}" 
                                            FontWeight="Bold"
                                            />
-                                <ListView ItemsSource="{Binding Items}"
-                                          Style="{StaticResource CustomListViewStyle}"
+                                <ListView Style="{StaticResource CustomListViewStyle}"
+                                          ItemsSource="{Binding Items}"
                                           ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
-                                          SelectionChanged="ListView_SelectionChanged"
-                                          SelectionMode="Multiple"
                                           >
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
                                                 <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
                                                           IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                          Width="400"
                                                           >
                                                     <TextBlock Text="{Binding Name}" />
                                                 </CheckBox>
