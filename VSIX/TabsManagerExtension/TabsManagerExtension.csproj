@@ -33,7 +33,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -44,6 +44,17 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <!-- 
+       Define custom constants. 
+       WARNING: if you preffer define constants in custom .targets so
+       Visual Studio do not load them correctly because of caching may be.
+  -->
+  <PropertyGroup>
+    <DefineConstants>
+      $(DefineConstants);
+      <!--__REPLACE_SRC_TABS;-->
+    </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controls\ScaleSelectorControl.xaml.cs">
@@ -135,4 +146,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <!-- ================================ Custom targets ================================ -->
+  <Import Project="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).targets" Condition="Exists('$(MSBuildThisFileDirectory)$(MSBuildThisFileName).targets')" />
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).targets" Condition="Exists('$(MSBuildThisFileDirectory)$(MSBuildThisFileName).targets')" />
+  </ItemGroup>
+  <!-- ================================================================================ -->
 </Project>

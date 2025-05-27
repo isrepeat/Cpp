@@ -1,3 +1,4 @@
+REM TODO: Reloading project not always work what you expected, try write / use VSIX to manage solution / projects.
 @echo off
 setlocal
 

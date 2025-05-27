@@ -1,7 +1,22 @@
-﻿using Microsoft.VisualStudio.Shell;
-using System;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace TabsManagerExtension {

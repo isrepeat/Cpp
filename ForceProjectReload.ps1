@@ -10,13 +10,19 @@ if (-not (Test-Path $ProjectPath)) {
     exit 1
 }
 
-$lines = Get-Content $ProjectPath
-$lines += '<!-- Force reload -->'
-Set-Content $ProjectPath $lines
+$content = Get-Content $ProjectPath -Raw
+$contentWithMarker = "$content`n<!-- Force reload -->"
+
+# Сохраняем с BOM вручную
+$bom = [System.Text.Encoding]::UTF8.GetPreamble()
+$data = [System.Text.Encoding]::UTF8.GetBytes($contentWithMarker)
+[System.IO.File]::WriteAllBytes($ProjectPath, $bom + $data)
 
 Start-Sleep -Milliseconds 300
 
-$cleanLines = Get-Content $ProjectPath | Where-Object { $_ -notmatch 'Force reload' }
-Set-Content $ProjectPath $cleanLines
+# Удаляем маркер
+$restoredContent = $contentWithMarker -replace '(\r?\n)?<!-- Force reload -->$', ''
+$dataRestored = [System.Text.Encoding]::UTF8.GetBytes($restoredContent)
+[System.IO.File]::WriteAllBytes($ProjectPath, $bom + $dataRestored)
 
 Write-Host "Done." -ForegroundColor Green

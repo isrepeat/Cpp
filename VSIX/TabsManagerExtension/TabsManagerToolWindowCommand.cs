@@ -1,30 +1,30 @@
-﻿namespace TabsManagerExtension {
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System;
-    using System.ComponentModel.Design;
-    using System.Globalization;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Task = System.Threading.Tasks.Task;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
-    /// <summary>
-    /// Command handler
-    /// </summary>
+namespace TabsManagerExtension {
     internal sealed class TabsManagerToolWindowCommand {
-        /// <summary>
-        /// Command ID.
-        /// </summary>
         public const int CommandId = 0x0100;
 
-        /// <summary>
-        /// Command menu group (command set GUID).
-        /// </summary>
         public static readonly Guid CommandSet = new Guid("8a30806a-edfc-4c91-8182-025665145a07");
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
         private readonly AsyncPackage package;
 
         /// <summary>
@@ -42,17 +42,11 @@
             commandService.AddCommand(menuItem);
         }
 
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
         public static TabsManagerToolWindowCommand Instance {
             get;
             private set;
         }
 
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
         private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider {
             get {
                 return this.package;
@@ -72,11 +66,61 @@
             Instance = new TabsManagerToolWindowCommand(package, commandService);
         }
 
-        /// <summary>
-        /// Shows the tool window when the menu item is clicked.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
+
+#if __REPLACE_SRC_TABS
+        private void Execute(object sender, EventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
+            var mainWindow = Application.Current.MainWindow;
+            if (mainWindow == null || dte == null) return;
+
+            var tabHost = FindTabHost(mainWindow);
+            if (tabHost == null) return;
+
+            tabHost.Visibility = Visibility.Collapsed;
+
+            var parentPanel = FindInsertTarget(tabHost);
+            if (parentPanel == null) return;
+
+            //// Удалим старую вставку, если она уже есть
+            //var existing = parentPanel.Children.OfType<TabsManagerToolWindowControl>().FirstOrDefault();
+            //if (existing != null)
+            //    parentPanel.Children.Remove(existing);
+
+            // Вставляем свой UserControl
+            var control = new TabsManagerToolWindowControl();
+            parentPanel.Children.Add(control);
+        }
+
+        private FrameworkElement? FindTabHost(DependencyObject parent) {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                var type = child.GetType().FullName;
+
+                if (type == "Microsoft.VisualStudio.Platform.WindowManagement.DocumentGroupContainerTabList") {
+                    return child as FrameworkElement;
+                }
+
+                var result = this.FindTabHost(child);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        private Panel? FindInsertTarget(DependencyObject start) {
+            var current = start;
+            while (current != null) {
+                if (current is Panel panel) {
+                    return panel;
+                }
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return null;
+        }
+#else
         private void Execute(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -91,5 +135,6 @@
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
+#endif
     }
 }
