@@ -12,19 +12,57 @@ using System.ComponentModel;
 
 namespace Helpers {
     public class ObservableObject : INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        private readonly Dictionary<string, bool> _propertyGuards = new();
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+            if (propertyName == null) {
+                throw new ArgumentNullException(nameof(propertyName), "CallerMemberName did not supply a property name.");
+            }
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null) {
-            //if (Equals(field, value)) {
-            //    return false;
-            //}
+            if (EqualityComparer<T>.Default.Equals(field, value)) {
+                return false;
+            }
             field = value;
-            OnPropertyChanged(propertyName);
+            this.OnPropertyChanged(propertyName);
             return true;
+        }
+
+        protected void SetPropertyWithNotificationAndGuard<T>(
+            ref T refProperty,
+            T newValue,
+            Action<T>? onChanged = null,
+            [CallerMemberName] string? propertyName = null
+        ) {
+            if (propertyName == null) {
+                throw new ArgumentNullException(nameof(propertyName), "CallerMemberName did not supply a property name.");
+            }
+
+            if (EqualityComparer<T>.Default.Equals(refProperty, newValue)) {
+                return;
+            }
+
+            if (_propertyGuards.TryGetValue(propertyName, out var inProgress) && inProgress) {
+                Helpers.Diagnostic.Logger.LogWarning($"[Property: {propertyName}] Recursive update attempt detected. Operation aborted.");
+                return;
+            }
+
+            _propertyGuards[propertyName] = true;
+
+            try {
+                refProperty = newValue;
+                this.OnPropertyChanged(propertyName);
+                onChanged?.Invoke(newValue);
+                _propertyGuards[propertyName] = false;
+            }
+            catch {
+                Helpers.Diagnostic.Logger.LogError($"[Property: {propertyName}] Exception occurred during property update.");
+                throw;
+            }
         }
     }
 
