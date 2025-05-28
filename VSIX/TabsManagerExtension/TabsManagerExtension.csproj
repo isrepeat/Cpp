@@ -53,10 +53,12 @@
   <PropertyGroup>
     <DefineConstants>
       $(DefineConstants);
-      <!--__REPLACE_SRC_TABS;-->
-    </DefineConstants>
+      <!--__REPLACE_SRC_TABS;--></DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
+      <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ScaleSelectorControl.xaml.cs">
       <DependentUpon>ScaleSelectorControl.xaml</DependentUpon>
     </Compile>
@@ -66,22 +68,17 @@
     <Compile Include="Controls\VirtualPopupControl.xaml.cs">
       <DependentUpon>VirtualPopupControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ItemsControlEx.xaml.cs">
+      <DependentUpon>ItemsControlEx.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
     <Compile Include="Behaviours\ListBoxSelectedItemsBehavior.cs" />
-    <Compile Include="Helpers\Collection.cs" />
-    <Compile Include="Helpers\VisualTree.cs" />
-    <Compile Include="Helpers\Math.cs" />
-    <Compile Include="Helpers\Diagnostic.cs" />
-    <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="State\Document.cs" />
     <Compile Include="TabsManagerExtensionPackage.cs" />
     <Compile Include="TabsManagerToolWindow.cs" />
     <Compile Include="TabsManagerToolWindowCommand.cs" />
-    <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
-      <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
@@ -125,6 +122,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\ItemsControlEx.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\BrushResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Styles\StyleResources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,6 +144,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

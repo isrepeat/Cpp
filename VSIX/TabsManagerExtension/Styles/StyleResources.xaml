@@ -1,57 +1,41 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                    xmlns:localHelpers="clr-namespace:Helpers"
                     xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                    xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters">
+                    xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                    >
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="BrushResources.xaml" />
+    </ResourceDictionary.MergedDictionaries>
 
-    <DropShadowEffect x:Key="ShadowEffect" 
-                      Color="Black" 
-                      BlurRadius="8" 
-                      ShadowDepth="4" 
-                      Opacity="0.5"/>
-
-
-    <Style x:Key="CustomListBoxStyle" TargetType="ListBox">
+    <Style x:Key="CustomListViewStyle" TargetType="ListView">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
     </Style>
 
-    <Style x:Key="CustomListBoxItemStyle" TargetType="ListBoxItem">
+    <Style x:Key="CustomListViewItemStyle" TargetType="ListViewItem">
+        <Setter Property="Focusable" Value="False"/>
         <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowBackgroundKey}}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ListBoxItem">
-                    <Border Background="{TemplateBinding Background}"
+                <ControlTemplate TargetType="ListViewItem">
+                    <Border Padding="0"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            Padding="0,0"
-                            BorderThickness="1"
-                            CornerRadius="3">
-                        <Grid>
-                            <ContentPresenter x:Name="ContentPresenter" VerticalAlignment="Center"/>
-                        </Grid>
+                            BorderThickness="0"
+                            >
+                        <ContentPresenter />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#333333"/>
-            </Trigger>
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Foreground" Value="#d4d4d4"/>
-                <Setter Property="Background" Value="#3c3c3c"/>
-                <Setter Property="BorderBrush" Value="#6f42c1"/>
-                <Setter Property="FontWeight" Value="Bold" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
 

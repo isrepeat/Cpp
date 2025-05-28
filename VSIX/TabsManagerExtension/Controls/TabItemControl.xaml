@@ -2,28 +2,96 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:local="clr-namespace:TabsManagerExtension"
+             xmlns:localHelpers="clr-namespace:Helpers"
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              x:Name="RootControl"
              >
     <UserControl.Resources>
-        <Style TargetType="localControls:TabItemControl">
-            <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="ControlPanelVisibility" Value="Visible"/>
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="False">
-                    <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        
+            <Style TargetType="localControls:TabItemControl">
+                <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="ControlPanelVisibility" Value="Visible"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="False">
+                        <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        
 
-    <!-- Border, который занимает всю область и захватывает события мыши -->
-    <Border Background="Transparent" 
-            VerticalAlignment="Stretch"
-            Height="20"
-            >
+
+            <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
+                <Setter Property="Focusable" Value="True"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <!-- 
+                                Обязательно задаём Background, иначе Padding не ловит клики.
+                                Без этого CheckBox не реагирует на нажатия вне текста.
+                            -->
+                            <Border Padding="5, 5"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="8"
+                                    IsHitTestVisible="True"
+                                    >
+                                <ContentPresenter />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                    </Trigger>
+
+                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Setter Property="FontWeight" Value="Bold"/>
+                    </DataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsSelected}" Value="True"/>
+                            <Condition Binding="{Binding (localHelpers:FocusStateAttachedProperties.IsParentControlFocused),
+                                                 RelativeSource={RelativeSource Self}}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource AppSelectedFocusedBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedFocusedBrush}" />
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsSelected}" Value="True"/>
+                            <Condition Binding="{Binding (localHelpers:FocusStateAttachedProperties.IsParentControlFocused),
+                                                 RelativeSource={RelativeSource Self}}" Value="False"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource AppSelectedUnfocusedBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedUnfocusedBrush}" />
+                    </MultiDataTrigger>
+
+                    <DataTrigger Binding="{Binding Metadata[IsActive]}" Value="True">
+                        <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+
+    <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
+              IsChecked="{Binding IsSelected, ElementName=RootControl, Mode=TwoWay}"
+              >
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -31,23 +99,24 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock x:Name="TitleTextBlock"
-                       Grid.Column="0"
-                       Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
-                       FontSize="12"
-                       Margin="5,0,5,0"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"
-                       TextTrimming="CharacterEllipsis"
-                       Text="{Binding Title, ElementName=RootControl}" />
+                        Grid.Column="0"
+                        Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
+                        FontSize="12"
+                        Margin="5,0,5,0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding Title, ElementName=RootControl}" />
 
-            <Grid x:Name="ControlPanel" 
-                  Grid.Column="1"
-                  HorizontalAlignment="Right"
-                  Visibility="{Binding ControlPanelVisibility, ElementName=RootControl}">
+            <Grid x:Name="ControlPanel"
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Visibility="{Binding ControlPanelVisibility, ElementName=RootControl}"
+                    >
                 <StackPanel Orientation="Horizontal">
-                    <ContentPresenter Content="{Binding ControlContent, ElementName=RootControl}"/>
+                    <ContentPresenter Content="{Binding ControlPanelContent, ElementName=RootControl}"/>
                 </StackPanel>
             </Grid>
         </Grid>
-    </Border>
+    </CheckBox>
 </UserControl>
