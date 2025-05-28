@@ -65,7 +65,7 @@
                         <Border Padding="0"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="0"
+                                BorderThickness="2"
                                 >
                             <ContentPresenter />
                         </Border>
@@ -80,6 +80,10 @@
 
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                     <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Metadata[IsActive]}" Value="True">
+                    <Setter Property="BorderBrush" Value="Red" />
                 </DataTrigger>
 
                 <MultiDataTrigger>
