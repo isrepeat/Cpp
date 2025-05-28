@@ -257,13 +257,13 @@ namespace Helpers {
             }
 
             _groups.CollectionChanged += (_, e) => {
-                if (e.NewItems is IEnumerable<TGroup> addedGroups) {
-                    foreach (var group in addedGroups) {
+                if (e.NewItems != null) {
+                    foreach (TGroup group in e.NewItems) {
                         this.AttachGroup(group);
                     }
                 }
-                if (e.OldItems is IEnumerable<TGroup> removedGroups) {
-                    foreach (var group in removedGroups) {
+                if (e.OldItems != null) {
+                    foreach (TGroup group in e.OldItems) {
                         this.DetachGroup(group);
                     }
                 }
