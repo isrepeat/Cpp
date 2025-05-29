@@ -9,7 +9,12 @@
     <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\ToggleOnMouseDownBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AdornerService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />

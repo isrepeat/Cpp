@@ -128,36 +128,6 @@ namespace Helpers {
     //}
 
 
-    public interface IMetadata : INotifyPropertyChanged {
-        void SetFlag(string key, bool value);
-        bool GetFlag(string key);
-        bool this[string key] { get; }
-    }
-
-    public class FlaggableMetadata : IMetadata {
-        private readonly Dictionary<string, bool> _flags = new();
-
-        public bool this[string key] => this.GetFlag(key);
-
-        public bool GetFlag(string key) {
-            return _flags.TryGetValue(key, out var value) && value;
-        }
-
-        public void SetFlag(string key, bool value) {
-            if (!_flags.TryGetValue(key, out var oldValue) || oldValue != value) {
-                _flags[key] = value;
-                this.OnPropertyChanged($"Item[]");
-            }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-
 
     public interface ISelectableItem {
         bool IsSelected { get; set; }
@@ -358,6 +328,10 @@ namespace Helpers {
             }
         }
 
+        public (TGroup Group, TItem Item)? ActiveItem {
+            get => _anchor;
+        }
+
         // Internal:
         private readonly GroupSelectionBinding<TGroup, TItem> _groupSelectionBinding;
         private readonly HashSet<(TGroup Group, TItem Item)> _selectedItems = new();
@@ -543,8 +517,8 @@ namespace Helpers {
                 foreach (var (group, item) in _flatItems) {
                     item.Metadata?.SetFlag(_isActiveFlag, false);
                 }
-                if (_anchor != null) {
-                    _anchor.Value.Item?.Metadata?.SetFlag(_isActiveFlag, true);
+                if (this.ActiveItem != null) {
+                    this.ActiveItem.Value.Item?.Metadata?.SetFlag(_isActiveFlag, true);
                 }
             }
         }

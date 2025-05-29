@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Windows.Controls;
 
 namespace Helpers {
     public static class VisualTree {
@@ -33,15 +34,106 @@ namespace Helpers {
             return result;
         }
 
-        // Универсальный метод поиска родителя
-        public static T FindParent<T>(DependencyObject child) where T : DependencyObject {
-            while (child != null) {
-                if (child is T parent) {
-                    return parent;
+        public static T? FindParentOfType<T>(DependencyObject root) where T : DependencyObject {
+            DependencyObject? current = VisualTreeHelper.GetParent(root);
+
+            while (current != null) {
+                if (current is T match) {
+                    return match;
                 }
-                child = VisualTreeHelper.GetParent(child);
+                current = VisualTreeHelper.GetParent(current);
             }
             return null;
+        }
+
+
+        public static FrameworkElement? FindElementByName(DependencyObject root, string name) {
+            if (root is FrameworkElement fe && fe.Name == name) {
+                return fe;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+                var result = FindElementByName(child, name);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+
+        public static DependencyObject? FindDescendantByType(DependencyObject root, string typeName) {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child.GetType().Name == typeName) {
+                    return child;
+                }
+
+                var result = FindDescendantByType(child, typeName);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public static T? FindDescendantByType<T>(DependencyObject root) where T : DependencyObject {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+
+                if (child is T match) {
+                    return match;
+                }
+
+                var result = FindDescendantByType<T>(child);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+
+
+
+
+        public static void LogDescendantsRecursive(DependencyObject element, int depth, Action<FrameworkElement, int>? extraLogger) {
+            if (element is FrameworkElement fe) {
+                string indent = new string(' ', depth * 2);
+                string typeName = fe.GetType().Name;
+                string name = !string.IsNullOrEmpty(fe.Name) ? $" Name='{fe.Name}'" : "";
+                string visibility = $" Visibility={fe.Visibility}";
+
+                Helpers.Diagnostic.Logger.LogDebug($"{indent}- [{depth}] {typeName}{name}{visibility}");
+
+                extraLogger?.Invoke(fe, depth);
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(element);
+            for (int i = 0; i < count; i++) {
+                var child = VisualTreeHelper.GetChild(element, i);
+                LogDescendantsRecursive(child, depth + 1, extraLogger);
+            }
+        }
+
+        public static void DumpVisualTree(DependencyObject parent, int indent = 0) {
+            if (parent == null) return;
+
+            string prefix = new string(' ', indent * 2);
+            string name = (parent as FrameworkElement)?.Name ?? "(no name)";
+            string type = parent.GetType().Name;
+
+            Helpers.Diagnostic.Logger.LogDebug($"{prefix}{type}  [{name}]");
+
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++) {
+                DumpVisualTree(VisualTreeHelper.GetChild(parent, i), indent + 1);
+            }
         }
     }
 
