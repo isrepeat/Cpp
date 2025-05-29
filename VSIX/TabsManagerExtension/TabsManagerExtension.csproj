@@ -53,9 +53,14 @@
   <PropertyGroup>
     <DefineConstants>
       $(DefineConstants);
-      <!--__REPLACE_SRC_TABS;--></DefineConstants>
+      __REPLACE_SRC_TABS;
+    </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
+      <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TextViewFocusListener.cs" />
     <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
       <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
     </Compile>
@@ -90,6 +95,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
@@ -115,6 +121,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TabItemControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TextEditorOverlayControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

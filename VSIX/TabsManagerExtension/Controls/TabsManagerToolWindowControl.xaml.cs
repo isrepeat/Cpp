@@ -20,8 +20,7 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
-
-using TabsManagerExtension.Helpers.Ex;
+using TabsManagerExtension.Controls;
 
 
 namespace TabsManagerExtension {
@@ -33,17 +32,16 @@ namespace TabsManagerExtension {
         private EnvDTE.WindowEvents _windowEvents;
         private EnvDTE.DocumentEvents _documentEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
-        
+
+        // TODO: incapsulate handlers into FocusWatcher
+        private readonly Action _textEditorFocusGotHandler;
+        private readonly Action _textEditorFocusLostHandler;
+
         // [Timeres]:
         private FileSystemWatcher _fileWatcher;
         private DispatcherTimer _tabsManagerStateTimer;
 
-        // [Document collections]:
-        public ObservableCollection<TabItemGroup> SortedTabItemGroups { get; set; } = new();
-        private Helpers.SelectionCoordinator<TabItemGroup, TabItemBase> _tabItemSelectionCoordinator;
-        private CollectionViewSource SortedTabItemGroupsViewSource { get; set; }
-
-
+        // [Properties]:
         private double _scaleFactor = 0.9;
         public double ScaleFactor {
             get => _scaleFactor;
@@ -57,31 +55,43 @@ namespace TabsManagerExtension {
         }
 
 
+        public ObservableCollection<TabItemGroup> SortedTabItemGroups { get; set; } = new();
+        //private CollectionViewSource SortedTabItemGroupsViewSource { get; set; }
+        
+        // [Internal]:
+        private Helpers.GroupsSelectionCoordinator<TabItemGroup, TabItemBase> _tabItemsSelectionCoordinator;
+        private Helpers.OverlayBindingManager<TextEditorOverlayControl>? _textEditorOverlayManager;
+
         public TabsManagerToolWindowControl() {
             this.InitializeComponent();
+            this.Loaded += this.OnLoaded;
+            this.Unloaded += this.OnUnloaded;
+            base.DataContext = this;
 
-            _tabItemSelectionCoordinator = new Helpers.SelectionCoordinator<TabItemGroup, TabItemBase>(SortedTabItemGroups);
-            _tabItemSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
-                if (item is TabItemBase tab) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tab.Caption} in group {group.GroupName}");
+            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemGroup, TabItemBase>(SortedTabItemGroups);
+            _tabItemsSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
+                if (item is TabItemBase tabItem) {
+                    Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
 
-                    //if (_activeTabItem != null && string.Equals(_activeTabItem.FullName, selectedTab.FullName, StringComparison.OrdinalIgnoreCase)) {
-                    //    Helpers.Diagnostic.Logger.LogDebug($"Skip ActivateTabItem because it's already active: {selectedTab.Caption}");
-                    //    return;
-                    //}
+                    if (isSelected) {
+                        var activeItem = _tabItemsSelectionCoordinator.ActiveItem;
+                        if (activeItem != null) {
+                            if (activeItem.Value.Item is IActivatableTab activatableTab) {
+                                if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
+                                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate(): already active [{tabItem.Caption}]");
+                                    return;
+                                }
 
-                    //if (tab is IActivatableTab activatable) {
-                    //    // Важно: откладываем вызов .Activate() до следующего тика UI-диспетчера,
-                    //    // чтобы избежать COMException при активации окна/документа из обработчика SelectionChanged
-                    //    Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
-                    //        activatable.Activate();
-                    //    }), DispatcherPriority.Background);
-                    //}
+                                // Важно: откладываем вызов .Activate() до следующего тика UI-диспетчера,
+                                // чтобы избежать COMException при активации окна/документа из обработчика SelectionChanged
+                                //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                                activatableTab.Activate();
+                                //}), DispatcherPriority.Background);
+                            }
+                        }
+                    }
                 }
             };
-
-            base.DataContext = this;
-            this.Loaded += this.TabsManagerToolWindowControl_Loaded;
 
             this.InitializeDTE();
             this.InitializeFileWatcher();
@@ -89,10 +99,35 @@ namespace TabsManagerExtension {
             this.InitializeDocumentsViewSource();
         }
 
-        private void TabsManagerToolWindowControl_Loaded(object sender, RoutedEventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        private void OnLoaded(object sender, RoutedEventArgs e) {
+            this.GotFocus += this.OnGotFocus;
+            this.LostFocus += this.OnLostFocus;
+
+            var targetElement = Helpers.VisualTree.FindElementByName(Application.Current.MainWindow, "PART_ContentPanel");
+            if (targetElement is FrameworkElement targetFrameworkElement) {
+                var overlay = new TextEditorOverlayControl();
+                _textEditorOverlayManager = new Helpers.OverlayBindingManager<TextEditorOverlayControl>(
+                    targetFrameworkElement,
+                    overlay
+                    );
+            }
+
             this.LoadOpenDocuments();
         }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e) {
+            this.LostFocus -= this.OnLostFocus;
+            this.GotFocus -= this.OnGotFocus;
+        }
+
+        private void OnGotFocus(object sender, RoutedEventArgs e) {
+            Helpers.FocusWatcher.NotifyFocusGot("TabsManagerControl");
+        }
+        private void OnLostFocus(object sender, RoutedEventArgs e) {
+            Helpers.FocusWatcher.NotifyFocusLost("TabsManagerControl");
+        }
+
+
 
         private void InitializeDTE() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -138,14 +173,14 @@ namespace TabsManagerExtension {
         }
 
         public void InitializeDocumentsViewSource() {
-            // Создаем представление с сортировкой
-            this.SortedTabItemGroupsViewSource = new CollectionViewSource { Source = this.SortedTabItemGroups };
+            //// Создаем представление с сортировкой
+            //this.SortedTabItemGroupsViewSource = new CollectionViewSource { Source = this.SortedTabItemGroups };
 
-            // Сортировка групп по имени (по алфавиту)
-            this.SortedTabItemGroupsViewSource.SortDescriptions.Add(new SortDescription("GroupName", ListSortDirection.Ascending));
+            //// Сортировка групп по имени (по алфавиту)
+            //this.SortedTabItemGroupsViewSource.SortDescriptions.Add(new SortDescription("GroupName", ListSortDirection.Ascending));
 
-            // Применяем сортировку внутри групп через метод
-            this.SortedTabItemGroupsViewSource.View.CollectionChanged += (s, e) => SortDocumentsInGroups();
+            //// Применяем сортировку внутри групп через метод
+            //this.SortedTabItemGroupsViewSource.View.CollectionChanged += (s, e) => SortDocumentsInGroups();
         }
 
 
@@ -229,7 +264,14 @@ namespace TabsManagerExtension {
             }
 
             this.AddTabItemToDefaultGroupIfMissing(tabItem);
-            this.SelectTabItem(tabItem);
+
+
+            ////if (string.Equals(_lastActivatedDocumentFullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
+            ////    Logger.LogDebug($"Skip SelectTabItem: already active {tabItem.Caption}");
+            ////    return;
+            ////}
+            
+            //this.SelectTabItem(tabItem);
 
             this.UpdateWindowTabsInfo();
         }
@@ -246,9 +288,36 @@ namespace TabsManagerExtension {
         private void OnSolutionClosing() {
             using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionClosing()");
             ThreadHelper.ThrowIfNotOnUIThread();
-            
+
             this.SortedTabItemGroups.Clear();
-            _fileWatcher?.Dispose();
+
+            if (_fileWatcher != null) {
+                try {
+                    _fileWatcher.EnableRaisingEvents = false;
+
+                    // Удаляем обработчики событий, чтобы отложенные события не вызывались
+                    _fileWatcher.Changed -= this.OnFileChanged;
+                    _fileWatcher.Renamed -= this.OnFileRenamed;
+                    _fileWatcher.Deleted -= this.OnFileDeleted;
+
+                    // Dispatcher.BeginInvoke(..., DispatcherPriority.ApplicationIdle) — ждет, пока текущий UI-цикл и все запланированные задачи завершатся.
+                    // Таким образом Dispose() вызывается после завершения Run(...) внутри событий FileSystemWatcher
+                    Dispatcher.BeginInvoke(new Action(() => {
+                        try {
+                            _fileWatcher.Dispose();
+                        }
+                        catch (Exception ex) {
+                            Helpers.Diagnostic.Logger.LogError($"Delayed dispose of FileSystemWatcher failed: {ex}");
+                        }
+                        finally {
+                            _fileWatcher = null;
+                        }
+                    }), DispatcherPriority.ApplicationIdle);
+                }
+                catch (Exception ex) {
+                    Helpers.Diagnostic.Logger.LogError($"Error while scheduling FileSystemWatcher disposal: {ex}");
+                }
+            }
         }
 
 
@@ -301,26 +370,34 @@ namespace TabsManagerExtension {
             // NOTE: Нужно использовать копии коллекций для безопасного перебора.
             // Поэтому в foreach вызывай .ToList() у коллекций.
 
-            //var activeWindow = _dte.ActiveWindow;
-            //if (activeWindow != null) {
-            //    if (activeWindow.Document != null) {
-            //        var selectedItems = _tabItemSelectionCoordinator.GetAllSelectedItems();
-            //        if (selectedItems.Count() == 1) {
-            //            var (selectedTabItem, group) = selectedItems.First();
-            //            if (!string.Equals(selectedTabItem.FullName, activeWindow.Document.FullName, StringComparison.OrdinalIgnoreCase)) {
-            //                Helpers.Diagnostic.Logger.LogError($"Activate tab: {activeWindow.Document.FullName}");
-            //                this.SelectTabItem(activeWindow.Document);
-            //            }
+            //var activeDocument = _dte.ActiveDocument;
+            //if (activeDocument != null) {
+
+            //    foreach (var group in SortedTabItemGroups) {
+            //        foreach (var tabItem in group.Items.OfType<TabItemDocument>()) {
+            //            tabItem.IsActiveTab = string.Equals(tabItem.FullName, activeDocument.FullName, StringComparison.OrdinalIgnoreCase);
             //        }
             //    }
-            //    //else {
-            //    //    this.SelectTabItem(activeWindow);
+
+            //    //switch (_tabItemSelectionCoordinator.SelectionState) {
+            //    //    case Helpers.Enums.SelectionState.None:
+            //    //        this.SelectTabItem(activeDocument);
+            //    //        break;
+
+            //    //    case Helpers.Enums.SelectionState.Single:
+            //    //        var (selectedTabItem, group) = _tabItemSelectionCoordinator.PrimarySelection.Value;
+
+            //    //        if (!string.Equals(selectedTabItem.FullName, activeDocument.FullName, StringComparison.OrdinalIgnoreCase)) {
+            //    //            Helpers.Diagnostic.Logger.LogDebug($"Activate tab: {activeDocument.FullName}");
+            //    //            this.SelectTabItem(activeDocument);
+            //    //        }
+            //    //        break;
             //    //}
             //}
 
             // === [A] Обновление статуса сохранения документов ===
             foreach (var tabItemGroup in this.SortedTabItemGroups.ToList()) {
-                foreach (var tabItem in tabItemGroup.TabItems.ToList()) {
+                foreach (var tabItem in tabItemGroup.Items.ToList()) {
                     var document = _dte.Documents.Cast<EnvDTE.Document>()
                         .FirstOrDefault(d => d.FullName == tabItem.FullName);
 
@@ -341,7 +418,7 @@ namespace TabsManagerExtension {
             // === [B] Перемещение preview-документов в основную группу ===
             var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
             if (previewGroup != null) {
-                foreach (var tabItemDocument in previewGroup.TabItems.OfType<TabItemDocument>().ToList()) {
+                foreach (var tabItemDocument in previewGroup.Items.OfType<TabItemDocument>().ToList()) {
                     if (!tabItemDocument.ShellDocument.IsDocumentInPreviewTab()) {
                         this.MoveDocumentFromPreviewToMainGroup(tabItemDocument);
                     }
@@ -366,7 +443,7 @@ namespace TabsManagerExtension {
             }
 
             foreach (var group in this.SortedTabItemGroups.ToList()) {
-                var toRemove = group.TabItems
+                var toRemove = group.Items
                     .OfType<TabItemWindow>()
                     .Where(w => !openWindowIds.Contains(w.WindowId))
                     .ToList();
@@ -389,32 +466,32 @@ namespace TabsManagerExtension {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (sender is FrameworkElement interactiveArea) {
-                // Находим родительский ListBoxItem (где привязаны данные)
-                var listBoxItem = Helpers.VisualTree.FindParent<ListBoxItem>(interactiveArea);
-                if (listBoxItem == null) return;
+            //if (sender is FrameworkElement interactiveArea) {
+            //    // Находим родительский ListBoxItem (где привязаны данные)
+            //    var listBoxItem = Helpers.VisualTree.FindParent<ListBoxItem>(interactiveArea);
+            //    if (listBoxItem == null) return;
 
-                // Получаем привязанный объект (DocumentInfo)
-                if (listBoxItem.DataContext is TabItemDocument tabItemDocument) {
-                    var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 0, 0));
-                    var mainWindow = Application.Current.MainWindow;
-                    var relativePoint = mainWindow.PointFromScreen(position);
+            //    // Получаем привязанный объект (DocumentInfo)
+            //    if (listBoxItem.DataContext is TabItemDocument tabItemDocument) {
+            //        var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 0, 0));
+            //        var mainWindow = Application.Current.MainWindow;
+            //        var relativePoint = mainWindow.PointFromScreen(position);
 
-                    if (tabItemDocument.ShellDocument != null) {
-                        tabItemDocument.UpdateProjectReferenceList();
-                    }
+            //        if (tabItemDocument.ShellDocument != null) {
+            //            tabItemDocument.UpdateProjectReferenceList();
+            //        }
 
-                    this.MyVirtualPopup.InteractiveArea_MouseEnter();
-                    this.MyVirtualPopup.ShowPopup(relativePoint, tabItemDocument);
-                }
-            }
+            //        this.MyVirtualPopup.InteractiveArea_MouseEnter();
+            //        this.MyVirtualPopup.ShowPopup(relativePoint, tabItemDocument);
+            //    }
+            //}
         }
 
         private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.MyVirtualPopup.InteractiveArea_MouseLeave();
+            //this.MyVirtualPopup.InteractiveArea_MouseLeave();
         }
 
 
@@ -575,7 +652,7 @@ namespace TabsManagerExtension {
                 this.SortGroups();
             }
 
-            group.TabItems.Add(tabItem);
+            group.Items.Add(tabItem);
             this.SortDocumentsInGroups();
         }
 
@@ -617,35 +694,35 @@ namespace TabsManagerExtension {
 
 
         private void RemoveTabItemFromGroups(TabItemBase tabItem) {
-            foreach (var group in this.SortedTabItemGroups.ToList()) {
-                // Удаляем связанный TabItems из выбранных (если используется SelectionCoordinator и UI)
-                group.SelectedItems.Remove(tabItem);
-                if (group.TabItems.Remove(tabItem)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
+            //foreach (var group in this.SortedTabItemGroups.ToList()) {
+            //    // Удаляем связанный TabItems из выбранных (если используется SelectionCoordinator и UI)
+            //    group.SelectedItems.Remove(tabItem);
+            //    if (group.Items.Remove(tabItem)) {
+            //        Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
 
-                    if (!group.TabItems.Any()) {
-                        if (this.SortedTabItemGroups.Remove(group)) {
-                            Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{group.GroupName}\"");
-                        }
-                    }
-                    break;
-                }
-            }
+            //        if (!group.Items.Any()) {
+            //            if (this.SortedTabItemGroups.Remove(group)) {
+            //                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{group.GroupName}\"");
+            //            }
+            //        }
+            //        break;
+            //    }
+            //}
         }
 
         private void RemoveTabItemGroup(TabItemGroup tabItemGroup) {
-            if (tabItemGroup == null) {
-                return;
-            }
+            //if (tabItemGroup == null) {
+            //    return;
+            //}
 
-            // Удаляем все связанные TabItems из выбранных (если используется SelectionCoordinator и UI)
-            tabItemGroup.SelectedItems.Clear();
-            tabItemGroup.TabItems.Clear();
+            //// Удаляем все связанные TabItems из выбранных (если используется SelectionCoordinator и UI)
+            //tabItemGroup.SelectedItems.Clear();
+            //tabItemGroup.Items.Clear();
 
-            // Удаляем саму группу
-            if (this.SortedTabItemGroups.Remove(tabItemGroup)) {
-                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemGroup.GroupName}\"");
-            }
+            //// Удаляем саму группу
+            //if (this.SortedTabItemGroups.Remove(tabItemGroup)) {
+            //    Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemGroup.GroupName}\"");
+            //}
         }
 
 
@@ -663,16 +740,20 @@ namespace TabsManagerExtension {
         }
 
         private void SelectTabItemInternal((TabItemBase Item, TabItemGroup Group)? tuple) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("SelectTabItemInternal()");
-            ThreadHelper.ThrowIfNotOnUIThread();
+            //using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("SelectTabItemInternal()");
+            //ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Log params:
-            Helpers.Diagnostic.Logger.LogParam($"tuple = (tabItem.Caption: {tuple?.Item?.Caption}, groupName: {tuple?.Group?.GroupName})");
+            //// Log params:
+            //Helpers.Diagnostic.Logger.LogParam($"tuple = (tabItem.Caption: {tuple?.Item?.Caption}, groupName: {tuple?.Group?.GroupName})");
 
-            if (tuple is (var item, var group) && item != null && group != null) {
-                group.SelectedItems.Clear();
-                group.SelectedItems.Add(item);
-            }
+            ////_tabItemSelectionCoordinator.PrimarySelection.Haы
+
+            //if (tuple is (var item, var group) && item != null && group != null) {
+            //    //if (item.FullName == _lastActivatedDocumentFullName) return; // ✅ пропускаем, уже активен
+
+            //    group.SelectedItems.Clear();
+            //    group.SelectedItems.Add(item);
+            //}
         }
 
 
@@ -680,7 +761,7 @@ namespace TabsManagerExtension {
         // Обновление документа в UI после изменения или переименования
         private void UpdateDocumentUI(string oldPath, string newPath = null) {
             foreach (var group in this.SortedTabItemGroups) {
-                var docInfo = group.TabItems.FirstOrDefault(d => string.Equals(d.FullName, oldPath, StringComparison.OrdinalIgnoreCase));
+                var docInfo = group.Items.FirstOrDefault(d => string.Equals(d.FullName, oldPath, StringComparison.OrdinalIgnoreCase));
                 if (docInfo != null) {
                     if (newPath == null) {
                         // Обновляем только имя (в случае изменения)
@@ -724,10 +805,10 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var group in this.SortedTabItemGroups) {
-                var sortedDocs = group.TabItems.OrderBy(d => d.Caption).ToList();
-                group.TabItems.Clear();
+                var sortedDocs = group.Items.OrderBy(d => d.Caption).ToList();
+                group.Items.Clear();
                 foreach (var doc in sortedDocs) {
-                    group.TabItems.Add(doc);
+                    group.Items.Add(doc);
                 }
             }
         }
@@ -799,7 +880,7 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var group in this.SortedTabItemGroups) {
-                var match = group.TabItems
+                var match = group.Items
                     .OfType<T>()
                     .FirstOrDefault(predicate);
 
@@ -816,7 +897,7 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var group in this.SortedTabItemGroups) {
-                foreach (var tabItem in group.TabItems.OfType<T>()) {
+                foreach (var tabItem in group.Items.OfType<T>()) {
                     action(tabItem);
                 }
             }

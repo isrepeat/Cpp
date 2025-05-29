@@ -67,63 +67,11 @@ namespace TabsManagerExtension {
         }
 
 
+        private void Execute(object sender, EventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
 #if __REPLACE_SRC_TABS
-        private void Execute(object sender, EventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            var mainWindow = Application.Current.MainWindow;
-            if (mainWindow == null || dte == null) return;
-
-            var tabHost = FindTabHost(mainWindow);
-            if (tabHost == null) return;
-
-            tabHost.Visibility = Visibility.Collapsed;
-
-            var parentPanel = FindInsertTarget(tabHost);
-            if (parentPanel == null) return;
-
-            //// Удалим старую вставку, если она уже есть
-            //var existing = parentPanel.Children.OfType<TabsManagerToolWindowControl>().FirstOrDefault();
-            //if (existing != null)
-            //    parentPanel.Children.Remove(existing);
-
-            // Вставляем свой UserControl
-            var control = new TabsManagerToolWindowControl();
-            parentPanel.Children.Add(control);
-        }
-
-        private FrameworkElement? FindTabHost(DependencyObject parent) {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                var type = child.GetType().FullName;
-
-                if (type == "Microsoft.VisualStudio.Platform.WindowManagement.DocumentGroupContainerTabList") {
-                    return child as FrameworkElement;
-                }
-
-                var result = this.FindTabHost(child);
-                if (result != null) {
-                    return result;
-                }
-            }
-            return null;
-        }
-
-        private Panel? FindInsertTarget(DependencyObject start) {
-            var current = start;
-            while (current != null) {
-                if (current is Panel panel) {
-                    return panel;
-                }
-                current = VisualTreeHelper.GetParent(current);
-            }
-            return null;
-        }
+            VsixVisualTreeHelper.ScheduleInjectionTabsManagerControl();
 #else
-        private void Execute(object sender, EventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
@@ -134,7 +82,7 @@ namespace TabsManagerExtension {
 
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
 #endif
+        }
     }
 }

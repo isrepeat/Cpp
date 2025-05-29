@@ -26,9 +26,8 @@
             </Style>
         
 
-
             <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
-                <Setter Property="Focusable" Value="True"/>
+                <Setter Property="Focusable" Value="False"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
                 <Setter Property="BorderBrush" Value="Transparent" />
@@ -42,7 +41,7 @@
                             <Border Padding="5, 5"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="8"
+                                    BorderThickness="1"
                                     IsHitTestVisible="True"
                                     >
                                 <ContentPresenter />
@@ -63,31 +62,41 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding (localHelpers:FocusStateAttachedProperties.IsParentControlFocused),
-                                                 RelativeSource={RelativeSource Self}}" Value="True"/>
+                            <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
-                        <Setter Property="Background" Value="{StaticResource AppSelectedFocusedBrush}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedFocusedBrush}" />
+                        <Setter Property="Background" Value="{StaticResource AppSelectedBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedBrush}" />
                     </MultiDataTrigger>
 
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding (localHelpers:FocusStateAttachedProperties.IsParentControlFocused),
-                                                 RelativeSource={RelativeSource Self}}" Value="False"/>
+                            <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
-                        <Setter Property="Background" Value="{StaticResource AppSelectedUnfocusedBrush}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedUnfocusedBrush}" />
+                        <Setter Property="Background" Value="{StaticResource AppSelectedNonActiveBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource AppSelectedNonActiveBrush}" />
                     </MultiDataTrigger>
 
-                    <DataTrigger Binding="{Binding Metadata[IsActive]}" Value="True">
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
+                            <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="True" />
+                        </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}" />
-                    </DataTrigger>
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
+                            <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="BorderBrush" Value="{StaticResource AppAccentNonActiveMiddleBrush}" />
+                    </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    
+
 
     <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
               IsChecked="{Binding IsSelected, ElementName=RootControl, Mode=TwoWay}"
@@ -106,8 +115,8 @@
                         VerticalAlignment="Center"
                         HorizontalAlignment="Left"
                         TextTrimming="CharacterEllipsis"
-                        Text="{Binding Title, ElementName=RootControl}" />
-
+                        Text="{Binding Title, ElementName=RootControl}" 
+                        />
             <Grid x:Name="ControlPanel"
                     Grid.Column="1"
                     HorizontalAlignment="Right"

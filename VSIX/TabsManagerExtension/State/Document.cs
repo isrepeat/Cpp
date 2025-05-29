@@ -226,9 +226,7 @@ namespace TabsManagerExtension {
 
 
 
-
-    // TODO: mb use ref on TabItemGroup instead usage FindTabItemWithGroup?
-    public abstract class TabItemBase : Helpers.ObservableObject {
+    public abstract class TabItemBase : Helpers.SelectableItemBase {
 
         private string _caption;
         public string Caption {
@@ -408,7 +406,8 @@ namespace TabsManagerExtension {
                 }
             }
         }
-        public ObservableCollection<TabItemBase> TabItems { get; set; } = new();
-        public ObservableCollection<TabItemBase> SelectedItems { get; set; } = new();
+        public Helpers.SortedObservableCollection<TabItemBase> Items { get; } = new Helpers.SortedObservableCollection<TabItemBase> {
+            Comparer = Comparer<TabItemBase>.Create((a, b) => string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase))
+        };
     }
 }

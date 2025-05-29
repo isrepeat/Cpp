@@ -5,8 +5,11 @@
                     xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
                     xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
                     >
-    <SolidColorBrush x:Key="AppAccentBrush" Color="#FF6f42c1"/>
-    <SolidColorBrush x:Key="AppIsMouseOverBrush" Color="#FF333333"/>
-    <SolidColorBrush x:Key="AppSelectedFocusedBrush" Color="#FF3c3c3c"/>
-    <SolidColorBrush x:Key="AppSelectedUnfocusedBrush" Color="#663c3c3c"/>
+    <!--<SolidColorBrush x:Key="AppAccentBrush" Color="#FF7160e8"/>-->
+    <SolidColorBrush x:Key="AppAccentBrush" Color="red"/>
+    <SolidColorBrush x:Key="AppAccentNonActiveLowBrush" Color="#FF2e2e2e"/>
+    <SolidColorBrush x:Key="AppAccentNonActiveMiddleBrush" Color="#FF555555"/>
+    <SolidColorBrush x:Key="AppIsMouseOverBrush" Color="#663c3c3c"/>
+    <SolidColorBrush x:Key="AppSelectedBrush" Color="#FF3c3c3c"/>
+    <SolidColorBrush x:Key="AppSelectedNonActiveBrush" Color="#663c3c3c"/>
 </ResourceDictionary>

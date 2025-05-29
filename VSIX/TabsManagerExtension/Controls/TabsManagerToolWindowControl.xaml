@@ -5,13 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:local="clr-namespace:TabsManagerExtension"
+             xmlns:localHelpers="clr-namespace:Helpers"
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
              Background="#1F1F1F"
              Foreground="#d4d4d4"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300"
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -19,31 +19,68 @@
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <localConverters:MultiConditionVisibilityConverter x:Key="MultiConditionVisibilityConverter"/>
             <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
             <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
+
+
+            <Style x:Key="TabsSettingsPanelStyle" TargetType="ContentControl">
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContentControl">
+                            <Grid Background="{TemplateBinding Background}"
+                                  >
+                                <Rectangle x:Name="TopBorder"
+                                           Height="2"
+                                           VerticalAlignment="Top"
+                                           HorizontalAlignment="Stretch"
+                                           Fill="{StaticResource AppAccentBrush}"
+                                           />
+                                <ContentPresenter />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                                        <Condition Binding="{Binding [TabsManagerControl], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentNonActiveLowBrush}" />
+                                </MultiDataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid localHelpers:FocusWatcherBehavior.WatchKey="TextEditor"
+        >
         <Grid.RowDefinitions>
+            <RowDefinition Height="24" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
+        <ContentControl Style="{StaticResource TabsSettingsPanelStyle}"
+                        x:Name="TabsSettingsPanel"
+                        Grid.Row="0"
+                        >
+        </ContentControl>
+
         <Grid x:Name="DocumentContainer"
-                Grid.Row="0"
-                >
+              Grid.Row="1"
+              >
             <Grid.LayoutTransform>
                 <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
             </Grid.LayoutTransform>
 
-            <ItemsControl ItemsSource="{Binding SortedTabItemGroups}">
-                <ItemsControl.ItemTemplate>
+            <localControls:ItemsControlEx Items="{Binding SortedTabItemGroups}">
+                <localControls:ItemsControlEx.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
                             <TextBlock FontSize="12"
@@ -51,45 +88,44 @@
                                        Foreground="#aaaaaa"
                                        Text="{Binding GroupName}"
                                        />
-                            <ListBox Style="{StaticResource CustomListBoxStyle}"
-                                        ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
-                                        ItemsSource="{Binding TabItems}"
-                                        SelectionMode="Extended"
-                                        localBehaviours:ListBoxSelectedItemsBehavior.BindableSelectedItems="{Binding SelectedItems}"
-                                        HorizontalContentAlignment="Stretch"
-                                        >
-                                <ListBox.ItemTemplate>
+                            <ListView Style="{StaticResource CustomListViewStyle}"
+                                      ItemsSource="{Binding Items}"
+                                      ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
+                                      >
+                                <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <localControls:TabItemControl Title="{Binding Caption}">
-                                            <localControls:TabItemControl.ControlContent>
+                                        <localControls:TabItemControl 
+                                            Title="{Binding Caption}"
+                                            IsActive="{Binding IsSelected}"
+                                            IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                            >
+                                            <localControls:TabItemControl.ControlPanelContent>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            Content="📂"
                                                             Click="KeepTabOpen_Click"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            Content="📂"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             />
-                                                        
                                                     <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            Content="📌"
                                                             Click="PinTab_Click"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            Content="📌"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
                                                             />
-                                                        
                                                     <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                            Content="✖"
                                                             MouseEnter="InteractiveArea_MouseEnter"
                                                             MouseLeave="InteractiveArea_MouseLeave"
                                                             Click="CloseTab_Click"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            Content="✖"
                                                             />
                                                 </StackPanel>
-                                            </localControls:TabItemControl.ControlContent>
+                                            </localControls:TabItemControl.ControlPanelContent>
                                         </localControls:TabItemControl>
                                     </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                                </ListView.ItemTemplate>
+                            </ListView>
 
                             <Separator Margin="0,10"
                                        Visibility="{Binding IsPreviewGroup, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -98,12 +134,12 @@
                             <Border Background="Transparent" Height="5"></Border>
                         </StackPanel>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </localControls:ItemsControlEx.ItemTemplate>
+            </localControls:ItemsControlEx>
         </Grid>
 
         <!-- Контейнер с выбором масштаба -->
-        <localControls:ScaleSelectorControl Grid.Row="1"
+        <localControls:ScaleSelectorControl Grid.Row="2"
                                             Style="{StaticResource CustomScaleSelectorControlStyle}"
                                             ScaleFactor="{Binding ScaleFactor, Mode=TwoWay}" 
                                             ScaleChanged="ScaleSelectorControl_ScaleChanged" 
@@ -138,20 +174,20 @@
                                        Text="Related projects"/>
                         </StackPanel>
                     </Border>
-                    <ListBox ItemsSource="{Binding ProjectReferenceList}" 
-                             Style="{StaticResource CustomListBoxStyle}"
-                             ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
+                    <ListView ItemsSource="{Binding ProjectReferenceList}" 
+                             Style="{StaticResource CustomListViewStyle}"
+                             ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
                              Background="Transparent" 
                              BorderThickness="0">
-                        <ListBox.ItemTemplate>
+                        <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Button Content="{Binding TabItemProject.Caption}" 
                                         Style="{StaticResource DarkPopupButtonStyle}"
                                         CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                         Click="ProjectMenuItem_Click" />
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
             </localControls:VirtualPopupControl.PopupContent>
         </localControls:VirtualPopupControl>
