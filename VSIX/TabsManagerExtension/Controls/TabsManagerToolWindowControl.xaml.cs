@@ -55,11 +55,11 @@ namespace TabsManagerExtension {
         }
 
 
-        public ObservableCollection<TabItemGroup> SortedTabItemGroups { get; set; } = new();
+        public ObservableCollection<TabItemsGroup> SortedTabItemGroups { get; set; } = new();
         //private CollectionViewSource SortedTabItemGroupsViewSource { get; set; }
         
         // [Internal]:
-        private Helpers.GroupsSelectionCoordinator<TabItemGroup, TabItemBase> _tabItemsSelectionCoordinator;
+        private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
         private Helpers.OverlayBindingManager<TextEditorOverlayControl>? _textEditorOverlayManager;
 
         public TabsManagerToolWindowControl() {
@@ -68,7 +68,10 @@ namespace TabsManagerExtension {
             this.Unloaded += this.OnUnloaded;
             base.DataContext = this;
 
-            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemGroup, TabItemBase>(SortedTabItemGroups);
+            // BUG: вызываетмя OnTargetUnloaded у OverlayBindingManager когда все документы закрыты.
+            // TODO: сделай активным (выделенным) документ в preview
+
+            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase>(SortedTabItemGroups);
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
                 if (item is TabItemBase tabItem) {
                     Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
@@ -263,14 +266,15 @@ namespace TabsManagerExtension {
                 tabItem = new TabItemWindow(activatedShellWindow);
             }
 
-            this.AddTabItemToDefaultGroupIfMissing(tabItem);
+            var addedOrExistTabItem = this.AddTabItemToDefaultGroupIfMissing(tabItem);
+            addedOrExistTabItem.IsSelected = true;
 
 
             ////if (string.Equals(_lastActivatedDocumentFullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
             ////    Logger.LogDebug($"Skip SelectTabItem: already active {tabItem.Caption}");
             ////    return;
             ////}
-            
+
             //this.SelectTabItem(tabItem);
 
             this.UpdateWindowTabsInfo();
@@ -396,8 +400,8 @@ namespace TabsManagerExtension {
             //}
 
             // === [A] Обновление статуса сохранения документов ===
-            foreach (var tabItemGroup in this.SortedTabItemGroups.ToList()) {
-                foreach (var tabItem in tabItemGroup.Items.ToList()) {
+            foreach (var tabItemsGroup in this.SortedTabItemGroups.ToList()) {
+                foreach (var tabItem in tabItemsGroup.Items.ToList()) {
                     var document = _dte.Documents.Cast<EnvDTE.Document>()
                         .FirstOrDefault(d => d.FullName == tabItem.FullName);
 
@@ -603,14 +607,14 @@ namespace TabsManagerExtension {
 
             var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
             if (previewGroup != null) {
-                this.RemoveTabItemGroup(previewGroup);
+                this.RemoveTabItemsGroup(previewGroup);
             }
             tabItemDocument.IsPreviewTab = true;
             this.AddTabItemToGroupIfMissing(tabItemDocument, "__Preview__");
         }
 
 
-        private void AddTabItemToDefaultGroupIfMissing(TabItemBase tabItem) {
+        private TabItemBase AddTabItemToDefaultGroupIfMissing(TabItemBase tabItem) {
             using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToDefaultGroupIfMissing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -629,10 +633,10 @@ namespace TabsManagerExtension {
                 groupName = "Other";
             }
 
-            this.AddTabItemToGroupIfMissing(tabItem, groupName);
+            return this.AddTabItemToGroupIfMissing(tabItem, groupName);
         }
 
-        private void AddTabItemToGroupIfMissing(TabItemBase tabItem, string groupName) {
+        private TabItemBase AddTabItemToGroupIfMissing(TabItemBase tabItem, string groupName) {
             using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -642,18 +646,20 @@ namespace TabsManagerExtension {
 
             var existingItem = this.FindTabItem(tabItem);
             if (existingItem != null) {
-                return;
+                return existingItem;
             }
 
             var group = this.SortedTabItemGroups.FirstOrDefault(g => g.GroupName == groupName);
             if (group == null) {
-                group = new TabItemGroup { GroupName = groupName };
+                group = new TabItemsGroup { GroupName = groupName };
                 this.SortedTabItemGroups.Add(group);
                 this.SortGroups();
             }
 
             group.Items.Add(tabItem);
             this.SortDocumentsInGroups();
+
+            return tabItem;
         }
 
 
@@ -673,7 +679,7 @@ namespace TabsManagerExtension {
 
             var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
             if (previewGroup != null) {
-                this.RemoveTabItemGroup(previewGroup);
+                this.RemoveTabItemsGroup(previewGroup);
             }
             tabItemDocument.IsPreviewTab = false;
             this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
@@ -692,37 +698,26 @@ namespace TabsManagerExtension {
         }
 
 
-
-        private void RemoveTabItemFromGroups(TabItemBase tabItem) {
-            //foreach (var group in this.SortedTabItemGroups.ToList()) {
-            //    // Удаляем связанный TabItems из выбранных (если используется SelectionCoordinator и UI)
-            //    group.SelectedItems.Remove(tabItem);
-            //    if (group.Items.Remove(tabItem)) {
-            //        Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
-
-            //        if (!group.Items.Any()) {
-            //            if (this.SortedTabItemGroups.Remove(group)) {
-            //                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{group.GroupName}\"");
-            //            }
-            //        }
-            //        break;
-            //    }
-            //}
+        private void RemoveTabItemsGroup(TabItemsGroup tabItemsGroup) {
+            if (this.SortedTabItemGroups.Remove(tabItemsGroup)) {
+                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemsGroup.GroupName}\"");
+            }
         }
 
-        private void RemoveTabItemGroup(TabItemGroup tabItemGroup) {
-            //if (tabItemGroup == null) {
-            //    return;
-            //}
+        private void RemoveTabItemFromGroups(TabItemBase tabItem) {
+            foreach (var group in this.SortedTabItemGroups.ToList()) {
+                // Удаляем связанный TabItems из выбранных (если используется SelectionCoordinator и UI)
+                if (group.Items.Remove(tabItem)) {
+                    Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
 
-            //// Удаляем все связанные TabItems из выбранных (если используется SelectionCoordinator и UI)
-            //tabItemGroup.SelectedItems.Clear();
-            //tabItemGroup.Items.Clear();
-
-            //// Удаляем саму группу
-            //if (this.SortedTabItemGroups.Remove(tabItemGroup)) {
-            //    Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemGroup.GroupName}\"");
-            //}
+                    if (!group.Items.Any()) {
+                        if (this.SortedTabItemGroups.Remove(group)) {
+                            Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{group.GroupName}\"");
+                        }
+                    }
+                    break;
+                }
+            }
         }
 
 
@@ -739,7 +734,7 @@ namespace TabsManagerExtension {
             this.SelectTabItemInternal(this.FindTabItemWithGroup(tabItem));
         }
 
-        private void SelectTabItemInternal((TabItemBase Item, TabItemGroup Group)? tuple) {
+        private void SelectTabItemInternal((TabItemBase Item, TabItemsGroup Group)? tuple) {
             //using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("SelectTabItemInternal()");
             //ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -845,7 +840,7 @@ namespace TabsManagerExtension {
         }
 
 
-        private (TabItemDocument Item, TabItemGroup Group)? FindTabItemWithGroup(EnvDTE.Document document) {
+        private (TabItemDocument Item, TabItemsGroup Group)? FindTabItemWithGroup(EnvDTE.Document document) {
             var result = this.FindTabItemWithGroup(new TabItemDocument(document));
             if (result is { Item: TabItemDocument doc, Group: var group }) {
                 return (doc, group);
@@ -853,7 +848,7 @@ namespace TabsManagerExtension {
             return null;
         }
 
-        private (TabItemWindow Item, TabItemGroup Group)? FindTabItemWithGroup(EnvDTE.Window window) {
+        private (TabItemWindow Item, TabItemsGroup Group)? FindTabItemWithGroup(EnvDTE.Window window) {
             var result = this.FindTabItemWithGroup(new TabItemWindow(window));
             if (result is { Item: TabItemWindow win, Group: var group }) {
                 return (win, group);
@@ -861,7 +856,7 @@ namespace TabsManagerExtension {
             return null;
         }
 
-        private (TabItemBase Item, TabItemGroup Group)? FindTabItemWithGroup(TabItemBase tabItem) {
+        private (TabItemBase Item, TabItemsGroup Group)? FindTabItemWithGroup(TabItemBase tabItem) {
             if (tabItem is TabItemWindow tabItemWindow) {
                 return this.FindTabItemWithGroupBy<TabItemWindow>(
                     w => string.Equals(w.WindowId, tabItemWindow.WindowId, StringComparison.OrdinalIgnoreCase));
@@ -870,13 +865,13 @@ namespace TabsManagerExtension {
                 t => string.Equals(t.FullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase));
         }
 
-        private (TabItemDocument Item, TabItemGroup Group)? FindTabItemWithGroup(string documentFullName) {
+        private (TabItemDocument Item, TabItemsGroup Group)? FindTabItemWithGroup(string documentFullName) {
             return this.FindTabItemWithGroupBy<TabItemDocument>(
                     d => string.Equals(d.FullName, documentFullName, StringComparison.OrdinalIgnoreCase));
         }
 
 
-        private (T Item, TabItemGroup Group)? FindTabItemWithGroupBy<T>(Func<T, bool> predicate) where T : TabItemBase {
+        private (T Item, TabItemsGroup Group)? FindTabItemWithGroupBy<T>(Func<T, bool> predicate) where T : TabItemBase {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var group in this.SortedTabItemGroups) {

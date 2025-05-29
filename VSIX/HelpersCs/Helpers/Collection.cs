@@ -337,12 +337,14 @@ namespace Helpers {
         private readonly HashSet<(TGroup Group, TItem Item)> _selectedItems = new();
         private List<(TGroup Group, TItem Item)> _flatItems = new();
         private (TGroup Group, TItem Item)? _anchor = null;
+
+        private readonly Queue<(TGroup Group, TItem Item, bool IsSelected)> _pendingNotifications = new();
         
         const string _isActiveFlag = "IsActive";
 
         public GroupsSelectionCoordinator(ObservableCollection<TGroup> groups) {
             _groupSelectionBinding = new GroupSelectionBinding<TGroup, TItem>(groups);
-            _groupSelectionBinding.OnGroupStructureChanged += this.UpdateFlatItems;
+            _groupSelectionBinding.OnGroupStructureChanged += this.UpdateStructure;
             _groupSelectionBinding.OnGroupItemChanged += this.OnGroupItemChanged;
 
             ISelectableItemStatics.SelectionInterceptor = (item, proposed) => {
@@ -352,7 +354,7 @@ namespace Helpers {
                 return proposed;
             };
 
-            this.UpdateFlatItems();
+            this.UpdateStructure();
         }
 
         //
@@ -380,29 +382,27 @@ namespace Helpers {
                 _selectedItems.Remove((group, item));
             }
 
+            this.UpdateSelectionState();
             this.UpdateItemsMetadataFor(_isActiveFlag);
 
-            this.SelectionState = _selectedItems.Count switch {
-                0 => Enums.SelectionState.None,
-                1 => Enums.SelectionState.Single,
-                _ => Enums.SelectionState.Multiple
-            };
-
             // Notify about selection changes.
-            var currentlySelectedOtherItems = _flatItems
+            var currentlySelectedOtherItems = this._flatItems
                 .Where(entry => !ReferenceEquals(entry.Item, item) && entry.Item.IsSelected)
                 .ToHashSet();
 
             foreach (var removed in previouslySelectedOtherItems.Except(currentlySelectedOtherItems)) {
-                this.OnItemSelectionChanged?.Invoke(removed.Group, removed.Item, false);
-            }
-            foreach (var added in currentlySelectedOtherItems.Except(previouslySelectedOtherItems)) {
-                this.OnItemSelectionChanged?.Invoke(added.Group, added.Item, true);
-            }
-            if (wasSelectedBefore != isSelected) {
-                this.OnItemSelectionChanged?.Invoke(group, item, isSelected);
+                this.QueueNotification(removed.Group, removed.Item, false);
             }
 
+            foreach (var added in currentlySelectedOtherItems.Except(previouslySelectedOtherItems)) {
+                this.QueueNotification(added.Group, added.Item, true);
+            }
+
+            if (wasSelectedBefore != isSelected) {
+                this.QueueNotification(group, item, isSelected);
+            }
+
+            this.FlushNotifications();
             return isSelected;
         }
 
@@ -505,11 +505,44 @@ namespace Helpers {
             _anchor = from;
         }
 
-        private void ClearAllSelection() {
-            foreach (var (group, item) in _selectedItems.ToList()) {
-                item.SetSelectedDirectly(false);
+
+        private void UpdateStructure() {
+            // Перестроение списка всех (группа, элемент)
+            this._flatItems = this._groupSelectionBinding.Groups
+                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
+                .ToList();
+
+            // Собираем актуальный список выделенных элементов на основе новых flat-данных
+            this._selectedItems.Clear();
+
+            foreach (var (group, item) in this._flatItems) {
+                if (item.IsSelected) {
+                    this._selectedItems.Add((group, item));
+                }
             }
-            _selectedItems.Clear();
+
+            // Проверка актуальности _anchor
+            if (this._anchor != null) {
+                bool anchorStillExists = this._flatItems.Any(e =>
+                    ReferenceEquals(e.Group, this._anchor.Value.Group) &&
+                    ReferenceEquals(e.Item, this._anchor.Value.Item)
+                );
+
+                if (!anchorStillExists) {
+                    this._anchor = null;
+                }
+            }
+
+            this.UpdateSelectionState();
+            this.UpdateItemsMetadataFor(_isActiveFlag);
+        }
+
+        private void UpdateSelectionState() {
+            this.SelectionState = _selectedItems.Count switch {
+                0 => Enums.SelectionState.None,
+                1 => Enums.SelectionState.Single,
+                _ => Enums.SelectionState.Multiple
+            };
         }
 
         private void UpdateItemsMetadataFor(string metadataFlag) {
@@ -523,10 +556,28 @@ namespace Helpers {
             }
         }
 
-        private void UpdateFlatItems() {
-            _flatItems = _groupSelectionBinding.Groups
-                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
-                .ToList();
+
+        private void ClearAllSelection() {
+            foreach (var (group, item) in _selectedItems.ToList()) {
+                item.SetSelectedDirectly(false);
+            }
+            _selectedItems.Clear();
+        }
+
+
+        private void QueueNotification(TGroup group, TItem item, bool isSelected) {
+            this._pendingNotifications.Enqueue((group, item, isSelected));
+        }
+
+        private void FlushNotifications() {
+            var pending = this._pendingNotifications.ToList();
+            this._pendingNotifications.Clear();
+
+            _ = Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                foreach (var (group, item, isSelected) in pending) {
+                    this.OnItemSelectionChanged?.Invoke(group, item, isSelected);
+                }
+            }));
         }
     }
 }

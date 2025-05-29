@@ -382,7 +382,7 @@ namespace TabsManagerExtension {
     }
 
 
-    public class TabItemGroup : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+    public class TabItemsGroup : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
         private string _groupName;
         public string GroupName {
             get => _groupName;
