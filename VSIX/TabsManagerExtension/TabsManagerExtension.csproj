@@ -57,10 +57,11 @@
     </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Overlay\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
       <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TextViewFocusListener.cs" />
+    <Compile Include="Listeners\TextViewFocusListener.cs" />
     <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
       <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
     </Compile>

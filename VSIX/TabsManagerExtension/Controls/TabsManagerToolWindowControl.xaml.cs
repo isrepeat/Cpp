@@ -20,26 +20,15 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
-using TabsManagerExtension.Controls;
 
 
 namespace TabsManagerExtension {
     public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // [Events]:
-        private EnvDTE80.DTE2 _dte;
-        private EnvDTE.WindowEvents _windowEvents;
-        private EnvDTE.DocumentEvents _documentEvents;
-        private EnvDTE.SolutionEvents _solutionEvents;
-
         // TODO: incapsulate handlers into FocusWatcher
         private readonly Action _textEditorFocusGotHandler;
         private readonly Action _textEditorFocusLostHandler;
-
-        // [Timeres]:
-        private FileSystemWatcher _fileWatcher;
-        private DispatcherTimer _tabsManagerStateTimer;
 
         // [Properties]:
         private double _scaleFactor = 0.9;
@@ -57,10 +46,17 @@ namespace TabsManagerExtension {
 
         public ObservableCollection<TabItemsGroup> SortedTabItemGroups { get; set; } = new();
         //private CollectionViewSource SortedTabItemGroupsViewSource { get; set; }
-        
+
         // [Internal]:
+        private EnvDTE80.DTE2 _dte;
+        private EnvDTE.WindowEvents _windowEvents;
+        private EnvDTE.DocumentEvents _documentEvents;
+        private EnvDTE.SolutionEvents _solutionEvents;
+        private FileSystemWatcher _fileWatcher;
+        private DispatcherTimer _tabsManagerStateTimer;
+
         private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
-        private Helpers.OverlayBindingManager<TextEditorOverlayControl>? _textEditorOverlayManager;
+        private Overlay.TextEditorOverlayController _textEditorOverlayController;
 
         public TabsManagerToolWindowControl() {
             this.InitializeComponent();
@@ -68,9 +64,13 @@ namespace TabsManagerExtension {
             this.Unloaded += this.OnUnloaded;
             base.DataContext = this;
 
-            // BUG: вызываетмя OnTargetUnloaded у OverlayBindingManager когда все документы закрыты.
-            // TODO: сделай активным (выделенным) документ в preview
+            this.InitializeDTE();
+            this.InitializeFileWatcher();
+            this.InitializeTimers();
+            this.InitializeDocumentsViewSource();
 
+
+            // TODO: сделай активным (выделенным) документ в preview
             _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase>(SortedTabItemGroups);
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
                 if (item is TabItemBase tabItem) {
@@ -96,24 +96,12 @@ namespace TabsManagerExtension {
                 }
             };
 
-            this.InitializeDTE();
-            this.InitializeFileWatcher();
-            this.InitializeTimers();
-            this.InitializeDocumentsViewSource();
+            _textEditorOverlayController = new Overlay.TextEditorOverlayController(_dte);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
             this.GotFocus += this.OnGotFocus;
             this.LostFocus += this.OnLostFocus;
-
-            var targetElement = Helpers.VisualTree.FindElementByName(Application.Current.MainWindow, "PART_ContentPanel");
-            if (targetElement is FrameworkElement targetFrameworkElement) {
-                var overlay = new TextEditorOverlayControl();
-                _textEditorOverlayManager = new Helpers.OverlayBindingManager<TextEditorOverlayControl>(
-                    targetFrameworkElement,
-                    overlay
-                    );
-            }
 
             this.LoadOpenDocuments();
         }
@@ -208,6 +196,8 @@ namespace TabsManagerExtension {
             else {
                 this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
             }
+
+            _textEditorOverlayController.UpdateState();
         }
 
 
@@ -236,6 +226,8 @@ namespace TabsManagerExtension {
             else {
                 Helpers.Diagnostic.Logger.LogWarning($"\"{document?.Name}\" not found in collections");
             }
+
+            _textEditorOverlayController.UpdateState();
         }
 
 
@@ -268,6 +260,10 @@ namespace TabsManagerExtension {
 
             var addedOrExistTabItem = this.AddTabItemToDefaultGroupIfMissing(tabItem);
             addedOrExistTabItem.IsSelected = true;
+
+
+            // Обновим _textEditorOverlayController, если открытие произошло через превью (без DocumentOpened)
+            _textEditorOverlayController.UpdateState();
 
 
             ////if (string.Equals(_lastActivatedDocumentFullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
@@ -753,6 +749,11 @@ namespace TabsManagerExtension {
 
 
 
+        private void UpdateTextEditorOverlayControllerAsync() {
+            _textEditorOverlayController.UpdateState();
+        }
+
+
         // Обновление документа в UI после изменения или переименования
         private void UpdateDocumentUI(string oldPath, string newPath = null) {
             foreach (var group in this.SortedTabItemGroups) {
@@ -771,7 +772,6 @@ namespace TabsManagerExtension {
                 }
             }
         }
-
 
         private void UpdateWindowTabsInfo() {
             this.ForEachTab<TabItemWindow>(tabItemWindow => {

@@ -1,21 +1,21 @@
-﻿using Helpers;
+﻿using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
-using System.ComponentModel.Composition;
 
 namespace TabsManagerExtension {
-
     [Export(typeof(IWpfTextViewCreationListener))]
-    [ContentType("any")] // для обычного кода
+    [ContentType("any")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
-    public class MyTextViewListener : IWpfTextViewCreationListener {
+    public class TextViewFocusListener : IWpfTextViewCreationListener {
         public void TextViewCreated(IWpfTextView textView) {
             textView.GotAggregateFocus += (sender, e) => {
-                FocusWatcher.NotifyFocusGot("TextEditor");
+                //Helpers.Diagnostic.Logger.LogDebug($"[TextEditor] GOT FOCUS");
+                Helpers.FocusWatcher.NotifyFocusGot("TextEditor");
             };
 
             textView.LostAggregateFocus += (sender, e) => {
-                FocusWatcher.NotifyFocusLost("TextEditor");
+                //Helpers.Diagnostic.Logger.LogDebug($"[TextEditor] LOST FOCUS");
+                Helpers.FocusWatcher.NotifyFocusLost("TextEditor");
             };
         }
     }
