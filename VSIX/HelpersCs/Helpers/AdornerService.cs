@@ -119,7 +119,9 @@ namespace Helpers {
     /// Управляет наложением оверлея поверх FrameworkElement через AdornerLayer.
     /// Синхронизирует размеры и автоматически удаляет оверлей при выгрузке.
     /// </summary>
-    public class OverlayBindingManager<T> where T : FrameworkElement {
+    public class AdornerOverlayManager<T> where T : FrameworkElement {
+        public bool IsAttached { get; private set; } = true;
+
         private readonly System.WeakReference<FrameworkElement> _targetRef;
         private readonly System.WeakReference<T> _overlayRef;
         private AdornerWithChild<T>? _adorner;
@@ -127,7 +129,7 @@ namespace Helpers {
         /// <summary>
         /// Создаёт менеджер наложения оверлея и автоматически добавляет его к AdornerLayer.
         /// </summary>
-        public OverlayBindingManager(FrameworkElement target, T overlay) {
+        public AdornerOverlayManager(FrameworkElement target, T overlay) {
             if (target == null) {
                 throw new System.ArgumentNullException(nameof(target));
             }
@@ -170,6 +172,7 @@ namespace Helpers {
         /// Обрабатывает событие выгрузки целевого элемента — вызывает удаление оверлея.
         /// </summary>
         private void OnTargetUnloaded(object? sender, RoutedEventArgs e) {
+            this.IsAttached = false;
             Cleanup();
         }
 

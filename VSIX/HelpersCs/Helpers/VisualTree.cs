@@ -15,23 +15,15 @@ using System.Windows.Controls;
 
 namespace Helpers {
     public static class VisualTree {
-        // Вспомогательный метод для поиска элементов Visual Tree (рекурсивно)
-        public static List<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject {
-            List<T> result = new List<T>();
-
-            if (depObj == null) return result;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++) {
-                var child = VisualTreeHelper.GetChild(depObj, i);
-                if (child is T matchingChild) {
-                    result.Add(matchingChild);
+        public static FrameworkElement? FindParentByName(DependencyObject child, string targetName) {
+            var current = VisualTreeHelper.GetParent(child);
+            while (current != null) {
+                if (current is FrameworkElement fe && fe.Name == targetName) {
+                    return fe;
                 }
-
-                // Рекурсивный вызов для вложенных детей
-                result.AddRange(FindVisualChildren<T>(child));
+                current = VisualTreeHelper.GetParent(current);
             }
-
-            return result;
+            return null;
         }
 
         public static T? FindParentOfType<T>(DependencyObject root) where T : DependencyObject {
@@ -47,6 +39,40 @@ namespace Helpers {
         }
 
 
+        public static DependencyObject? FindChildByType(DependencyObject root, string typeName) {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child.GetType().Name == typeName) {
+                    return child;
+                }
+
+                var result = FindChildByType(child, typeName);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public static T? FindChildByType<T>(DependencyObject root) where T : DependencyObject {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+
+                if (child is T match) {
+                    return match;
+                }
+
+                var result = FindChildByType<T>(child);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+
         public static FrameworkElement? FindElementByName(DependencyObject root, string name) {
             if (root is FrameworkElement fe && fe.Name == name) {
                 return fe;
@@ -56,40 +82,6 @@ namespace Helpers {
             for (int i = 0; i < count; i++) {
                 var child = VisualTreeHelper.GetChild(root, i);
                 var result = FindElementByName(child, name);
-                if (result != null) {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-
-        public static DependencyObject? FindDescendantByType(DependencyObject root, string typeName) {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
-                var child = VisualTreeHelper.GetChild(root, i);
-                if (child.GetType().Name == typeName) {
-                    return child;
-                }
-
-                var result = FindDescendantByType(child, typeName);
-                if (result != null) {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
-        public static T? FindDescendantByType<T>(DependencyObject root) where T : DependencyObject {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
-                var child = VisualTreeHelper.GetChild(root, i);
-
-                if (child is T match) {
-                    return match;
-                }
-
-                var result = FindDescendantByType<T>(child);
                 if (result != null) {
                     return result;
                 }
