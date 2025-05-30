@@ -69,17 +69,18 @@ namespace TabsManagerExtension {
                     Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
 
                     if (isSelected) {
-                        var activeItem = _tabItemsSelectionCoordinator.ActiveItem;
-                        if (activeItem != null) {
-                            if (activeItem.Value.Item is IActivatableTab activatableTab) {
-                                if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
-                                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate(): already active [{tabItem.Caption}]");
-                                    return;
-                                }
-                                activatableTab.Activate();
-                            }
-                        }
+                        this.ActivatePrimaryTabItem();
                     }
+                }
+            };
+            _tabItemsSelectionCoordinator.OnSelectionStateChanged = (Helpers.Enums.SelectionState selectionState) => {
+                switch (selectionState) {
+                    case Helpers.Enums.SelectionState.Single:
+                        this.ActivatePrimaryTabItem();
+                        break;
+
+                    case Helpers.Enums.SelectionState.Multiple:
+                        break;
                 }
             };
 
@@ -276,7 +277,7 @@ namespace TabsManagerExtension {
             }
 
             var addedOrExistTabItem = this.AddTabItemToDefaultGroupIfMissing(tabItem);
-            addedOrExistTabItem.IsSelected = true;
+            addedOrExistTabItem.IsSelected = true; // Select after tabItem exist added to group.
 
             this.UpdateWindowTabsInfo();
 
@@ -378,30 +379,7 @@ namespace TabsManagerExtension {
             // NOTE: Нужно использовать копии коллекций для безопасного перебора.
             // Поэтому в foreach вызывай .ToList() у коллекций.
 
-            //var activeDocument = _dte.ActiveDocument;
-            //if (activeDocument != null) {
-
-            //    foreach (var group in SortedTabItemGroups) {
-            //        foreach (var tabItem in group.Items.OfType<TabItemDocument>()) {
-            //            tabItem.IsActiveTab = string.Equals(tabItem.FullName, activeDocument.FullName, StringComparison.OrdinalIgnoreCase);
-            //        }
-            //    }
-
-            //    //switch (_tabItemSelectionCoordinator.SelectionState) {
-            //    //    case Helpers.Enums.SelectionState.None:
-            //    //        this.SelectTabItem(activeDocument);
-            //    //        break;
-
-            //    //    case Helpers.Enums.SelectionState.Single:
-            //    //        var (selectedTabItem, group) = _tabItemSelectionCoordinator.PrimarySelection.Value;
-
-            //    //        if (!string.Equals(selectedTabItem.FullName, activeDocument.FullName, StringComparison.OrdinalIgnoreCase)) {
-            //    //            Helpers.Diagnostic.Logger.LogDebug($"Activate tab: {activeDocument.FullName}");
-            //    //            this.SelectTabItem(activeDocument);
-            //    //        }
-            //    //        break;
-            //    //}
-            //}
+            this.SyncActiveDocumentWithPrimaryTabItem();
 
             // === [A] Обновление статуса сохранения документов ===
             foreach (var tabItemsGroup in this.SortedTabItemGroups.ToList()) {
@@ -620,8 +598,9 @@ namespace TabsManagerExtension {
             if (previewGroup != null) {
                 this.RemoveTabItemsGroup(previewGroup);
             }
-            tabItemDocument.IsPreviewTab = true;
             this.AddTabItemToGroupIfMissing(tabItemDocument, "__Preview__");
+            tabItemDocument.IsPreviewTab = true;
+            tabItemDocument.IsSelected = true; // Select after tabItem exist added to group.
         }
 
 
@@ -692,8 +671,8 @@ namespace TabsManagerExtension {
             if (previewGroup != null) {
                 this.RemoveTabItemsGroup(previewGroup);
             }
-            tabItemDocument.IsPreviewTab = false;
             this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
+            tabItemDocument.IsPreviewTab = false;
         }
 
         private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, TabItemProject tabItemProject) {
@@ -777,32 +756,62 @@ namespace TabsManagerExtension {
             });
         }
 
+        private void ActivatePrimaryTabItem() {
+            var primaryTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
+            if (primaryTabItem is IActivatableTab activatableTab) {
+                if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, primaryTabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
+                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate(): already active [{primaryTabItem.Caption}]");
+                    return;
+                }
+                activatableTab.Activate();
+            }
+        }
+
+        private void SyncActiveDocumentWithPrimaryTabItem() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var activeDocument = _dte.ActiveDocument;
+            if (activeDocument != null) {
+                var primaryTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
+                if (primaryTabItem != null) {
+                    if (string.Equals(activeDocument.FullName, primaryTabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
+                        return;
+                    }
+                }
+
+                var tabItem = this.FindTabItem(activeDocument);
+                if (tabItem != null) {
+                    tabItem.IsSelected = true;
+                }
+            }
+        }
+
 
 
         // Метод сортировки документов внутри групп
         private void SortDocumentsInGroups() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var group in this.SortedTabItemGroups) {
-                var sortedDocs = group.Items.OrderBy(d => d.Caption).ToList();
-                group.Items.Clear();
-                foreach (var doc in sortedDocs) {
-                    group.Items.Add(doc);
-                }
-            }
+            //foreach (var group in this.SortedTabItemGroups) {
+            //    var sortedDocs = group.Items.OrderBy(d => d.Caption).ToList();
+            //    group.Items.Clear();
+            //    foreach (var doc in sortedDocs) {
+            //        group.Items.Add(doc);
+            //    }
+            //}
         }
 
         private void SortGroups() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Сортируем группы по имени (по алфавиту)
-            var sortedGroups = this.SortedTabItemGroups.OrderBy(g => g.GroupName).ToList();
+            //// Сортируем группы по имени (по алфавиту)
+            //var sortedGroups = this.SortedTabItemGroups.OrderBy(g => g.GroupName).ToList();
 
-            // Очищаем и добавляем отсортированные группы
-            this.SortedTabItemGroups.Clear();
-            foreach (var group in sortedGroups) {
-                this.SortedTabItemGroups.Add(group);
-            }
+            //// Очищаем и добавляем отсортированные группы
+            //this.SortedTabItemGroups.Clear();
+            //foreach (var group in sortedGroups) {
+            //    this.SortedTabItemGroups.Add(group);
+            //}
         }
 
 
