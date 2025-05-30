@@ -32,12 +32,12 @@ namespace Helpers {
             return true;
         }
 
-        protected void SetPropertyWithNotificationAndGuard<T>(
+        protected void SetPropertyWithNotification<T>(
             ref T refProperty,
             T newValue,
             Action<T>? onChanged = null,
-            [CallerMemberName] string? propertyName = null
-        ) {
+            [CallerMemberName] string? propertyName = null) {
+
             if (propertyName == null) {
                 throw new ArgumentNullException(nameof(propertyName), "CallerMemberName did not supply a property name.");
             }
@@ -56,7 +56,46 @@ namespace Helpers {
             try {
                 refProperty = newValue;
                 this.OnPropertyChanged(propertyName);
+
                 onChanged?.Invoke(newValue);
+
+                _propertyGuards[propertyName] = false;
+            }
+            catch {
+                Helpers.Diagnostic.Logger.LogError($"[Property: {propertyName}] Exception occurred during property update.");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Обновляет свойство, уведомляет об изменении и откладывает новое значение в список для дальнейшей обработки.
+        /// </summary>
+        protected void SetPropertyWithDeferredNotificationValues<T>(
+            ref T refProperty,
+            T newValue,
+            List<T> pendingValues,
+            [CallerMemberName] string? propertyName = null) {
+            if (propertyName == null) {
+                throw new ArgumentNullException(nameof(propertyName), "CallerMemberName did not supply a property name.");
+            }
+
+            if (EqualityComparer<T>.Default.Equals(refProperty, newValue)) {
+                return;
+            }
+
+            if (_propertyGuards.TryGetValue(propertyName, out var inProgress) && inProgress) {
+                Helpers.Diagnostic.Logger.LogWarning($"[Property: {propertyName}] Recursive update attempt detected. Operation aborted.");
+                return;
+            }
+
+            _propertyGuards[propertyName] = true;
+
+            try {
+                refProperty = newValue;
+                this.OnPropertyChanged(propertyName);
+
+                pendingValues.Add(newValue); // сохраняем значение для последующей обработки
+
                 _propertyGuards[propertyName] = false;
             }
             catch {
@@ -67,7 +106,8 @@ namespace Helpers {
     }
 
 
-    public static class Time {
+
+        public static class Time {
         public static void RunWithDelay(TimeSpan delay, Action action) {
             var timer = new DispatcherTimer { Interval = delay };
             timer.Tick += (s, e) => {

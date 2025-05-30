@@ -319,16 +319,16 @@ namespace Helpers {
         private Enums.SelectionState _selectionState = Enums.SelectionState.None;
         public Enums.SelectionState SelectionState {
             get => _selectionState;
-            set {
-                this.SetPropertyWithNotificationAndGuard(
+            private set {
+                this.SetPropertyWithDeferredNotificationValues(
                     ref _selectionState,
                     value,
-                    newVal => this.OnSelectionStateChanged?.Invoke(newVal)
+                    _pendingSelectionStateNotificationValues
                 );
             }
         }
 
-        public (TGroup Group, TItem Item)? ActiveItem {
+        public (TGroup Group, TItem Item)? PrimarySelection {
             get => _anchor;
         }
 
@@ -338,13 +338,14 @@ namespace Helpers {
         private List<(TGroup Group, TItem Item)> _flatItems = new();
         private (TGroup Group, TItem Item)? _anchor = null;
 
-        private readonly Queue<(TGroup Group, TItem Item, bool IsSelected)> _pendingNotifications = new();
+        private readonly List<(TGroup Group, TItem Item, bool IsSelected)> _pendingSelectionNotifications = new();
+        private readonly List<Enums.SelectionState> _pendingSelectionStateNotificationValues = new();
         
         const string _isActiveFlag = "IsActive";
 
         public GroupsSelectionCoordinator(ObservableCollection<TGroup> groups) {
             _groupSelectionBinding = new GroupSelectionBinding<TGroup, TItem>(groups);
-            _groupSelectionBinding.OnGroupStructureChanged += this.UpdateStructure;
+            _groupSelectionBinding.OnGroupStructureChanged += this.OnGroupStructureChanged;
             _groupSelectionBinding.OnGroupItemChanged += this.OnGroupItemChanged;
 
             ISelectableItemStatics.SelectionInterceptor = (item, proposed) => {
@@ -354,17 +355,54 @@ namespace Helpers {
                 return proposed;
             };
 
-            this.UpdateStructure();
+            this.OnGroupStructureChanged();
         }
 
         //
         // Handlers
         //
-        private bool InterceptHandler(TGroup group, TItem item, bool proposed) {
-            var requestedAction = proposed
-                ? Enums.SelectionAction.Select
-                : Enums.SelectionAction.Unselect;
+        private void OnGroupStructureChanged() {
+            // Перестроение списка всех (группа, элемент)
+            _flatItems = _groupSelectionBinding.Groups
+                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
+                .ToList();
 
+            // Перестроение списка выбранных элементов
+            _selectedItems.Clear();
+            foreach (var (group, item) in _flatItems) {
+                if (item.IsSelected) {
+                    _selectedItems.Add((group, item));
+                }
+            }
+
+            // Проверка актуальности anchor
+            if (_anchor != null) {
+                bool anchorStillExists = _flatItems.Any(e =>
+                    ReferenceEquals(e.Group, _anchor.Value.Group) &&
+                    ReferenceEquals(e.Item, _anchor.Value.Item));
+
+                if (!anchorStillExists) {
+                    _anchor = null;
+                }
+            }
+
+            this.SyncSelectionState();
+        }
+
+        private void OnGroupItemChanged(TGroup group, TItem item, PropertyChangedEventArgs e) {
+            if (e.PropertyName != nameof(ISelectableItem.IsSelected)) {
+                return;
+            }
+
+            // тут ничего не делаем — вся логика в InterceptHandler
+        }
+
+
+
+        //
+        // Internal logic
+        //
+        private bool InterceptHandler(TGroup group, TItem item, bool proposed) {
             // Было ли выбрано текущее выделенное до начала обработки
             bool wasSelectedBefore = item.IsSelected;
 
@@ -373,8 +411,13 @@ namespace Helpers {
                 .Where(entry => !ReferenceEquals(entry.Item, item) && entry.Item.IsSelected)
                 .ToHashSet();
 
+            var requestedAction = proposed
+                ? Enums.SelectionAction.Select
+                : Enums.SelectionAction.Unselect;
+
             var resultAction = this.HandleSelection(group, item, requestedAction);
             var isSelected = resultAction == Enums.SelectionAction.Select;
+
             if (isSelected) {
                 _selectedItems.Add((group, item));
             }
@@ -382,24 +425,22 @@ namespace Helpers {
                 _selectedItems.Remove((group, item));
             }
 
-            this.UpdateSelectionState();
-            this.UpdateItemsMetadataFor(_isActiveFlag);
+            this.SyncSelectionState();
 
-            // Notify about selection changes.
-            var currentlySelectedOtherItems = this._flatItems
+            var currentlySelectedOtherItems = _flatItems
                 .Where(entry => !ReferenceEquals(entry.Item, item) && entry.Item.IsSelected)
                 .ToHashSet();
 
             foreach (var removed in previouslySelectedOtherItems.Except(currentlySelectedOtherItems)) {
-                this.QueueNotification(removed.Group, removed.Item, false);
+                _pendingSelectionNotifications.Add((removed.Group, removed.Item, false));
             }
 
             foreach (var added in currentlySelectedOtherItems.Except(previouslySelectedOtherItems)) {
-                this.QueueNotification(added.Group, added.Item, true);
+                _pendingSelectionNotifications.Add((added.Group, added.Item, true));
             }
 
             if (wasSelectedBefore != isSelected) {
-                this.QueueNotification(group, item, isSelected);
+                _pendingSelectionNotifications.Add((group, item, isSelected));
             }
 
             this.FlushNotifications();
@@ -465,18 +506,7 @@ namespace Helpers {
             return resultAction;
         }
 
-        private void OnGroupItemChanged(TGroup group, TItem item, PropertyChangedEventArgs e) {
-            if (e.PropertyName != nameof(ISelectableItem.IsSelected)) {
-                return;
-            }
 
-            // тут ничего не делаем — вся логика в перехватчике
-        }
-
-
-        //
-        // Internal logic
-        //
         private void ApplyShiftRange((TGroup Group, TItem Item) from, (TGroup Group, TItem Item) to) {
             int i1 = _flatItems.IndexOf(from);
             int i2 = _flatItems.IndexOf(to);
@@ -505,58 +535,6 @@ namespace Helpers {
             _anchor = from;
         }
 
-
-        private void UpdateStructure() {
-            // Перестроение списка всех (группа, элемент)
-            this._flatItems = this._groupSelectionBinding.Groups
-                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
-                .ToList();
-
-            // Собираем актуальный список выделенных элементов на основе новых flat-данных
-            this._selectedItems.Clear();
-
-            foreach (var (group, item) in this._flatItems) {
-                if (item.IsSelected) {
-                    this._selectedItems.Add((group, item));
-                }
-            }
-
-            // Проверка актуальности _anchor
-            if (this._anchor != null) {
-                bool anchorStillExists = this._flatItems.Any(e =>
-                    ReferenceEquals(e.Group, this._anchor.Value.Group) &&
-                    ReferenceEquals(e.Item, this._anchor.Value.Item)
-                );
-
-                if (!anchorStillExists) {
-                    this._anchor = null;
-                }
-            }
-
-            this.UpdateSelectionState();
-            this.UpdateItemsMetadataFor(_isActiveFlag);
-        }
-
-        private void UpdateSelectionState() {
-            this.SelectionState = _selectedItems.Count switch {
-                0 => Enums.SelectionState.None,
-                1 => Enums.SelectionState.Single,
-                _ => Enums.SelectionState.Multiple
-            };
-        }
-
-        private void UpdateItemsMetadataFor(string metadataFlag) {
-            if (metadataFlag == _isActiveFlag) {
-                foreach (var (group, item) in _flatItems) {
-                    item.Metadata?.SetFlag(_isActiveFlag, false);
-                }
-                if (this.ActiveItem != null) {
-                    this.ActiveItem.Value.Item?.Metadata?.SetFlag(_isActiveFlag, true);
-                }
-            }
-        }
-
-
         private void ClearAllSelection() {
             foreach (var (group, item) in _selectedItems.ToList()) {
                 item.SetSelectedDirectly(false);
@@ -565,16 +543,44 @@ namespace Helpers {
         }
 
 
-        private void QueueNotification(TGroup group, TItem item, bool isSelected) {
-            this._pendingNotifications.Enqueue((group, item, isSelected));
+
+        private void SyncSelectionState() {
+
+            // Обновление SelectionState с накоплением отложенного уведомления
+            this.SelectionState = _selectedItems.Count switch {
+                0 => Enums.SelectionState.None,
+                1 => Enums.SelectionState.Single,
+                _ => Enums.SelectionState.Multiple
+            };
+
+            this.UpdateItemsMetadataFor(_isActiveFlag);
+        }
+
+
+        private void UpdateItemsMetadataFor(string metadataFlag) {
+            if (metadataFlag == _isActiveFlag) {
+                foreach (var (group, item) in _flatItems) {
+                    item.Metadata?.SetFlag(_isActiveFlag, false);
+                }
+                if (this.PrimarySelection != null) {
+                    this.PrimarySelection.Value.Item?.Metadata?.SetFlag(_isActiveFlag, true);
+                }
+            }
         }
 
         private void FlushNotifications() {
-            var pending = this._pendingNotifications.ToList();
-            this._pendingNotifications.Clear();
+            // Копируем чтобы изолировать текущую партию уведомлений и избежать рекурсии при обработке.
+            var pendingSelectionStateNotificationValuesCopy = _pendingSelectionStateNotificationValues.ToList();
+            _pendingSelectionStateNotificationValues.Clear();
+
+            var pendingSelectionNotificationsCopy = _pendingSelectionNotifications.ToList();
+            _pendingSelectionNotifications.Clear();
 
             _ = Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
-                foreach (var (group, item, isSelected) in pending) {
+                foreach (var state in pendingSelectionStateNotificationValuesCopy) {
+                    this.OnSelectionStateChanged?.Invoke(state);
+                }
+                foreach (var (group, item, isSelected) in pendingSelectionNotificationsCopy) {
                     this.OnItemSelectionChanged?.Invoke(group, item, isSelected);
                 }
             }));

@@ -285,7 +285,7 @@ namespace WpfTestApp {
             public Enums.SelectionState SelectionState {
                 get => this._selectionState;
                 set {
-                    this.SetPropertyWithNotificationAndGuard(
+                    this.SetPropertyWithNotification(
                         ref this._selectionState,
                         value,
                         newVal => this.OnSelectionStateChanged?.Invoke(newVal)
