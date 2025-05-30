@@ -38,17 +38,16 @@
                                            Height="2"
                                            VerticalAlignment="Top"
                                            HorizontalAlignment="Stretch"
-                                           Fill="{StaticResource AppAccentBrush}"
+                                           Fill="{StaticResource AppAccentNonActiveLowBrush}"
                                            />
                                 <ContentPresenter />
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
-                                        <Condition Binding="{Binding [TabsManagerControl], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                                        <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                                     </MultiDataTrigger.Conditions>
-                                    <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentNonActiveLowBrush}" />
+                                    <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentBrush}" />
                                 </MultiDataTrigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -58,8 +57,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid localHelpers:FocusWatcherBehavior.WatchKey="TextEditor"
-        >
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="*" />
@@ -191,6 +189,5 @@
                 </StackPanel>
             </localControls:VirtualPopupControl.PopupContent>
         </localControls:VirtualPopupControl>
-
     </Grid>
 </UserControl>
