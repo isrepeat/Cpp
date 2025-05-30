@@ -1,30 +1,30 @@
-﻿namespace TabsManagerExtension {
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System;
-    using System.ComponentModel.Design;
-    using System.Globalization;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Task = System.Threading.Tasks.Task;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
-    /// <summary>
-    /// Command handler
-    /// </summary>
+namespace TabsManagerExtension {
     internal sealed class TabsManagerToolWindowCommand {
-        /// <summary>
-        /// Command ID.
-        /// </summary>
         public const int CommandId = 0x0100;
 
-        /// <summary>
-        /// Command menu group (command set GUID).
-        /// </summary>
         public static readonly Guid CommandSet = new Guid("8a30806a-edfc-4c91-8182-025665145a07");
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
         private readonly AsyncPackage package;
 
         /// <summary>
@@ -42,17 +42,11 @@
             commandService.AddCommand(menuItem);
         }
 
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
         public static TabsManagerToolWindowCommand Instance {
             get;
             private set;
         }
 
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
         private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider {
             get {
                 return this.package;
@@ -72,14 +66,12 @@
             Instance = new TabsManagerToolWindowCommand(package, commandService);
         }
 
-        /// <summary>
-        /// Shows the tool window when the menu item is clicked.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
+
         private void Execute(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
-
+#if __REPLACE_SRC_TABS
+            VsixVisualTreeHelper.ScheduleInjectionTabsManagerControl();
+#else
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
@@ -90,6 +82,7 @@
 
             IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+#endif
         }
     }
 }

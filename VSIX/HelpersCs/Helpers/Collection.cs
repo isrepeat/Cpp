@@ -27,75 +27,105 @@ namespace Helpers {
     }
 
 
-    public interface IRangeModifiableCollection {
-        void AddRange(IEnumerable<object> toAddItems, bool multiselectionMode = false);
-        void RemoveRange(IEnumerable<object> toRemoveItems, bool multiselectionMode = false);
-        void AddRemoveRange(IEnumerable<object> toAddItems, IEnumerable<object> toRemoveItems, bool multiselectionMode = false);
-    }
-
-    public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeModifiableCollection {
-        public event Action<object, IList<T>, IList<T>, bool>? CollectionChangedExtended;
+    public class SortedObservableCollection<T> : ObservableCollection<T> {
         public IComparer<T>? Comparer { get; set; } = null;
 
-        private bool _suppressNotification = false;
-
-        public RangeObservableCollection() : base() { }
-
-        public RangeObservableCollection(IEnumerable<T> collection) : base(collection) { }
-
-
-        public void AddRange(IEnumerable<object> toAddItems, bool multiselectionMode = false) {
-            this.AddRemoveRange(toAddItems, Enumerable.Empty<object>(), multiselectionMode);
-        }
-
-        public void RemoveRange(IEnumerable<object> toRemoveItems, bool multiselectionMode = false) {
-            this.AddRemoveRange(Enumerable.Empty<object>(), toRemoveItems, multiselectionMode);
-        }
-
-        public void AddRemoveRange(IEnumerable<object> toAddItems, IEnumerable<object> toRemoveItems, bool multiselectionMode = false) {
-            var addedItems = toAddItems?.OfType<T>().ToList() ?? new();
-            var removedItems = toRemoveItems?.OfType<T>().ToList() ?? new();
-
-            _suppressNotification = true;
-            // NOTE: Because we use sorting, we must first remove items before inserting new ones.
-            //       Inserting before removing could cause duplicates or incorrect positions due to existing items affecting sort order.
-            foreach (var item in removedItems) {
-                base.Remove(item);
-            }
-            foreach (var item in addedItems) {
-                if (Comparer != null) {
-                    int index = 0;
-                    while (index < Count && Comparer.Compare(this[index], item) < 0) {
-                        index++;
-                    }
-                    base.Insert(index, item);
+        public new void Add(T item) {
+            if (this.Comparer != null) {
+                int index = 0;
+                while (index < this.Count && this.Comparer.Compare(this[index], item) < 0) {
+                    index++;
                 }
-                else {
-                    base.Add(item);
-                }
+                base.Insert(index, item);
             }
-            _suppressNotification = false;
-
-            // Для UI уведомлений
-            if (addedItems.Count > 0) {
-                base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
-            }
-            if (removedItems.Count > 0) {
-                base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
-            }
-
-            // Для внутренней логики
-            if (addedItems.Count > 0 || removedItems.Count > 0) {
-                CollectionChangedExtended?.Invoke(this, addedItems, removedItems, multiselectionMode);
+            else {
+                base.Add(item);
             }
         }
 
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e) {
-            if (!_suppressNotification) {
-                base.OnCollectionChanged(e);
+        public new bool Remove(T item) {
+            bool removed = base.Remove(item);
+            return removed;
+        }
+
+        public void AddRange(IEnumerable<T> items) {
+            foreach (var item in items) {
+                this.Add(item);
             }
         }
     }
+
+
+
+    //public interface IRangeModifiableCollection {
+    //    void AddRange(IEnumerable<object> toAddItems, bool multiselectionMode = false);
+    //    void RemoveRange(IEnumerable<object> toRemoveItems, bool multiselectionMode = false);
+    //    void AddRemoveRange(IEnumerable<object> toAddItems, IEnumerable<object> toRemoveItems, bool multiselectionMode = false);
+    //}
+
+    //public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeModifiableCollection {
+    //    public event Action<object, IList<T>, IList<T>, bool>? CollectionChangedExtended;
+    //    public IComparer<T>? Comparer { get; set; } = null;
+
+    //    private bool _suppressNotification = false;
+
+    //    public RangeObservableCollection() : base() { }
+
+    //    public RangeObservableCollection(IEnumerable<T> collection) : base(collection) { }
+
+
+    //    public void AddRange(IEnumerable<object> toAddItems, bool multiselectionMode = false) {
+    //        this.AddRemoveRange(toAddItems, Enumerable.Empty<object>(), multiselectionMode);
+    //    }
+
+    //    public void RemoveRange(IEnumerable<object> toRemoveItems, bool multiselectionMode = false) {
+    //        this.AddRemoveRange(Enumerable.Empty<object>(), toRemoveItems, multiselectionMode);
+    //    }
+
+    //    public void AddRemoveRange(IEnumerable<object> toAddItems, IEnumerable<object> toRemoveItems, bool multiselectionMode = false) {
+    //        var addedItems = toAddItems?.OfType<T>().ToList() ?? new();
+    //        var removedItems = toRemoveItems?.OfType<T>().ToList() ?? new();
+
+    //        _suppressNotification = true;
+    //        // NOTE: Because we use sorting, we must first remove items before inserting new ones.
+    //        //       Inserting before removing could cause duplicates or incorrect positions due to existing items affecting sort order.
+    //        foreach (var item in removedItems) {
+    //            base.Remove(item);
+    //        }
+    //        foreach (var item in addedItems) {
+    //            if (Comparer != null) {
+    //                int index = 0;
+    //                while (index < Count && Comparer.Compare(this[index], item) < 0) {
+    //                    index++;
+    //                }
+    //                base.Insert(index, item);
+    //            }
+    //            else {
+    //                base.Add(item);
+    //            }
+    //        }
+    //        _suppressNotification = false;
+
+    //        // Для UI уведомлений
+    //        if (addedItems.Count > 0) {
+    //            base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
+    //        }
+    //        if (removedItems.Count > 0) {
+    //            base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+    //        }
+
+    //        // Для внутренней логики
+    //        if (addedItems.Count > 0 || removedItems.Count > 0) {
+    //            CollectionChangedExtended?.Invoke(this, addedItems, removedItems, multiselectionMode);
+    //        }
+    //    }
+
+    //    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e) {
+    //        if (!_suppressNotification) {
+    //            base.OnCollectionChanged(e);
+    //        }
+    //    }
+    //}
 
 
 
@@ -103,15 +133,24 @@ namespace Helpers {
         bool IsSelected { get; set; }
         void SetSelectedDirectly(bool value);
 
-        static Func<ISelectableItem, bool, bool>? SelectionInterceptor { get; set; }
+        IMetadata? Metadata { get; }
     }
 
+    // Мы не можем определить статическое свойство SelectionInterceptor прямо в интерфейсе ISelectableItem,
+    // потому что VSIX-проекты используют .NET Framework, который не поддерживает default interface members
+    // Чтобы сохранить архитектурную связность и доступ к перехватчику через имя интерфейса мы используем
+    // отдельный статический класс ISelectableItemStatics, который служит "псевдо-статическим"
+    // контейнером для логики, связанной с интерфейсом.
+    public static class ISelectableItemStatics {
+        public static Func<ISelectableItem, bool, bool>? SelectionInterceptor { get; set; }
+    }
+
+
     public abstract class SelectableItemBase : ISelectableItem, INotifyPropertyChanged {
+        private bool _isProcessingSelection; // Флаг защиты от рекурсии
+
+
         private bool _isSelected;
-
-        // Флаг защиты от рекурсии
-        private bool _isProcessingSelection;
-
         public bool IsSelected {
             get => _isSelected;
             set {
@@ -123,7 +162,7 @@ namespace Helpers {
 
                 _isProcessingSelection = true;
                 try {
-                    bool proposed = ISelectableItem.SelectionInterceptor?.Invoke(this, value) ?? value;
+                    bool proposed = ISelectableItemStatics.SelectionInterceptor?.Invoke(this, value) ?? value;
 
                     if (_isSelected != proposed) {
                         _isSelected = proposed;
@@ -145,6 +184,10 @@ namespace Helpers {
         }
 
 
+        private readonly IMetadata _metadata = new FlaggableMetadata();
+        public IMetadata? Metadata => _metadata;
+
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -154,7 +197,7 @@ namespace Helpers {
 
 
     public interface ISelectableGroup<TItem> {
-        RangeObservableCollection<TItem> Items { get; }
+        SortedObservableCollection<TItem> Items { get; }
     }
 
 
@@ -164,11 +207,12 @@ namespace Helpers {
        where TItem : ISelectableItem, INotifyPropertyChanged {
 
         // Events:
+        public event Action? OnGroupStructureChanged;
         public event Action<TGroup, TItem, PropertyChangedEventArgs>? OnGroupItemChanged;
 
         // Properties:
         private readonly ObservableCollection<TGroup> _groups;
-        public IReadOnlyList<TGroup> Groups => this._groups;
+        public IReadOnlyList<TGroup> Groups => _groups;
 
         // Internal:
         private readonly Dictionary<TGroup, NotifyCollectionChangedEventHandler> _collectionChangedHandlers = new();
@@ -183,16 +227,18 @@ namespace Helpers {
             }
 
             _groups.CollectionChanged += (_, e) => {
-                if (e.NewItems is IEnumerable<TGroup> addedGroups) {
-                    foreach (var group in addedGroups) {
+                if (e.NewItems != null) {
+                    foreach (TGroup group in e.NewItems) {
                         this.AttachGroup(group);
                     }
                 }
-                if (e.OldItems is IEnumerable<TGroup> removedGroups) {
-                    foreach (var group in removedGroups) {
+                if (e.OldItems != null) {
+                    foreach (TGroup group in e.OldItems) {
                         this.DetachGroup(group);
                     }
                 }
+
+                this.OnGroupStructureChanged?.Invoke();
             };
         }
 
@@ -230,6 +276,8 @@ namespace Helpers {
                         }
                     }
                 }
+
+                this.OnGroupStructureChanged?.Invoke();
             };
 
             _collectionChangedHandlers[group] = collectionHandler;
@@ -270,34 +318,99 @@ namespace Helpers {
         // Properties:
         private Enums.SelectionState _selectionState = Enums.SelectionState.None;
         public Enums.SelectionState SelectionState {
-            get => this._selectionState;
-            set {
-                this.SetPropertyWithNotificationAndGuard(
-                    ref this._selectionState,
+            get => _selectionState;
+            private set {
+                this.SetPropertyWithDeferredNotificationValues(
+                    ref _selectionState,
                     value,
-                    newVal => this.OnSelectionStateChanged?.Invoke(newVal)
+                    _pendingSelectionStateNotificationValues
                 );
             }
+        }
+
+        public (TGroup Group, TItem Item)? PrimarySelection {
+            get => _anchor;
         }
 
         // Internal:
         private readonly GroupSelectionBinding<TGroup, TItem> _groupSelectionBinding;
         private readonly HashSet<(TGroup Group, TItem Item)> _selectedItems = new();
+        private List<(TGroup Group, TItem Item)> _flatItems = new();
         private (TGroup Group, TItem Item)? _anchor = null;
+
+        private readonly List<(TGroup Group, TItem Item, bool IsSelected)> _pendingSelectionNotifications = new();
+        private readonly List<Enums.SelectionState> _pendingSelectionStateNotificationValues = new();
+        
+        const string _isActiveFlag = "IsActive";
 
         public GroupsSelectionCoordinator(ObservableCollection<TGroup> groups) {
             _groupSelectionBinding = new GroupSelectionBinding<TGroup, TItem>(groups);
+            _groupSelectionBinding.OnGroupStructureChanged += this.OnGroupStructureChanged;
             _groupSelectionBinding.OnGroupItemChanged += this.OnGroupItemChanged;
 
-            ISelectableItem.SelectionInterceptor = (item, proposed) => {
+            ISelectableItemStatics.SelectionInterceptor = (item, proposed) => {
                 if (item is TItem typed && _groupSelectionBinding.TryGetGroup(typed, out var group)) {
                     return this.InterceptHandler(group, typed, proposed);
                 }
                 return proposed;
             };
+
+            this.OnGroupStructureChanged();
         }
 
+        //
+        // Handlers
+        //
+        private void OnGroupStructureChanged() {
+            // Перестроение списка всех (группа, элемент)
+            _flatItems = _groupSelectionBinding.Groups
+                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
+                .ToList();
+
+            // Перестроение списка выбранных элементов
+            _selectedItems.Clear();
+            foreach (var (group, item) in _flatItems) {
+                if (item.IsSelected) {
+                    _selectedItems.Add((group, item));
+                }
+            }
+
+            // Проверка актуальности anchor
+            if (_anchor != null) {
+                bool anchorStillExists = _flatItems.Any(e =>
+                    ReferenceEquals(e.Group, _anchor.Value.Group) &&
+                    ReferenceEquals(e.Item, _anchor.Value.Item));
+
+                if (!anchorStillExists) {
+                    _anchor = null;
+                }
+            }
+
+            this.SyncSelectionState();
+        }
+
+        private void OnGroupItemChanged(TGroup group, TItem item, PropertyChangedEventArgs e) {
+            if (e.PropertyName != nameof(ISelectableItem.IsSelected)) {
+                return;
+            }
+
+            // тут ничего не делаем — вся логика в InterceptHandler
+        }
+
+
+
+        //
+        // Internal logic
+        //
         private bool InterceptHandler(TGroup group, TItem item, bool proposed) {
+            // Было ли выбрано текущее выделенное до начала обработки
+            bool wasSelectedBefore = item.IsSelected;
+
+            // Снимок: какие другие элементы были выделены (исключая текущий)
+            var previouslySelectedOtherItems = _flatItems
+                .Where(entry => !ReferenceEquals(entry.Item, item) && entry.Item.IsSelected)
+                .ToHashSet();
+
             var requestedAction = proposed
                 ? Enums.SelectionAction.Select
                 : Enums.SelectionAction.Unselect;
@@ -312,25 +425,39 @@ namespace Helpers {
                 _selectedItems.Remove((group, item));
             }
 
-            this.SelectionState = _selectedItems.Count switch {
-                0 => Enums.SelectionState.None,
-                1 => Enums.SelectionState.Single,
-                _ => Enums.SelectionState.Multiple
-            };
+            this.SyncSelectionState();
 
-            this.OnItemSelectionChanged?.Invoke(group, item, isSelected);
+            var currentlySelectedOtherItems = _flatItems
+                .Where(entry => !ReferenceEquals(entry.Item, item) && entry.Item.IsSelected)
+                .ToHashSet();
+
+            foreach (var removed in previouslySelectedOtherItems.Except(currentlySelectedOtherItems)) {
+                _pendingSelectionNotifications.Add((removed.Group, removed.Item, false));
+            }
+
+            foreach (var added in currentlySelectedOtherItems.Except(previouslySelectedOtherItems)) {
+                _pendingSelectionNotifications.Add((added.Group, added.Item, true));
+            }
+
+            if (wasSelectedBefore != isSelected) {
+                _pendingSelectionNotifications.Add((group, item, isSelected));
+            }
+
+            this.FlushNotifications();
             return isSelected;
         }
 
-        public Enums.SelectionAction HandleSelection(TGroup group, TItem item, Enums.SelectionAction requestedAction) {
+        private Enums.SelectionAction HandleSelection(TGroup group, TItem item, Enums.SelectionAction requestedAction) {
             bool isShift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
             bool isCtrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
 
-            if (isShift && isCtrl) {
-                // Such case doesn't supported. Return inverted action (it's mean do nothing).
-                return requestedAction == Enums.SelectionAction.Select
+            // Inverted action means do nothing.
+            var doNothing = requestedAction == Enums.SelectionAction.Select
                     ? Enums.SelectionAction.Unselect
                     : Enums.SelectionAction.Select;
+
+            if (isShift && isCtrl) { // Such case doesn't supported.
+                return doNothing;
             }
 
             var resultAction = requestedAction;
@@ -342,15 +469,17 @@ namespace Helpers {
                     if (_anchor != null) {
                         this.ApplyShiftRange(_anchor.Value, (group, item));
                     }
+                    else {
+                        resultAction = doNothing;
+                    }
                 }
                 else {
-                    _anchor = (group, item);
-
                     if (isCtrl) {
                     }
                     else {
                         this.ClearAllSelection();
                     }
+                    _anchor = (group, item);
                 }
             }
             else if (requestedAction == Enums.SelectionAction.Unselect) {
@@ -369,7 +498,7 @@ namespace Helpers {
                     }
                     else {
                         this.ClearAllSelection();
-                        resultAction = Enums.SelectionAction.Select;
+                        _anchor = (group, item);
                     }
                 }
             }
@@ -377,14 +506,11 @@ namespace Helpers {
             return resultAction;
         }
 
-        private void ApplyShiftRange((TGroup Group, TItem Item) from, (TGroup Group, TItem Item) to) {
-            // Преобразуем все элементы всех групп в линейный список.
-            var flat = _groupSelectionBinding.Groups
-                .SelectMany(g => g.Items.Select(i => (Group: g, Item: i)))
-                .ToList();
 
-            int i1 = flat.IndexOf(from);
-            int i2 = flat.IndexOf(to);
+        private void ApplyShiftRange((TGroup Group, TItem Item) from, (TGroup Group, TItem Item) to) {
+            int i1 = _flatItems.IndexOf(from);
+            int i2 = _flatItems.IndexOf(to);
+            
             if (i1 == -1 || i2 == -1) {
                 return; // Один из элементов не найден — не продолжаем.
             }
@@ -393,23 +519,23 @@ namespace Helpers {
             int max = System.Math.Max(i1, i2);
 
             _selectedItems.Clear();
-            for (int i = 0; i < flat.Count; i++) {
+            for (int i = 0; i < _flatItems.Count; i++) {
                 // Проверяем, входит ли текущий индекс в выделенный диапазон.
                 bool inRange = i >= min && i <= max;
 
                 // Устанавливаем выделение напрямую (без перехвата) только тем элементам, которые находятся в диапазоне.
-                flat[i].Item.SetSelectedDirectly(inRange);
+                _flatItems[i].Item.SetSelectedDirectly(inRange);
 
                 // Добавляем элемент в список выбранных, если он входит в диапазон.
                 if (inRange) {
-                    _selectedItems.Add(flat[i]);
+                    _selectedItems.Add(_flatItems[i]);
                 }
             }
+
             _anchor = from;
         }
 
-
-        public void ClearAllSelection() {
+        private void ClearAllSelection() {
             foreach (var (group, item) in _selectedItems.ToList()) {
                 item.SetSelectedDirectly(false);
             }
@@ -417,11 +543,47 @@ namespace Helpers {
         }
 
 
-        private void OnGroupItemChanged(TGroup group, TItem item, PropertyChangedEventArgs e) {
-            if (e.PropertyName != nameof(ISelectableItem.IsSelected)) {
-                return;
+
+        private void SyncSelectionState() {
+
+            // Обновление SelectionState с накоплением отложенного уведомления
+            this.SelectionState = _selectedItems.Count switch {
+                0 => Enums.SelectionState.None,
+                1 => Enums.SelectionState.Single,
+                _ => Enums.SelectionState.Multiple
+            };
+
+            this.UpdateItemsMetadataFor(_isActiveFlag);
+        }
+
+
+        private void UpdateItemsMetadataFor(string metadataFlag) {
+            if (metadataFlag == _isActiveFlag) {
+                foreach (var (group, item) in _flatItems) {
+                    item.Metadata?.SetFlag(_isActiveFlag, false);
+                }
+                if (this.PrimarySelection != null) {
+                    this.PrimarySelection.Value.Item?.Metadata?.SetFlag(_isActiveFlag, true);
+                }
             }
-            // тут ничего не делаем — вся логика в перехватчике
+        }
+
+        private void FlushNotifications() {
+            // Копируем чтобы изолировать текущую партию уведомлений и избежать рекурсии при обработке.
+            var pendingSelectionStateNotificationValuesCopy = _pendingSelectionStateNotificationValues.ToList();
+            _pendingSelectionStateNotificationValues.Clear();
+
+            var pendingSelectionNotificationsCopy = _pendingSelectionNotifications.ToList();
+            _pendingSelectionNotifications.Clear();
+
+            _ = Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                foreach (var state in pendingSelectionStateNotificationValuesCopy) {
+                    this.OnSelectionStateChanged?.Invoke(state);
+                }
+                foreach (var (group, item, isSelected) in pendingSelectionNotificationsCopy) {
+                    this.OnItemSelectionChanged?.Invoke(group, item, isSelected);
+                }
+            }));
         }
     }
 }

@@ -72,10 +72,36 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
 
+
+        <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
+            <Setter Property="Focusable" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <!-- 
+                            Обязательно задаём Background, иначе Padding не ловит клики.
+                            Без этого CheckBox не реагирует на нажатия вне текста.
+                        -->
+                        <Border Padding="5, 5"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="8"
+                                IsHitTestVisible="True"
+                                >
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{StaticResource AppIsMouseOverColor}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverColor}" />
                 </Trigger>
 
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
@@ -89,6 +115,7 @@
                                              RelativeSource={RelativeSource Self}}" Value="True"/>
                     </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{StaticResource AppSelectedFocusedColor}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource AppSelectedFocusedColor}" />
                 </MultiDataTrigger>
 
                 <MultiDataTrigger>
@@ -98,32 +125,13 @@
                                              RelativeSource={RelativeSource Self}}" Value="False"/>
                     </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{StaticResource AppSelectedUnfocusedColor}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource AppSelectedUnfocusedColor}" />
                 </MultiDataTrigger>
+
+                <DataTrigger Binding="{Binding Metadata[IsActive]}" Value="True">
+                    <Setter Property="BorderBrush" Value="Red" />
+                </DataTrigger>
             </Style.Triggers>
-        </Style>
-
-
-        <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
-            <Setter Property="Focusable" Value="True"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="CheckBox">
-                        <!-- 
-                            Обязательно задаём Background, иначе Padding не ловит клики.
-                            Без этого CheckBox не реагирует на нажатия вне текста.
-                        -->
-                        <Border Padding="5, 10"
-                                Background="{TemplateBinding Background}"
-                                BorderThickness="0"
-                                IsHitTestVisible="True"
-                                >
-                            <ContentPresenter />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
     </Window.Resources>
 

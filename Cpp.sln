@@ -123,6 +123,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution", "!Solution", "{
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Doxyfile = Doxyfile
+		ForceProjectReload.bat = ForceProjectReload.bat
+		ForceProjectReload.ps1 = ForceProjectReload.ps1
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -1185,6 +1187,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
 		VSIX\HelpersCs\HelpersCs.projitems*{0eeeeb5d-bb3b-4e9f-b2a7-410ca571ac97}*SharedItemsImports = 13
+		VSIX\HelpersCs\HelpersCs.projitems*{152f249b-dd89-43aa-9021-2ad93acf4dda}*SharedItemsImports = 4
 		VideoPlayer\MediaEngine\MediaEngine.Shared\MediaEngine.Shared.vcxitems*{1aaae5af-7872-4e58-933a-93f3deb54fcf}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
