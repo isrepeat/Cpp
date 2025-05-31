@@ -406,8 +406,11 @@ namespace TabsManagerExtension {
                 }
             }
         }
-        public Helpers.SortedObservableCollection<TabItemBase> Items { get; } = new Helpers.SortedObservableCollection<TabItemBase> {
-            Comparer = Comparer<TabItemBase>.Create((a, b) => string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase))
-        };
+        public Helpers.SortedObservableCollection<TabItemBase> Items { get; }
+
+        public TabItemsGroup() {
+            var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) => string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
+            this.Items = new Helpers.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
+        }
     }
 }

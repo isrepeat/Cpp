@@ -39,7 +39,7 @@ namespace TabsManagerExtension {
             }
         }
 
-        public ObservableCollection<TabItemsGroup> SortedTabItemGroups { get; set; } = new();
+        public Helpers.SortedObservableCollection<TabItemsGroup> SortedTabItemGroups { get; }
 
         // Internal:
         private EnvDTE80.DTE2 _dte;
@@ -58,6 +58,19 @@ namespace TabsManagerExtension {
             this.Loaded += this.OnLoaded;
             this.Unloaded += this.OnUnloaded;
             base.DataContext = this;
+
+            var defaultTabItemGroupComparer = Comparer<TabItemsGroup>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
+            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroup>> {
+                new Helpers.PriorityGroup<TabItemsGroup> {
+                    Position = Helpers.ItemPosition.Top,
+                    Predicate = tabItemGroup => tabItemGroup.GroupName.StartsWith("__Preview"),
+                    Comparer = defaultTabItemGroupComparer
+                }
+            };
+            this.SortedTabItemGroups = new Helpers.SortedObservableCollection<TabItemsGroup>(
+                defaultTabItemGroupComparer,
+                priorityGroups
+                );
 
             this.InitializeDTE();
             this.InitializeFileWatcher();
@@ -643,12 +656,9 @@ namespace TabsManagerExtension {
             if (group == null) {
                 group = new TabItemsGroup { GroupName = groupName };
                 this.SortedTabItemGroups.Add(group);
-                this.SortGroups();
             }
 
             group.Items.Add(tabItem);
-            this.SortDocumentsInGroups();
-
             return tabItem;
         }
 
@@ -710,11 +720,6 @@ namespace TabsManagerExtension {
             }
         }
 
-
-
-        private void UpdateTextEditorOverlayControllerAsync() {
-            _textEditorOverlayController.UpdateState();
-        }
 
 
         // Обновление документа в UI после изменения или переименования
@@ -785,35 +790,6 @@ namespace TabsManagerExtension {
                 }
             }
         }
-
-
-
-        // Метод сортировки документов внутри групп
-        private void SortDocumentsInGroups() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            //foreach (var group in this.SortedTabItemGroups) {
-            //    var sortedDocs = group.Items.OrderBy(d => d.Caption).ToList();
-            //    group.Items.Clear();
-            //    foreach (var doc in sortedDocs) {
-            //        group.Items.Add(doc);
-            //    }
-            //}
-        }
-
-        private void SortGroups() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            //// Сортируем группы по имени (по алфавиту)
-            //var sortedGroups = this.SortedTabItemGroups.OrderBy(g => g.GroupName).ToList();
-
-            //// Очищаем и добавляем отсортированные группы
-            //this.SortedTabItemGroups.Clear();
-            //foreach (var group in sortedGroups) {
-            //    this.SortedTabItemGroups.Add(group);
-            //}
-        }
-
 
 
         private TabItemDocument FindTabItem(EnvDTE.Document document) {
