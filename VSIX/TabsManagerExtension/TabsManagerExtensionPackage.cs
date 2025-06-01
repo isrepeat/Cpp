@@ -45,7 +45,7 @@ namespace TabsManagerExtension {
             EarlyPackageLoadHackToolWindow.Initialize(this);
 
             await TabsManagerToolWindowCommand.InitializeAsync(this);
-            VsixVisualTreeHelper.TryInject();
+            //VsixVisualTreeHelper.TryInject();
         }
     }
 
@@ -75,7 +75,7 @@ namespace TabsManagerExtension {
         }
 
         public static void TryInject() {
-            Application.Current.Dispatcher.InvokeAsync(() => {
+            //Application.Current.Dispatcher.InvokeAsync(() => {
                 var mainWindow = Application.Current.MainWindow;
                 if (mainWindow == null) {
                     return;
@@ -96,7 +96,7 @@ namespace TabsManagerExtension {
                 else {
                     Helpers.Diagnostic.Logger.LogWarning($"tabHost not found");
                 }
-            }, DispatcherPriority.Loaded);
+            //}, DispatcherPriority.Loaded);
         }
 
         public static void RestoreOriginalTabs() {

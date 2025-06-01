@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO.Packaging;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -67,6 +68,10 @@ namespace TabsManagerExtension {
             return null;
         }
 
+        public static float GetSystemDpiScale() {
+            using var g = Graphics.FromHwnd(IntPtr.Zero);
+            return g.DpiX / 96f;
+        }
 
         public void Show() {
             ShowWindow(_hwnd, SW_SHOW);
@@ -89,9 +94,7 @@ namespace TabsManagerExtension {
         public bool GetRect(out RECT rect) {
             return GetWindowRect(_hwnd, out rect);
         }
-
     }
-
 
 
 
@@ -100,60 +103,77 @@ namespace TabsManagerExtension {
         private static EarlyPackageLoadHackToolWindow? _instance;
         public static EarlyPackageLoadHackToolWindow? Instance => _instance;
 
-        public static event Action OnLoaded;
         private static AsyncPackage? _package;
-
         private bool _suppressAutoHide = false;
 
         public static void Initialize(AsyncPackage package) {
             _package = package ?? throw new ArgumentNullException(nameof(package));
 
-            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+            //ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+            //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            //    var dte = await _package.GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
+            //    Assumes.Present(dte);
+
+            //    dte.Events.SolutionEvents.BeforeClosing += () => {
+            //        Instance._suppressAutoHide = true;
+
+            //        ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+            //            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            //            if (Instance.Frame is IVsWindowFrame frame) {
+            //                frame.Show();
+
+            //                var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
+            //                if (toolWindowWin32Controller != null) {
+            //                    toolWindowWin32Controller.Hide();
+
+            //                    var ideRectInfo = await Instance.GetCenteredIdeRectInfoAsync();
+            //                    toolWindowWin32Controller.SetPositionWithoutShow(
+            //                        ideRectInfo.X,
+            //                        ideRectInfo.Y,
+            //                        ideRectInfo.Width,
+            //                        ideRectInfo.Height
+            //                        );
+            //                }
+            //            }
+            //        });
+            //    };
+            //});
+
+            _ = Task.Run(async () => {
+                var window = await _package.FindToolWindowAsync(
+                    typeof(EarlyPackageLoadHackToolWindow),
+                    0,
+                    create: true,
+                    CancellationToken.None);
+
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _ = Task.Run(async () => {
-                    OnLoaded?.Invoke();
+                // Call after FindToolWindowAsync to avoid deadlock.
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+                Assumes.Present(vsShell);
 
-                    var window = await _package.FindToolWindowAsync(
-                        typeof(EarlyPackageLoadHackToolWindow),
-                        0,
-                        create: true,
-                        CancellationToken.None);
-                });
+                if (Instance.Frame is IVsWindowFrame frame) {
+                    bool isVisible = frame.IsVisible() == VSConstants.S_OK; // frame.IsVisible() return HRESULT.
+                    if (!isVisible) {
+                        // Show tool window once to make VS cache it (in .suo).
+                        frame.Show();
 
-                var dte = await _package.GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
-                Assumes.Present(dte);
+                        var ideRectInfo = await Instance.GetRightCornerIdeRectInfoAsync();
 
-                dte.Events.SolutionEvents.BeforeClosing += () => {
-                    Instance._suppressAutoHide = true;
-
-                    ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        if (Instance.Frame is IVsWindowFrame frame) {
-                            frame.Show();
-                            var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
-                            Assumes.Present(vsShell);
-
-                            var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
-                            if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
-                                int ideWidth = ideRect.Right - ideRect.Left;
-                                int ideHeight = ideRect.Bottom - ideRect.Top;
-
-                                int width = 400;
-                                int height = 300;
-
-                                int x = ideRect.Left + (ideWidth - width) / 2;
-                                int y = ideRect.Top + (ideHeight - height) / 2;
-
-                                var _toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
-                                if (_toolWindowWin32Controller != null) {
-                                    _toolWindowWin32Controller.SetPosition(x, y, width, height);
-                                    _toolWindowWin32Controller.Hide();
-                                }
-                            }
+                        var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
+                        if (toolWindowWin32Controller != null) {
+                            toolWindowWin32Controller.SetPositionWithoutShow(
+                                ideRectInfo.X,
+                                ideRectInfo.Y,
+                                ideRectInfo.Width,
+                                ideRectInfo.Height
+                                );
+                            toolWindowWin32Controller.Hide();
                         }
-                    });
-                };
+                    }
+                }
             });
         }
 
@@ -172,19 +192,12 @@ namespace TabsManagerExtension {
         }
 
         private void OnLoadedRootContent(object sender, RoutedEventArgs e) {
-            if (_suppressAutoHide) {
-                return;
-            }
-            _suppressAutoHide = false;
+            VsixVisualTreeHelper.TryInject();
 
-            if (sender is DependencyObject d) {
-                d.Dispatcher.BeginInvoke(new Action(() => {
-                    var _toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
-                    if (_toolWindowWin32Controller != null) {
-                        _toolWindowWin32Controller.Hide();
-                    }
-                }), DispatcherPriority.Loaded); // или ContextIdle
-            }
+            //if (_suppressAutoHide) {
+            //    return;
+            //}
+            //_suppressAutoHide = false;
 
             //ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
             //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -193,35 +206,116 @@ namespace TabsManagerExtension {
             //        frame.Hide();
             //    }
             //});
+
+
+            if (sender is DependencyObject d) {
+                d.Dispatcher.BeginInvoke(new Action(() => {
+                    // Hide as soon as possible.
+                    var _toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                    if (_toolWindowWin32Controller != null) {
+                        _toolWindowWin32Controller.Hide();
+                    }
+
+                    // Update window position to be centered to IDE and then hide window.
+                    ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        var ideRectInfo = await this.GetRightCornerIdeRectInfoAsync();
+
+                        var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                        if (toolWindowWin32Controller != null) {
+                            toolWindowWin32Controller.SetPositionWithoutShow(
+                                ideRectInfo.X,
+                                ideRectInfo.Y,
+                                ideRectInfo.Width,
+                                ideRectInfo.Height
+                                );
+                        }
+                    });
+                }), DispatcherPriority.Loaded);
+            }
+        }
+
+
+        public struct RectInfo {
+            public int X;
+            public int Y;
+            public int Width;
+            public int Height;
+        }
+        public async Task<RectInfo> GetCenteredIdeRectInfoAsync() {
+            var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            Assumes.Present(vsShell);
+
+            var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
+                int ideWidth = ideRect.Right - ideRect.Left;
+                int ideHeight = ideRect.Bottom - ideRect.Top;
+
+                int width = 600;
+                int height = 300;
+
+                int x = ideRect.Left + (ideWidth - width) / 2;
+                int y = ideRect.Top + (ideHeight - height) / 2;
+
+                return new RectInfo {
+                    X = x,
+                    Y = y,
+                    Width = width,
+                    Height = height
+                };
+            }
+            return new RectInfo { };
+        }
+
+        public async Task<RectInfo> GetRightCornerIdeRectInfoAsync() {
+            var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            Assumes.Present(vsShell);
+
+            var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
+                float dpiScale = WindowWin32Controller.GetSystemDpiScale();
+
+                int widthLogical = 150;
+                int heightLogical = 50;
+
+                int width = (int)(widthLogical * dpiScale);
+                int height = (int)(heightLogical * dpiScale);
+
+                int x = ideRect.Right - width - (int)(130 * dpiScale); // отступ справа
+                int y = ideRect.Top;
+
+                return new RectInfo {
+                    X = x,
+                    Y = y,
+                    Width = width,
+                    Height = height
+                };
+            }
+            return new RectInfo { };
         }
 
         public void TEST_MoveToSmth() {
             ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 if (this.Frame is IVsWindowFrame frame) {
                     _suppressAutoHide = true;
                     frame.Show();
+                }
 
-                    var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
-                    Assumes.Present(vsShell);
+                var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                if (toolWindowWin32Controller != null) {
+                    //toolWindowWin32Controller.Hide();
+                    toolWindowWin32Controller.Show();
 
-                    var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
-
-                    if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
-                        int ideWidth = ideRect.Right - ideRect.Left;
-                        int ideHeight = ideRect.Bottom - ideRect.Top;
-
-                        int width = 400;
-                        int height = 300;
-
-                        int x = ideRect.Left + (ideWidth - width) / 2;
-                        int y = ideRect.Top + (ideHeight - height) / 2;
-
-                        var _toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
-                        if (_toolWindowWin32Controller != null) {
-                            _toolWindowWin32Controller.SetPosition(x, y, width, height);
-                        }
-                    }
+                    //var ideRectInfo = await this.GetRightCornerIdeRectInfoAsync();
+                    //toolWindowWin32Controller.SetPositionWithoutShow(
+                    //            ideRectInfo.X,
+                    //            ideRectInfo.Y,
+                    //            ideRectInfo.Width,
+                    //            ideRectInfo.Height
+                    //            );
                 }
             });
         }
