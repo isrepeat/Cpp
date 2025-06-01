@@ -16,15 +16,6 @@ namespace TabsManagerExtension.Controls {
             DependencyProperty.Register("Title", typeof(string), typeof(TabItemControl), new PropertyMetadata("Document Title"));
 
 
-        public bool IsActive {
-            get { return (bool)GetValue(IsActiveProperty); }
-            set { SetValue(IsActiveProperty, value); }
-        }
-
-        public static readonly DependencyProperty IsActiveProperty =
-            DependencyProperty.Register("IsActive", typeof(bool), typeof(TabItemControl), new PropertyMetadata(false));
-
-
         public bool IsSelected {
             get { return (bool)GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }

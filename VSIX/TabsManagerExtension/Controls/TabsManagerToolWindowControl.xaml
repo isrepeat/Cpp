@@ -94,7 +94,6 @@
                                     <DataTemplate>
                                         <localControls:TabItemControl 
                                             Title="{Binding Caption}"
-                                            IsActive="{Binding IsSelected}"
                                             IsSelected="{Binding IsSelected, Mode=TwoWay}"
                                             >
                                             <localControls:TabItemControl.ControlPanelContent>
