@@ -58,6 +58,7 @@
     </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Listeners\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="Listeners\SolutionExplorerSelectionTracker.cs" />
     <Compile Include="Overlay\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">

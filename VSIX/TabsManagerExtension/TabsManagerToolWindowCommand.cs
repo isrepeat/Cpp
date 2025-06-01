@@ -69,20 +69,64 @@ namespace TabsManagerExtension {
 
         private void Execute(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
-#if __REPLACE_SRC_TABS
-            VsixVisualTreeHelper.ScheduleInjectionTabsManagerControl();
-#else
-            // Get the instance number 0 of this tool window. This window is single instance so this instance
-            // is actually the only one.
-            // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.package.FindToolWindow(typeof(TabsManagerToolWindow), 0, true);
-            if ((null == window) || (null == window.Frame)) {
-                throw new NotSupportedException("Cannot create tool window");
-            }
 
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-#endif
+            EarlyPackageLoadHackToolWindow.Instance.TEST_MoveToSmth();
+
+            ////if (VsixVisualTreeHelper.IsCustomTabsInjected) {
+            ////    VsixVisualTreeHelper.RestoreOriginalTabs();
+            ////}
+            ////else {
+            ////    //VsixVisualTreeHelper.ScheduleInjectionTabsManagerControl();
+            ////    VsixVisualTreeHelper.TryInject();
+            ////}
+
+            //// Get the instance number 0 of this tool window. This window is single instance so this instance
+            //// is actually the only one.
+            //// The last flag is set to true so that if the tool window does not exists it will be created.
+            //ToolWindowPane window = this.package.FindToolWindow(typeof(TabsManagerToolWindow), 0, true);
+            //if ((null == window) || (null == window.Frame)) {
+            //    throw new NotSupportedException("Cannot create tool window");
+            //}
+
+            //IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+            //Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
     }
+
+
+    //internal sealed class TabsManagerToolWindowCommand {
+    //    public const int CommandId = 0x0100;
+    //    public static readonly Guid CommandSet = new Guid("8a30806a-edfc-4c91-8182-025665145a07");
+
+    //    private readonly Package package;
+
+    //    private TabsManagerToolWindowCommand(Package package, OleMenuCommandService commandService) {
+    //        this.package = package ?? throw new ArgumentNullException(nameof(package));
+    //        commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+
+    //        var menuCommandID = new CommandID(CommandSet, CommandId);
+    //        var menuItem = new MenuCommand(this.Execute, menuCommandID);
+    //        commandService.AddCommand(menuItem);
+    //    }
+
+    //    public static TabsManagerToolWindowCommand Instance { get; private set; }
+
+    //    public static void Initialize(Package package) {
+    //        ThreadHelper.ThrowIfNotOnUIThread();
+
+    //        var commandService = (OleMenuCommandService)((IServiceProvider)package).GetService(typeof(IMenuCommandService));
+    //        Instance = new TabsManagerToolWindowCommand(package, commandService);
+    //    }
+
+    //    private void Execute(object sender, EventArgs e) {
+    //        ThreadHelper.ThrowIfNotOnUIThread();
+
+    //        if (VsixVisualTreeHelper.IsCustomTabsInjected) {
+    //            VsixVisualTreeHelper.RestoreOriginalTabs();
+    //        }
+    //        else {
+    //            VsixVisualTreeHelper.TryInject();
+    //        }
+    //    }
+    //}
 }
