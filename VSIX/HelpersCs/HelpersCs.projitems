@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\AdornerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\GlobalFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Graphics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collection.cs" />
