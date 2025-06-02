@@ -45,7 +45,6 @@ namespace TabsManagerExtension {
             EarlyPackageLoadHackToolWindow.Initialize(this);
 
             await TabsManagerToolWindowCommand.InitializeAsync(this);
-            //VsixVisualTreeHelper.TryInject();
         }
     }
 

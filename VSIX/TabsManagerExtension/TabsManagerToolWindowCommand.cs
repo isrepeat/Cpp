@@ -92,41 +92,4 @@ namespace TabsManagerExtension {
             //Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
     }
-
-
-    //internal sealed class TabsManagerToolWindowCommand {
-    //    public const int CommandId = 0x0100;
-    //    public static readonly Guid CommandSet = new Guid("8a30806a-edfc-4c91-8182-025665145a07");
-
-    //    private readonly Package package;
-
-    //    private TabsManagerToolWindowCommand(Package package, OleMenuCommandService commandService) {
-    //        this.package = package ?? throw new ArgumentNullException(nameof(package));
-    //        commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
-
-    //        var menuCommandID = new CommandID(CommandSet, CommandId);
-    //        var menuItem = new MenuCommand(this.Execute, menuCommandID);
-    //        commandService.AddCommand(menuItem);
-    //    }
-
-    //    public static TabsManagerToolWindowCommand Instance { get; private set; }
-
-    //    public static void Initialize(Package package) {
-    //        ThreadHelper.ThrowIfNotOnUIThread();
-
-    //        var commandService = (OleMenuCommandService)((IServiceProvider)package).GetService(typeof(IMenuCommandService));
-    //        Instance = new TabsManagerToolWindowCommand(package, commandService);
-    //    }
-
-    //    private void Execute(object sender, EventArgs e) {
-    //        ThreadHelper.ThrowIfNotOnUIThread();
-
-    //        if (VsixVisualTreeHelper.IsCustomTabsInjected) {
-    //            VsixVisualTreeHelper.RestoreOriginalTabs();
-    //        }
-    //        else {
-    //            VsixVisualTreeHelper.TryInject();
-    //        }
-    //    }
-    //}
 }

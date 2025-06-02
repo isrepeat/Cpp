@@ -20,6 +20,7 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using Helpers.Ex;
 
 
 namespace TabsManagerExtension {
@@ -527,34 +528,35 @@ namespace TabsManagerExtension {
         // UI click handlers
         //
         private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
-            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
-            //ThreadHelper.ThrowIfNotOnUIThread();
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            //if (sender is FrameworkElement interactiveArea) {
-            //    // Находим родительский ListViewItem (где привязаны данные)
-            //    var listViewItem = Helpers.VisualTree.FindParentOfType<ListViewItem>(interactiveArea);
-            //    if (listViewItem == null) return;
+            if (sender is FrameworkElement interactiveArea) {
+                // Находим родительский ListViewItem (где привязаны данные)
+                var listViewItem = Helpers.VisualTree.FindParentOfType<ListViewItem>(interactiveArea);
+                if (listViewItem == null) {
+                    return;
+                }
 
-            //    // Получаем привязанный объект (DocumentInfo)
-            //    if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
-            //        var position = interactiveArea.PointToScreen(new Point(interactiveArea.ActualWidth + 0, 0));
-            //        var relativePoint = Application.Current.MainWindow.PointFromScreen(position);
+                // Получаем привязанный объект (TabItemDocument)
+                if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
+                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, 0));
 
-            //        if (tabItemDocument.ShellDocument != null) {
-            //            tabItemDocument.UpdateProjectReferenceList();
-            //        }
+                    if (tabItemDocument.ShellDocument != null) {
+                        tabItemDocument.UpdateProjectReferenceList();
+                    }
 
-            //        this.MyVirtualPopup.InteractiveArea_MouseEnter();
-            //        this.MyVirtualPopup.ShowPopup(relativePoint, tabItemDocument);
-            //    }
-            //}
+                    this.MyVirtualPopup.InteractiveArea_MouseEnter();
+                    this.MyVirtualPopup.ShowPopup(screenPoint, tabItemDocument);
+                }
+            }
         }
 
         private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
-            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
-            //ThreadHelper.ThrowIfNotOnUIThread();
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            //this.MyVirtualPopup.InteractiveArea_MouseLeave();
+            this.MyVirtualPopup.InteractiveArea_MouseLeave();
         }
 
 

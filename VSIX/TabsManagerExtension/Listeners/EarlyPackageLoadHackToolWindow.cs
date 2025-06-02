@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define OLD_LOGIC
+using System;
 using System.Drawing;
 using System.IO.Packaging;
 using System.Runtime.InteropServices;
@@ -51,7 +52,7 @@ namespace TabsManagerExtension {
             public int Bottom;
         }
 
-        private WindowWin32Controller(IntPtr hwnd) {
+        public WindowWin32Controller(IntPtr hwnd) {
             _hwnd = hwnd;
         }
 
@@ -109,36 +110,38 @@ namespace TabsManagerExtension {
         public static void Initialize(AsyncPackage package) {
             _package = package ?? throw new ArgumentNullException(nameof(package));
 
-            //ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-            //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+#if OLD_LOGIC
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            //    var dte = await _package.GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
-            //    Assumes.Present(dte);
+                var dte = await _package.GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
+                Assumes.Present(dte);
 
-            //    dte.Events.SolutionEvents.BeforeClosing += () => {
-            //        Instance._suppressAutoHide = true;
+                dte.Events.SolutionEvents.BeforeClosing += () => {
+                    Instance._suppressAutoHide = true;
 
-            //        ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-            //            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            //            if (Instance.Frame is IVsWindowFrame frame) {
-            //                frame.Show();
+                    ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        if (Instance.Frame is IVsWindowFrame frame) {
+                            frame.Show();
 
-            //                var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
-            //                if (toolWindowWin32Controller != null) {
-            //                    toolWindowWin32Controller.Hide();
+                            var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
+                            if (toolWindowWin32Controller != null) {
+                                toolWindowWin32Controller.Hide();
 
-            //                    var ideRectInfo = await Instance.GetCenteredIdeRectInfoAsync();
-            //                    toolWindowWin32Controller.SetPositionWithoutShow(
-            //                        ideRectInfo.X,
-            //                        ideRectInfo.Y,
-            //                        ideRectInfo.Width,
-            //                        ideRectInfo.Height
-            //                        );
-            //                }
-            //            }
-            //        });
-            //    };
-            //});
+                                var ideRectInfo = await Instance.GetCenteredIdeRectInfoAsync();
+                                toolWindowWin32Controller.SetPositionWithoutShow(
+                                    ideRectInfo.X,
+                                    ideRectInfo.Y,
+                                    ideRectInfo.Width,
+                                    ideRectInfo.Height
+                                    );
+                            }
+                        }
+                    });
+                };
+            });
+#endif
 
             _ = Task.Run(async () => {
                 var window = await _package.FindToolWindowAsync(
@@ -146,7 +149,7 @@ namespace TabsManagerExtension {
                     0,
                     create: true,
                     CancellationToken.None);
-
+#if !OLD_LOGIC
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Call after FindToolWindowAsync to avoid deadlock.
@@ -174,8 +177,9 @@ namespace TabsManagerExtension {
                         }
                     }
                 }
+#endif
             });
-        }
+            }
 
         public EarlyPackageLoadHackToolWindow() : base(null) {
             _instance = this;
@@ -194,20 +198,20 @@ namespace TabsManagerExtension {
         private void OnLoadedRootContent(object sender, RoutedEventArgs e) {
             VsixVisualTreeHelper.TryInject();
 
-            //if (_suppressAutoHide) {
-            //    return;
-            //}
-            //_suppressAutoHide = false;
+#if OLD_LOGIC
+            if (_suppressAutoHide) {
+                return;
+            }
+            _suppressAutoHide = false;
 
-            //ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-            //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            //    if (this.Frame is IVsWindowFrame frame) {
-            //        frame.Hide();
-            //    }
-            //});
-
-
+                if (this.Frame is IVsWindowFrame frame) {
+                    frame.Hide();
+                }
+            });
+#else
             if (sender is DependencyObject d) {
                 d.Dispatcher.BeginInvoke(new Action(() => {
                     // Hide as soon as possible.
@@ -234,6 +238,7 @@ namespace TabsManagerExtension {
                     });
                 }), DispatcherPriority.Loaded);
             }
+#endif
         }
 
 

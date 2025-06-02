@@ -31,6 +31,7 @@
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
                 <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="Height" Value="30" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="CheckBox">
@@ -38,7 +39,8 @@
                                 Обязательно задаём Background, иначе Padding не ловит клики.
                                 Без этого CheckBox не реагирует на нажатия вне текста.
                             -->
-                            <Border Padding="5, 5"
+                            <Border Padding="5,0,0,0"
+                                    Margin="0,0,5,0"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="1"

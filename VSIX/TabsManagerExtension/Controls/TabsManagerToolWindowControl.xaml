@@ -77,6 +77,82 @@
                 <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
             </Grid.LayoutTransform>
 
+            <!-- TEST LAYOUT -->
+            <!--<StackPanel>
+                <TextBlock FontSize="12"
+                           FontWeight="Normal"
+                           Foreground="#aaaaaa"
+                           Text="TeamRemoteDesktop"
+                           />
+                <ListView Style="{StaticResource CustomListViewStyle}"
+                          ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
+                          >
+                    <ListViewItem>
+                        <localControls:TabItemControl 
+                                Title="Prototype.cpp"
+                                IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                >
+                            <localControls:TabItemControl.ControlPanelContent>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="📂"
+                                            Click="KeepTabOpen_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            />
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="📌"
+                                            Click="PinTab_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                                            />
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="✖"
+                                            MouseEnter="InteractiveArea_MouseEnter"
+                                            MouseLeave="InteractiveArea_MouseLeave"
+                                            Click="CloseTab_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            />
+                                </StackPanel>
+                            </localControls:TabItemControl.ControlPanelContent>
+                        </localControls:TabItemControl>
+                    </ListViewItem>
+
+                    <ListViewItem>
+                        <localControls:TabItemControl 
+                                Title="Prototype.h"
+                                IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                >
+                            <localControls:TabItemControl.ControlPanelContent>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="📂"
+                                            Click="KeepTabOpen_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            />
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="📌"
+                                            Click="PinTab_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                                            />
+                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                                            Content="✖"
+                                            MouseEnter="InteractiveArea_MouseEnter"
+                                            MouseLeave="InteractiveArea_MouseLeave"
+                                            Click="CloseTab_Click"
+                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                            />
+                                </StackPanel>
+                            </localControls:TabItemControl.ControlPanelContent>
+                        </localControls:TabItemControl>
+                    </ListViewItem>
+                </ListView>
+            </StackPanel>-->
+
+
+            <!-- MAIN LAYOUT -->
             <localControls:ItemsControlEx Items="{Binding SortedTabItemGroups}">
                 <localControls:ItemsControlEx.ItemTemplate>
                     <DataTemplate>
@@ -98,19 +174,19 @@
                                             >
                                             <localControls:TabItemControl.ControlPanelContent>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📂"
                                                             Click="KeepTabOpen_Click"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             />
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📌"
                                                             Click="PinTab_Click"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
                                                             />
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
+                                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="✖"
                                                             MouseEnter="InteractiveArea_MouseEnter"
                                                             MouseLeave="InteractiveArea_MouseLeave"
@@ -161,7 +237,9 @@
                                        Text="Main actions"/>
                         </StackPanel>
                     </Border>
-                    <Button Style="{StaticResource DarkPopupButtonStyle}" Content="📂 Open location"/>
+                    <Button Style="{StaticResource DarkPopupButtonStyle}" 
+                            Content="📂 Open location"
+                            />
 
                     <Border Padding="10,0,10,5">
                         <StackPanel>
