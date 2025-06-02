@@ -6,13 +6,14 @@
              xmlns:localHelpers="clr-namespace:Helpers"
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              x:Name="RootControl"
+             MouseRightButtonUp="RootControl_MouseRightButtonUp"
              >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-        
+
             <Style TargetType="localControls:TabItemControl">
                 <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
                 <Style.Triggers>
@@ -24,7 +25,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-        
+
 
             <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
                 <Setter Property="Focusable" Value="False"/>
@@ -81,6 +82,14 @@
 
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Metadata[IsCtxMenuOpenned]}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
                             <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
@@ -99,35 +108,51 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <Grid>
+        <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
+                  IsChecked="{Binding IsSelected, ElementName=RootControl, Mode=TwoWay}"
+                  >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-    <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
-              IsChecked="{Binding IsSelected, ElementName=RootControl, Mode=TwoWay}"
-              >
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock x:Name="TitleTextBlock"
-                        Grid.Column="0"
-                        Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
-                        FontSize="12"
-                        Margin="5,0,5,0"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        TextTrimming="CharacterEllipsis"
-                        Text="{Binding Title, ElementName=RootControl}" 
-                        />
-            <Grid x:Name="ControlPanel"
-                    Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Visibility="{Binding ControlPanelVisibility, ElementName=RootControl}"
-                    >
-                <StackPanel Orientation="Horizontal">
-                    <ContentPresenter Content="{Binding ControlPanelContent, ElementName=RootControl}"/>
-                </StackPanel>
+                <TextBlock x:Name="TitleTextBlock"
+                           Grid.Column="0"
+                           Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
+                           FontSize="12"
+                           Margin="5,0,5,0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding Title, ElementName=RootControl}" 
+                           />
+                <Grid x:Name="ControlPanel"
+                      Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      Visibility="{Binding ControlPanelVisibility, ElementName=RootControl}"
+                      >
+                    <StackPanel Orientation="Horizontal">
+                        <ContentPresenter Content="{Binding ControlPanelContent, ElementName=RootControl}" />
+                    </StackPanel>
+                </Grid>
             </Grid>
-        </Grid>
-    </CheckBox>
+        </CheckBox>
+
+        <Popup x:Name="CustomContextMenu"
+               Placement="MousePoint"
+               AllowsTransparency="True"
+               StaysOpen="False"
+               Focusable="False"
+               >
+            <Border Background="#333"
+                    Padding="5"
+                    CornerRadius="4"
+                    MaxWidth="300"
+                    >
+                <ContentPresenter Content="{Binding ContextMenuContent, ElementName=RootControl}" />
+            </Border>
+        </Popup>
+    </Grid>
 </UserControl>

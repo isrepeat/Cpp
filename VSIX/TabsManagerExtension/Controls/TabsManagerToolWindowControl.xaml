@@ -9,9 +9,9 @@
              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+             mc:Ignorable="d"
              Background="#1F1F1F"
              Foreground="#d4d4d4"
-             mc:Ignorable="d"
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -171,6 +171,8 @@
                                         <localControls:TabItemControl 
                                             Title="{Binding Caption}"
                                             IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                            OnContextMenuOpenCommand="{Binding DataContext.OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
+                                            OnContextMenuClosedCommand="{Binding DataContext.OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                             >
                                             <localControls:TabItemControl.ControlPanelContent>
                                                 <StackPanel Orientation="Horizontal">
@@ -195,6 +197,17 @@
                                                             />
                                                 </StackPanel>
                                             </localControls:TabItemControl.ControlPanelContent>
+                                            <localControls:TabItemControl.ContextMenuContent>
+                                                <StackPanel>
+                                                    <MenuItem Header="Открыть в проводнике" 
+                                                              />
+                                                    <Separator />
+                                                    <MenuItem Header="Закрепить" 
+                                                              />
+                                                    <MenuItem Header="Close" 
+                                                              />
+                                                </StackPanel>
+                                            </localControls:TabItemControl.ContextMenuContent>
                                         </localControls:TabItemControl>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
@@ -250,10 +263,10 @@
                         </StackPanel>
                     </Border>
                     <ListView ItemsSource="{Binding ProjectReferenceList}" 
-                             Style="{StaticResource CustomListViewStyle}"
-                             ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
-                             Background="Transparent" 
-                             BorderThickness="0">
+                              Style="{StaticResource CustomListViewStyle}"
+                              ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
+                              Background="Transparent" 
+                              BorderThickness="0">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Button Content="{Binding TabItemProject.Caption}" 

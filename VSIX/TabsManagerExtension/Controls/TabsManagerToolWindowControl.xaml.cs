@@ -63,11 +63,18 @@ namespace TabsManagerExtension {
         private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
         private Overlay.TextEditorOverlayController _textEditorOverlayController;
 
+
+        public ICommand OnTabItemContextMenuOpenCommand { get; }
+        public ICommand OnTabItemContextMenuClosedCommand { get; }
+
         public TabsManagerToolWindowControl() {
             this.InitializeComponent();
             this.Loaded += this.OnLoaded;
             this.Unloaded += this.OnUnloaded;
             base.DataContext = this;
+
+            this.OnTabItemContextMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuOpen);
+            this.OnTabItemContextMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuClosed);
         }
 
 
@@ -558,6 +565,24 @@ namespace TabsManagerExtension {
 
             this.MyVirtualPopup.InteractiveArea_MouseLeave();
         }
+
+
+        private void OnTabItemContextMenuOpen(object parameter) {
+            if (parameter is TabItemBase tabItem) {
+                if (tabItem is TabItemDocument tabItemDocument) {
+                    tabItemDocument.Metadata.SetFlag("IsCtxMenuOpenned", true);
+                }
+                else if (tabItem is TabItemDocument tabItemWindow) {
+                }
+            }
+        }
+
+        private void OnTabItemContextMenuClosed(object parameter) {
+            if (parameter is TabItemBase tabItem) {
+                tabItem.Metadata.SetFlag("IsCtxMenuOpenned", false);
+            }
+        }
+
 
 
         private void ProjectMenuItem_Click(object sender, RoutedEventArgs e) {
