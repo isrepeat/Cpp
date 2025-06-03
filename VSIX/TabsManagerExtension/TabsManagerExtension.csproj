@@ -61,13 +61,19 @@
     <Compile Include="Controls\MenuControl.xaml.cs">
       <DependentUpon>MenuControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TestTabsControl.xaml.cs">
+      <DependentUpon>TestTabsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Listeners\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="Listeners\SolutionExplorerSelectionTracker.cs" />
     <Compile Include="Overlay\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
       <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Listeners\TextEditorTracker.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorFrameActivationTracker.cs" />
+    <Compile Include="VsShell\TextEditor\DocumentActivationTracker.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorFocusTracker.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorControlHelper.cs" />
     <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
       <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
     </Compile>
@@ -137,6 +143,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\MenuControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TestTabsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

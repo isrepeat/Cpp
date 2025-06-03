@@ -18,6 +18,8 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.TextManager.Interop;
+using Microsoft.VisualStudio;
 
 
 namespace TabsManagerExtension {
@@ -75,26 +77,27 @@ namespace TabsManagerExtension {
 
         public static void TryInject() {
             //Application.Current.Dispatcher.InvokeAsync(() => {
-                var mainWindow = Application.Current.MainWindow;
-                if (mainWindow == null) {
-                    return;
+            var mainWindow = Application.Current.MainWindow;
+            if (mainWindow == null) {
+                return;
+            }
+
+            var tabHost = Helpers.VisualTree.FindElementByName(mainWindow, "PART_TabListHost");
+            if (tabHost is Decorator decorator) {
+                if (_originalTabListHostContent == null) {
+                    _originalTabListHostContent = decorator.Child;
+                    _tabHostDecorator = decorator;
                 }
 
-                var tabHost = Helpers.VisualTree.FindElementByName(mainWindow, "PART_TabListHost");
-                if (tabHost is Decorator decorator) {
-                    if (_originalTabListHostContent == null) {
-                        _originalTabListHostContent = decorator.Child;
-                        _tabHostDecorator = decorator;
-                    }
+                decorator.Child = new TestTabsControl();
+                //decorator.Child = new TabsManagerToolWindowControl();
 
-                    decorator.Child = new TabsManagerToolWindowControl();
-
-                    _timer?.Stop();
-                    _timer = null;
-                }
-                else {
-                    Helpers.Diagnostic.Logger.LogWarning($"tabHost not found");
-                }
+                _timer?.Stop();
+                _timer = null;
+            }
+            else {
+                Helpers.Diagnostic.Logger.LogWarning($"tabHost not found");
+            }
             //}, DispatcherPriority.Loaded);
         }
 
