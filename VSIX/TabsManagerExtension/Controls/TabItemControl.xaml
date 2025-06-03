@@ -210,6 +210,7 @@
                         <DataTemplate DataType="{x:Type localHelpers:MenuItemDefault}">
                             <MenuItem Header="{Binding Header}"
                                       Command="{Binding Command}"
+                                      CommandParameter="{Binding DataContext, ElementName=RootControl}"
                                       Style="{StaticResource CustomMenuItemStyle}"
                                       />
                         </DataTemplate>

@@ -74,6 +74,10 @@ namespace TabsManagerExtension {
         private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
         private Overlay.TextEditorOverlayController _textEditorOverlayController;
 
+
+        public ICommand OnTabItemPinCommand { get; }
+        public ICommand OnTabItemCloseCommand { get; }
+        public ICommand OnTabItemKeepOpenedCommand { get; }
         public ICommand OnTabItemContextMenuOpenCommand { get; }
         public ICommand OnTabItemContextMenuClosedCommand { get; }
 
@@ -82,6 +86,10 @@ namespace TabsManagerExtension {
             this.Loaded += this.OnLoaded;
             this.Unloaded += this.OnUnloaded;
             base.DataContext = this;
+
+            this.OnTabItemPinCommand = new Helpers.RelayCommand<object>(this.OnTabItemPin);
+            this.OnTabItemCloseCommand = new Helpers.RelayCommand<object>(this.OnTabItemClose);
+            this.OnTabItemKeepOpenedCommand = new Helpers.RelayCommand<object>(this.OnTabItemKeepOpened);
 
             this.OnTabItemContextMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuOpen);
             this.OnTabItemContextMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuClosed);
@@ -548,7 +556,7 @@ namespace TabsManagerExtension {
         // UI click handlers
         //
         private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (sender is FrameworkElement interactiveArea) {
@@ -560,28 +568,62 @@ namespace TabsManagerExtension {
 
                 // Получаем привязанный объект (TabItemDocument)
                 if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
-                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
-
                     if (tabItemDocument.ShellDocument != null) {
                         tabItemDocument.UpdateProjectReferenceList();
                     }
-
+                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
                     this.MyVirtualPopup.Show(screenPoint, tabItemDocument);
                 }
             }
         }
 
         private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             this.MyVirtualPopup.Hide();
         }
 
 
-        private void OnTabItemContextMenuOpen(object parameter) {
-            //this.ContextMenuItems?.Clear();
+        private void OnTabItemPin(object parameter) {
+            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemPin()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+        }
 
+        private void OnTabItemClose(object parameter) {
+            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemClose()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is TabItemBase tabItem) {
+                if (tabItem is TabItemDocument tabItemDocument) {
+                    Helpers.Diagnostic.Logger.LogDebug($"close document \"{tabItemDocument.ShellDocument.Document.FullName}\"");
+                    tabItemDocument.ShellDocument.Document.Close();
+                    // Удаление произойдёт через OnDocumentClosing
+                }
+                else if (tabItem is TabItemWindow tabItemWindow) {
+                    Helpers.Diagnostic.Logger.LogDebug($"close window \"{tabItemWindow.ShellWindow.Window.Caption}\"");
+                    tabItemWindow.ShellWindow.Window.Close();
+
+                    // Удаляем вручную, так как события не будет
+                    this.RemoveTabItemFromGroups(tabItemWindow);
+                }
+            }
+        }
+
+        private void OnTabItemKeepOpened(object parameter) {
+            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemKeepOpened()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is TabItemBase tabItem) {
+                if (tabItem is TabItemDocument tabItemDocument) {
+                    this.MoveDocumentFromPreviewToMainGroup(tabItemDocument);
+                    tabItemDocument.ShellDocument.OpenDocumentAsPinned();
+                }
+            }
+        }
+
+
+        private void OnTabItemContextMenuOpen(object parameter) {
             if (parameter is Controls.TabItemControl.ContextMenuOpenRequest contextMenuOpenRequest) {
                 if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
                     switch (_tabItemsSelectionCoordinator.SelectionState) {
@@ -591,16 +633,16 @@ namespace TabsManagerExtension {
 
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                 new Helpers.MenuItemDefault {
-                                    Header = "Открыть в проводнике",
+                                    Header = Constants.UI.OpenTabLocation,
                                     Command = new Helpers.RelayCommand<object>(this.AAA)
                                 },
                                 new Helpers.MenuItemSeparator(),
                                 new Helpers.MenuItemDefault {
-                                    Header = "Закрепить",
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    Header = Constants.UI.CloseTab,
+                                    Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
                                 },
                                 new Helpers.MenuItemDefault {
-                                    Header = "Закрыть",
+                                    Header = Constants.UI.PinTab,
                                     Command = new Helpers.RelayCommand<object>(this.AAA)
                                 }
                             };
@@ -608,11 +650,11 @@ namespace TabsManagerExtension {
                             else if (tabItem is TabItemWindow tabItemWindow) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                 new Helpers.MenuItemDefault {
-                                    Header = "Закрепить",
+                                    Header = Constants.UI.CloseTab,
                                     Command = new Helpers.RelayCommand<object>(this.AAA)
                                 },
                                 new Helpers.MenuItemDefault {
-                                    Header = "Закрыть",
+                                    Header = Constants.UI.PinTab,
                                     Command = new Helpers.RelayCommand<object>(this.AAA)
                                 }
                             };
@@ -626,7 +668,7 @@ namespace TabsManagerExtension {
                             if (isTabItemAmongSelectedItems) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                 new Helpers.MenuItemDefault {
-                                    Header = "Закрыть",
+                                    Header = Constants.UI.CloseSelectedTabs,
                                     Command = new Helpers.RelayCommand<object>(this.AAA)
                                 }
                             };
@@ -649,6 +691,7 @@ namespace TabsManagerExtension {
 
 
 
+
         private void ProjectMenuItem_Click(object sender, RoutedEventArgs e) {
             using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("ProjectMenuItem_Click()");
 
@@ -660,40 +703,6 @@ namespace TabsManagerExtension {
             }
         }
 
-        private void KeepTabOpen_Click(object sender, RoutedEventArgs e) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("KeepTabOpen_Click()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (sender is Button button && button.CommandParameter is TabItemBase tabItem) {
-                if (tabItem is TabItemDocument tabItemDocument) {
-                    this.MoveDocumentFromPreviewToMainGroup(tabItemDocument);
-                    tabItemDocument.ShellDocument.OpenDocumentAsPinned();
-                }
-            }
-        }
-
-        private void PinTab_Click(object sender, RoutedEventArgs e) {
-        }
-
-        private void CloseTab_Click(object sender, RoutedEventArgs e) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("CloseTab_Click()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (sender is Button button && button.CommandParameter is TabItemBase tabItem) {
-                if (tabItem is TabItemDocument tabItemDocument) {
-                    Helpers.Diagnostic.Logger.LogDebug($"close document \"{tabItemDocument.ShellDocument.Document.FullName}\"");
-                    tabItemDocument.ShellDocument.Document.Close();
-                    // Удаление произойдёт через OnDocumentClosing
-                }
-                else if (tabItem is TabItemWindow tabItemWindow) {
-                    Helpers.Diagnostic.Logger.LogDebug($"close window \"{tabItemWindow.ShellWindow.Window.Caption}\"");
-                    tabItemWindow.ShellWindow.Window.Close();
-
-                    // Удаляем вручную, так как события не будет
-                    this.RemoveTabItemFromGroups(tabItemWindow);
-                }
-            }
-        }
 
 
         private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {

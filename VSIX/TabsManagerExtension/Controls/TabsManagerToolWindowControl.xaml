@@ -87,67 +87,6 @@
                 <ListView Style="{StaticResource CustomListViewStyle}"
                           ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
                           >
-                    <ListViewItem>
-                        <localControls:TabItemControl 
-                                Title="Prototype.cpp"
-                                IsSelected="{Binding IsSelected, Mode=TwoWay}"
-                                >
-                            <localControls:TabItemControl.ControlPanelContent>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="📂"
-                                            Click="KeepTabOpen_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            />
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="📌"
-                                            Click="PinTab_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-                                            />
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="✖"
-                                            MouseEnter="InteractiveArea_MouseEnter"
-                                            MouseLeave="InteractiveArea_MouseLeave"
-                                            Click="CloseTab_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            />
-                                </StackPanel>
-                            </localControls:TabItemControl.ControlPanelContent>
-                        </localControls:TabItemControl>
-                    </ListViewItem>
-
-                    <ListViewItem>
-                        <localControls:TabItemControl 
-                                Title="Prototype.h"
-                                IsSelected="{Binding IsSelected, Mode=TwoWay}"
-                                >
-                            <localControls:TabItemControl.ControlPanelContent>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="📂"
-                                            Click="KeepTabOpen_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            />
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="📌"
-                                            Click="PinTab_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-                                            />
-                                    <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
-                                            Content="✖"
-                                            MouseEnter="InteractiveArea_MouseEnter"
-                                            MouseLeave="InteractiveArea_MouseLeave"
-                                            Click="CloseTab_Click"
-                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                            />
-                                </StackPanel>
-                            </localControls:TabItemControl.ControlPanelContent>
-                        </localControls:TabItemControl>
-                    </ListViewItem>
                 </ListView>
             </StackPanel>-->
 
@@ -179,13 +118,13 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📂"
-                                                            Click="KeepTabOpen_Click"
+                                                            Command="{Binding DataContext.OnTabItemKeepOpenedCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             />
                                                     <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📌"
-                                                            Click="PinTab_Click"
+                                                            Command="{Binding DataContext.OnTabItemPinCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
                                                             />
@@ -193,7 +132,7 @@
                                                             Content="✖"
                                                             MouseEnter="InteractiveArea_MouseEnter"
                                                             MouseLeave="InteractiveArea_MouseLeave"
-                                                            Click="CloseTab_Click"
+                                                            Command="{Binding DataContext.OnTabItemCloseCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             />
                                                 </StackPanel>
@@ -214,6 +153,7 @@
             </localControls:ItemsControlEx>
         </Grid>
 
+        
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="2"
                                             Style="{StaticResource CustomScaleSelectorControlStyle}"
@@ -252,17 +192,19 @@
                                        Text="Related projects"/>
                         </StackPanel>
                     </Border>
-                    <ListView ItemsSource="{Binding ProjectReferenceList}" 
-                              Style="{StaticResource CustomListViewStyle}"
+                    <ListView Style="{StaticResource CustomListViewStyle}"
+                              ItemsSource="{Binding ProjectReferenceList}" 
                               ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
                               Background="Transparent" 
-                              BorderThickness="0">
+                              BorderThickness="0"
+                              >
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding TabItemProject.Caption}" 
-                                        Style="{StaticResource DarkPopupButtonStyle}"
+                                <Button Style="{StaticResource DarkPopupButtonStyle}"
+                                        Content="{Binding TabItemProject.Caption}" 
+                                        Click="ProjectMenuItem_Click" 
                                         CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                        Click="ProjectMenuItem_Click" />
+                                        />
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
