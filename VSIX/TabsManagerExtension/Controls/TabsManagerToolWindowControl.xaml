@@ -171,6 +171,7 @@
                                         <localControls:TabItemControl 
                                             Title="{Binding Caption}"
                                             IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                            ContextMenuItems="{Binding DataContext.ContextMenuItems, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                             OnContextMenuOpenCommand="{Binding DataContext.OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                             OnContextMenuClosedCommand="{Binding DataContext.OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
                                             >
@@ -197,17 +198,6 @@
                                                             />
                                                 </StackPanel>
                                             </localControls:TabItemControl.ControlPanelContent>
-                                            <localControls:TabItemControl.ContextMenuContent>
-                                                <StackPanel>
-                                                    <MenuItem Header="Открыть в проводнике" 
-                                                              />
-                                                    <Separator />
-                                                    <MenuItem Header="Закрепить" 
-                                                              />
-                                                    <MenuItem Header="Close" 
-                                                              />
-                                                </StackPanel>
-                                            </localControls:TabItemControl.ContextMenuContent>
                                         </localControls:TabItemControl>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

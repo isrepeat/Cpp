@@ -51,6 +51,17 @@ namespace TabsManagerExtension {
             }
         }
 
+        public ObservableCollection<Helpers.IMenuItem> _contextMenuItems;
+        public ObservableCollection<Helpers.IMenuItem> ContextMenuItems {
+            get => _contextMenuItems;
+            private set {
+                if (_contextMenuItems != value) {
+                    _contextMenuItems = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         // Internal:
         private EnvDTE80.DTE2 _dte;
         private EnvDTE.WindowEvents _windowEvents;
@@ -63,7 +74,6 @@ namespace TabsManagerExtension {
         private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
         private Overlay.TextEditorOverlayController _textEditorOverlayController;
 
-
         public ICommand OnTabItemContextMenuOpenCommand { get; }
         public ICommand OnTabItemContextMenuClosedCommand { get; }
 
@@ -75,6 +85,9 @@ namespace TabsManagerExtension {
 
             this.OnTabItemContextMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuOpen);
             this.OnTabItemContextMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuClosed);
+        }
+
+        private void AAA(object parameter) {
         }
 
 
@@ -547,7 +560,7 @@ namespace TabsManagerExtension {
 
                 // Получаем привязанный объект (TabItemDocument)
                 if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
-                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, 0));
+                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
 
                     if (tabItemDocument.ShellDocument != null) {
                         tabItemDocument.UpdateProjectReferenceList();
@@ -568,11 +581,63 @@ namespace TabsManagerExtension {
 
 
         private void OnTabItemContextMenuOpen(object parameter) {
-            if (parameter is TabItemBase tabItem) {
-                if (tabItem is TabItemDocument tabItemDocument) {
-                    tabItemDocument.Metadata.SetFlag("IsCtxMenuOpenned", true);
-                }
-                else if (tabItem is TabItemDocument tabItemWindow) {
+            //this.ContextMenuItems?.Clear();
+
+            if (parameter is Controls.TabItemControl.ContextMenuOpenRequest contextMenuOpenRequest) {
+                if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
+                    switch (_tabItemsSelectionCoordinator.SelectionState) {
+                        case Helpers.Enums.SelectionState.Single:
+                            if (tabItem is TabItemDocument tabItemDocument) {
+                                tabItemDocument.Metadata.SetFlag("IsCtxMenuOpenned", true);
+
+                                this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
+                                new Helpers.MenuItemDefault {
+                                    Header = "Открыть в проводнике",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                },
+                                new Helpers.MenuItemSeparator(),
+                                new Helpers.MenuItemDefault {
+                                    Header = "Закрепить",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                },
+                                new Helpers.MenuItemDefault {
+                                    Header = "Закрыть",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                }
+                            };
+                            }
+                            else if (tabItem is TabItemWindow tabItemWindow) {
+                                this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
+                                new Helpers.MenuItemDefault {
+                                    Header = "Закрепить",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                },
+                                new Helpers.MenuItemDefault {
+                                    Header = "Закрыть",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                }
+                            };
+                            }
+                            break;
+
+                        case Helpers.Enums.SelectionState.Multiple:
+                            bool isTabItemAmongSelectedItems = _tabItemsSelectionCoordinator.SelectedItems
+                                .Any(entry => ReferenceEquals(entry.Item, tabItem));
+
+                            if (isTabItemAmongSelectedItems) {
+                                this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
+                                new Helpers.MenuItemDefault {
+                                    Header = "Закрыть",
+                                    Command = new Helpers.RelayCommand<object>(this.AAA)
+                                }
+                            };
+                            }
+                            else {
+                                contextMenuOpenRequest.ShouldOpen = false;
+                                tabItem.IsSelected = true;
+                            }
+                            break;
+                    }
                 }
             }
         }

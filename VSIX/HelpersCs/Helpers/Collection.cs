@@ -427,6 +427,10 @@ namespace Helpers {
             get => _anchor;
         }
 
+        public List<(TGroup Group, TItem Item)> SelectedItems {
+            get => _selectedItems.ToList();
+        }
+
         // Internal:
         private readonly GroupSelectionBinding<TGroup, TItem> _groupSelectionBinding;
         private readonly HashSet<(TGroup Group, TItem Item)> _selectedItems = new();
