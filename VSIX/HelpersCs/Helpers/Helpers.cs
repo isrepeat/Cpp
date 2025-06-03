@@ -107,7 +107,7 @@ namespace Helpers {
 
 
 
-        public static class Time {
+    public static class Time {
         public static void RunWithDelay(TimeSpan delay, Action action) {
             var timer = new DispatcherTimer { Interval = delay };
             timer.Tick += (s, e) => {
@@ -117,38 +117,4 @@ namespace Helpers {
             timer.Start();
         }
     }
-
-    //public static class UIDispatcher {
-    //    public static void Run(Action action) {
-    //        if (IsVsixEnvironment()) {
-    //            ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-    //            {
-    //                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-    //                action();
-    //            });
-    //        }
-    //        else {
-    //            Application.Current?.Dispatcher.InvokeAsync(action);
-    //        }
-    //    }
-
-    //    public static Task RunAsync(Action action) {
-    //        if (IsVsixEnvironment()) {
-    //            return ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-    //            {
-    //                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-    //                action();
-    //            }).Task;
-    //        }
-    //        else {
-    //            return Application.Current?.Dispatcher.InvokeAsync(action).Task
-    //                   ?? Task.Run(action);
-    //        }
-    //    }
-
-    //    private static bool IsVsixEnvironment() {
-    //        // ThreadHelper works only in VS context, safe test:
-    //        return ThreadHelper.JoinableTaskFactory?.Context != null;
-    //    }
-    //}
 }
