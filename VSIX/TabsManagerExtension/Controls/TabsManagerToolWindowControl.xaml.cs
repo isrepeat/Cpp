@@ -566,8 +566,7 @@ namespace TabsManagerExtension {
                         tabItemDocument.UpdateProjectReferenceList();
                     }
 
-                    this.MyVirtualPopup.InteractiveArea_MouseEnter();
-                    this.MyVirtualPopup.ShowPopup(screenPoint, tabItemDocument);
+                    this.MyVirtualPopup.Show(screenPoint, tabItemDocument);
                 }
             }
         }
@@ -576,7 +575,7 @@ namespace TabsManagerExtension {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.MyVirtualPopup.InteractiveArea_MouseLeave();
+            this.MyVirtualPopup.Hide();
         }
 
 
