@@ -1,19 +1,15 @@
-﻿using System;
+﻿using Helpers.Ex;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace TabsManagerExtension.Controls {
     public partial class TabItemControl : UserControl {
-        public class ContextMenuOpenRequest {
-            public object DataContext { get; set; } = default!;
-            public bool ShouldOpen { get; set; } = true;
-        }
-
         public TabItemControl() {
             this.InitializeComponent();
-            this.CustomContextMenu.Closed += this.CustomContextMenu_Closed;
         }
 
         public string Title {
@@ -22,7 +18,11 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register("Title", typeof(string), typeof(TabItemControl), new PropertyMetadata("Document Title"));
+            DependencyProperty.Register(
+                nameof(Title),
+                typeof(string),
+                typeof(TabItemControl),
+                new PropertyMetadata("Document Title"));
 
 
         public bool IsSelected {
@@ -31,7 +31,11 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty IsSelectedProperty =
-            DependencyProperty.Register("IsSelected", typeof(bool), typeof(TabItemControl), new PropertyMetadata(false));
+            DependencyProperty.Register(
+                nameof(IsSelected),
+                typeof(bool),
+                typeof(TabItemControl),
+                new PropertyMetadata(false));
 
 
         public object ControlPanelContent {
@@ -40,7 +44,11 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ControlPanelContentProperty =
-            DependencyProperty.Register("ControlPanelContent", typeof(object), typeof(TabItemControl), new PropertyMetadata(null));
+            DependencyProperty.Register(
+                nameof(ControlPanelContent),
+                typeof(object),
+                typeof(TabItemControl),
+                new PropertyMetadata(null));
 
 
         public Visibility ControlPanelVisibility {
@@ -49,9 +57,11 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ControlPanelVisibilityProperty =
-            DependencyProperty.Register("ControlPanelVisibility", typeof(Visibility), typeof(TabItemControl), new PropertyMetadata(Visibility.Collapsed));
-
-
+            DependencyProperty.Register(
+                nameof(ControlPanelVisibility),
+                typeof(Visibility),
+                typeof(TabItemControl),
+                new PropertyMetadata(Visibility.Collapsed));
 
 
         public ObservableCollection<Helpers.IMenuItem> ContextMenuItems {
@@ -60,7 +70,12 @@ namespace TabsManagerExtension.Controls {
         }
 
         public static readonly DependencyProperty ContextMenuItemsProperty =
-            DependencyProperty.Register("ContextMenuItems", typeof(ObservableCollection<Helpers.IMenuItem>), typeof(TabItemControl), new PropertyMetadata(null));
+            DependencyProperty.Register(
+                nameof(ContextMenuItems),
+                typeof(ObservableCollection<Helpers.IMenuItem>),
+                typeof(TabItemControl),
+                new PropertyMetadata(null));
+
 
         public ICommand OnContextMenuOpenCommand {
             get => (ICommand)this.GetValue(OnContextMenuOpenCommandProperty);
@@ -74,33 +89,25 @@ namespace TabsManagerExtension.Controls {
                 typeof(TabItemControl),
                 new PropertyMetadata(null));
 
+
         public ICommand OnContextMenuClosedCommand {
-            get { return (ICommand)this.GetValue(OnContextMenuClosedCommandProperty); }
-            set { this.SetValue(OnContextMenuClosedCommandProperty, value); }
+            get => (ICommand)this.GetValue(OnContextMenuClosedCommandProperty);
+            set => this.SetValue(OnContextMenuClosedCommandProperty, value);
         }
 
         public static readonly DependencyProperty OnContextMenuClosedCommandProperty =
-            DependencyProperty.Register("OnContextMenuClosedCommand", typeof(ICommand), typeof(TabItemControl), new PropertyMetadata(null));
+            DependencyProperty.Register(
+                nameof(OnContextMenuClosedCommand),
+                typeof(ICommand),
+                typeof(TabItemControl),
+                new PropertyMetadata(null));
 
 
         private void RootControl_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
-            bool shouldOpenContextMenu = true;
-
-            if (this.OnContextMenuOpenCommand != null && this.OnContextMenuOpenCommand.CanExecute(null)) {
-                var request = new ContextMenuOpenRequest {
-                    DataContext = this.DataContext
-                };
-                this.OnContextMenuOpenCommand.Execute(request);
-                shouldOpenContextMenu = request.ShouldOpen;
-            }
-
-            this.CustomContextMenu.IsOpen = shouldOpenContextMenu;
+            //Point mouseScreenPoint = this.ToDpiAwareScreen(e.GetPosition(this));
+            //this.ContextMenu.ShowMenu(new Point{ }); 
+            this.ContextMenu.ShowMenu(PlacementMode.MousePoint, isStaysOpen: false); 
             e.Handled = true;
-        }
-        private void CustomContextMenu_Closed(object sender, EventArgs e) {
-            if (this.OnContextMenuClosedCommand != null && this.OnContextMenuClosedCommand.CanExecute(this.DataContext)) {
-                this.OnContextMenuClosedCommand.Execute(this.DataContext);
-            }
         }
     }
 }

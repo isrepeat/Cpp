@@ -1,54 +1,79 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace TabsManagerExtension.Controls {
     public partial class VirtualPopupControl : UserControl {
+        public ObservableCollection<Helpers.IMenuItem> VirtualMenuItems {
+            get { return (ObservableCollection<Helpers.IMenuItem>)this.GetValue(VirtualMenuItemsProperty); }
+            set { this.SetValue(VirtualMenuItemsProperty, value); }
+        }
+
+        public static readonly DependencyProperty VirtualMenuItemsProperty =
+            DependencyProperty.Register(
+                nameof(VirtualMenuItems),
+                typeof(ObservableCollection<Helpers.IMenuItem>),
+                typeof(VirtualPopupControl),
+                new PropertyMetadata(null));
+
+
+        public ICommand OnVirtualMenuOpenCommand {
+            get => (ICommand)this.GetValue(OnVirtualMenuOpenCommandProperty);
+            set => this.SetValue(OnVirtualMenuOpenCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty OnVirtualMenuOpenCommandProperty =
+            DependencyProperty.Register(
+                nameof(OnVirtualMenuOpenCommand),
+                typeof(ICommand),
+                typeof(VirtualPopupControl),
+                new PropertyMetadata(null));
+
+
+        public ICommand OnVirtualMenuClosedCommand {
+            get => (ICommand)this.GetValue(OnVirtualMenuClosedCommandProperty);
+            set => this.SetValue(OnVirtualMenuClosedCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty OnVirtualMenuClosedCommandProperty =
+            DependencyProperty.Register(
+                nameof(OnVirtualMenuClosedCommand),
+                typeof(ICommand),
+                typeof(VirtualPopupControl),
+                new PropertyMetadata(null));
+
+
+        
         private DispatcherTimer showTimer;
         private DispatcherTimer hideTimer;
 
-        private bool hasUserInteracted = false;
-        private bool isPopupVisible = false;
+        private object pendingDataContext;
+        private Point pendingPosition;
 
         private double defaultOpacity = 0.1;
         private double maxOpacity = 1.0;
 
-        private Point pendingPosition;
-        private object pendingDataContext;
+        private bool hasUserInteracted = false;
 
         public VirtualPopupControl() {
             this.InitializeComponent();
-            this.PopupOpacity = this.defaultOpacity;
+            this.Loaded += this.OnLoaded;
+            this.Unloaded += this.OnUnloaded;
         }
 
-        // Свойство для управления прозрачностью Popup (привязано к Border)
-        public double PopupOpacity {
-            get { return (double)GetValue(PopupOpacityProperty); }
-            set { SetValue(PopupOpacityProperty, value); }
+
+        private void OnLoaded(object sender, RoutedEventArgs e) {
+            this.VirtualMenu.MouseEnteredPopup += PopupContent_MouseEnter;
+            this.VirtualMenu.MouseLeftPopup += PopupContent_MouseLeave;
         }
-
-        public static readonly DependencyProperty PopupOpacityProperty =
-            DependencyProperty.Register(
-                "PopupOpacity",
-                typeof(double),
-                typeof(VirtualPopupControl),
-                new PropertyMetadata(0.1));
-
-
-        // Свойство для передачи контента в Popup
-        public object PopupContent {
-            get { return GetValue(PopupContentProperty); }
-            set { SetValue(PopupContentProperty, value); }
+        private void OnUnloaded(object sender, RoutedEventArgs e) {
+            this.VirtualMenu.MouseLeftPopup -= PopupContent_MouseLeave;
+            this.VirtualMenu.MouseEnteredPopup -= PopupContent_MouseEnter;
         }
-
-        public static readonly DependencyProperty PopupContentProperty =
-            DependencyProperty.Register(
-                "PopupContent",
-                typeof(object),
-                typeof(VirtualPopupControl),
-                new PropertyMetadata(null));
 
         /// <summary>
         /// Публичный вызов показа popup.
@@ -58,7 +83,7 @@ namespace TabsManagerExtension.Controls {
         public void Show(Point position, object dataContext) {
             this.CancelHideTimer(); // предотвращаем закрытие, если вдруг оно было запущено
 
-            if (this.PopupElement.IsOpen) {
+            if (this.VirtualMenu.MenuPopup.IsOpen) {
                 // Popup уже открыт — просто обновим содержимое
                 this.UpdateContent(position, dataContext);
                 return;
@@ -103,7 +128,7 @@ namespace TabsManagerExtension.Controls {
                     this.hideTimer.Stop();
 
                     // Если мышь не в popup — закрываем
-                    if (!this.PopupElement.IsMouseOver) {
+                    if (!this.VirtualMenu.IsMouseOver) {
                         this.InternalHidePopup();
                     }
                 };
@@ -114,37 +139,33 @@ namespace TabsManagerExtension.Controls {
         }
 
         /// <summary>
-        /// Обновление содержимого и позиции popup без его закрытия.
-        /// Вызывается при повторном наведении, когда popup уже показан.
-        /// </summary>
-        private void UpdateContent(Point position, object dataContext) {
-            this.DataContext = dataContext;
-            this.PopupElement.HorizontalOffset = position.X;
-            this.PopupElement.VerticalOffset = position.Y;
-            this.PopupOpacity = this.hasUserInteracted ? this.maxOpacity : this.defaultOpacity;
-        }
-
-        /// <summary>
         /// Внутренний метод показа popup.
         /// Устанавливает DataContext, позицию, делает видимым.
         /// </summary>
         private void InternalShowPopup(Point position, object dataContext) {
-            this.isPopupVisible = true;
-            this.DataContext = dataContext;
-            this.PopupElement.HorizontalOffset = position.X;
-            this.PopupElement.VerticalOffset = position.Y;
-            this.PopupElement.IsOpen = true;
-            this.PopupOpacity = this.hasUserInteracted ? this.maxOpacity : this.defaultOpacity;
+            this.VirtualMenu.CommandParameterContext = dataContext;
+            this.VirtualMenu.ShowMenu(PlacementMode.Absolute, isStaysOpen: true, position);
+            this.VirtualMenu._Border.Opacity = this.hasUserInteracted 
+                ? this.maxOpacity
+                : this.defaultOpacity;
         }
 
         /// <summary>
         /// Внутренний метод скрытия popup и сброса состояния.
         /// </summary>
         private void InternalHidePopup() {
-            this.isPopupVisible = false;
-            this.PopupElement.IsOpen = false;
+            this.VirtualMenu.MenuPopup.IsOpen = false;
             this.hasUserInteracted = false;
-            this.PopupOpacity = this.defaultOpacity;
+            this.VirtualMenu._Border.Opacity = this.defaultOpacity;
+        }
+
+        /// <summary>
+        /// Обновление содержимого и позиции popup без его закрытия.
+        /// Вызывается при повторном наведении, когда popup уже показан.
+        /// </summary>
+        private void UpdateContent(Point position, object dataContext) {
+            this.VirtualMenu.CommandParameterContext = dataContext;
+            this.VirtualMenu.UpdateMenu(position);
         }
 
         /// <summary>
@@ -169,21 +190,20 @@ namespace TabsManagerExtension.Controls {
         /// Наведение мыши на сам popup (Border).
         /// Снимает таймер закрытия и делает popup полностью видимым.
         /// </summary>
-        private void PopupContent_MouseEnter(object sender, MouseEventArgs e) {
+        private void PopupContent_MouseEnter(object sender, EventArgs e) {
             this.CancelHideTimer();
-            this.PopupOpacity = this.maxOpacity;
             this.hasUserInteracted = true;
+            this.VirtualMenu._Border.Opacity = this.maxOpacity;
         }
 
         /// <summary>
         /// Уход мыши из popup.
         /// Запускает таймер закрытия (если пользователь не взаимодействовал).
         /// </summary>
-        private void PopupContent_MouseLeave(object sender, MouseEventArgs e) {
+        private void PopupContent_MouseLeave(object sender, EventArgs e) {
             if (!this.hasUserInteracted) {
-                this.PopupOpacity = this.defaultOpacity;
+                this.VirtualMenu._Border.Opacity = this.defaultOpacity;
             }
-
             this.Hide();
         }
     }

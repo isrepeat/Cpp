@@ -105,50 +105,6 @@
                     </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
-
-
-            <Style x:Key="CustomMenuItemStyle" TargetType="MenuItem">
-                <Setter Property="Foreground" Value="#ffffff" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="Padding" Value="10,5" />
-                <Setter Property="Margin" Value="0" />
-                <Setter Property="Cursor" Value="Arrow" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="MenuItem">
-                            <Border x:Name="_Border"
-                                    Padding="{TemplateBinding Padding}"
-                                    Background="{TemplateBinding Background}"
-                                    >
-                                <ContentPresenter ContentSource="Header" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter TargetName="_Border" Property="Background" Value="#2D2D2D" />
-                                    <Setter Property="Foreground" Value="#33BFFF" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-
-            <Style x:Key="CustomSeparatorStyle" TargetType="Separator">
-                <Setter Property="Margin" Value="5,2" />
-                <Setter Property="Height" Value="1" />
-                <Setter Property="Background" Value="#666" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Separator">
-                            <Rectangle Fill="{TemplateBinding Background}"
-                                       Height="{TemplateBinding Height}"
-                                       />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -184,42 +140,12 @@
             </Grid>
         </CheckBox>
 
-        <Popup x:Name="CustomContextMenu"
-               AllowsTransparency="True"
-               Placement="MousePoint"
-               StaysOpen="False"
-               Focusable="False"
-               >
-            <Border Background="#333"
-                    Padding="5"
-                    CornerRadius="4"
-                    MaxWidth="300"
-                    >
-                <!-- TEST LAYOUT -->
-                <!--<ItemsControl>
-                    <ItemsControl.Items>
-                        <MenuItem Header="Открыть в проводнике" Style="{StaticResource CustomMenuItemStyle}" />
-                        <Separator Style="{StaticResource CustomSeparatorStyle}" />
-                        <MenuItem Header="Закрепить" Style="{StaticResource CustomMenuItemStyle}" />
-                        <MenuItem Header="Закрыть" Style="{StaticResource CustomMenuItemStyle}" />
-                    </ItemsControl.Items>
-                </ItemsControl>-->
-
-                <ItemsControl ItemsSource="{Binding ContextMenuItems, ElementName=RootControl}">
-                    <ItemsControl.Resources>
-                        <DataTemplate DataType="{x:Type localHelpers:MenuItemDefault}">
-                            <MenuItem Header="{Binding Header}"
-                                      Command="{Binding Command}"
-                                      CommandParameter="{Binding DataContext, ElementName=RootControl}"
-                                      Style="{StaticResource CustomMenuItemStyle}"
-                                      />
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type localHelpers:MenuItemSeparator}">
-                            <Separator Style="{StaticResource CustomSeparatorStyle}" />
-                        </DataTemplate>
-                    </ItemsControl.Resources>
-                </ItemsControl>
-            </Border>
-        </Popup>
+        <localControls:MenuControl 
+            x:Name="ContextMenu"
+            MenuItems="{Binding ContextMenuItems, ElementName=RootControl}"
+            OpenCommand="{Binding OnContextMenuOpenCommand, ElementName=RootControl}"
+            CloseCommand="{Binding OnContextMenuClosedCommand, ElementName=RootControl}"
+            CommandParameterContext="{Binding DataContext, ElementName=RootControl}" 
+            />
     </Grid>
 </UserControl>

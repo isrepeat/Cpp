@@ -19,6 +19,8 @@
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <localHelpers:BindingProxy x:Key="ControlProxy" Data="{Binding DataContext}" />
+
             <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
             <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
@@ -92,7 +94,8 @@
 
 
             <!-- MAIN LAYOUT -->
-            <localControls:ItemsControlEx Items="{Binding SortedTabItemGroups}">
+            <localControls:ItemsControlEx Items="{Binding SortedTabItemGroups}"
+                                          >
                 <localControls:ItemsControlEx.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
@@ -110,21 +113,21 @@
                                         <localControls:TabItemControl 
                                             Title="{Binding Caption}"
                                             IsSelected="{Binding IsSelected, Mode=TwoWay}"
-                                            ContextMenuItems="{Binding DataContext.ContextMenuItems, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
-                                            OnContextMenuOpenCommand="{Binding DataContext.OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
-                                            OnContextMenuClosedCommand="{Binding DataContext.OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
+                                            ContextMenuItems="{Binding Data.ContextMenuItems, Source={StaticResource ControlProxy}}"
+                                            OnContextMenuOpenCommand="{Binding Data.OnTabItemContextMenuOpenCommand, Source={StaticResource ControlProxy}}"
+                                            OnContextMenuClosedCommand="{Binding Data.OnTabItemContextMenuClosedCommand, Source={StaticResource ControlProxy}}"
                                             >
                                             <localControls:TabItemControl.ControlPanelContent>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📂"
-                                                            Command="{Binding DataContext.OnTabItemKeepOpenedCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
+                                                            Command="{Binding Data.OnTabItemKeepOpenedCommand, Source={StaticResource ControlProxy}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             />
                                                     <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                                                             Content="📌"
-                                                            Command="{Binding DataContext.OnTabItemPinCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
+                                                            Command="{Binding Data.OnTabItemPinCommand, Source={StaticResource ControlProxy}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
                                                             />
@@ -132,7 +135,7 @@
                                                             Content="✖"
                                                             MouseEnter="InteractiveArea_MouseEnter"
                                                             MouseLeave="InteractiveArea_MouseLeave"
-                                                            Command="{Binding DataContext.OnTabItemCloseCommand, RelativeSource={RelativeSource AncestorType=local:TabsManagerToolWindowControl}}"
+                                                            Command="{Binding Data.OnTabItemCloseCommand, Source={StaticResource ControlProxy}}"
                                                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                             />
                                                 </StackPanel>
@@ -163,7 +166,16 @@
 
 
         <!-- VirtualPopupControl с настраиваемым контентом -->
-        <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
+        <localControls:VirtualPopupControl 
+            x:Name="MyVirtualPopup"
+            VirtualMenuItems="{Binding Data.VirtualMenuItems, Source={StaticResource ControlProxy}}"
+            OnVirtualMenuOpenCommand="{Binding Data.OnTabItemVirtualMenuOpenCommand, Source={StaticResource ControlProxy}}"
+            OnVirtualMenuClosedCommand="{Binding Data.OnTabItemVirtualMenuClosedCommand, Source={StaticResource ControlProxy}}"
+            >
+        </localControls:VirtualPopupControl>
+
+
+        <!--<localControls:VirtualPopupControl x:Name="MyVirtualPopup">
             <localControls:VirtualPopupControl.PopupContent>
                 <StackPanel>
                     <TextBlock Padding="10,0,10,0"
@@ -210,6 +222,6 @@
                     </ListView>
                 </StackPanel>
             </localControls:VirtualPopupControl.PopupContent>
-        </localControls:VirtualPopupControl>
+        </localControls:VirtualPopupControl>-->
     </Grid>
 </UserControl>

@@ -62,6 +62,18 @@ namespace TabsManagerExtension {
             }
         }
 
+        public ObservableCollection<Helpers.IMenuItem> _virtualMenuItems;
+        public ObservableCollection<Helpers.IMenuItem> VirtualMenuItems {
+            get => _virtualMenuItems;
+            private set {
+                if (_virtualMenuItems != value) {
+                    _virtualMenuItems = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
         // Internal:
         private EnvDTE80.DTE2 _dte;
         private EnvDTE.WindowEvents _windowEvents;
@@ -80,6 +92,8 @@ namespace TabsManagerExtension {
         public ICommand OnTabItemKeepOpenedCommand { get; }
         public ICommand OnTabItemContextMenuOpenCommand { get; }
         public ICommand OnTabItemContextMenuClosedCommand { get; }
+        public ICommand OnTabItemVirtualMenuOpenCommand { get; }
+        public ICommand OnTabItemVirtualMenuClosedCommand { get; }
 
         public TabsManagerToolWindowControl() {
             this.InitializeComponent();
@@ -93,6 +107,9 @@ namespace TabsManagerExtension {
 
             this.OnTabItemContextMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuOpen);
             this.OnTabItemContextMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuClosed);
+            
+            this.OnTabItemVirtualMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemVirtualMenuOpen);
+            this.OnTabItemVirtualMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemVirtualMenuClosed);
         }
 
         private void AAA(object parameter) {
@@ -607,6 +624,8 @@ namespace TabsManagerExtension {
                     // Удаляем вручную, так как события не будет
                     this.RemoveTabItemFromGroups(tabItemWindow);
                 }
+
+                //this.MyVirtualPopup.HideImmediately();
             }
         }
 
@@ -624,7 +643,7 @@ namespace TabsManagerExtension {
 
 
         private void OnTabItemContextMenuOpen(object parameter) {
-            if (parameter is Controls.TabItemControl.ContextMenuOpenRequest contextMenuOpenRequest) {
+            if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
                 if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
                     switch (_tabItemsSelectionCoordinator.SelectionState) {
                         case Helpers.Enums.SelectionState.Single:
@@ -632,32 +651,32 @@ namespace TabsManagerExtension {
                                 tabItemDocument.Metadata.SetFlag("IsCtxMenuOpenned", true);
 
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.OpenTabLocation,
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
-                                },
-                                new Helpers.MenuItemSeparator(),
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.CloseTab,
-                                    Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
-                                },
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.PinTab,
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
-                                }
-                            };
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.OpenTabLocation,
+                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    },
+                                    new Helpers.MenuItemSeparator(),
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.CloseTab,
+                                        Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
+                                    },
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.PinTab,
+                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    }
+                                };
                             }
                             else if (tabItem is TabItemWindow tabItemWindow) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.CloseTab,
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
-                                },
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.PinTab,
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
-                                }
-                            };
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.CloseTab,
+                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    },
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.PinTab,
+                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    }
+                                };
                             }
                             break;
 
@@ -667,11 +686,11 @@ namespace TabsManagerExtension {
 
                             if (isTabItemAmongSelectedItems) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                new Helpers.MenuItemDefault {
-                                    Header = Constants.UI.CloseSelectedTabs,
-                                    Command = new Helpers.RelayCommand<object>(this.AAA)
-                                }
-                            };
+                                    new Helpers.MenuItemDefault {
+                                        Header = Constants.UI.CloseSelectedTabs,
+                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                    }
+                                };
                             }
                             else {
                                 contextMenuOpenRequest.ShouldOpen = false;
@@ -689,6 +708,49 @@ namespace TabsManagerExtension {
             }
         }
 
+        private void OnTabItemVirtualMenuOpen(object parameter) {
+            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemVirtualMenuOpen()");
+
+            if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
+                if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
+                    if (tabItem is TabItemDocument tabItemDocument) {
+                        this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
+                            new Helpers.MenuItemDefault {
+                                Header = tabItem.Caption,
+                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                            },
+                            new Helpers.MenuItemSeparator(),
+                            new Helpers.MenuItemDefault {
+                                Header = Constants.UI.OpenTabLocation,
+                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                            },
+                            new Helpers.MenuItemDefault {
+                                Header = Constants.UI.CloseTab,
+                                Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
+                            },
+                            new Helpers.MenuItemDefault {
+                                Header = Constants.UI.PinTab,
+                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                            }
+                        };
+                    }
+                    else if (tabItem is TabItemWindow tabItemWindow) {
+                        this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
+                            new Helpers.MenuItemDefault {
+                                Header = Constants.UI.CloseTab,
+                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                            },
+                            new Helpers.MenuItemDefault {
+                                Header = Constants.UI.PinTab,
+                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                            }
+                        };
+                    }
+                }
+            }
+        }
+        private void OnTabItemVirtualMenuClosed(object parameter) {
+        }
 
 
 
