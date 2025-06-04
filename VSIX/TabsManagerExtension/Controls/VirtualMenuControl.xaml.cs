@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace TabsManagerExtension.Controls {
-    public partial class VirtualPopupControl : UserControl {
+    public partial class VirtualMenuControl : UserControl {
         public ObservableCollection<Helpers.IMenuItem> VirtualMenuItems {
             get { return (ObservableCollection<Helpers.IMenuItem>)this.GetValue(VirtualMenuItemsProperty); }
             set { this.SetValue(VirtualMenuItemsProperty, value); }
@@ -17,7 +17,7 @@ namespace TabsManagerExtension.Controls {
             DependencyProperty.Register(
                 nameof(VirtualMenuItems),
                 typeof(ObservableCollection<Helpers.IMenuItem>),
-                typeof(VirtualPopupControl),
+                typeof(VirtualMenuControl),
                 new PropertyMetadata(null));
 
 
@@ -30,7 +30,7 @@ namespace TabsManagerExtension.Controls {
             DependencyProperty.Register(
                 nameof(OnVirtualMenuOpenCommand),
                 typeof(ICommand),
-                typeof(VirtualPopupControl),
+                typeof(VirtualMenuControl),
                 new PropertyMetadata(null));
 
 
@@ -43,7 +43,7 @@ namespace TabsManagerExtension.Controls {
             DependencyProperty.Register(
                 nameof(OnVirtualMenuClosedCommand),
                 typeof(ICommand),
-                typeof(VirtualPopupControl),
+                typeof(VirtualMenuControl),
                 new PropertyMetadata(null));
 
 
@@ -59,7 +59,7 @@ namespace TabsManagerExtension.Controls {
 
         private bool hasUserInteracted = false;
 
-        public VirtualPopupControl() {
+        public VirtualMenuControl() {
             this.InitializeComponent();
             this.Loaded += this.OnLoaded;
             this.Unloaded += this.OnUnloaded;

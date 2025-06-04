@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="TabsManagerExtension.Controls.VirtualPopupControl"
+﻿<UserControl x:Class="TabsManagerExtension.Controls.VirtualMenuControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
@@ -13,6 +13,5 @@
         MenuItems="{Binding VirtualMenuItems, ElementName=RootControl}"
         OpenCommand="{Binding OnVirtualMenuOpenCommand, ElementName=RootControl}"
         CloseCommand="{Binding OnVirtualMenuClosedCommand, ElementName=RootControl}"
-        CommandParameterContext="{Binding CommandParameterContext, ElementName=RootControl}" 
         />
 </UserControl>
