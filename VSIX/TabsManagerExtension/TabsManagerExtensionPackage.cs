@@ -89,8 +89,8 @@ namespace TabsManagerExtension {
                     _tabHostDecorator = decorator;
                 }
 
-                decorator.Child = new TestTabsControl();
-                //decorator.Child = new TabsManagerToolWindowControl();
+                //decorator.Child = new TestTabsControl();
+                decorator.Child = new TabsManagerToolWindowControl();
 
                 _timer?.Stop();
                 _timer = null;

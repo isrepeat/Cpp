@@ -63,6 +63,29 @@ namespace TabsManagerExtension {
             viewHost?.TextView.VisualElement.Focus();
         }
 
+
+        public static bool IsEditorActive() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
+            if (textManager == null || textManager.GetActiveView(1, null, out var activeView) != VSConstants.S_OK) {
+                return false;
+            }
+
+            var componentModel = (IComponentModel?)Package.GetGlobalService(typeof(SComponentModel));
+            var adapter = componentModel?.GetService<IVsEditorAdaptersFactoryService>();
+            var wpfViewHost = adapter?.GetWpfTextViewHost(activeView);
+
+            if (wpfViewHost == null) {
+                return false;
+            }
+
+            // WPF-фокус
+            return wpfViewHost.TextView.VisualElement.IsKeyboardFocusWithin;
+        }
+
+
+
         /// <summary>
         /// Делает текстовый редактор временно нередактируемым, добавляя read-only регион ко всему тексту.
         /// Обратный вызов восстанавливает возможность редактирования.

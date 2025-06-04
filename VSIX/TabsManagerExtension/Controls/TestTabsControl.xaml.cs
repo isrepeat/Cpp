@@ -8,7 +8,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TabsManagerExtension {
     public partial class TestTabsControl : UserControl {
-        private TextEditorFrameActivationTracker? _textEditorFrameActivationTracker;
+        //private TextEditorFrameActivationTracker? _textEditorFrameActivationTracker;
         public TestTabsControl() {
             this.InitializeComponent();
             this.Loaded += this.OnLoaded;
@@ -18,18 +18,18 @@ namespace TabsManagerExtension {
             ThreadHelper.JoinableTaskFactory.Run(async () => {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _textEditorFrameActivationTracker = new TextEditorFrameActivationTracker();
-                _textEditorFrameActivationTracker.TextEditorFrameActivated += isActive => {
-                    this.Dispatcher.Invoke(() => {
-                        this.Background = isActive ? Brushes.Purple : Brushes.Gray;
-                    });
-                };
+                //_textEditorFrameActivationTracker = new TextEditorFrameActivationTracker();
+                //_textEditorFrameActivationTracker.TextEditorFrameActivated += isActive => {
+                //    this.Dispatcher.Invoke(() => {
+                //        this.Background = isActive ? Brushes.Purple : Brushes.Gray;
+                //    });
+                //};
             });
         }
 
         private void UserControl_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
             if (e.OriginalSource is not Button && e.OriginalSource is DependencyObject d) {
-                var parentButton = Helpers.VisualTree.FindParentOfType<Button>(d);
+                var parentButton = Helpers.VisualTree.FindParentByType<Button>(d);
                 if (parentButton == null) {
                     // Клик по пустому месту → перехватываем фокус
                     TextEditorControlHelper.FocusEditor();

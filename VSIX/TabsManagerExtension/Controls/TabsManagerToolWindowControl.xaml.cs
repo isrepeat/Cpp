@@ -79,13 +79,12 @@ namespace TabsManagerExtension {
         private EnvDTE.WindowEvents _windowEvents;
         private EnvDTE.DocumentEvents _documentEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
-        private FileSystemWatcher _fileWatcher;
+
         private DispatcherTimer _tabsManagerStateTimer;
-        private bool _isMouseInside; // TODO: encapsulate this logic to another class
+        private FileSystemWatcher _fileWatcher;
+        private VsSelectionTracker? _vsSelectionTracker;
 
         private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
-        private Overlay.TextEditorOverlayController _textEditorOverlayController;
-
 
         public ICommand OnTabItemPinCommand { get; }
         public ICommand OnTabItemCloseCommand { get; }
@@ -99,6 +98,7 @@ namespace TabsManagerExtension {
             this.InitializeComponent();
             this.Loaded += this.OnLoaded;
             this.Unloaded += this.OnUnloaded;
+            this.PreviewMouseDown += this.OnPreviewMouseDown;
             base.DataContext = this;
 
             this.OnTabItemPinCommand = new Helpers.RelayCommand<object>(this.OnTabItemPin);
@@ -112,116 +112,57 @@ namespace TabsManagerExtension {
             this.OnTabItemVirtualMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemVirtualMenuClosed);
         }
 
-        private void AAA(object parameter) {
-        }
 
-
-        // 
-        // Self handlers
-        // 
+        //
+        // ░ Self handlers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+        //
         private void OnLoaded(object sender, RoutedEventArgs e) {
-            var defaultTabItemGroupComparer = Comparer<TabItemsGroup>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
-            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroup>> {
-                new Helpers.PriorityGroup<TabItemsGroup> {
-                    Position = Helpers.ItemPosition.Top,
-                    Predicate = tabItemGroup => tabItemGroup.GroupName.StartsWith("__Preview"),
-                    Comparer = defaultTabItemGroupComparer
-                }
-            };
-            this.SortedTabItemGroups = new Helpers.SortedObservableCollection<TabItemsGroup>(
-                defaultTabItemGroupComparer,
-                priorityGroups
-                );
-
             this.InitializeDTE();
             this.InitializeFileWatcher();
-            this.InitializeBackgroundWork();
-
-            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase>(SortedTabItemGroups);
-            _tabItemsSelectionCoordinator.OnItemSelectionChanged = (group, item, isSelected) => {
-                if (item is TabItemBase tabItem) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
-
-                    if (isSelected) {
-                        this.ActivatePrimaryTabItem();
-                    }
-                }
-            };
-            _tabItemsSelectionCoordinator.OnSelectionStateChanged = (Helpers.Enums.SelectionState selectionState) => {
-                switch (selectionState) {
-                    case Helpers.Enums.SelectionState.Single:
-                        this.ActivatePrimaryTabItem();
-                        break;
-
-                    case Helpers.Enums.SelectionState.Multiple:
-                        break;
-                }
-            };
-
-            _textEditorOverlayController = new Overlay.TextEditorOverlayController(_dte);
-
-            // Subscribe to system events after finish initialization to avoid potential side effects.
-            DocumentActivationTracker.Initialize();
-            DocumentActivationTracker.OnDocumentActivated += this.OnDocumentActivatedExternally;
-
-            this.PreviewGotKeyboardFocus += this.OnGotFocus;
-            this.PreviewLostKeyboardFocus += this.OnLostFocus;
-            Application.Current.MainWindow.PreviewMouseDown += this.OnGlobalMouseDown;
-
-            Helpers.FocusWatcher.RegisterFocusGot("TextEditor", this, this.UpdateFocusSummary);
-            Helpers.FocusWatcher.RegisterFocusLost("TextEditor", this, this.UpdateFocusSummary);
-            Helpers.FocusWatcher.RegisterFocusGot("TabsManagerControl", this, this.UpdateFocusSummary);
-            Helpers.FocusWatcher.RegisterFocusLost("TabsManagerControl", this, this.UpdateFocusSummary);
-            this.UpdateFocusSummary();
+            this.InitializeVsShellTrackers();
+            this.InitializeTabItemsSelectionCoordinator();
+            this.InitializeBackgroundRoutine();
 
             // Entry point:
             this.LoadOpenDocuments();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e) {
-            Application.Current.MainWindow.PreviewMouseDown -= OnGlobalMouseDown;
-            this.PreviewLostKeyboardFocus -= this.OnLostFocus;
-            this.PreviewGotKeyboardFocus -= this.OnGotFocus;
-
-            DocumentActivationTracker.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            DocumentActivationTracker.Dispose();
-
+            this.UninitializeTabItemsSelectionCoordinator();
+            this.UninitializeVsShellTrackers();
             this.UninitializeFileWatcher();
             this.UninitializeDTE();
         }
 
+        private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e) {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-        private void OnGotFocus(object sender, RoutedEventArgs e) {
-            Helpers.FocusWatcher.NotifyFocusGot("TabsManagerControl");
-        }
-        private void OnLostFocus(object sender, RoutedEventArgs e) {
-            Helpers.FocusWatcher.NotifyFocusLost("TabsManagerControl");
-        }
+            if (e.OriginalSource is DependencyObject d && !this.ex_HasInteractiveElementOnPathFrom(d)) {
+                // Клик по пустому пространству.
 
-        private void OnGlobalMouseDown(object sender, MouseButtonEventArgs e) {
-            var position = e.GetPosition(this);
-
-            bool clickedInside =
-                position.X >= 0 && position.X <= this.ActualWidth &&
-                position.Y >= 0 && position.Y <= this.ActualHeight;
-
-            if (clickedInside) {
-                if (!_isMouseInside) {
-                    _isMouseInside = true;
-                    this.OnGotFocus(this, null);
+                var selectedTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
+                if (selectedTabItem is IActivatableTab activatableTab) {
+                    activatableTab.Activate(); // Инициирует фокус редактора (или окна на его месте).
                 }
-            }
-            else {
-                if (_isMouseInside) {
-                    _isMouseInside = false;
-                    this.OnLostFocus(this, null);
-                }
+
+                // Переводи фокус с редактора на наш контрол (чтобы редактор стал не активным, например для ввода).
+                this.FocusStealer.Focus();
+
+                // Глобально сбрасываем клавишный фокус со всего.
+                //Keyboard.ClearFocus()
+
+                Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
+                e.Handled = true;
             }
         }
 
 
         //
-        // Initialization
+        // ░ Initialization
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+        // 
+        // ░ DTE
         //
         private void InitializeDTE() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -229,7 +170,6 @@ namespace TabsManagerExtension {
             _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
 
             _documentEvents = _dte.Events.DocumentEvents;
-            _documentEvents.DocumentOpening += OnDocumentOpening;
             _documentEvents.DocumentOpened += OnDocumentOpened;
             _documentEvents.DocumentSaved += OnDocumentSaved;
             _documentEvents.DocumentClosing += OnDocumentClosing;
@@ -253,9 +193,12 @@ namespace TabsManagerExtension {
             _documentEvents.DocumentClosing -= OnDocumentClosing;
             _documentEvents.DocumentSaved -= OnDocumentSaved;
             _documentEvents.DocumentOpened -= OnDocumentOpened;
-            _documentEvents.DocumentOpening -= OnDocumentOpening;
         }
 
+
+        //
+        // ░ FileWatcher 
+        //
         private void InitializeFileWatcher() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -311,7 +254,55 @@ namespace TabsManagerExtension {
             }
         }
 
-        private void InitializeBackgroundWork() {
+
+        //
+        // ░ VsShellTrackers 
+        //
+        private void InitializeVsShellTrackers() {
+            _vsSelectionTracker = new VsSelectionTracker();
+            _vsSelectionTracker.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+
+            DocumentActivationTracker.Initialize();
+            DocumentActivationTracker.OnDocumentActivated += this.OnDocumentActivatedExternally;
+        }
+        private void UninitializeVsShellTrackers() {
+            DocumentActivationTracker.OnDocumentActivated -= this.OnDocumentActivatedExternally;
+            DocumentActivationTracker.Dispose();
+
+            _vsSelectionTracker.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+        }
+
+
+        //
+        // ░ TabItemsSelectionCoordinator 
+        //
+        private void InitializeTabItemsSelectionCoordinator() {
+            var defaultTabItemGroupComparer = Comparer<TabItemsGroup>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
+            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroup>> {
+                new Helpers.PriorityGroup<TabItemsGroup> {
+                    Position = Helpers.ItemPosition.Top,
+                    Predicate = tabItemGroup => tabItemGroup.GroupName.StartsWith("__Preview"),
+                    Comparer = defaultTabItemGroupComparer
+                }
+            };
+            this.SortedTabItemGroups = new Helpers.SortedObservableCollection<TabItemsGroup>(
+                defaultTabItemGroupComparer,
+                priorityGroups
+                );
+
+            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase>(this.SortedTabItemGroups);
+            _tabItemsSelectionCoordinator.OnItemSelectionChanged = this.OnTabItemSelectionChanged;
+            _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
+        }
+
+        private void UninitializeTabItemsSelectionCoordinator() {
+        }
+
+
+        // 
+        // ░ BackgroundRoutine
+        //
+        private void InitializeBackgroundRoutine() {
             _tabsManagerStateTimer = new DispatcherTimer();
             _tabsManagerStateTimer.Interval = TimeSpan.FromMilliseconds(200);
             _tabsManagerStateTimer.Tick += this.TabsManagerStateTimerHandler;
@@ -320,31 +311,13 @@ namespace TabsManagerExtension {
 
 
         //
-        // Event handlers
+        // ░ Event handlers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+        // 
+        // ░ DTE
         //
-        private void OnDocumentActivatedExternally(string documentFullName) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentActivatedExternally()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            Helpers.Diagnostic.Logger.LogParam($"documentFullName = {documentFullName}");
-
-            var tabItem = this.FindTabItem(documentFullName);
-            if (tabItem != null) {
-                tabItem.IsSelected = true;
-            }
-        }
-
-        private void OnDocumentOpening(string documentPath, bool readOnly) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentOpening()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Log params:
-            Helpers.Diagnostic.Logger.LogParam($"documentPath = {documentPath}");
-            Helpers.Diagnostic.Logger.LogParam($"readOnly = {readOnly}");
-        }
-
         private void OnDocumentOpened(EnvDTE.Document document) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentOpened()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentOpened()");
             ThreadHelper.ThrowIfNotOnUIThread();
             
             // Log params:
@@ -361,13 +334,11 @@ namespace TabsManagerExtension {
             else {
                 this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
             }
-
-            _textEditorOverlayController.UpdateState();
         }
 
 
         private void OnDocumentSaved(EnvDTE.Document document) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentSaved()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentSaved()");
             ThreadHelper.ThrowIfNotOnUIThread();
             
             // Log params:
@@ -378,7 +349,7 @@ namespace TabsManagerExtension {
 
 
         private void OnDocumentClosing(EnvDTE.Document document) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentClosing()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentClosing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Log params:
@@ -391,13 +362,11 @@ namespace TabsManagerExtension {
             else {
                 Helpers.Diagnostic.Logger.LogWarning($"\"{document?.Name}\" not found in collections");
             }
-
-            _textEditorOverlayController.UpdateState();
         }
 
 
         private void OnWindowActivated(EnvDTE.Window gotFocus, EnvDTE.Window lostFocus) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnWindowActivated()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnWindowActivated()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Log params:
@@ -427,14 +396,11 @@ namespace TabsManagerExtension {
             addedOrExistTabItem.IsSelected = true; // Select after tabItem exist added to group.
 
             this.UpdateWindowTabsInfo();
-
-            // Обновим _textEditorOverlayController, если открытие произошло через превью (без DocumentOpened)
-            _textEditorOverlayController.UpdateState();
         }
 
 
         private void OnWindowClosing(EnvDTE.Window closingWindow) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnWindowClosing()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnWindowClosing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Helpers.Diagnostic.Logger.LogParam($"closingWindow.Caption = {closingWindow?.Caption}");
@@ -442,17 +408,20 @@ namespace TabsManagerExtension {
 
 
         private void OnSolutionClosing() {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionClosing()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionClosing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            // TODO: try replace with this.Unload()
             this.SortedTabItemGroups.Clear();
-
             this.UninitializeFileWatcher();
         }
+        
 
-
+        // 
+        // ░ FileWatcher
+        //
         private void OnFileChanged(object sender, FileSystemEventArgs e) {
-            //using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileChanged()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileChanged()");
 
             if (this.IsTemporaryFile(e.FullPath)) {
                 return;
@@ -465,7 +434,7 @@ namespace TabsManagerExtension {
         }
 
         private void OnFileRenamed(object sender, RenamedEventArgs e) {
-            //using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileRenamed()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileRenamed()");
 
             if (this.IsTemporaryFile(e.FullPath) || this.IsTemporaryFile(e.OldFullPath)) {
                 return;
@@ -478,7 +447,7 @@ namespace TabsManagerExtension {
         }
 
         private void OnFileDeleted(object sender, FileSystemEventArgs e) {
-            //using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileDeleted()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnFileDeleted()");
 
             if (this.IsTemporaryFile(e.FullPath)) {
                 return;
@@ -495,6 +464,76 @@ namespace TabsManagerExtension {
         }
 
 
+        //
+        // ░ VsShellTrackers 
+        //
+        private void OnVsWindowFrameActivated(IVsWindowFrame vsWindowFrame) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnVsWindowFrameActivated()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // NOTE: При запуске VS всегда активен последний документ сессии и
+            //       OnVsWindowFrameActivated не сработает при переактивации этого же документа в ручную,
+            //       поэтому явно ставим TextEditorFrameFocused = true в OnPreviewMouseDown.
+
+            //VSFM_Dock = 0,     // ToolWindow: фиксировано сбоку, снизу и т.п. (Solution Explorer, Output и т.п.)
+            //VSFM_MDIChild = 1, // Документное окно: занимает пространство текстового редактора, находится во вкладках
+            //VSFM_Float = 2     // Плавающее окно: вытащено за пределы главного окна
+            vsWindowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_FrameMode, out var mode);
+            Helpers.Diagnostic.Logger.LogDebug($"vsWindowFrame.FrameMode = {(VSFRAMEMODE)(int)mode}");
+
+            bool isMdiChild = mode != null && (VSFRAMEMODE)(int)mode == VSFRAMEMODE.VSFM_MdiChild;
+            Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", isMdiChild);
+
+            //// Получаем содержимое активного окна (View)
+            //vsWindowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var docView);
+
+            //// Если это кодовое окно, запрашиваем его "основной" текстовый редактор
+            //if (docView is IVsCodeWindow codeWindow) {
+            //    if (codeWindow.GetPrimaryView(out var textView) == VSConstants.S_OK && textView != null) {
+            //        // Это полноценный редактор
+            //    }
+            //}
+        }
+
+        private void OnDocumentActivatedExternally(string documentFullName) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentActivatedExternally()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Helpers.Diagnostic.Logger.LogParam($"documentFullName = {documentFullName}");
+
+            var tabItem = this.FindTabItem(documentFullName);
+            if (tabItem != null) {
+                tabItem.IsSelected = true;
+            }
+        }
+
+
+        // 
+        // ░ TabItemsSelectionCoordinator
+        //
+        private void OnTabItemSelectionChanged(TabItemsGroup group, TabItemBase tabItem, bool isSelected) {
+            Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
+
+            if (isSelected) {
+                this.ActivatePrimaryTabItem();
+            }
+        }
+
+        private void OnSelectionStateChanged(Helpers.Enums.SelectionState selectionState) {
+            switch (selectionState) {
+                case Helpers.Enums.SelectionState.Single:
+                    this.ActivatePrimaryTabItem();
+                    break;
+
+                case Helpers.Enums.SelectionState.Multiple:
+                    break;
+            }
+        }
+
+
+        // 
+        // ░ BackgroundRoutine
+        //
         private void TabsManagerStateTimerHandler(object sender, EventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
             // NOTE: Нужно использовать копии коллекций для безопасного перебора.
@@ -562,53 +601,22 @@ namespace TabsManagerExtension {
             this.UpdateWindowTabsInfo();
         }
 
-        void UpdateFocusSummary() {
-            bool focused = Helpers.FocusWatcher.HasFocus("TextEditor") || Helpers.FocusWatcher.HasFocus("TabsManagerControl");
-            Helpers.GlobalFlags.SetFlag("TextEditorOrTabsManagerControlFocused", focused);
-        }
-
-
 
         //
-        // UI click handlers
+        // ░ UI click handlers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
         //
-        private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
-            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (sender is FrameworkElement interactiveArea) {
-                // Находим родительский ListViewItem (где привязаны данные)
-                var listViewItem = Helpers.VisualTree.FindParentOfType<ListViewItem>(interactiveArea);
-                if (listViewItem == null) {
-                    return;
-                }
-
-                // Получаем привязанный объект (TabItemDocument)
-                if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
-                    if (tabItemDocument.ShellDocument != null) {
-                        tabItemDocument.UpdateProjectReferenceList();
-                    }
-                    var screenPoint = interactiveArea.ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
-                    this.MyVirtualPopup.Show(screenPoint, tabItemDocument);
-                }
-            }
+        // ░ Commands
+        //
+        private void AAA(object parameter) {
         }
-
-        private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
-            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            this.MyVirtualPopup.Hide();
-        }
-
-
         private void OnTabItemPin(object parameter) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemPin()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemPin()");
             ThreadHelper.ThrowIfNotOnUIThread();
         }
 
         private void OnTabItemClose(object parameter) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemClose()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemClose()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is TabItemBase tabItem) {
@@ -625,12 +633,12 @@ namespace TabsManagerExtension {
                     this.RemoveTabItemFromGroups(tabItemWindow);
                 }
 
-                //this.MyVirtualPopup.HideImmediately();
+                this.VirtualMenuControl.HideImmediately();
             }
         }
 
         private void OnTabItemKeepOpened(object parameter) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemKeepOpened()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemKeepOpened()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is TabItemBase tabItem) {
@@ -642,6 +650,9 @@ namespace TabsManagerExtension {
         }
 
 
+        // 
+        // ░ ContextMenu
+        //
         private void OnTabItemContextMenuOpen(object parameter) {
             if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
                 if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
@@ -708,8 +719,41 @@ namespace TabsManagerExtension {
             }
         }
 
+
+        // 
+        // ░ VirtualMenu
+        //
+        private void InteractiveArea_MouseEnter(object sender, MouseEventArgs e) {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseEnter()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (sender is FrameworkElement interactiveArea) {
+                // Находим родительский ListViewItem (где привязаны данные)
+                var listViewItem = Helpers.VisualTree.FindParentByType<ListViewItem>(interactiveArea);
+                if (listViewItem == null) {
+                    return;
+                }
+
+                // Получаем привязанный объект (TabItemDocument)
+                if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
+                    if (tabItemDocument.ShellDocument != null) {
+                        tabItemDocument.UpdateProjectReferenceList();
+                    }
+                    var screenPoint = interactiveArea.ex_ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
+                    this.VirtualMenuControl.Show(screenPoint, tabItemDocument);
+                }
+            }
+        }
+
+        private void InteractiveArea_MouseLeave(object sender, MouseEventArgs e) {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"InteractiveArea_MouseLeave()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            this.VirtualMenuControl.Hide();
+        }
+
         private void OnTabItemVirtualMenuOpen(object parameter) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemVirtualMenuOpen()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemVirtualMenuOpen()");
 
             if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
                 if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
@@ -753,9 +797,8 @@ namespace TabsManagerExtension {
         }
 
 
-
         private void ProjectMenuItem_Click(object sender, RoutedEventArgs e) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("ProjectMenuItem_Click()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("ProjectMenuItem_Click()");
 
             if (sender is Button button && button.CommandParameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
                 this.MoveDocumentToProjectGroup(
@@ -766,7 +809,9 @@ namespace TabsManagerExtension {
         }
 
 
-
+        // 
+        // ░ ScaleSelectorControl
+        //
         private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {
             this.ApplyDocumentScale();
         }
@@ -780,10 +825,13 @@ namespace TabsManagerExtension {
 
 
         //
-        // Internal logic
+        // ░ Internal logic
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+        //
+        // ░ Adding tabs
         //
         private void LoadOpenDocuments() {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("LoadOpenDocuments()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("LoadOpenDocuments()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             this.SortedTabItemGroups.Clear();
@@ -811,11 +859,10 @@ namespace TabsManagerExtension {
             }
 
             this.SyncActiveDocumentWithPrimaryTabItem();
-            _textEditorOverlayController.UpdateState();
         }
 
         private void AddDocumentToPreview(TabItemDocument tabItemDocument) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("AddDocumentToPreview()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddDocumentToPreview()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
@@ -829,7 +876,7 @@ namespace TabsManagerExtension {
 
 
         private TabItemBase AddTabItemToDefaultGroupIfMissing(TabItemBase tabItem) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToDefaultGroupIfMissing()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToDefaultGroupIfMissing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string groupName;
@@ -851,7 +898,7 @@ namespace TabsManagerExtension {
         }
 
         private TabItemBase AddTabItemToGroupIfMissing(TabItemBase tabItem, string groupName) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToGroup()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Log params:
@@ -874,9 +921,11 @@ namespace TabsManagerExtension {
         }
 
 
-
+        // 
+        // ░ Removing tabs
+        //
         private void MoveDocumentFromPreviewToMainGroup(TabItemDocument tabItemDocument) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentFromPreviewToMainGroup()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentFromPreviewToMainGroup()");
 
             // Log params:
             Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.ShellDocument.Document.Name = {tabItemDocument?.ShellDocument.Document.Name}");
@@ -897,7 +946,7 @@ namespace TabsManagerExtension {
         }
 
         private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, TabItemProject tabItemProject) {
-            using var __log = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Log params:
@@ -932,7 +981,9 @@ namespace TabsManagerExtension {
         }
 
 
-
+        // 
+        // ░ Updating tabs
+        //
         // Обновление документа в UI после изменения или переименования
         private void UpdateDocumentUI(string oldPath, string newPath = null) {
             foreach (var group in this.SortedTabItemGroups) {
@@ -972,13 +1023,22 @@ namespace TabsManagerExtension {
             });
         }
 
+
+        // 
+        // ░ Activating tabs
+        //
         private void ActivatePrimaryTabItem() {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("ActivatePrimaryTabItem()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var primaryTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
             if (primaryTabItem is IActivatableTab activatableTab) {
                 if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, primaryTabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate(): already active [{primaryTabItem.Caption}]");
+                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate, alredy active - \"{primaryTabItem.Caption}\"");
                     return;
                 }
+
+                Helpers.Diagnostic.Logger.LogDebug($"Activate - \"{primaryTabItem.Caption}\"");
                 activatableTab.Activate();
             }
         }
@@ -1030,6 +1090,10 @@ namespace TabsManagerExtension {
         }
 
 
+        //
+        // ░ Helpers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+        //
         private TabItemDocument FindTabItem(EnvDTE.Document document) {
             return this.FindTabItemWithGroup(document)?.Item;
         }
@@ -1104,7 +1168,6 @@ namespace TabsManagerExtension {
                 }
             }
         }
-
 
         private bool IsTemporaryFile(string fullPath) {
             string extension = Path.GetExtension(fullPath);

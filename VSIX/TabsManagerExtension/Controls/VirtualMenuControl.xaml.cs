@@ -138,6 +138,11 @@ namespace TabsManagerExtension.Controls {
             this.hideTimer.Start();
         }
 
+        public void HideImmediately() {
+            this.CancelShowTimer();
+            this.InternalHidePopup();
+        }
+
         /// <summary>
         /// Внутренний метод показа popup.
         /// Устанавливает DataContext, позицию, делает видимым.

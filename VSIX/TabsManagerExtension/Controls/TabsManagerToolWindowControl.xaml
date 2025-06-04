@@ -47,7 +47,7 @@
                             <ControlTemplate.Triggers>
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                                     </MultiDataTrigger.Conditions>
                                     <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentBrush}" />
                                 </MultiDataTrigger>
@@ -165,18 +165,21 @@
                                             />
 
 
-        <!-- VirtualPopupControl с настраиваемым контентом -->
-        <localControls:VirtualPopupControl 
-            x:Name="MyVirtualPopup"
+        <!-- VirtualMenuControl с настраиваемым контентом -->
+        <localControls:VirtualMenuControl 
+            x:Name="VirtualMenuControl"
             VirtualMenuItems="{Binding Data.VirtualMenuItems, Source={StaticResource ControlProxy}}"
             OnVirtualMenuOpenCommand="{Binding Data.OnTabItemVirtualMenuOpenCommand, Source={StaticResource ControlProxy}}"
             OnVirtualMenuClosedCommand="{Binding Data.OnTabItemVirtualMenuClosedCommand, Source={StaticResource ControlProxy}}"
             >
-        </localControls:VirtualPopupControl>
+        </localControls:VirtualMenuControl>
+
+        <!-- Перехватчик фокуса при клике на контрол -->
+        <Border x:Name="FocusStealer" Focusable="True" Width="0" Height="0" />
 
 
-        <!--<localControls:VirtualPopupControl x:Name="MyVirtualPopup">
-            <localControls:VirtualPopupControl.PopupContent>
+        <!--<localControls:VirtualMenuControl x:Name="MyVirtualPopup">
+            <localControls:VirtualMenuControl.PopupContent>
                 <StackPanel>
                     <TextBlock Padding="10,0,10,0"
                                FontSize="14"
@@ -221,7 +224,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
-            </localControls:VirtualPopupControl.PopupContent>
-        </localControls:VirtualPopupControl>-->
+            </localControls:VirtualMenuControl.PopupContent>
+        </localControls:VirtualMenuControl>-->
     </Grid>
 </UserControl>

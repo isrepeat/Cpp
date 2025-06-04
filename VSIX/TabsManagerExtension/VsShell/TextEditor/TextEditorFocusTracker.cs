@@ -23,10 +23,12 @@ namespace TabsManagerExtension {
 
         public void TextViewCreated(IWpfTextView textView) {
             textView.GotAggregateFocus += (sender, e) => {
+                //Helpers.Diagnostic.Logger.LogDebug($"FocusGot [TextEditor]");
                 Helpers.FocusWatcher.NotifyFocusGot("TextEditor");
             };
 
             textView.LostAggregateFocus += (sender, e) => {
+                //Helpers.Diagnostic.Logger.LogDebug($"FocusLost [TextEditor]");
                 Helpers.FocusWatcher.NotifyFocusLost("TextEditor");
             };
 

@@ -65,7 +65,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Background" Value="{StaticResource AppSelectedBrush}" />
                         <Setter Property="BorderBrush" Value="{StaticResource AppSelectedBrush}" />
@@ -74,7 +74,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Background" Value="{StaticResource AppSelectedNonActiveBrush}" />
                         <Setter Property="BorderBrush" Value="{StaticResource AppSelectedNonActiveBrush}" />
@@ -91,7 +91,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}" />
                     </MultiDataTrigger>
@@ -99,7 +99,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentNonActiveMiddleBrush}" />
                     </MultiDataTrigger>

@@ -43,6 +43,8 @@ namespace Helpers {
         }
 
         public static void SetFlag(string key, bool value) {
+            //Helpers.Diagnostic.Logger.LogDebug($"GlobalFlags.Metadata[{key}] = {value}");
+
             _flagStates[key] = value;
             _globalMetadata.SetFlag(key, value);
 
