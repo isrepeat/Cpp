@@ -15,6 +15,24 @@ using System.Windows.Controls;
 
 namespace Helpers {
     public static class VisualTree {
+        public static FrameworkElement? FindElementByName(DependencyObject root, string name) {
+            if (root is FrameworkElement fe && fe.Name == name) {
+                return fe;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++) {
+                var child = VisualTreeHelper.GetChild(root, i);
+                var result = FindElementByName(child, name);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+
         public static FrameworkElement? FindParentByName(DependencyObject child, string targetName) {
             var current = VisualTreeHelper.GetParent(child);
             while (current != null) {
@@ -26,7 +44,8 @@ namespace Helpers {
             return null;
         }
 
-        public static T? FindParentOfType<T>(DependencyObject root) where T : DependencyObject {
+
+        public static T? FindParentByType<T>(DependencyObject root) where T : DependencyObject {
             DependencyObject? current = VisualTreeHelper.GetParent(root);
 
             while (current != null) {
@@ -55,6 +74,7 @@ namespace Helpers {
             return null;
         }
 
+
         public static T? FindChildByType<T>(DependencyObject root) where T : DependencyObject {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++) {
                 var child = VisualTreeHelper.GetChild(root, i);
@@ -71,25 +91,6 @@ namespace Helpers {
 
             return null;
         }
-
-
-        public static FrameworkElement? FindElementByName(DependencyObject root, string name) {
-            if (root is FrameworkElement fe && fe.Name == name) {
-                return fe;
-            }
-
-            int count = VisualTreeHelper.GetChildrenCount(root);
-            for (int i = 0; i < count; i++) {
-                var child = VisualTreeHelper.GetChild(root, i);
-                var result = FindElementByName(child, name);
-                if (result != null) {
-                    return result;
-                }
-            }
-
-            return null;
-        }
-
 
 
 
@@ -133,7 +134,7 @@ namespace Helpers {
     namespace Ex {
         public static class VisualTreeExtensions {
             // Метод расширения для поиска всех потомков указанного типа (универсальный)
-            public static IEnumerable<T> GetVisualDescendants<T>(this DependencyObject parent) where T : DependencyObject {
+            public static IEnumerable<T> ex_GetVisualDescendants<T>(this DependencyObject parent) where T : DependencyObject {
                 if (parent == null) yield break;
 
                 for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++) {
@@ -143,10 +144,41 @@ namespace Helpers {
                         yield return typedChild;
                     }
 
-                    foreach (var descendant in GetVisualDescendants<T>(child)) {
+                    foreach (var descendant in ex_GetVisualDescendants<T>(child)) {
                         yield return descendant;
                     }
                 }
+            }
+        }
+
+
+        public static class UserControlExtensions {
+            /// <summary>
+            /// Проверяет, находится ли на пути от заданного дочернего элемента до текущего UserControl
+            /// хотя бы один интерактивный элемент управления (Focusable и Enabled Control).
+            ///
+            /// Используется для фильтрации событий ввода: например, чтобы отличить клики по кнопкам, чекбоксам и другим
+            /// активным UI-элементам от кликов по фоновым областям.
+            /// </summary>
+            /// <param name="control">UserControl, выступающий верхней границей поиска.</param>
+            /// <param name="startingElement">Исходный элемент, от которого начинается восходящий поиск.</param>
+            /// <returns>True, если хотя бы один интерактивный элемент найден на пути вверх до UserControl включительно.</returns>
+            public static bool ex_HasInteractiveElementOnPathFrom(this UserControl control, DependencyObject startingElement) {
+                var current = startingElement;
+
+                while (current != null) {
+                    if (current is Control ctrl && ctrl.Focusable && ctrl.IsEnabled) {
+                        return true;
+                    }
+
+                    if (current == control) {
+                        break;
+                    }
+
+                    current = VisualTreeHelper.GetParent(current);
+                }
+
+                return false;
             }
         }
     }

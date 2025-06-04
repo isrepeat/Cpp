@@ -15,7 +15,7 @@ using System.ComponentModel;
 namespace Helpers {
     namespace Ex {
         public static class DpiExtensions {
-            public static Point ToDpiAwareScreen(this FrameworkElement element, Point localOffset) {
+            public static Point ex_ToDpiAwareScreen(this FrameworkElement element, Point localOffset) {
                 var screenPoint = element.PointToScreen(localOffset);
 
                 var source = PresentationSource.FromVisual(element);
