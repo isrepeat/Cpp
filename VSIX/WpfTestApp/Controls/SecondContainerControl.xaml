@@ -1,0 +1,41 @@
+﻿<localHelpers:BaseUserControl x:Class="WpfTestApp.Controls.SecondContainerControl"
+                               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:local="clr-namespace:WpfTestApp"
+                               xmlns:localHelpers="clr-namespace:Helpers"
+                               xmlns:localControls="clr-namespace:WpfTestApp.Controls"
+                               x:Name="__SecondContainerControl"
+                               >
+    <UserControl.Resources>
+        <DataTemplate x:Key="ControlPanelTemplateSecond">
+            <Button Content="✖" Width="20" Height="20" />
+        </DataTemplate>
+        <DataTemplate x:Key="ControlPanelTemplateSecond2">
+            <Button Content="x" Width="20" Height="20" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <ItemsControl ItemsSource="{Binding Items}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <localControls:FirstContainerControl
+                        HostControl="{Binding ElementName=__SecondContainerControl}"
+                        >
+                        <localControls:FirstContainerControl.ControlPanelContent>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="5" 
+                                           Text="Text:"
+                                           />
+                                <ContentPresenter Content="{Binding}" 
+                                                  ContentTemplate="{Binding HostControl.ControlPanelTemplateSecond2, RelativeSource={RelativeSource AncestorType=localHelpers:BaseUserControl}}"
+                                                  />
+                                                  <!--ContentTemplate="{localHelpers:FromNearControl HostControl.ControlPanelTemplateSecond}"-->
+                            </StackPanel>
+                        </localControls:FirstContainerControl.ControlPanelContent>
+                    </localControls:FirstContainerControl>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</localHelpers:BaseUserControl>

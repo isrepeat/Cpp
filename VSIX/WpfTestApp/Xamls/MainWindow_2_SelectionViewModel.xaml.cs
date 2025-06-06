@@ -462,7 +462,7 @@ namespace WpfTestApp {
     }
 
 
-    public partial class MainWindow_SelectionViewModel : Window {
+    public partial class MainWindow_2_SelectionViewModel : Window {
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<GroupModel> Groups { get; }
@@ -472,7 +472,7 @@ namespace WpfTestApp {
             get => _groupsSelectionCoordinator;
         }
 
-        public MainWindow_SelectionViewModel() {
+        public MainWindow_2_SelectionViewModel() {
             this.InitializeComponent();
 
             this.Groups = new ObservableCollection<GroupModel> { 
