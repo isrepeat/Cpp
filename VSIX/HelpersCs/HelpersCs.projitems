@@ -9,6 +9,9 @@
     <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\ToggleOnMouseDownBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
@@ -25,5 +28,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)MarkupExtensions\" />
   </ItemGroup>
 </Project>
