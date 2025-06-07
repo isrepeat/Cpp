@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using System.Collections.Generic;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell {
     /// <summary>
     /// Универсальный трекер, подписывающийся на события выбора и активации окон в Visual Studio.
     /// Позволяет отслеживать:

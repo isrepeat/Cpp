@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using System.Collections.Generic;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell.TextEditor {
     internal static class DocumentActivationTracker {
         private static IVsRunningDocumentTable _rdt;
         private static uint _cookie;

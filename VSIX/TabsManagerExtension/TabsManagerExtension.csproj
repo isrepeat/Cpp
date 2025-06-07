@@ -77,6 +77,7 @@
     </Compile>
     <Compile Include="Converters\OrBooleanToVisibilityMultiConverter.cs" />
     <Compile Include="Listeners\EarlyPackageLoadHackToolWindow.cs" />
+    <Compile Include="State\TextEditor.cs" />
     <Compile Include="VsShell\VsSelectionTracker.cs" />
     <Compile Include="Overlay\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">

@@ -1,16 +1,17 @@
-﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabsManagerToolWindowControl"
-                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-                              xmlns:local="clr-namespace:TabsManagerExtension"
-                              xmlns:localHelpers="clr-namespace:Helpers"
-                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                              x:Name="__TabsManagerToolWindowControl"
-                              Background="#1F1F1F"
-                              Foreground="#d4d4d4"
-                              >
+﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabsManagerToolWindowControl"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__TabsManagerToolWindowControl"
+                         Background="#1F1F1F"
+                         Foreground="#d4d4d4"
+                         >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -40,7 +41,7 @@
                             <ControlTemplate.Triggers>
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static helpers:GlobalFlags.Metadata}}" Value="True" />
                                     </MultiDataTrigger.Conditions>
                                     <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentBrush}" />
                                 </MultiDataTrigger>
@@ -99,12 +100,9 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    
-    
+
+
     <Grid>
-        <Grid.Resources>
-            <localHelpers:BindingProxy x:Key="TabsManagerToolWindowControlProxy2" Data="{Binding ElementName=__TabsManagerToolWindowControl}" />
-        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="*" />
@@ -130,7 +128,7 @@
             <!-- MAIN LAYOUT -->
             <ItemsControl ItemsSource="{Binding SortedTabItemsGroups}">
                 <ItemsControl.Resources>
-                    <DataTemplate DataType="{x:Type local:TabItemsPreviewGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsPreviewGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -145,7 +143,7 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:TabItemsPinnedGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsPinnedGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -160,7 +158,7 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:TabItemsDefaultGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsDefaultGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -175,7 +173,7 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:SeparatorTabItemsGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:SeparatorTabItemsGroup}">
                         <Separator Margin="0,10"/>
                     </DataTemplate>
                 </ItemsControl.Resources>
@@ -200,4 +198,4 @@
         <!-- Перехватчик фокуса при клике на контрол -->
         <Border x:Name="FocusStealer" Focusable="True" Width="0" Height="0" />
     </Grid>
-</localHelpers:BaseUserControl>
+</helpers:BaseUserControl>

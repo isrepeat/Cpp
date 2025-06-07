@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.State.Document {
     public class ShellProject {
         public EnvDTE.Project Project { get; private set; }
         private EnvDTE80.DTE2 _dte;

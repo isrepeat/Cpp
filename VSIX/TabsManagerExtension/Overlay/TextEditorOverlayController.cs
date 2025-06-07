@@ -6,7 +6,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 
-namespace TabsManagerExtension.Overlay {
+namespace TabsManagerExtension.Overlay.TextEditor {
 
     /// <summary>
     /// Отвечает за управление жизненным циклом визуального оверлея (`TextEditorOverlayControl`),
@@ -27,6 +27,31 @@ namespace TabsManagerExtension.Overlay {
         public TextEditorOverlayController(EnvDTE80.DTE2 dte) {
             _dte = dte;
         }
+
+
+        public void Show() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.EnsureCreated();
+        }
+
+        public void Hide() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.EnsureDisposed();
+        }
+
+        public void Update() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (_overlayManager == null || !_overlayManager.IsAttached) {
+                return;
+            }
+
+            var textEditorOverlayControl = _overlayManager.Overlay;
+            if (textEditorOverlayControl != null) {
+                textEditorOverlayControl.LoadAnchorsFromActiveDocument();
+            }
+        }
+
+
 
         /// <summary>
         /// Обновляет состояние оверлея:

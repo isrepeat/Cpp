@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using System.Windows.Threading;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell.TextEditor {
     /// <summary>
     /// Управляет фокусом и режимом редактирования активного текстового редактора.
     /// </summary>

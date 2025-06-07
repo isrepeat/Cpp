@@ -1,25 +1,26 @@
-﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TextEditorOverlayControl"
-                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:local="clr-namespace:TabsManagerExtension"
-                              xmlns:localHelpers="clr-namespace:Helpers"
-                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                              x:Name="__TextEditorOverlayControl"
-                              VerticalAlignment="Top"
-                              HorizontalAlignment="Left"
-                              >
+﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TextEditorOverlayControl"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__TextEditorOverlayControl"
+                         VerticalAlignment="Top"
+                         HorizontalAlignment="Left"
+                         >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
-            <Style x:Key="CustomBorderStyle" TargetType="Border">
+            <!--<Style x:Key="CustomBorderStyle" TargetType="Border">
                 <Setter Property="Margin" Value="0,-2,0,0" />
                 <Setter Property="Focusable" Value="False"/>
-                <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}" />
                 <Setter Property="BorderThickness" Value="0,2,0,0" />
                 <Setter Property="IsHitTestVisible" Value="False" />
@@ -28,16 +29,143 @@
                 <Style.Triggers>
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
-                            <Condition Binding="{Binding [TextEditor], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
-                            <Condition Binding="{Binding [TabsManagerControl], Source={x:Static localHelpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                            <Condition Binding="{Binding [TextEditor], Source={x:Static Helpers:FocusWatcher.FocusMetadata}}" Value="False" />
+                            <Condition Binding="{Binding [TabsManagerControl], Source={x:Static Helpers:FocusWatcher.FocusMetadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentNonActiveLowBrush}" />
                     </MultiDataTrigger>
                 </Style.Triggers>
+            </Style>-->
+
+
+            <Style x:Key="AnchorContainerStyle" TargetType="Grid">
+                <Setter Property="Width" Value="auto"/>
+                <Setter Property="Margin" Value="0,30,30,0"/>
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
+
+
+            <Style x:Key="AnchorToggleButtonStyle" TargetType="ToggleButton">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="Width" Value="28"/>
+                <Setter Property="Height" Value="28"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Background" Value="#2D2D30"/>
+                <Setter Property="Foreground" Value="#CCCCCC"/>
+                <Setter Property="BorderBrush" Value="#444"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+                <Setter Property="ToolTip" Value="Show anchors"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="2">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#3E3E42"/>
+                                    <Setter Property="BorderBrush" Value="#666"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Background" Value="#007ACC"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="BorderBrush" Value="#1E1E1E"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
+
+            <Style x:Key="AnchorListBoxStyle" TargetType="ListBox">
+                <Setter Property="Background" Value="#1E1E1E"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+            </Style>
+
+            <Style x:Key="AnchorListBoxItemStyle" TargetType="ListBoxItem">
+                <Setter Property="Foreground" Value="#CCCCCC"/>
+                <Setter Property="Padding" Value="4,2"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontFamily" Value="Consolas"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Border x:Name="Bd" Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Left"
+                                      VerticalAlignment="Center"
+                                      Margin="4,0"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#2A2D2E"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#007ACC"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
         </ResourceDictionary>
     </UserControl.Resources>
-    
-    <Border Style="{StaticResource CustomBorderStyle}">
-    </Border>
-</localHelpers:BaseUserControl>
+
+
+    <Grid Width="auto">
+        <Grid Style="{StaticResource AnchorContainerStyle}">
+            <Border BorderThickness="1"
+                    BorderBrush="#00ffffff"
+                    >
+                <Grid>
+                    <ToggleButton Style="{StaticResource AnchorToggleButtonStyle}"
+                                  Command="{Binding OnToggleAnchorListCommand}"
+                                  IsChecked="{Binding IsAnchorListVisible, Mode=OneWay}"
+                                  Content="📌"
+                                  />
+                    <Border Background="White"
+                            Visibility="{Binding IsAnchorListVisible.Visibility}"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right"
+                            Margin="0,35,5,0"
+                            >
+                        <ListBox Style="{StaticResource AnchorListBoxStyle}"
+                                 ItemContainerStyle="{StaticResource AnchorListBoxItemStyle}"
+                                 ItemsSource="{Binding Anchors}"   
+                                 SelectedItem="{Binding SelectedAnchor, Mode=TwoWay}"
+                                 >
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+                                        <TextBlock Text=" (line " />
+                                        <TextBlock Text="{Binding LineNumber}" />
+                                        <TextBlock Text=")" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+</helpers:BaseUserControl>

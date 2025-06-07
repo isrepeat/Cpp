@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using System.Collections.Generic;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell.TextEditor {
     [Export(typeof(IWpfTextViewCreationListener))]
     [ContentType("any")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
