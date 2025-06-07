@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)MarkupExtensions\" />
