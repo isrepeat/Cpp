@@ -28,9 +28,9 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="MenuItem">
                             <Border x:Name="_Border"
-                         Padding="{TemplateBinding Padding}"
-                         Background="{TemplateBinding Background}"
-                         >
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="{TemplateBinding Background}"
+                                    >
                                 <ContentPresenter ContentSource="Header" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -85,7 +85,6 @@
                                   Header="{Binding Header}"
                                   Command="{Binding Command}"
                                   CommandParameter="{Binding CommandParameterContext, ElementName=__MenuControl}"
-                                  Focusable="False"
                                   />
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type localHelpers:MenuItemSeparator}">

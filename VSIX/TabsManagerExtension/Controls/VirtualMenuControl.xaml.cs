@@ -94,9 +94,8 @@ namespace TabsManagerExtension.Controls {
             this.pendingDataContext = dataContext;
 
             if (this.showTimer == null) {
-                this.showTimer = new DispatcherTimer {
-                    Interval = TimeSpan.FromMilliseconds(300)
-                };
+                this.showTimer = new DispatcherTimer(DispatcherPriority.Render);
+                this.showTimer.Interval = TimeSpan.FromMilliseconds(700);
 
                 this.showTimer.Tick += (s, e) => {
                     this.showTimer.Stop();
@@ -120,10 +119,8 @@ namespace TabsManagerExtension.Controls {
             this.CancelShowTimer(); // отменяем отложенный показ, если ещё не отработал
 
             if (this.hideTimer == null) {
-                this.hideTimer = new DispatcherTimer {
-                    Interval = TimeSpan.FromMilliseconds(300)
-                };
-
+                this.hideTimer = new DispatcherTimer(DispatcherPriority.Render);
+                this.hideTimer.Interval = TimeSpan.FromMilliseconds(700);
                 this.hideTimer.Tick += (s, e) => {
                     this.hideTimer.Stop();
 

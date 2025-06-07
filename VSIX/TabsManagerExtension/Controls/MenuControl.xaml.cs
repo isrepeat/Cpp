@@ -7,18 +7,6 @@ using System.Windows.Controls.Primitives;
 
 namespace TabsManagerExtension.Controls {
     public partial class MenuControl : Helpers.BaseUserControl {
-        public event EventHandler MouseEnteredPopup;
-        public event EventHandler MouseLeftPopup;
-
-        public class ContextMenuOpenRequest {
-            public object DataContext { get; set; } = default!;
-            public bool ShouldOpen { get; set; } = true;
-        }
-
-        public MenuControl() {
-            this.InitializeComponent();
-        }
-
         public ObservableCollection<Helpers.IMenuItem> MenuItems {
             get => (ObservableCollection<Helpers.IMenuItem>)this.GetValue(MenuItemsProperty);
             set => this.SetValue(MenuItemsProperty, value);
@@ -71,6 +59,28 @@ namespace TabsManagerExtension.Controls {
                 new PropertyMetadata(null));
 
 
+
+        public class ContextMenuOpenRequest {
+            public object DataContext { get; set; } = default!;
+            public bool ShouldOpen { get; set; } = true;
+        }
+
+        public event EventHandler MouseEnteredPopup;
+        public event EventHandler MouseLeftPopup;
+
+        public MenuControl() {
+            this.InitializeComponent();
+            this.MouseLeftButtonDown += this.OnBlockMouseBubbling;
+            this.MouseLeftButtonUp += this.OnBlockMouseBubbling;
+            this.MouseRightButtonDown += this.OnBlockMouseBubbling;
+            this.MouseRightButtonUp += this.OnBlockMouseBubbling;
+        }
+
+        private void OnBlockMouseBubbling(object sender, MouseButtonEventArgs e) {
+            e.Handled = true;
+        }
+
+
         public void ShowMenu(PlacementMode placementMode, bool isStaysOpen, Point? screenPosition = null) {
             if (this.OpenCommand != null && this.OpenCommand.CanExecute(null)) {
                 var request = new MenuControl.ContextMenuOpenRequest {
@@ -116,12 +126,6 @@ namespace TabsManagerExtension.Controls {
             this.MenuPopup.VerticalOffset = screenPosition.Y;
         }
 
-        //public void RefreshDataContext(object newContext) {
-        //    this.DataContext = newContext;
-        //    if (this.MenuPopup.Child is FrameworkElement fe) {
-        //        fe.DataContext = newContext;
-        //    }
-        //}
 
 
         private void MenuPopup_Closed(object sender, System.EventArgs e) {

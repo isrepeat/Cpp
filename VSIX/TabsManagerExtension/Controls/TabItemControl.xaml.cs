@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using Helpers.Ex;
 
 namespace TabsManagerExtension.Controls {
     public partial class TabItemControl : Helpers.BaseUserControl {
@@ -82,7 +83,7 @@ namespace TabsManagerExtension.Controls {
             this.Loaded += this.OnLoaded;
             this.MouseEnter += this.OnMouseEnter;
             this.MouseLeave += this.OnMouseLeave;
-            this.MouseRightButtonUp += this.OnMouseRightButtonUp;
+            this.MouseRightButtonUp += this.OnMouseRightButtonUpHandler;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
@@ -96,7 +97,9 @@ namespace TabsManagerExtension.Controls {
         private void OnMouseLeave(object sender, MouseEventArgs e) {
             this.IsMouseInside = false;
         }
-        private void OnMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
+
+        private void OnMouseRightButtonUpHandler(object sender, MouseButtonEventArgs e) {
+            Helpers.Diagnostic.Logger.LogDebug($"  TabItemControl.OnMouseRightButtonUpHandler()");
             MenuControl? menuControl = null;
 
             if (_cachedWeakMenuControl?.TryGetTarget(out var cachedMenuControl) == true) {
@@ -107,12 +110,12 @@ namespace TabsManagerExtension.Controls {
             }
 
             if (menuControl != null) {
-                menuControl.ShowMenu(PlacementMode.MousePoint, isStaysOpen: false);
+                var mouseScreenPoint = this.ex_ToDpiAwareScreen(e.GetPosition(this));
+                menuControl.ShowMenu(PlacementMode.Absolute, isStaysOpen: false, mouseScreenPoint);
             }
 
             e.Handled = true;
         }
-
 
         private MenuControl FindAndCacheMenuControl() {
             var menuControl = Helpers.VisualTree.FindChildByType<MenuControl>(this.ContextMenuContentPresenter);
