@@ -33,23 +33,31 @@ namespace Helpers {
         Bottom = 200
     }
 
+    public enum ItemInsertMode {
+        Default,                    // обычное поведение: любое количество элементов
+        Single,                     // разрешён только один элемент — остальные игнорируются
+        SingleWithReplaceExisting   // разрешён только один — при добавлении предыдущий удаляется
+    }
+
     /// <summary>
     /// Представляет группу элементов с определённым приоритетом и сортировкой внутри группы.
     /// </summary>
     public class PriorityGroup<T> {
-        public Func<T, bool> Predicate { get; set; }
-        public IComparer<T> Comparer { get; set; }
         public ItemPosition Position {
             get => (ItemPosition)this.Priority;
             set => this.Priority = (int)value;
         }
+        public ItemInsertMode InsertMode { get; set; }
+        public Func<T, bool> Predicate { get; set; }
+        public IComparer<T> Comparer { get; set; }
 
         internal int Priority { get; private set; }
 
         public PriorityGroup() {
+            this.Position = ItemPosition.Middle;
+            this.InsertMode = ItemInsertMode.Default;
             this.Predicate = _ => false;
             this.Comparer = Comparer<T>.Default;
-            this.Position = ItemPosition.Middle;
         }
     }
 
@@ -84,8 +92,31 @@ namespace Helpers {
         /// Добавляет элемент в коллекцию с учётом приоритетной группы и сортировки.
         /// </summary>
         public new void Add(T item) {
+            var itemGroup = this.GetPriorityGroup(item);
+
+            switch (itemGroup.InsertMode) {
+                case ItemInsertMode.Single:
+                case ItemInsertMode.SingleWithReplaceExisting:
+                    var existing = this.FirstOrDefault(existingItem => itemGroup.Predicate(existingItem));
+
+                    if (existing != null) {
+                        if (itemGroup.InsertMode == ItemInsertMode.SingleWithReplaceExisting) {
+                            base.Remove(existing); // заменяем
+                        }
+                        else {
+                            return; // игнорируем вставку
+                        }
+                    }
+                    break;
+            }
+
             int index = this.GetInsertIndex(item);
             base.Insert(index, item);
+        }
+
+        [Obsolete("Direct Insert is not supported in SortedObservableCollection. Use Add() instead.", true)]
+        public new void Insert(int index, T item) {
+            throw new InvalidOperationException("Use of Insert is not allowed. Use Add() for sorted insertion.");
         }
 
         /// <summary>
