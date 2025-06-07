@@ -4,15 +4,24 @@
                                xmlns:local="clr-namespace:WpfTestApp"
                                xmlns:localHelpers="clr-namespace:Helpers"
                                xmlns:localControls="clr-namespace:WpfTestApp.Controls"
+                               xmlns:localConverters="clr-namespace:WpfTestApp.Converters"
                                x:Name="__FirstContainerControl"
+                               MouseEnter="OnMouseEnter"
+                               MouseLeave="OnMouseLeave"
                                >
     <UserControl.Resources>
+        <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True" />
+        <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <DataTemplate x:Key="ControlPanelTemplateFirst">
             <Button Content="•" Width="20" Height="20" />
         </DataTemplate>
     </UserControl.Resources>
     
     <StackPanel Orientation="Horizontal">
-        <ContentPresenter Content="{Binding ControlPanelContent, ElementName=__FirstContainerControl}" />
+        <TextBlock Text="Hello" />
+        <ContentPresenter Content="{Binding ControlPanelContent, ElementName=__FirstContainerControl}"
+                          Visibility="{Binding IsControlPanelVisible.Value, ElementName=__FirstContainerControl, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          />
     </StackPanel>
 </localHelpers:BaseUserControl>

@@ -28,7 +28,7 @@
                                            Text="Text:"
                                            />
                                 <ContentPresenter Content="{Binding}" 
-                                                  ContentTemplate="{Binding HostControl.ControlPanelTemplateSecond2, RelativeSource={RelativeSource AncestorType=localHelpers:BaseUserControl}}"
+                                                  ContentTemplate="{Binding HostControl.ControlPanelButtonsPrimarySlotTemplate, RelativeSource={RelativeSource AncestorType=localHelpers:BaseUserControl}}"
                                                   />
                                                   <!--ContentTemplate="{localHelpers:FromNearControl HostControl.ControlPanelTemplateSecond}"-->
                             </StackPanel>

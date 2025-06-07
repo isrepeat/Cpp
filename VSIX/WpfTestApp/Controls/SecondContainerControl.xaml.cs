@@ -11,6 +11,19 @@ namespace WpfTestApp.Controls {
         public DataTemplate ControlPanelTemplateSecond => (DataTemplate)this.Resources["ControlPanelTemplateSecond"];
         public DataTemplate ControlPanelTemplateSecond2 => (DataTemplate)this.Resources["ControlPanelTemplateSecond2"];
 
+        public DataTemplate ControlPanelButtonsPrimarySlotTemplate {
+            get => (DataTemplate)GetValue(ControlPanelButtonsPrimarySlotTemplateProperty);
+            set => SetValue(ControlPanelButtonsPrimarySlotTemplateProperty, value);
+        }
+        public static readonly DependencyProperty ControlPanelButtonsPrimarySlotTemplateProperty =
+            DependencyProperty.Register(
+                nameof(ControlPanelButtonsPrimarySlotTemplate),
+                typeof(DataTemplate),
+                typeof(SecondContainerControl),
+                new PropertyMetadata(null)
+            );
+
+
         public SecondContainerControl() {
             InitializeComponent();
             this.DataContext = this;

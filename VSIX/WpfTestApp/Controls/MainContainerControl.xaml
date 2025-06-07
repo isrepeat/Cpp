@@ -14,5 +14,23 @@
 
     <localControls:SecondContainerControl 
         HostControl="{Binding ElementName=__MainContainerControl}"
+        ControlPanelButtonsPrimarySlotTemplate="{StaticResource ControlPanelTemplateMain}"
         />
+
+    <!--<ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Margin="5"
+                        Text="Main:"
+                        />
+                    <localControls:SecondContainerControl 
+                        HostControl="{Binding ElementName=__MainContainerControl}"
+                        ControlPanelButtonsPrimarySlotTemplate="{StaticResource ControlPanelTemplateMain}"
+                        />
+                </StackPanel>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>-->
+
 </localHelpers:BaseUserControl>

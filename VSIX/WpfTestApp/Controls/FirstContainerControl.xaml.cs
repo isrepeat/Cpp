@@ -1,5 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace WpfTestApp.Controls {
     public partial class FirstContainerControl : Helpers.BaseUserControl {
@@ -16,10 +20,27 @@ namespace WpfTestApp.Controls {
                 new PropertyMetadata(null));
 
 
+        private Helpers.VisibilityProperty _isControlPanelVisible = new();
+        public Helpers.VisibilityProperty IsControlPanelVisible {
+            get { return _isControlPanelVisible; }
+            set {
+                if (_isControlPanelVisible != value) {
+                    _isControlPanelVisible = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public DataTemplate ControlPanelTemplateFirst => (DataTemplate)this.Resources["ControlPanelTemplateFirst"];
 
         public FirstContainerControl() {
-            InitializeComponent();
+            this.InitializeComponent();
+        }
+        private void OnMouseEnter(object sender, MouseEventArgs e) {
+            this.IsControlPanelVisible.Value = true;
+        }
+
+        private void OnMouseLeave(object sender, MouseEventArgs e) {
+            this.IsControlPanelVisible.Value = false;
         }
     }
 }
