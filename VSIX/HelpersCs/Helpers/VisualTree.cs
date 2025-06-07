@@ -167,7 +167,17 @@ namespace Helpers {
                 var current = startingElement;
 
                 while (current != null) {
-                    if (current is Control ctrl && ctrl.Focusable && ctrl.IsEnabled) {
+                    // Любой UIElement с фокусом или с поддержкой ввода
+                    if (current is UIElement uiElement) {
+                        // Control уже покрыт (Control наследуется от UIElement),
+                        // но также сюда попадёт TextBlock и т.п.
+                        if (uiElement.Focusable && uiElement.IsEnabled) {
+                            return true;
+                        }
+                    }
+
+                    // Иногда ContentElement не является UIElement'ом (например, Run)
+                    if (current is ContentElement contentElement && contentElement.Focusable) {
                         return true;
                     }
 
