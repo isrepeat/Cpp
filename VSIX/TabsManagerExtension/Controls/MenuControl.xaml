@@ -1,11 +1,13 @@
-﻿<UserControl x:Class="TabsManagerExtension.Controls.MenuControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TabsManagerExtension"
-             xmlns:localHelpers="clr-namespace:Helpers"
-             xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-             x:Name="RootControl"
-             >
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.MenuControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__MenuControl"
+                              >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -73,13 +75,16 @@
                 CornerRadius="4"
                 MaxWidth="300"
                 >
-            <ItemsControl ItemsSource="{Binding MenuItems, ElementName=RootControl}">
+            <ItemsControl ItemsSource="{Binding MenuItems, ElementName=__MenuControl}">
                 <ItemsControl.Resources>
-                    <DataTemplate DataType="{x:Type localHelpers:MenuItemDefault}">
+                    <DataTemplate DataType="{x:Type localHelpers:MenuItemHeader}">
+                        <TextBlock Text="{Binding Header}" />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type localHelpers:MenuItemCommand}">
                         <MenuItem Style="{StaticResource CustomMenuItemStyle}"
                                   Header="{Binding Header}"
                                   Command="{Binding Command}"
-                                  CommandParameter="{Binding CommandParameterContext, ElementName=RootControl}"
+                                  CommandParameter="{Binding CommandParameterContext, ElementName=__MenuControl}"
                                   Focusable="False"
                                   />
                     </DataTemplate>
@@ -90,4 +95,4 @@
             </ItemsControl>
         </Border>
     </Popup>
-</UserControl>
+</localHelpers:BaseUserControl>

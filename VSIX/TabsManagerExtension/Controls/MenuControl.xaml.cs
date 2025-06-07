@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Controls.Primitives;
 
 namespace TabsManagerExtension.Controls {
-    public partial class MenuControl : UserControl {
+    public partial class MenuControl : Helpers.BaseUserControl {
         public event EventHandler MouseEnteredPopup;
         public event EventHandler MouseLeftPopup;
 

@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Input;
 using System.Windows.Threading;
+using System.Collections.ObjectModel;
 
 namespace TabsManagerExtension.Controls {
-    public partial class VirtualMenuControl : UserControl {
+    public partial class VirtualMenuControl : Helpers.BaseUserControl {
         public ObservableCollection<Helpers.IMenuItem> VirtualMenuItems {
             get { return (ObservableCollection<Helpers.IMenuItem>)this.GetValue(VirtualMenuItemsProperty); }
             set { this.SetValue(VirtualMenuItemsProperty, value); }

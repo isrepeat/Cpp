@@ -18,8 +18,6 @@ namespace TabsManagerExtension {
 
         public static event Action<string> OnTextEditorDocumentChanged;
 
-        private static string _lastHandledFilePath;
-
 
         public void TextViewCreated(IWpfTextView textView) {
             textView.GotAggregateFocus += (sender, e) => {
@@ -31,28 +29,6 @@ namespace TabsManagerExtension {
                 //Helpers.Diagnostic.Logger.LogDebug($"FocusLost [TextEditor]");
                 Helpers.FocusWatcher.NotifyFocusLost("TextEditor");
             };
-
-            //// WARNING: not always triggered when document changed.
-            //textView.LayoutChanged += (sender, e) => {
-            //    if (!TextDocumentFactoryService.TryGetTextDocument(textView.TextBuffer, out var doc)) {
-            //        return;
-            //    }
-
-            //    string filePath = doc.FilePath;
-
-            //    if (string.IsNullOrEmpty(filePath) ||
-            //        string.Equals(filePath, _lastHandledFilePath, StringComparison.OrdinalIgnoreCase)) {
-            //        return;
-            //    }
-
-            //    _lastHandledFilePath = filePath;
-
-            //    // Асинхронный вызов, чтобы не мешать редактору
-            //    ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-            //        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            //        OnTextEditorDocumentChanged?.Invoke(filePath);
-            //    });
-            //};
         }
     }
 }

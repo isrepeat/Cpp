@@ -6,8 +6,8 @@ using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
-namespace TabsManagerExtension {
-    public partial class TestTabsControl : UserControl {
+namespace TabsManagerExtension.Controls {
+    public partial class TestTabsControl : Helpers.BaseUserControl {
         //private TextEditorFrameActivationTracker? _textEditorFrameActivationTracker;
         public TestTabsControl() {
             this.InitializeComponent();

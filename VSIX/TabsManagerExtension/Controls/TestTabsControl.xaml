@@ -1,9 +1,15 @@
-﻿<UserControl x:Class="TabsManagerExtension.TestTabsControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Background="LightGray"
-             PreviewMouseDown="UserControl_PreviewMouseDown"
-             >
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TestTabsControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__TestTabsControl"
+                              Background="LightGray"
+                              PreviewMouseDown="UserControl_PreviewMouseDown"
+                              >
     <StackPanel Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Button Content="🔒 Блокировать редактор" Width="200" Height="40" Click="OnLockEditorClick"/>
         <Button Content="🔓 Разблокировать редактор" Width="200" Height="40" Click="OnUnlockEditorClick"/>
@@ -12,4 +18,4 @@
         <!-- Перехватчик фокуса при клике на контрол -->
         <Border x:Name="FocusStealer" Focusable="True" Width="0" Height="0" />
     </StackPanel>
-</UserControl>
+</localHelpers:BaseUserControl>

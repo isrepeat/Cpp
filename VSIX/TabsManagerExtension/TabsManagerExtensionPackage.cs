@@ -21,6 +21,12 @@ using Task = System.Threading.Tasks.Task;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio;
 
+#if NET_FRAMEWORK_472
+namespace System.Runtime.CompilerServices {
+    internal static class IsExternalInit { } // need for "init" keyword
+}
+#endif
+
 
 namespace TabsManagerExtension {
 
@@ -59,7 +65,7 @@ namespace TabsManagerExtension {
 
         public static bool IsCustomTabsInjected {
             get {
-                return _tabHostDecorator?.Child is TabsManagerToolWindowControl;
+                return _tabHostDecorator?.Child is Controls.TabsManagerToolWindowControl;
             }
         }
 
@@ -89,8 +95,8 @@ namespace TabsManagerExtension {
                     _tabHostDecorator = decorator;
                 }
 
-                //decorator.Child = new TestTabsControl();
-                decorator.Child = new TabsManagerToolWindowControl();
+                //decorator.Child = new ControlsTestTabsControl();
+                decorator.Child = new Controls.TabsManagerToolWindowControl();
 
                 _timer?.Stop();
                 _timer = null;
