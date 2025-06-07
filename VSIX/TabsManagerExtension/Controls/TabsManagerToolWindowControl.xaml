@@ -1,26 +1,21 @@
-﻿<UserControl x:Class="TabsManagerExtension.TabsManagerToolWindowControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-             xmlns:local="clr-namespace:TabsManagerExtension"
-             xmlns:localHelpers="clr-namespace:Helpers"
-             xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-             xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-             xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-             Background="#1F1F1F"
-             Foreground="#d4d4d4"
-             mc:Ignorable="d"
-             >
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabsManagerToolWindowControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__TabsManagerToolWindowControl"
+                              Background="#1F1F1F"
+                              Foreground="#d4d4d4"
+                              >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml"/>
+                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
-            <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <Style x:Key="CustomScaleSelectorControlStyle" TargetType="localControls:ScaleSelectorControl">
                 <Setter Property="BorderThickness" Value="0"/>
@@ -45,7 +40,7 @@
                             <ControlTemplate.Triggers>
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                                     </MultiDataTrigger.Conditions>
                                     <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentBrush}" />
                                 </MultiDataTrigger>
@@ -54,10 +49,62 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+
+
+            <!-- Шаблоны кнопок -->
+            <DataTemplate x:Key="CloseButton_PrimarySlotTemplate">
+                <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                        Content="✖"
+                        MouseEnter="InteractiveArea_MouseEnter"
+                        MouseLeave="InteractiveArea_MouseLeave"
+                        Command="{Binding OnCloseTabItemCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                        CommandParameter="{Binding}"
+                        />
+            </DataTemplate>
+            <DataTemplate x:Key="PinButton_SecondarySlotTemplate">
+                <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                        Content="&#xE718;"
+                        ToolTip="Pin tab"
+                        FontFamily="Segoe MDL2 Assets"
+                        Command="{Binding OnPinTabItemCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                        CommandParameter="{Binding}"
+                        />
+            </DataTemplate>
+            <DataTemplate x:Key="UnpinButton_SecondarySlotTemplate">
+                <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                        Content="&#xE77A;"
+                        ToolTip="Unpin tab"
+                        FontFamily="Segoe MDL2 Assets"
+                        Command="{Binding OnUnpinTabItemCommand, RelativeSource={RelativeSource AncestorType={x:Type localControls:TabsManagerToolWindowControl}}}"
+                        CommandParameter="{Binding}" 
+                        />
+            </DataTemplate>
+            <DataTemplate x:Key="PreviewButton_SecondarySlotTemplate">
+                <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
+                        Content="📂"
+                        Command="{Binding OnKeepOpenedTabItemCommand, RelativeSource={RelativeSource AncestorType={x:Type localControls:TabsManagerToolWindowControl}}}"
+                        CommandParameter="{Binding}"
+                        />
+            </DataTemplate>
+
+            <DataTemplate x:Key="Default_ContextMenuTemplate">
+                <localControls:MenuControl 
+                    MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    OpenCommand="{Binding OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    CommandParameterContext="{Binding}" />
+            </DataTemplate>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
+    
+    
     <Grid>
+        <Grid.Resources>
+            <localHelpers:BindingProxy x:Key="TabsManagerToolWindowControlProxy2" Data="{Binding ElementName=__TabsManagerToolWindowControl}" />
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="*" />
@@ -77,117 +124,80 @@
                 <ScaleTransform x:Name="DocumentScaleTransform" ScaleX="1.0" ScaleY="1.0" />
             </Grid.LayoutTransform>
 
-            <localControls:ItemsControlEx Items="{Binding SortedTabItemGroups}">
-                <localControls:ItemsControlEx.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <TextBlock FontSize="12"
-                                       FontWeight="Normal"
-                                       Foreground="#aaaaaa"
-                                       Text="{Binding GroupName}"
-                                       />
-                            <ListView Style="{StaticResource CustomListViewStyle}"
-                                      ItemsSource="{Binding Items}"
-                                      ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
-                                      >
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <localControls:TabItemControl 
-                                            Title="{Binding Caption}"
-                                            IsActive="{Binding IsSelected}"
-                                            IsSelected="{Binding IsSelected, Mode=TwoWay}"
-                                            >
-                                            <localControls:TabItemControl.ControlPanelContent>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                            Content="📂"
-                                                            Click="KeepTabOpen_Click"
-                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                            />
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                            Content="📌"
-                                                            Click="PinTab_Click"
-                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            Visibility="{Binding IsPreviewTab, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-                                                            />
-                                                    <Button Style="{StaticResource DarkPopupButtonStyle2}"
-                                                            Content="✖"
-                                                            MouseEnter="InteractiveArea_MouseEnter"
-                                                            MouseLeave="InteractiveArea_MouseLeave"
-                                                            Click="CloseTab_Click"
-                                                            CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                                            />
-                                                </StackPanel>
-                                            </localControls:TabItemControl.ControlPanelContent>
-                                        </localControls:TabItemControl>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
+            <!-- TEST LAYOUT -->
+            <!-- ... -->
 
-                            <Separator Margin="0,10"
-                                       Visibility="{Binding IsPreviewGroup, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                       />
-
-                            <Border Background="Transparent" Height="5"></Border>
-                        </StackPanel>
+            <!-- MAIN LAYOUT -->
+            <ItemsControl ItemsSource="{Binding SortedTabItemsGroups}">
+                <ItemsControl.Resources>
+                    <DataTemplate DataType="{x:Type local:TabItemsPreviewGroup}">
+                        <localControls:TabItemsGroupControl>
+                            <localControls:TabItemsGroupControl.TabItemTemplate>
+                                <DataTemplate>
+                                    <localControls:TabItemControl
+                                        Title="{Binding Caption}"
+                                        IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                        ContextMenuTemplate="{StaticResource Default_ContextMenuTemplate}" 
+                                        ControlPanelPrimarySlotTemplate="{StaticResource CloseButton_PrimarySlotTemplate}"
+                                        ControlPanelSecondarySlotTemplate="{StaticResource PreviewButton_SecondarySlotTemplate}"
+                                        />
+                                </DataTemplate>
+                            </localControls:TabItemsGroupControl.TabItemTemplate>
+                        </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                </localControls:ItemsControlEx.ItemTemplate>
-            </localControls:ItemsControlEx>
+                    <DataTemplate DataType="{x:Type local:TabItemsPinnedGroup}">
+                        <localControls:TabItemsGroupControl>
+                            <localControls:TabItemsGroupControl.TabItemTemplate>
+                                <DataTemplate>
+                                    <localControls:TabItemControl
+                                        Title="{Binding Caption}"
+                                        IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                        ContextMenuTemplate="{StaticResource Default_ContextMenuTemplate}" 
+                                        ControlPanelPrimarySlotTemplate="{StaticResource CloseButton_PrimarySlotTemplate}"
+                                        ControlPanelSecondarySlotTemplate="{StaticResource UnpinButton_SecondarySlotTemplate}"
+                                        />
+                                </DataTemplate>
+                            </localControls:TabItemsGroupControl.TabItemTemplate>
+                        </localControls:TabItemsGroupControl>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type local:TabItemsDefaultGroup}">
+                        <localControls:TabItemsGroupControl>
+                            <localControls:TabItemsGroupControl.TabItemTemplate>
+                                <DataTemplate>
+                                    <localControls:TabItemControl
+                                        Title="{Binding Caption}"
+                                        IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                                        ContextMenuTemplate="{StaticResource Default_ContextMenuTemplate}" 
+                                        ControlPanelPrimarySlotTemplate="{StaticResource CloseButton_PrimarySlotTemplate}"
+                                        ControlPanelSecondarySlotTemplate="{StaticResource PinButton_SecondarySlotTemplate}"
+                                        />
+                                </DataTemplate>
+                            </localControls:TabItemsGroupControl.TabItemTemplate>
+                        </localControls:TabItemsGroupControl>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type local:SeparatorTabItemsGroup}">
+                        <Separator Margin="0,10"/>
+                    </DataTemplate>
+                </ItemsControl.Resources>
+            </ItemsControl>
         </Grid>
+
 
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="2"
                                             Style="{StaticResource CustomScaleSelectorControlStyle}"
-                                            ScaleFactor="{Binding ScaleFactor, Mode=TwoWay}" 
+                                            ScaleFactor="{Binding DataContext.ScaleFactor, Mode=TwoWay}" 
                                             ScaleChanged="ScaleSelectorControl_ScaleChanged" 
                                             />
 
-
-        <!-- VirtualPopupControl с настраиваемым контентом -->
-        <localControls:VirtualPopupControl x:Name="MyVirtualPopup">
-            <localControls:VirtualPopupControl.PopupContent>
-                <StackPanel>
-                    <TextBlock Padding="10,0,10,0"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="#dddddd"
-                               Text="{Binding Caption}"
-                               />
-                    <Border Padding="10,0,10,5">
-                        <StackPanel>
-                            <Separator Margin="0,5,0,2"/>
-                            <TextBlock FontSize="12"
-                                       FontWeight="Normal"
-                                       Text="Main actions"/>
-                        </StackPanel>
-                    </Border>
-                    <Button Style="{StaticResource DarkPopupButtonStyle}" Content="📂 Open location"/>
-
-                    <Border Padding="10,0,10,5">
-                        <StackPanel>
-                            <Separator Margin="0,5,0,2"/>
-                            <TextBlock FontSize="12"
-                                       FontWeight="Normal"
-                                       Text="Related projects"/>
-                        </StackPanel>
-                    </Border>
-                    <ListView ItemsSource="{Binding ProjectReferenceList}" 
-                             Style="{StaticResource CustomListViewStyle}"
-                             ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
-                             Background="Transparent" 
-                             BorderThickness="0">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Button Content="{Binding TabItemProject.Caption}" 
-                                        Style="{StaticResource DarkPopupButtonStyle}"
-                                        CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Self}}"
-                                        Click="ProjectMenuItem_Click" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
-            </localControls:VirtualPopupControl.PopupContent>
-        </localControls:VirtualPopupControl>
+        <!-- VirtualMenuControl с настраиваемым контентом -->
+        <localControls:VirtualMenuControl x:Name="VirtualMenuControl"
+                                          VirtualMenuItems="{Binding VirtualMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                                          OnVirtualMenuOpenCommand="{Binding OnTabItemVirtualMenuOpenCommand,RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                                          OnVirtualMenuClosedCommand="{Binding OnTabItemVirtualMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                                          />
+        
+        <!-- Перехватчик фокуса при клике на контрол -->
+        <Border x:Name="FocusStealer" Focusable="True" Width="0" Height="0" />
     </Grid>
-</UserControl>
+</localHelpers:BaseUserControl>

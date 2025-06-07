@@ -1,0 +1,36 @@
+﻿<localHelpers:BaseUserControl x:Class="WpfTestApp.Controls.MainContainerControl"
+                               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:local="clr-namespace:WpfTestApp"
+                               xmlns:localHelpers="clr-namespace:Helpers"
+                               xmlns:localControls="clr-namespace:WpfTestApp.Controls"
+                               x:Name="__MainContainerControl"
+                               >
+    <UserControl.Resources>
+        <DataTemplate x:Key="ControlPanelTemplateMain">
+            <Button Content="7" Width="20" Height="20" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <localControls:SecondContainerControl 
+        HostControl="{Binding ElementName=__MainContainerControl}"
+        ControlPanelButtonsPrimarySlotTemplate="{StaticResource ControlPanelTemplateMain}"
+        />
+
+    <!--<ItemsControl ItemsSource="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Margin="5"
+                        Text="Main:"
+                        />
+                    <localControls:SecondContainerControl 
+                        HostControl="{Binding ElementName=__MainContainerControl}"
+                        ControlPanelButtonsPrimarySlotTemplate="{StaticResource ControlPanelTemplateMain}"
+                        />
+                </StackPanel>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>-->
+
+</localHelpers:BaseUserControl>

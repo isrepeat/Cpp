@@ -6,8 +6,9 @@
 	  <XamlsDir>Xamls</XamlsDir>
 
 	  <!-- Здесь выбирается нужное окно -->
-	  <!--<SelectedMainWindow>MainWindow_ListBoxBehaviour</SelectedMainWindow>-->
-	  <SelectedMainWindow>MainWindow_SelectionViewModel</SelectedMainWindow>
+	  <!--<SelectedMainWindow>MainWindow_1_ListBoxBehaviour</SelectedMainWindow>-->
+	  <!--<SelectedMainWindow>MainWindow_2_SelectionViewModel</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_3_MarkupExtensions</SelectedMainWindow>
   </PropertyGroup>
 
 

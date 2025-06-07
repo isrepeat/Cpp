@@ -9,11 +9,18 @@
     <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\ToggleOnMouseDownBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\AdornerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\GlobalFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Graphics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BindingProxy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MenuItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RelayCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collection.cs" />
@@ -21,5 +28,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)MarkupExtensions\" />
   </ItemGroup>
 </Project>

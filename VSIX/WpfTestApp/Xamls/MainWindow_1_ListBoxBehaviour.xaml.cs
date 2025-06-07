@@ -607,7 +607,7 @@ namespace WpfTestApp {
 
 
 
-    public partial class MainWindow_ListBoxBehaviour : Window, INotifyPropertyChanged {
+    public partial class MainWindow_1_ListBoxBehaviour : Window, INotifyPropertyChanged {
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<GroupModel> Groups { get; }
@@ -617,7 +617,7 @@ namespace WpfTestApp {
             get => _groupsSelectionCoordinator.SelectionState.ToString();
         }
 
-        public MainWindow_ListBoxBehaviour() {
+        public MainWindow_1_ListBoxBehaviour() {
             InitializeComponent();
 
             Groups = new ObservableCollection<GroupModel> {

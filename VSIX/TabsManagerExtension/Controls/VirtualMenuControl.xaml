@@ -1,0 +1,18 @@
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.VirtualMenuControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__VirtualMenuControl"
+                              Width="200"
+                              >
+    <localControls:MenuControl 
+        x:Name="VirtualMenu"
+        MenuItems="{Binding VirtualMenuItems, ElementName=__VirtualMenuControl}"
+        OpenCommand="{Binding OnVirtualMenuOpenCommand, ElementName=__VirtualMenuControl}"
+        CloseCommand="{Binding OnVirtualMenuClosedCommand, ElementName=__VirtualMenuControl}"
+        />
+</localHelpers:BaseUserControl>

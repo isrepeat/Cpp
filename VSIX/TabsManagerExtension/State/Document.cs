@@ -1,5 +1,4 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio;
+﻿using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -194,16 +193,21 @@ namespace TabsManagerExtension {
         }
 
         public bool IsTabWindow() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (this.Window == null) {
+            return IsTabWindow(this.Window);
+        }
+        public static bool IsTabWindow(EnvDTE.Window window) {
+            if (window == null) {
                 return false;
             }
 
             // Во вкладках редактора окна имеют Linkable == false, tool windows — true.
-            return !this.Window.Linkable;
+            return !window.Linkable;
         }
 
+
+        public string GetWindowId() {
+            return GetWindowId(this.Window);
+        }
         public static string GetWindowId(EnvDTE.Window window) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -216,9 +220,6 @@ namespace TabsManagerExtension {
                 Helpers.Diagnostic.Logger.LogError($"GetWindowId(ObjectKind) failed: {ex.Message}");
                 return string.Empty;
             }
-        }
-        public string GetWindowId() {
-            return GetWindowId(this.Window);
         }
     }
 
@@ -256,6 +257,17 @@ namespace TabsManagerExtension {
             set {
                 if (_isPreviewTab != value) {
                     _isPreviewTab = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isPinnedTab = false;
+        public bool IsPinnedTab {
+            get => _isPinnedTab;
+            set {
+                if (_isPinnedTab != value) {
+                    _isPinnedTab = value;
                     OnPropertyChanged();
                 }
             }
@@ -382,32 +394,50 @@ namespace TabsManagerExtension {
     }
 
 
-    public class TabItemsGroup : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
-        private string _groupName;
-        public string GroupName {
-            get => _groupName;
-            set {
-                if (_groupName != value) {
-                    _groupName = value;
-                    OnPropertyChanged();
 
-                    this.IsPreviewGroup = _groupName == "__Preview__";
-                }
-            }
-        }
+    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+        public string GroupName { get; }
 
-        private bool _isPreviewGroup = false;
-        public bool IsPreviewGroup {
-            get => _isPreviewGroup;
-            private set {
-                if (_isPreviewGroup != value) {
-                    _isPreviewGroup = value;
-                    OnPropertyChanged();
-                }
-            }
+        public Helpers.SortedObservableCollection<TabItemBase> Items { get; }
+
+        public Helpers.IMetadata Metadata { get; } = new Helpers.FlaggableMetadata();
+
+        protected TabItemsGroupBase(string groupName) {
+            this.GroupName = groupName;
+
+            var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) =>
+                string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
+
+            this.Items = new Helpers.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
+            this.Items.CollectionChanged += (s, e) => {
+                OnPropertyChanged(nameof(this.GroupName));
+            };
         }
-        public Helpers.SortedObservableCollection<TabItemBase> Items { get; } = new Helpers.SortedObservableCollection<TabItemBase> {
-            Comparer = Comparer<TabItemBase>.Create((a, b) => string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase))
-        };
+    }
+
+
+    public class TabItemsPreviewGroup : TabItemsGroupBase {
+        public TabItemsPreviewGroup() : base("__Preview__") {
+            this.Metadata.SetFlag("IsPreviewGroup", true);
+        }
+    }
+
+    public class TabItemsPinnedGroup : TabItemsGroupBase {
+        public TabItemsPinnedGroup(string groupName) : base(groupName) {
+            this.Metadata.SetFlag("IsPinnedGroup", true);
+        }
+    }
+
+    public class TabItemsDefaultGroup : TabItemsGroupBase {
+        public TabItemsDefaultGroup(string groupName) : base(groupName) {
+        }
+    }
+
+    public class SeparatorTabItemsGroup : TabItemsGroupBase {
+        public string Key { get; }
+        public SeparatorTabItemsGroup(string key) : base(string.Empty) {
+            this.Key = key;
+            this.Metadata.SetFlag("IsSeparator", true);
+        }
     }
 }

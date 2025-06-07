@@ -1,0 +1,98 @@
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.MenuControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__MenuControl"
+                              >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
+            <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+            <Style x:Key="CustomMenuItemStyle" TargetType="MenuItem">
+                <Setter Property="Foreground" Value="#ffffff" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Padding" Value="10,5" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Cursor" Value="Arrow" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="_Border"
+                         Padding="{TemplateBinding Padding}"
+                         Background="{TemplateBinding Background}"
+                         >
+                                <ContentPresenter ContentSource="Header" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="_Border" Property="Background" Value="#2D2D2D" />
+                                    <Setter Property="Foreground" Value="#33BFFF" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="CustomSeparatorStyle" TargetType="Separator">
+                <Setter Property="Margin" Value="5,2" />
+                <Setter Property="Height" Value="1" />
+                <Setter Property="Background" Value="#666" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Separator">
+                            <Rectangle Fill="{TemplateBinding Background}"
+                                       Height="{TemplateBinding Height}"
+                            />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+
+    <Popup x:Name="MenuPopup"
+           Closed="MenuPopup_Closed"
+           MouseEnter="MenuPopup_MouseEnter"
+           MouseLeave="MenuPopup_MouseLeave"
+           PopupAnimation="Fade"
+           AllowsTransparency="True"
+           >
+        <Border x:Name="_Border"
+                Background="#333"
+                Padding="5"
+                CornerRadius="4"
+                MaxWidth="300"
+                >
+            <ItemsControl ItemsSource="{Binding MenuItems, ElementName=__MenuControl}">
+                <ItemsControl.Resources>
+                    <DataTemplate DataType="{x:Type localHelpers:MenuItemHeader}">
+                        <TextBlock Text="{Binding Header}" />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type localHelpers:MenuItemCommand}">
+                        <MenuItem Style="{StaticResource CustomMenuItemStyle}"
+                                  Header="{Binding Header}"
+                                  Command="{Binding Command}"
+                                  CommandParameter="{Binding CommandParameterContext, ElementName=__MenuControl}"
+                                  Focusable="False"
+                                  />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type localHelpers:MenuItemSeparator}">
+                        <Separator Style="{StaticResource CustomSeparatorStyle}" />
+                    </DataTemplate>
+                </ItemsControl.Resources>
+            </ItemsControl>
+        </Border>
+    </Popup>
+</localHelpers:BaseUserControl>

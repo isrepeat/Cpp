@@ -1,0 +1,43 @@
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabItemsGroupControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__TabItemsGroupControl"
+                              >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/StyleResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <!-- Заголовок группы -->
+        <TextBlock FontSize="12"
+                   FontWeight="Normal"
+                   Foreground="#aaaaaa"
+                   Text="{Binding GroupName}"
+                   />
+
+        <!-- Список вкладок -->
+        <ListView ItemsSource="{Binding Items}"
+                  Style="{StaticResource CustomListViewStyle}"
+                  ItemContainerStyle="{StaticResource CustomListViewItemStyle}"
+                  >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ContentPresenter Content="{Binding}"
+                                      ContentTemplate="{Binding TabItemTemplate, RelativeSource={RelativeSource AncestorType=localControls:TabItemsGroupControl}}"
+                                      />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Border Background="Transparent" Height="5" />
+    </StackPanel>
+</localHelpers:BaseUserControl>

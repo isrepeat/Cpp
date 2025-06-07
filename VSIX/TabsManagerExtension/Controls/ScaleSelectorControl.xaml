@@ -1,14 +1,13 @@
-﻿<UserControl x:Class="TabsManagerExtension.Controls.ScaleSelectorControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:TabsManagerExtension"
-             xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-             xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-             mc:Ignorable="d"
-             d:DesignHeight="30" d:DesignWidth="150"
-             >
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.ScaleSelectorControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__ScaleSelectorControl"
+                              >
     <UserControl.Resources>
         <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
         <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -148,4 +147,4 @@
             <ComboBoxItem Content="400%" Tag="4.0" />
         </ComboBox>
     </StackPanel>
-</UserControl>
+</localHelpers:BaseUserControl>

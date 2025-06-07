@@ -3,6 +3,7 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -17,6 +18,7 @@
     <AssemblyName>TabsManagerExtension</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -51,17 +53,38 @@
        Visual Studio do not load them correctly because of caching may be.
   -->
   <PropertyGroup>
+    <!-- Убираем префикс 'v' -->
+    <!--<VersionStr>$([System.String]::Copy($(TargetFrameworkVersion).Substring(1)))</VersionStr>-->
+    <VersionStr>$([System.String]::Copy($(TargetFrameworkVersion.Replace('v', ''))))</VersionStr>
+    <!-- Убираем точки -->
+    <VersionDigits>$([System.String]::Copy($(VersionStr.Replace('.', ''))))</VersionDigits>
+    <!-- Формируем финальный символ -->
+    <FrameworkDefineSymbol>NET_FRAMEWORK_$(VersionDigits)</FrameworkDefineSymbol>
     <DefineConstants>
       $(DefineConstants);
-      __REPLACE_SRC_TABS;
+      $(FrameworkDefineSymbol);
     </DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controls\MenuControl.xaml.cs">
+      <DependentUpon>MenuControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TestTabsControl.xaml.cs">
+      <DependentUpon>TestTabsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TabItemsGroupControl.xaml.cs">
+      <DependentUpon>TabItemsGroupControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\OrBooleanToVisibilityMultiConverter.cs" />
+    <Compile Include="Listeners\EarlyPackageLoadHackToolWindow.cs" />
+    <Compile Include="VsShell\VsSelectionTracker.cs" />
     <Compile Include="Overlay\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
       <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Listeners\TextViewFocusListener.cs" />
+    <Compile Include="VsShell\TextEditor\DocumentActivationTracker.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorFocusTracker.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorControlHelper.cs" />
     <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
       <DependentUpon>TabsManagerToolWindowControl.xaml</DependentUpon>
     </Compile>
@@ -71,16 +94,14 @@
     <Compile Include="Controls\TabItemControl.xaml.cs">
       <DependentUpon>TabItemControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\VirtualPopupControl.xaml.cs">
-      <DependentUpon>VirtualPopupControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ItemsControlEx.xaml.cs">
-      <DependentUpon>ItemsControlEx.xaml</DependentUpon>
+    <Compile Include="Controls\VirtualMenuControl.xaml.cs">
+      <DependentUpon>VirtualMenuControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
     <Compile Include="Behaviours\ListBoxSelectedItemsBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="State\Constants.cs" />
     <Compile Include="State\Document.cs" />
     <Compile Include="TabsManagerExtensionPackage.cs" />
     <Compile Include="TabsManagerToolWindow.cs" />
@@ -129,11 +150,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\VirtualPopupControl.xaml">
+    <Page Include="Controls\MenuControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ItemsControlEx.xaml">
+    <Page Include="Controls\TestTabsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TabItemsGroupControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\VirtualMenuControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

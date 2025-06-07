@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 namespace TabsManagerExtension.Controls {
-    public partial class ScaleSelectorControl : UserControl {
+    public partial class ScaleSelectorControl : Helpers.BaseUserControl {
         public static readonly DependencyProperty ScaleFactorProperty =
             DependencyProperty.Register(
                 nameof(ScaleFactor),

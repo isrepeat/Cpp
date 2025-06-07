@@ -1,36 +1,27 @@
-﻿<UserControl x:Class="TabsManagerExtension.Controls.TabItemControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-             xmlns:local="clr-namespace:TabsManagerExtension"
-             xmlns:localHelpers="clr-namespace:Helpers"
-             xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-             x:Name="RootControl"
-             >
+﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabItemControl"
+                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                              xmlns:local="clr-namespace:TabsManagerExtension"
+                              xmlns:localHelpers="clr-namespace:Helpers"
+                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                              x:Name="__TabItemControl"
+                              >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-        
-            <Style TargetType="localControls:TabItemControl">
-                <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="ControlPanelVisibility" Value="Visible"/>
-                    </Trigger>
-                    <Trigger Property="IsMouseOver" Value="False">
-                        <Setter Property="ControlPanelVisibility" Value="Collapsed"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-        
+
 
             <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
                 <Setter Property="Focusable" Value="False"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
                 <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="Height" Value="30" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="CheckBox">
@@ -38,7 +29,8 @@
                                 Обязательно задаём Background, иначе Padding не ловит клики.
                                 Без этого CheckBox не реагирует на нажатия вне текста.
                             -->
-                            <Border Padding="5, 5"
+                            <Border Padding="5,0,0,0"
+                                    Margin="0,0,5,0"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="1"
@@ -62,7 +54,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Background" Value="{StaticResource AppSelectedBrush}" />
                         <Setter Property="BorderBrush" Value="{StaticResource AppSelectedBrush}" />
@@ -71,7 +63,7 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsSelected}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Background" Value="{StaticResource AppSelectedNonActiveBrush}" />
                         <Setter Property="BorderBrush" Value="{StaticResource AppSelectedNonActiveBrush}" />
@@ -79,8 +71,16 @@
 
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Metadata[IsCtxMenuOpenned]}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}" />
                     </MultiDataTrigger>
@@ -88,44 +88,89 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Metadata[IsActive]}" Value="True"/>
-                            <Condition Binding="{Binding [TextEditorOrTabsManagerControlFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
+                            <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="False" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="{StaticResource AppAccentNonActiveMiddleBrush}" />
                     </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
+
+
+            <Style x:Key="ControlPanelStyle" TargetType="Grid">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsPinnedTab}" Value="False"/>
+                            <Condition Binding="{Binding IsMouseInside, ElementName=__TabItemControl}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+
+
+            <Style x:Key="ControlPanelPrimarySlotTemplateStyle" TargetType="ContentPresenter">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsPinnedTab}" Value="True"/>
+                            <Condition Binding="{Binding IsMouseInside, ElementName=__TabItemControl}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Hidden" />
+                    </MultiDataTrigger>
+
+                    <!--<DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>-->
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
 
-    <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
-              IsChecked="{Binding IsSelected, ElementName=RootControl, Mode=TwoWay}"
-              >
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+    <Grid>
+        <CheckBox Style="{StaticResource SelectableCheckBoxContainerStyle}"
+                  IsChecked="{Binding IsSelected, ElementName=__TabItemControl, Mode=TwoWay}"
+                  >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <TextBlock x:Name="TitleTextBlock"
-                        Grid.Column="0"
-                        Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
-                        FontSize="12"
-                        Margin="5,0,5,0"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        TextTrimming="CharacterEllipsis"
-                        Text="{Binding Title, ElementName=RootControl}" 
-                        />
-            <Grid x:Name="ControlPanel"
-                    Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Visibility="{Binding ControlPanelVisibility, ElementName=RootControl}"
-                    >
-                <StackPanel Orientation="Horizontal">
-                    <ContentPresenter Content="{Binding ControlPanelContent, ElementName=RootControl}"/>
-                </StackPanel>
+                <TextBlock Grid.Column="0"
+                           Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
+                           FontSize="12"
+                           Margin="5,0,5,0"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding Title, ElementName=__TabItemControl}" 
+                           />
+                <Grid Style="{StaticResource ControlPanelStyle}"
+                      Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      >
+                    <StackPanel Orientation="Horizontal">
+                        <ContentPresenter Content="{Binding}" 
+                                          ContentTemplate="{Binding ControlPanelSecondarySlotTemplate, ElementName=__TabItemControl}"
+                                          />
+                        <ContentPresenter Style="{StaticResource ControlPanelPrimarySlotTemplateStyle}"
+                                          Content="{Binding}" 
+                                          ContentTemplate="{Binding ControlPanelPrimarySlotTemplate, ElementName=__TabItemControl}"
+                                          />
+                    </StackPanel>
+                </Grid>
             </Grid>
-        </Grid>
-    </CheckBox>
-</UserControl>
+        </CheckBox>
+
+        <!-- Контекстное меню -->
+        <ContentPresenter x:Name="ContextMenuContentPresenter"
+                          Content="{Binding}" 
+                          ContentTemplate="{Binding ContextMenuTemplate, ElementName=__TabItemControl}"
+                          />
+    </Grid>
+</localHelpers:BaseUserControl>
