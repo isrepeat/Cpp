@@ -261,6 +261,17 @@ namespace TabsManagerExtension {
                 }
             }
         }
+
+        private bool _isPinnedTab = false;
+        public bool IsPinnedTab {
+            get => _isPinnedTab;
+            set {
+                if (_isPinnedTab != value) {
+                    _isPinnedTab = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
     }
 
     public interface IActivatableTab {
@@ -383,35 +394,48 @@ namespace TabsManagerExtension {
     }
 
 
-    public class TabItemsGroup : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
-        private string _groupName;
-        public string GroupName {
-            get => _groupName;
-            set {
-                if (_groupName != value) {
-                    _groupName = value;
-                    OnPropertyChanged();
 
-                    this.IsPreviewGroup = _groupName == "__Preview__";
-                }
-            }
-        }
+    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+        public string GroupName { get; }
 
-        private bool _isPreviewGroup = false;
-        public bool IsPreviewGroup {
-            get => _isPreviewGroup;
-            private set {
-                if (_isPreviewGroup != value) {
-                    _isPreviewGroup = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
         public Helpers.SortedObservableCollection<TabItemBase> Items { get; }
 
-        public TabItemsGroup() {
-            var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) => string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
+        public Helpers.IMetadata Metadata { get; } = new Helpers.FlaggableMetadata();
+
+        protected TabItemsGroupBase(string groupName) {
+            this.GroupName = groupName;
+
+            var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) =>
+                string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
+
             this.Items = new Helpers.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
+            this.Items.CollectionChanged += (s, e) => {
+                OnPropertyChanged(nameof(this.GroupName));
+            };
+        }
+    }
+
+
+    public class TabItemsPreviewGroup : TabItemsGroupBase {
+        public TabItemsPreviewGroup() : base("__Preview__") {
+            this.Metadata.SetFlag("IsPreviewGroup", true);
+        }
+    }
+
+    public class TabItemsPinnedGroup : TabItemsGroupBase {
+        public TabItemsPinnedGroup(string groupName) : base(groupName) {
+            this.Metadata.SetFlag("IsPinnedGroup", true);
+        }
+    }
+
+    public class TabItemsDefaultGroup : TabItemsGroupBase {
+        public TabItemsDefaultGroup(string groupName) : base(groupName) {
+        }
+    }
+
+    public class SeparatorTabItemsGroup : TabItemsGroupBase {
+        private SeparatorTabItemsGroup() : base(string.Empty) {
+            this.Metadata.SetFlag("IsSeparator", true);
         }
     }
 }

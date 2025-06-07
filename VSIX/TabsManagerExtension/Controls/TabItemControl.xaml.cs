@@ -1,22 +1,15 @@
-﻿using Helpers.Ex;
-using System;
-using System.Collections.ObjectModel;
+﻿using System;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Input;
 
 namespace TabsManagerExtension.Controls {
-    public partial class TabItemControl : UserControl {
-        public TabItemControl() {
-            this.InitializeComponent();
-        }
-
+    public partial class TabItemControl : Helpers.BaseUserControl {
         public string Title {
             get { return (string)this.GetValue(TitleProperty); }
             set { this.SetValue(TitleProperty, value); }
         }
-
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(
                 nameof(Title),
@@ -29,7 +22,6 @@ namespace TabsManagerExtension.Controls {
             get { return (bool)this.GetValue(IsSelectedProperty); }
             set { this.SetValue(IsSelectedProperty, value); }
         }
-
         public static readonly DependencyProperty IsSelectedProperty =
             DependencyProperty.Register(
                 nameof(IsSelected),
@@ -38,76 +30,97 @@ namespace TabsManagerExtension.Controls {
                 new PropertyMetadata(false));
 
 
-        public object ControlPanelContent {
-            get { return this.GetValue(ControlPanelContentProperty); }
-            set { this.SetValue(ControlPanelContentProperty, value); }
+        public DataTemplate ControlPanelPrimarySlotTemplate {
+            get => (DataTemplate)this.GetValue(ControlPanelPrimarySlotTemplateProperty);
+            set => this.SetValue(ControlPanelPrimarySlotTemplateProperty, value);
         }
-
-        public static readonly DependencyProperty ControlPanelContentProperty =
-            DependencyProperty.Register(
-                nameof(ControlPanelContent),
-                typeof(object),
+        public static readonly DependencyProperty ControlPanelPrimarySlotTemplateProperty =
+            DependencyProperty.Register(nameof(ControlPanelPrimarySlotTemplate),
+                typeof(DataTemplate),
                 typeof(TabItemControl),
                 new PropertyMetadata(null));
 
 
-        public Visibility ControlPanelVisibility {
-            get { return (Visibility)this.GetValue(ControlPanelVisibilityProperty); }
-            set { this.SetValue(ControlPanelVisibilityProperty, value); }
+        public DataTemplate ControlPanelSecondarySlotTemplate {
+            get => (DataTemplate)this.GetValue(ControlPanelSecondarySlotTemplateProperty);
+            set => this.SetValue(ControlPanelSecondarySlotTemplateProperty, value);
         }
-
-        public static readonly DependencyProperty ControlPanelVisibilityProperty =
-            DependencyProperty.Register(
-                nameof(ControlPanelVisibility),
-                typeof(Visibility),
-                typeof(TabItemControl),
-                new PropertyMetadata(Visibility.Collapsed));
-
-
-        public ObservableCollection<Helpers.IMenuItem> ContextMenuItems {
-            get { return (ObservableCollection<Helpers.IMenuItem>)this.GetValue(ContextMenuItemsProperty); }
-            set { this.SetValue(ContextMenuItemsProperty, value); }
-        }
-
-        public static readonly DependencyProperty ContextMenuItemsProperty =
-            DependencyProperty.Register(
-                nameof(ContextMenuItems),
-                typeof(ObservableCollection<Helpers.IMenuItem>),
+        public static readonly DependencyProperty ControlPanelSecondarySlotTemplateProperty =
+            DependencyProperty.Register(nameof(ControlPanelSecondarySlotTemplate),
+                typeof(DataTemplate),
                 typeof(TabItemControl),
                 new PropertyMetadata(null));
 
 
-        public ICommand OnContextMenuOpenCommand {
-            get => (ICommand)this.GetValue(OnContextMenuOpenCommandProperty);
-            set => this.SetValue(OnContextMenuOpenCommandProperty, value);
+        public DataTemplate ContextMenuTemplate {
+            get => (DataTemplate)this.GetValue(ContextMenuTemplateProperty);
+            set => this.SetValue(ContextMenuTemplateProperty, value);
         }
-
-        public static readonly DependencyProperty OnContextMenuOpenCommandProperty =
-            DependencyProperty.Register(
-                nameof(OnContextMenuOpenCommand),
-                typeof(ICommand),
+        public static readonly DependencyProperty ContextMenuTemplateProperty =
+            DependencyProperty.Register(nameof(ContextMenuTemplate),
+                typeof(DataTemplate),
                 typeof(TabItemControl),
                 new PropertyMetadata(null));
 
 
-        public ICommand OnContextMenuClosedCommand {
-            get => (ICommand)this.GetValue(OnContextMenuClosedCommandProperty);
-            set => this.SetValue(OnContextMenuClosedCommandProperty, value);
+        private bool _isMouseInside = false;
+        public bool IsMouseInside {
+            get { return _isMouseInside; }
+            set {
+                if (_isMouseInside != value) {
+                    _isMouseInside = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        public static readonly DependencyProperty OnContextMenuClosedCommandProperty =
-            DependencyProperty.Register(
-                nameof(OnContextMenuClosedCommand),
-                typeof(ICommand),
-                typeof(TabItemControl),
-                new PropertyMetadata(null));
 
+        private WeakReference<MenuControl>? _cachedWeakMenuControl;
 
-        private void RootControl_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {
-            //Point mouseScreenPoint = this.ToDpiAwareScreen(e.GetPosition(this));
-            //this.ContextMenu.ShowMenu(new Point{ }); 
-            this.ContextMenu.ShowMenu(PlacementMode.MousePoint, isStaysOpen: false); 
+        public TabItemControl() {
+            this.InitializeComponent();
+            this.Loaded += this.OnLoaded;
+            this.MouseEnter += this.OnMouseEnter;
+            this.MouseLeave += this.OnMouseLeave;
+            this.MouseRightButtonUp += this.OnMouseRightButtonUp;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e) {
+            this.FindAndCacheMenuControl();
+        }
+
+        private void OnMouseEnter(object sender, MouseEventArgs e) {
+            this.IsMouseInside = true;
+        }
+
+        private void OnMouseLeave(object sender, MouseEventArgs e) {
+            this.IsMouseInside = false;
+        }
+        private void OnMouseRightButtonUp(object sender, MouseButtonEventArgs e) {
+            MenuControl? menuControl = null;
+
+            if (_cachedWeakMenuControl?.TryGetTarget(out var cachedMenuControl) == true) {
+                menuControl = cachedMenuControl;
+            }
+            else {
+                menuControl = this.FindAndCacheMenuControl();
+            }
+
+            if (menuControl != null) {
+                menuControl.ShowMenu(PlacementMode.MousePoint, isStaysOpen: false);
+            }
+
             e.Handled = true;
+        }
+
+
+        private MenuControl FindAndCacheMenuControl() {
+            var menuControl = Helpers.VisualTree.FindChildByType<MenuControl>(this.ContextMenuContentPresenter);
+            if (menuControl == null) {
+                throw new InvalidOperationException("ContextMenuTemplate must produce a MenuControl.");
+            }
+            _cachedWeakMenuControl = new WeakReference<MenuControl>(menuControl);
+            return menuControl;
         }
     }
 }

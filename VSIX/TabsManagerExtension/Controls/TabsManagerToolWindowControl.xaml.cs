@@ -23,8 +23,8 @@ using Task = System.Threading.Tasks.Task;
 using Helpers.Ex;
 
 
-namespace TabsManagerExtension {
-    public partial class TabsManagerToolWindowControl : UserControl, INotifyPropertyChanged {
+namespace TabsManagerExtension.Controls {
+    public partial class TabsManagerToolWindowControl : Helpers.BaseUserControl, INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
 
         // Properties:
@@ -40,12 +40,12 @@ namespace TabsManagerExtension {
             }
         }
 
-        private Helpers.SortedObservableCollection<TabItemsGroup> _sortedTabItemGroups;
-        public Helpers.SortedObservableCollection<TabItemsGroup> SortedTabItemGroups {
-            get => _sortedTabItemGroups;
+        private Helpers.SortedObservableCollection<TabItemsGroupBase> _sortedTabItemsGroups;
+        public Helpers.SortedObservableCollection<TabItemsGroupBase> SortedTabItemsGroups {
+            get => _sortedTabItemsGroups;
             private set {
-                if (_sortedTabItemGroups != value) {
-                    _sortedTabItemGroups = value;
+                if (_sortedTabItemsGroups != value) {
+                    _sortedTabItemsGroups = value;
                     OnPropertyChanged();
                 }
             }
@@ -84,11 +84,12 @@ namespace TabsManagerExtension {
         private FileSystemWatcher _fileWatcher;
         private VsSelectionTracker? _vsSelectionTracker;
 
-        private Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase> _tabItemsSelectionCoordinator;
+        private Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase> _tabItemsSelectionCoordinator;
 
-        public ICommand OnTabItemPinCommand { get; }
-        public ICommand OnTabItemCloseCommand { get; }
-        public ICommand OnTabItemKeepOpenedCommand { get; }
+        public ICommand OnPinTabItemCommand { get; }
+        public ICommand OnUnpinTabItemCommand { get; }
+        public ICommand OnCloseTabItemCommand { get; }
+        public ICommand OnKeepOpenedTabItemCommand { get; }
         public ICommand OnTabItemContextMenuOpenCommand { get; }
         public ICommand OnTabItemContextMenuClosedCommand { get; }
         public ICommand OnTabItemVirtualMenuOpenCommand { get; }
@@ -101,9 +102,10 @@ namespace TabsManagerExtension {
             this.PreviewMouseDown += this.OnPreviewMouseDown;
             base.DataContext = this;
 
-            this.OnTabItemPinCommand = new Helpers.RelayCommand<object>(this.OnTabItemPin);
-            this.OnTabItemCloseCommand = new Helpers.RelayCommand<object>(this.OnTabItemClose);
-            this.OnTabItemKeepOpenedCommand = new Helpers.RelayCommand<object>(this.OnTabItemKeepOpened);
+            this.OnPinTabItemCommand = new Helpers.RelayCommand<object>(this.OnPinTabItem);
+            this.OnUnpinTabItemCommand = new Helpers.RelayCommand<object>(this.OnUnpinTabItem);
+            this.OnCloseTabItemCommand = new Helpers.RelayCommand<object>(this.OnCloseTabItem);
+            this.OnKeepOpenedTabItemCommand = new Helpers.RelayCommand<object>(this.OnKeepOpenedTabItem);
 
             this.OnTabItemContextMenuOpenCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuOpen);
             this.OnTabItemContextMenuClosedCommand = new Helpers.RelayCommand<object>(this.OnTabItemContextMenuClosed);
@@ -277,20 +279,30 @@ namespace TabsManagerExtension {
         // ░ TabItemsSelectionCoordinator 
         //
         private void InitializeTabItemsSelectionCoordinator() {
-            var defaultTabItemGroupComparer = Comparer<TabItemsGroup>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
-            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroup>> {
-                new Helpers.PriorityGroup<TabItemsGroup> {
+            var defaultTabItemsGroupComparer = Comparer<TabItemsGroupBase>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
+            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroupBase>> {
+                new Helpers.PriorityGroup<TabItemsGroupBase> {
                     Position = Helpers.ItemPosition.Top,
-                    Predicate = tabItemGroup => tabItemGroup.GroupName.StartsWith("__Preview"),
-                    Comparer = defaultTabItemGroupComparer
+                    Predicate = g => g is TabItemsPreviewGroup,
+                    Comparer = defaultTabItemsGroupComparer
+                },
+                new Helpers.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.ItemPosition.Top + 1,
+                    Predicate = g => g is TabItemsPinnedGroup,
+                    Comparer = defaultTabItemsGroupComparer
+                },
+                new Helpers.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.ItemPosition.Middle,
+                    Predicate = g => g is TabItemsDefaultGroup,
+                    Comparer = defaultTabItemsGroupComparer
                 }
             };
-            this.SortedTabItemGroups = new Helpers.SortedObservableCollection<TabItemsGroup>(
-                defaultTabItemGroupComparer,
+            this.SortedTabItemsGroups = new Helpers.SortedObservableCollection<TabItemsGroupBase>(
+                defaultTabItemsGroupComparer,
                 priorityGroups
                 );
 
-            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroup, TabItemBase>(this.SortedTabItemGroups);
+            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase>(this.SortedTabItemsGroups);
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = this.OnTabItemSelectionChanged;
             _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
         }
@@ -332,7 +344,7 @@ namespace TabsManagerExtension {
                 this.AddDocumentToPreview(tabItemDocument);
             }
             else {
-                this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
+                this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemDocument);
             }
         }
 
@@ -392,7 +404,7 @@ namespace TabsManagerExtension {
                 tabItem = new TabItemWindow(activatedShellWindow);
             }
 
-            var addedOrExistTabItem = this.AddTabItemToDefaultGroupIfMissing(tabItem);
+            var addedOrExistTabItem = this.AddTabItemToAutoDeterminedGroupIfMissing(tabItem);
             addedOrExistTabItem.IsSelected = true; // Select after tabItem exist added to group.
 
             this.UpdateWindowTabsInfo();
@@ -412,7 +424,7 @@ namespace TabsManagerExtension {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // TODO: try replace with this.Unload()
-            this.SortedTabItemGroups.Clear();
+            this.SortedTabItemsGroups.Clear();
             this.UninitializeFileWatcher();
         }
         
@@ -511,7 +523,7 @@ namespace TabsManagerExtension {
         // 
         // ░ TabItemsSelectionCoordinator
         //
-        private void OnTabItemSelectionChanged(TabItemsGroup group, TabItemBase tabItem, bool isSelected) {
+        private void OnTabItemSelectionChanged(TabItemsGroupBase group, TabItemBase tabItem, bool isSelected) {
             Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
 
             if (isSelected) {
@@ -540,7 +552,7 @@ namespace TabsManagerExtension {
             // Поэтому в foreach вызывай .ToList() у коллекций.
 
             // === [A] Обновление статуса сохранения документов ===
-            foreach (var tabItemsGroup in this.SortedTabItemGroups.ToList()) {
+            foreach (var tabItemsGroup in this.SortedTabItemsGroups.ToList()) {
                 foreach (var tabItem in tabItemsGroup.Items.ToList()) {
                     var document = _dte.Documents.Cast<EnvDTE.Document>()
                         .FirstOrDefault(d => d.FullName == tabItem.FullName);
@@ -560,7 +572,7 @@ namespace TabsManagerExtension {
 
 
             // === [B] Перемещение preview-документов в основную группу ===
-            var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
+            var previewGroup = this.SortedTabItemsGroups.FirstOrDefault(g => g is TabItemsPreviewGroup);
             if (previewGroup != null) {
                 foreach (var tabItemDocument in previewGroup.Items.OfType<TabItemDocument>().ToList()) {
                     if (!tabItemDocument.ShellDocument.IsDocumentInPreviewTab()) {
@@ -586,7 +598,7 @@ namespace TabsManagerExtension {
                 Helpers.Diagnostic.Logger.LogError($"Failed to enumerate windows: {ex.Message}");
             }
 
-            foreach (var group in this.SortedTabItemGroups.ToList()) {
+            foreach (var group in this.SortedTabItemsGroups.ToList()) {
                 var toRemove = group.Items
                     .OfType<TabItemWindow>()
                     .Where(w => !openWindowIds.Contains(w.WindowId))
@@ -608,15 +620,60 @@ namespace TabsManagerExtension {
         //
         // ░ Commands
         //
-        private void AAA(object parameter) {
-        }
-        private void OnTabItemPin(object parameter) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemPin()");
+        private void OnPinTabItem(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnPinTabItem()");
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is not TabItemBase tabItem) {
+                return;
+            }
+
+            // Если вкладка уже закреплена — ничего не делаем
+            if (tabItem.IsPinnedTab) {
+                return;
+            }
+
+            // Ищем вкладку и группу, в которой она сейчас находится
+            var current = this.FindTabItemWithGroup(tabItem);
+            if (current == null) {
+                return; // Не найдена — нечего обрабатывать
+            }
+
+            var item = current.Value.Item;
+            var oldGroup = current.Value.Group;
+
+            this.RemoveTabItemFromGroup(item, oldGroup);
+            this.AddTabItemToGroupIfMissing(tabItem, new TabItemsPinnedGroup(oldGroup.GroupName));
         }
 
-        private void OnTabItemClose(object parameter) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemClose()");
+
+        private void OnUnpinTabItem(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnUnpinTabItem()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is not TabItemBase tabItem) {
+                return;
+            }
+
+            if (!tabItem.IsPinnedTab) {
+                return;
+            }
+
+            var current = this.FindTabItemWithGroup(tabItem);
+            if (current == null) {
+                return;
+            }
+
+            var item = current.Value.Item;
+            var oldGroup = current.Value.Group;
+
+            this.RemoveTabItemFromGroup(item, oldGroup);
+            this.AddTabItemToGroupIfMissing(tabItem, new TabItemsDefaultGroup(oldGroup.GroupName));
+        }
+
+
+        private void OnCloseTabItem(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnCloseTabItem()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is TabItemBase tabItem) {
@@ -637,8 +694,17 @@ namespace TabsManagerExtension {
             }
         }
 
-        private void OnTabItemKeepOpened(object parameter) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemKeepOpened()");
+        private void OnCloseSelectedTabItems(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnCloseSelectedTabItems()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is TabItemBase tabItem) {
+                this.VirtualMenuControl.HideImmediately();
+            }
+        }
+
+        private void OnKeepOpenedTabItem(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnKeepOpenedTabItem()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is TabItemBase tabItem) {
@@ -646,6 +712,32 @@ namespace TabsManagerExtension {
                     this.MoveDocumentFromPreviewToMainGroup(tabItemDocument);
                     tabItemDocument.ShellDocument.OpenDocumentAsPinned();
                 }
+            }
+        }
+
+        private void OnOpenLocationTabItem(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnOpenTabLocation()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is TabItemBase tabItem) {
+                if (tabItem is TabItemDocument tabItemDocument) {
+                    try {
+                        string filePath = tabItemDocument.FullName;
+
+                        if (System.IO.File.Exists(filePath)) {
+                            string args = $"/select,\"{filePath}\"";
+                            System.Diagnostics.Process.Start("explorer.exe", args);
+                        }
+                        else {
+                            Helpers.Diagnostic.Logger.LogWarning($"File not found: {filePath}");
+                        }
+                    }
+                    catch (Exception ex) {
+                        Helpers.Diagnostic.Logger.LogError($"Failed to open tab location: {ex.Message}");
+                    }
+                }
+
+                this.VirtualMenuControl.HideImmediately();
             }
         }
 
@@ -662,31 +754,23 @@ namespace TabsManagerExtension {
                                 tabItemDocument.Metadata.SetFlag("IsCtxMenuOpenned", true);
 
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                    new Helpers.MenuItemDefault {
+                                    new Helpers.MenuItemCommand {
                                         Header = Constants.UI.OpenTabLocation,
-                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                        Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem)
                                     },
                                     new Helpers.MenuItemSeparator(),
-                                    new Helpers.MenuItemDefault {
+                                    new Helpers.MenuItemCommand {
                                         Header = Constants.UI.CloseTab,
-                                        Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
                                     },
-                                    new Helpers.MenuItemDefault {
-                                        Header = Constants.UI.PinTab,
-                                        Command = new Helpers.RelayCommand<object>(this.AAA)
-                                    }
                                 };
                             }
                             else if (tabItem is TabItemWindow tabItemWindow) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                    new Helpers.MenuItemDefault {
+                                    new Helpers.MenuItemCommand {
                                         Header = Constants.UI.CloseTab,
-                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
                                     },
-                                    new Helpers.MenuItemDefault {
-                                        Header = Constants.UI.PinTab,
-                                        Command = new Helpers.RelayCommand<object>(this.AAA)
-                                    }
                                 };
                             }
                             break;
@@ -697,9 +781,9 @@ namespace TabsManagerExtension {
 
                             if (isTabItemAmongSelectedItems) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                                    new Helpers.MenuItemDefault {
+                                    new Helpers.MenuItemCommand {
                                         Header = Constants.UI.CloseSelectedTabs,
-                                        Command = new Helpers.RelayCommand<object>(this.AAA)
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
                                     }
                                 };
                             }
@@ -759,36 +843,22 @@ namespace TabsManagerExtension {
                 if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
                     if (tabItem is TabItemDocument tabItemDocument) {
                         this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                            new Helpers.MenuItemDefault {
+                            new Helpers.MenuItemHeader {
                                 Header = tabItem.Caption,
-                                Command = new Helpers.RelayCommand<object>(this.AAA)
                             },
                             new Helpers.MenuItemSeparator(),
-                            new Helpers.MenuItemDefault {
+                            new Helpers.MenuItemCommand {
                                 Header = Constants.UI.OpenTabLocation,
-                                Command = new Helpers.RelayCommand<object>(this.AAA)
+                                Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem)
                             },
-                            new Helpers.MenuItemDefault {
+                            new Helpers.MenuItemCommand {
                                 Header = Constants.UI.CloseTab,
-                                Command = new Helpers.RelayCommand<object>(this.OnTabItemClose)
+                                Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
                             },
-                            new Helpers.MenuItemDefault {
-                                Header = Constants.UI.PinTab,
-                                Command = new Helpers.RelayCommand<object>(this.AAA)
-                            }
                         };
                     }
                     else if (tabItem is TabItemWindow tabItemWindow) {
-                        this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
-                            new Helpers.MenuItemDefault {
-                                Header = Constants.UI.CloseTab,
-                                Command = new Helpers.RelayCommand<object>(this.AAA)
-                            },
-                            new Helpers.MenuItemDefault {
-                                Header = Constants.UI.PinTab,
-                                Command = new Helpers.RelayCommand<object>(this.AAA)
-                            }
-                        };
+                        contextMenuOpenRequest.ShouldOpen = false;
                     }
                 }
             }
@@ -834,10 +904,10 @@ namespace TabsManagerExtension {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("LoadOpenDocuments()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.SortedTabItemGroups.Clear();
+            this.SortedTabItemsGroups.Clear();
             foreach (EnvDTE.Document document in _dte.Documents) {
                 var tabItemDocument = new TabItemDocument(document);
-                this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
+                this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemDocument);
             }
 
             // NOTE: В стандартном TabsManager открытыие окна [ToolWindows] сохраняются с предыдущей сессии
@@ -855,7 +925,7 @@ namespace TabsManagerExtension {
                 }
 
                 var tabItemWindow = new TabItemWindow(shellWindow);
-                this.AddTabItemToDefaultGroupIfMissing(tabItemWindow);
+                this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemWindow);
             }
 
             this.SyncActiveDocumentWithPrimaryTabItem();
@@ -865,58 +935,63 @@ namespace TabsManagerExtension {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddDocumentToPreview()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
+            var previewGroup = this.SortedTabItemsGroups.FirstOrDefault(g => g is TabItemsPreviewGroup);
             if (previewGroup != null) {
                 this.RemoveTabItemsGroup(previewGroup);
             }
-            this.AddTabItemToGroupIfMissing(tabItemDocument, "__Preview__");
+            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
             tabItemDocument.IsPreviewTab = true;
             tabItemDocument.IsSelected = true; // Select after tabItem exist added to group.
         }
 
 
-        private TabItemBase AddTabItemToDefaultGroupIfMissing(TabItemBase tabItem) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToDefaultGroupIfMissing()");
+        private TabItemBase AddTabItemToAutoDeterminedGroupIfMissing(TabItemBase tabItem) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToAutoDeterminedGroupIfMissing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string groupName;
+            TabItemsGroupBase tabItemGroup = null;
 
             if (tabItem is TabItemDocument doc) {
-                groupName = doc.ShellDocument.GetDocumentProjectName();
+                tabItemGroup = new TabItemsDefaultGroup(doc.ShellDocument.GetDocumentProjectName());
             }
             else if (tabItem is TabItemWindow) {
-                groupName = "[Tool Windows]";
-            }
-            else if (tabItem is TabItemProject proj) {
-                groupName = proj.ShellProject.Project.Name;
+                tabItemGroup = new TabItemsDefaultGroup("[Tool Windows]");
             }
             else {
-                groupName = "Other";
+                tabItemGroup = new TabItemsDefaultGroup("Other");
             }
 
-            return this.AddTabItemToGroupIfMissing(tabItem, groupName);
+            return this.AddTabItemToGroupIfMissing(tabItem, tabItemGroup);
         }
 
-        private TabItemBase AddTabItemToGroupIfMissing(TabItemBase tabItem, string groupName) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToGroup()");
+
+        private TabItemBase AddTabItemToGroupIfMissing(TabItemBase tabItem, TabItemsGroupBase tabItemGroup) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddTabItemToGroupIfMissing()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Log params:
             Helpers.Diagnostic.Logger.LogParam($"tabItem.Caption = {tabItem?.Caption}");
-            Helpers.Diagnostic.Logger.LogParam($"groupName = {groupName}");
+            Helpers.Diagnostic.Logger.LogParam($"tabItemGroup.GroupName = {tabItemGroup?.GroupName}");
 
-            var existingItem = this.FindTabItem(tabItem);
-            if (existingItem != null) {
-                return existingItem;
+            var existingTabItem = this.FindTabItem(tabItem);
+            if (existingTabItem != null) {
+                return existingTabItem;
             }
 
-            var group = this.SortedTabItemGroups.FirstOrDefault(g => g.GroupName == groupName);
-            if (group == null) {
-                group = new TabItemsGroup { GroupName = groupName };
-                this.SortedTabItemGroups.Add(group);
+            var existingGroup = this.SortedTabItemsGroups
+                .FirstOrDefault(g => g.GetType() == tabItemGroup.GetType() && g.GroupName == tabItemGroup.GroupName);
+
+            if (existingGroup == null) {
+                this.SortedTabItemsGroups.Add(tabItemGroup);
+                existingGroup = tabItemGroup;
             }
 
-            group.Items.Add(tabItem);
+            // Изменяем флаги tabItem в зависимости от типа
+            if (tabItem is TabItemDocument doc) {
+                doc.IsPreviewTab = tabItemGroup is TabItemsPreviewGroup;
+            }
+            tabItem.IsPinnedTab = tabItemGroup is TabItemsPinnedGroup;
+
+            existingGroup.Items.Add(tabItem);
             return tabItem;
         }
 
@@ -937,11 +1012,11 @@ namespace TabsManagerExtension {
                 return;
             }
 
-            var previewGroup = this.SortedTabItemGroups.FirstOrDefault(g => g.IsPreviewGroup);
+            var previewGroup = this.SortedTabItemsGroups.FirstOrDefault(g => g is TabItemsPreviewGroup);
             if (previewGroup != null) {
                 this.RemoveTabItemsGroup(previewGroup);
             }
-            this.AddTabItemToDefaultGroupIfMissing(tabItemDocument);
+            this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemDocument);
             tabItemDocument.IsPreviewTab = false;
         }
 
@@ -954,29 +1029,31 @@ namespace TabsManagerExtension {
             Helpers.Diagnostic.Logger.LogParam($"tabItemProject.Caption = {tabItemProject?.Caption}");
 
             this.RemoveTabItemFromGroups(tabItemDocument);
-            this.AddTabItemToGroupIfMissing(tabItemDocument, tabItemProject.Caption);
-        }
-
-
-        private void RemoveTabItemsGroup(TabItemsGroup tabItemsGroup) {
-            if (this.SortedTabItemGroups.Remove(tabItemsGroup)) {
-                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemsGroup.GroupName}\"");
-            }
+            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(tabItemProject.Caption));
         }
 
         private void RemoveTabItemFromGroups(TabItemBase tabItem) {
-            foreach (var group in this.SortedTabItemGroups.ToList()) {
-                // Удаляем связанный TabItems из выбранных (если используется SelectionCoordinator и UI)
-                if (group.Items.Remove(tabItem)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
-
-                    if (!group.Items.Any()) {
-                        if (this.SortedTabItemGroups.Remove(group)) {
-                            Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{group.GroupName}\"");
-                        }
-                    }
+            foreach (var group in this.SortedTabItemsGroups.ToList()) {
+                if (group.Items.Contains(tabItem)) {
+                    this.RemoveTabItemFromGroup(tabItem, group);
                     break;
                 }
+            }
+        }
+
+        private void RemoveTabItemFromGroup(TabItemBase tabItem, TabItemsGroupBase group) {
+            if (group.Items.Remove(tabItem)) {
+                Helpers.Diagnostic.Logger.LogDebug($"Removed tab \"{tabItem.Caption}\" from group \"{group.GroupName}\"");
+
+                if (!group.Items.Any()) {
+                    this.RemoveTabItemsGroup(group);
+                }
+            }
+        }
+
+        private void RemoveTabItemsGroup(TabItemsGroupBase tabItemsGroup) {
+            if (this.SortedTabItemsGroups.Remove(tabItemsGroup)) {
+                Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemsGroup.GroupName}\"");
             }
         }
 
@@ -986,7 +1063,7 @@ namespace TabsManagerExtension {
         //
         // Обновление документа в UI после изменения или переименования
         private void UpdateDocumentUI(string oldPath, string newPath = null) {
-            foreach (var group in this.SortedTabItemGroups) {
+            foreach (var group in this.SortedTabItemsGroups) {
                 var docInfo = group.Items.FirstOrDefault(d => string.Equals(d.FullName, oldPath, StringComparison.OrdinalIgnoreCase));
                 if (docInfo != null) {
                     if (newPath == null) {
@@ -1111,7 +1188,7 @@ namespace TabsManagerExtension {
         }
 
 
-        private (TabItemDocument Item, TabItemsGroup Group)? FindTabItemWithGroup(EnvDTE.Document document) {
+        private (TabItemDocument Item, TabItemsGroupBase Group)? FindTabItemWithGroup(EnvDTE.Document document) {
             var result = this.FindTabItemWithGroup(new TabItemDocument(document));
             if (result is { Item: TabItemDocument doc, Group: var group }) {
                 return (doc, group);
@@ -1119,7 +1196,7 @@ namespace TabsManagerExtension {
             return null;
         }
 
-        private (TabItemWindow Item, TabItemsGroup Group)? FindTabItemWithGroup(EnvDTE.Window window) {
+        private (TabItemWindow Item, TabItemsGroupBase Group)? FindTabItemWithGroup(EnvDTE.Window window) {
             var result = this.FindTabItemWithGroup(new TabItemWindow(window));
             if (result is { Item: TabItemWindow win, Group: var group }) {
                 return (win, group);
@@ -1127,7 +1204,7 @@ namespace TabsManagerExtension {
             return null;
         }
 
-        private (TabItemBase Item, TabItemsGroup Group)? FindTabItemWithGroup(TabItemBase tabItem) {
+        private (TabItemBase Item, TabItemsGroupBase Group)? FindTabItemWithGroup(TabItemBase tabItem) {
             if (tabItem is TabItemWindow tabItemWindow) {
                 return this.FindTabItemWithGroupBy<TabItemWindow>(
                     w => string.Equals(w.WindowId, tabItemWindow.WindowId, StringComparison.OrdinalIgnoreCase));
@@ -1136,16 +1213,16 @@ namespace TabsManagerExtension {
                 t => string.Equals(t.FullName, tabItem.FullName, StringComparison.OrdinalIgnoreCase));
         }
 
-        private (TabItemDocument Item, TabItemsGroup Group)? FindTabItemWithGroup(string documentFullName) {
+        private (TabItemDocument Item, TabItemsGroupBase Group)? FindTabItemWithGroup(string documentFullName) {
             return this.FindTabItemWithGroupBy<TabItemDocument>(
                     d => string.Equals(d.FullName, documentFullName, StringComparison.OrdinalIgnoreCase));
         }
 
 
-        private (T Item, TabItemsGroup Group)? FindTabItemWithGroupBy<T>(Func<T, bool> predicate) where T : TabItemBase {
+        private (T Item, TabItemsGroupBase Group)? FindTabItemWithGroupBy<T>(Func<T, bool> predicate) where T : TabItemBase {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var group in this.SortedTabItemGroups) {
+            foreach (var group in this.SortedTabItemsGroups) {
                 var match = group.Items
                     .OfType<T>()
                     .FirstOrDefault(predicate);
@@ -1162,7 +1239,7 @@ namespace TabsManagerExtension {
         private void ForEachTab<T>(Action<T> action) where T : TabItemBase {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var group in this.SortedTabItemGroups) {
+            foreach (var group in this.SortedTabItemsGroups) {
                 foreach (var tabItem in group.Items.OfType<T>()) {
                     action(tabItem);
                 }
