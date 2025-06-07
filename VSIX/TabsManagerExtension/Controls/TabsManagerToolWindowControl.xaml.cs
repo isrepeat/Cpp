@@ -283,12 +283,25 @@ namespace TabsManagerExtension.Controls {
             var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroupBase>> {
                 new Helpers.PriorityGroup<TabItemsGroupBase> {
                     Position = Helpers.ItemPosition.Top,
+                    InsertMode = Helpers.ItemInsertMode.SingleWithReplaceExisting,
                     Predicate = g => g is TabItemsPreviewGroup,
                     Comparer = defaultTabItemsGroupComparer
                 },
                 new Helpers.PriorityGroup<TabItemsGroupBase> {
                     Position = Helpers.ItemPosition.Top + 1,
+                    InsertMode = Helpers.ItemInsertMode.Single,
+                    Predicate = g => g is SeparatorTabItemsGroup separator && separator.Key == "Preview-Pinned",
+                    Comparer = defaultTabItemsGroupComparer
+                },
+                new Helpers.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.ItemPosition.Top + 2,
                     Predicate = g => g is TabItemsPinnedGroup,
+                    Comparer = defaultTabItemsGroupComparer
+                },
+                new Helpers.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.ItemPosition.Top + 3,
+                    InsertMode = Helpers.ItemInsertMode.Single,
+                    Predicate = g => g is SeparatorTabItemsGroup separator && separator.Key == "Pinned-Default",
                     Comparer = defaultTabItemsGroupComparer
                 },
                 new Helpers.PriorityGroup<TabItemsGroupBase> {
@@ -904,6 +917,7 @@ namespace TabsManagerExtension.Controls {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("LoadOpenDocuments()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            this.SortedTabItemsGroups.ToList();
             this.SortedTabItemsGroups.Clear();
             foreach (EnvDTE.Document document in _dte.Documents) {
                 var tabItemDocument = new TabItemDocument(document);
@@ -931,17 +945,17 @@ namespace TabsManagerExtension.Controls {
             this.SyncActiveDocumentWithPrimaryTabItem();
         }
 
+
         private void AddDocumentToPreview(TabItemDocument tabItemDocument) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("AddDocumentToPreview()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var previewGroup = this.SortedTabItemsGroups.FirstOrDefault(g => g is TabItemsPreviewGroup);
-            if (previewGroup != null) {
-                this.RemoveTabItemsGroup(previewGroup);
-            }
+            // No need remove old because preview tab item group
+            // guarded with ItemInsertMode == SingleWithReplaceExisting.
+
             this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
             tabItemDocument.IsPreviewTab = true;
-            tabItemDocument.IsSelected = true; // Select after tabItem exist added to group.
+            tabItemDocument.IsSelected = true; // [?] Select after tabItem added to group.
         }
 
 
@@ -982,6 +996,7 @@ namespace TabsManagerExtension.Controls {
 
             if (existingGroup == null) {
                 this.SortedTabItemsGroups.Add(tabItemGroup);
+                this.UpdateSeparatorsBetweenGroups();
                 existingGroup = tabItemGroup;
             }
 
@@ -1054,7 +1069,29 @@ namespace TabsManagerExtension.Controls {
         private void RemoveTabItemsGroup(TabItemsGroupBase tabItemsGroup) {
             if (this.SortedTabItemsGroups.Remove(tabItemsGroup)) {
                 Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemsGroup.GroupName}\"");
+                this.UpdateSeparatorsBetweenGroups();
             }
+        }
+
+        private void UpdateSeparatorsBetweenGroups() {
+            // Remove existing separators
+            foreach (var sep in this.SortedTabItemsGroups.OfType<SeparatorTabItemsGroup>().ToList()) {
+                this.SortedTabItemsGroups.Remove(sep);
+            }
+
+            if (this.HasGroup<TabItemsPreviewGroup>() &&
+                (this.HasGroup<TabItemsPinnedGroup>() || this.HasGroup<TabItemsDefaultGroup>())) {
+                this.SortedTabItemsGroups.Add(new SeparatorTabItemsGroup("Preview-Pinned"));
+            }
+
+            if (this.HasGroup<TabItemsPinnedGroup>() && this.HasGroup<TabItemsDefaultGroup>()) {
+                this.SortedTabItemsGroups.Add(new SeparatorTabItemsGroup("Pinned-Default"));
+            }
+        }
+
+
+        private bool HasGroup<T>() where T : TabItemsGroupBase {
+            return this.SortedTabItemsGroups.OfType<T>().Any();
         }
 
 

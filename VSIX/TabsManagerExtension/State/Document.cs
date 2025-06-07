@@ -434,7 +434,9 @@ namespace TabsManagerExtension {
     }
 
     public class SeparatorTabItemsGroup : TabItemsGroupBase {
-        private SeparatorTabItemsGroup() : base(string.Empty) {
+        public string Key { get; }
+        public SeparatorTabItemsGroup(string key) : base(string.Empty) {
+            this.Key = key;
             this.Metadata.SetFlag("IsSeparator", true);
         }
     }
