@@ -8,7 +8,8 @@
 	  <!-- Здесь выбирается нужное окно -->
 	  <!--<SelectedMainWindow>MainWindow_1_ListBoxBehaviour</SelectedMainWindow>-->
 	  <!--<SelectedMainWindow>MainWindow_2_SelectionViewModel</SelectedMainWindow>-->
-	  <SelectedMainWindow>MainWindow_3_MarkupExtensions</SelectedMainWindow>
+	  <!--<SelectedMainWindow>MainWindow_3_MarkupExtensions</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_4_TextEditorAnchorMenu</SelectedMainWindow>
   </PropertyGroup>
 
 
