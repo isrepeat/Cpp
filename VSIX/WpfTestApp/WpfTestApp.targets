@@ -71,5 +71,21 @@
 		<Message Importance="High" Text="$(NewLine)" />
 		<Message Importance="High" Text="Compile files:"/>
 		<Message Importance="High" Text="%(Compile.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)" />
 	</Target>
+
+  
+  <Target Name="CopyRsTxtFilesToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <RsTxtFiles Include="**\*.rs.txt" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="$(NewLine)" />
+    <Message Importance="High" Text="Copy resources (.rs.txt) files to OutputDir:" />
+    <Message Importance="High" Text="%(RsTxtFiles.Identity)"/>
+    <Message Importance="High" Text="$(NewLine)" />
+    <Copy SourceFiles="@(RsTxtFiles)"
+          DestinationFolder="$(OutDir)%(RecursiveDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

@@ -14,9 +14,12 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Local = WpfTestApp.__Local;
+using WpfTestApp.__Local;
 
 namespace WpfTestApp.Controls {
     public partial class TextEditorOverlayControl : Helpers.BaseUserControl {
+        public Action<int>? OnNavigateToLine;
+
         private Helpers.VisibilityProperty _isAnchorToggleButtonVisible = new();
         public Helpers.VisibilityProperty IsAnchorToggleButtonVisible {
             get => _isAnchorToggleButtonVisible;
@@ -48,8 +51,9 @@ namespace WpfTestApp.Controls {
                 if (_selectedAnchor != value) {
                     _selectedAnchor = value;
                     this.OnPropertyChanged();
-                    if (value != null) {
-                        this.NavigateToLine(value.LineNumber);
+
+                    if (_selectedAnchor != null) {
+                        this.OnNavigateToLine?.Invoke(_selectedAnchor.LineNumber);
                     }
                 }
             }
@@ -70,7 +74,6 @@ namespace WpfTestApp.Controls {
             // IsHitTestVisible могут быть унаследованы от родителя (например, AdornerLayer),
             // поэтому значения из XAML не применяются гарантированно — устанавливаем явно в OnLoaded.
             this.IsHitTestVisible = true;
-            this.LoadAnchorsFromActiveDocument();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e) {
@@ -88,25 +91,16 @@ namespace WpfTestApp.Controls {
         }
 
 
-        public void LoadAnchorsFromActiveDocument() {
+        public void LoadAnchorsFromText(string text) {
             this.Anchors.Clear();
 
-            this.Anchors.Add(new Local.AnchorPoint("Initialization", 10, Local.Enums.AnchorLevel.Section));
-            this.Anchors.Add(new Local.AnchorPoint("Load config", 12, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Init services", 13, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Start engine", 14, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint(string.Empty, -1, Local.Enums.AnchorLevel.Separator));
+            var lines = text.Replace("\r", "").Split('\n').ToList();
+            var anchors = AnchorParser.ParseLinesWithContextWindow(lines);
+            var final = AnchorParser.InsertSeparators(anchors);
 
-            this.Anchors.Add(new Local.AnchorPoint("Event handlers", 50, Local.Enums.AnchorLevel.Section));
-            this.Anchors.Add(new Local.AnchorPoint("Attach events", 52, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Detach events", 53, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Raise events", 54, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint(string.Empty, -1, Local.Enums.AnchorLevel.Separator));
-
-            this.Anchors.Add(new Local.AnchorPoint("Internal logic", 70, Local.Enums.AnchorLevel.Section));
-            this.Anchors.Add(new Local.AnchorPoint("Diagnostics", 72, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Validation", 73, Local.Enums.AnchorLevel.Subsection));
-            this.Anchors.Add(new Local.AnchorPoint("Execution", 74, Local.Enums.AnchorLevel.Subsection));
+            foreach (var anchor in final) {
+                this.Anchors.Add(anchor);
+            }
         }
 
         private void NavigateToLine(int lineNumber) {
