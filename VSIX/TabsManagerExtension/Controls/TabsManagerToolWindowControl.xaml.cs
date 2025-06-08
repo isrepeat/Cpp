@@ -1163,11 +1163,6 @@ namespace TabsManagerExtension.Controls {
 
             var primaryTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
             if (primaryTabItem is IActivatableTab activatableTab) {
-                if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, primaryTabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate, alredy active - \"{primaryTabItem.Caption}\"");
-                    return;
-                }
-
                 Helpers.Diagnostic.Logger.LogDebug($"Activate - \"{primaryTabItem.Caption}\"");
                 activatableTab.Activate();
             }
