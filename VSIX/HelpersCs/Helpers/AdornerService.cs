@@ -20,7 +20,6 @@ namespace Helpers {
         /// <param name="childElement">UIElement, который будет наложен.</param>
         public AdornerWithChild(UIElement adornedElement, T childElement) : base(adornedElement) {
             _child = childElement;
-            _child.IsHitTestVisible = false;
             this.AddVisualChild(_child);
 
             // Обновляем позиционирование при изменении размера
