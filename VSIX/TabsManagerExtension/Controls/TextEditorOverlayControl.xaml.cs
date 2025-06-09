@@ -12,9 +12,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.Shell;
 using System.Collections.ObjectModel;
+using Microsoft.VisualStudio.Shell;
 using TabsManagerExtension.State.TextEditor;
+
 
 namespace TabsManagerExtension.Controls {
     public partial class TextEditorOverlayControl : Helpers.BaseUserControl {
@@ -68,17 +69,17 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
+            //VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.AddTrackedInputElement(this);
+
             // IsHitTestVisible могут быть унаследованы от родителя (например, AdornerLayer),
             // поэтому значения из XAML не применяются гарантированно — устанавливаем явно в OnLoaded.
             this.IsHitTestVisible = true;
 
-            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                this.LoadAnchorsFromActiveDocument();
-            });
+            this.LoadAnchorsFromActiveDocument();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e) {
+            //VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.RemoveTrackedInputElement(this);
             this.Anchors.Clear();
         }
 

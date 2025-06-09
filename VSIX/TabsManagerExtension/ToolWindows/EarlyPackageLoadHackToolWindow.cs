@@ -17,88 +17,30 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-
-namespace TabsManagerExtension {
-    public class WindowWin32Controller {
-        private readonly IntPtr _hwnd;
-        public IntPtr Hwnd => _hwnd;
-
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOW = 5;
-
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowPos(
-            IntPtr hWnd, IntPtr hWndInsertAfter,
-            int X, int Y, int cx, int cy, uint uFlags);
-
-        private const uint SWP_NOZORDER = 0x0004;
-        private const uint SWP_NOACTIVATE = 0x0010;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-
-        public WindowWin32Controller(IntPtr hwnd) {
-            _hwnd = hwnd;
-        }
-
-        public static WindowWin32Controller? TryCreateFromVsShell(IVsUIShell vsShell) {
-            vsShell.GetDialogOwnerHwnd(out IntPtr hwnd);
-            return new WindowWin32Controller(hwnd);
-        }
-        public static WindowWin32Controller? TryCreateFromToolWindow(ToolWindowPane window) {
-            if (window?.Content is Visual visual &&
-                PresentationSource.FromVisual(visual) is HwndSource source &&
-                source.Handle != IntPtr.Zero) {
-                return new WindowWin32Controller(source.Handle);
-            }
-            return null;
-        }
-
-        public static float GetSystemDpiScale() {
-            using var g = Graphics.FromHwnd(IntPtr.Zero);
-            return g.DpiX / 96f;
-        }
-
-        public void Show() {
-            ShowWindow(_hwnd, SW_SHOW);
-        }
-
-        public void Hide() {
-            ShowWindow(_hwnd, SW_HIDE);
-        }
-
-        public void SetPosition(int x, int y, int width, int height) {
-            SetWindowPos(_hwnd, IntPtr.Zero, x, y, width, height,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        }
-
-        public void SetPositionWithoutShow(int x, int y, int width, int height) {
-            SetWindowPos(_hwnd, IntPtr.Zero, x, y, width, height,
-                SWP_NOZORDER | SWP_NOACTIVATE);
-        }
-
-        public bool GetRect(out RECT rect) {
-            return GetWindowRect(_hwnd, out rect);
-        }
-    }
-
-
-
+namespace TabsManagerExtension.ToolWindows {
+    /// <summary>
+    /// Вспомогательное скрытое окно, используемое как хак для принудительной инициализации VSIX-пакета при запуске Visual Studio.
+    ///
+    /// <para>
+    /// <b>Назначение:</b><br/>
+    /// Visual Studio по умолчанию откладывает инициализацию AsyncPackage, пока пользователь явно не откроет связанный ToolWindow.
+    /// Чтобы обойти это поведение, данный класс используется как техническое окно, которое автоматически открывается при старте IDE
+    /// (через атрибуты <c>[ProvideToolWindow]</c> и <c>[ProvideAutoLoad]</c>) и сразу же скрывается.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Поведение:</b><br/>
+    /// После первого открытия Visual Studio закеширует это окно в .suo-файле и будет открывать его автоматически при последующих запусках.
+    /// Это позволяет гарантированно инициализировать VSIX-пакет ещё до загрузки решения.
+    /// Через событие <c>Loaded</c> выполняется внедрение пользовательского контрола в визуальное дерево IDE (см. <c>VsixVisualTreeHelper</c>).
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Внимание:</b><br/>
+    /// Контент окна заменён на заглушку (<c>TextBlock</c>), а само окно принудительно скрывается после инициализации.
+    /// Реализация использует Win32 API для управления положением и видимостью окна, избегая мерцания и побочных эффектов.
+    /// </para>
+    /// </summary>
     [Guid("D8D6ACF4-93A3-4B90-9633-079C00E5F97E")]
     public class EarlyPackageLoadHackToolWindow : ToolWindowPane {
         private static EarlyPackageLoadHackToolWindow? _instance;
@@ -165,7 +107,7 @@ namespace TabsManagerExtension {
 
                         var ideRectInfo = await Instance.GetRightCornerIdeRectInfoAsync();
 
-                        var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(Instance);
+                        var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(Instance);
                         if (toolWindowWin32Controller != null) {
                             toolWindowWin32Controller.SetPositionWithoutShow(
                                 ideRectInfo.X,
@@ -196,7 +138,7 @@ namespace TabsManagerExtension {
         }
 
         private void OnLoadedRootContent(object sender, RoutedEventArgs e) {
-            VsixVisualTreeHelper.TryInject();
+            VsixVisualTreeHelper.Instance.ToggleCustomTabs(true);
 
 #if OLD_LOGIC
             if (_suppressAutoHide) {
@@ -215,7 +157,7 @@ namespace TabsManagerExtension {
             if (sender is DependencyObject d) {
                 d.Dispatcher.BeginInvoke(new Action(() => {
                     // Hide as soon as possible.
-                    var _toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                    var _toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                     if (_toolWindowWin32Controller != null) {
                         _toolWindowWin32Controller.Hide();
                     }
@@ -226,7 +168,7 @@ namespace TabsManagerExtension {
 
                         var ideRectInfo = await this.GetRightCornerIdeRectInfoAsync();
 
-                        var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                        var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                         if (toolWindowWin32Controller != null) {
                             toolWindowWin32Controller.SetPositionWithoutShow(
                                 ideRectInfo.X,
@@ -252,7 +194,7 @@ namespace TabsManagerExtension {
             var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(vsShell);
 
-            var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            var vsShellWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
             if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
                 int ideWidth = ideRect.Right - ideRect.Left;
                 int ideHeight = ideRect.Bottom - ideRect.Top;
@@ -277,9 +219,9 @@ namespace TabsManagerExtension {
             var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(vsShell);
 
-            var vsShellWindowWin32Controller = WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            var vsShellWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
             if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
-                float dpiScale = WindowWin32Controller.GetSystemDpiScale();
+                float dpiScale = Win32.WindowWin32Controller.GetSystemDpiScale();
 
                 int widthLogical = 150;
                 int heightLogical = 50;
@@ -309,7 +251,7 @@ namespace TabsManagerExtension {
                     frame.Show();
                 }
 
-                var toolWindowWin32Controller = WindowWin32Controller.TryCreateFromToolWindow(this);
+                var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                 if (toolWindowWin32Controller != null) {
                     //toolWindowWin32Controller.Hide();
                     toolWindowWin32Controller.Show();

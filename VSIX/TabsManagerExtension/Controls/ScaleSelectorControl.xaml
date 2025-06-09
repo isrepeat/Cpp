@@ -15,13 +15,16 @@
         <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Padding" Value="4"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#333333"/>
             <Setter Property="BorderBrush" Value="#555555"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="4"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="IsEditable" Value="True"/>
+            <Setter Property="IsTextSearchEnabled" Value="False"/>
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -98,18 +101,19 @@
         </Style>
 
         <Style x:Key="DarkComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="4"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#333333"/>
-            <Setter Property="Padding" Value="4"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBoxItem">
-                        <Border Background="{TemplateBinding Background}" Padding="4">
-                            <ContentPresenter 
-                                Content="{TemplateBinding Content}" 
-                                VerticalAlignment="Center" 
-                                HorizontalAlignment="Left"
-                                />
+                        <Border Padding="4"
+                                Background="{TemplateBinding Background}" 
+                                >
+                            <ContentPresenter Content="{TemplateBinding Content}" 
+                                              VerticalAlignment="Center" 
+                                              HorizontalAlignment="Left"
+                                              />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
@@ -125,20 +129,15 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    
-    
+
+
     <StackPanel Orientation="Horizontal">
-        <TextBlock Text="Масштаб: " VerticalAlignment="Center" />
+        <TextBlock Text="Масштаб: "
+                   VerticalAlignment="Center"
+                   />
         <ComboBox x:Name="ScaleComboBox"
                   Style="{StaticResource DarkComboBoxStyle}"
                   ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}"
-                  Width="100"
-                  IsEditable="True" 
-                  IsTextSearchEnabled="False" 
-                  Loaded="ScaleComboBox_Loaded"
-                  LostFocus="ScaleComboBox_LostFocus"
-                  PreviewKeyDown="ScaleComboBox_PreviewKeyDown"
-                  SelectionChanged="ScaleComboBox_SelectionChanged"
                   >
             <ComboBoxItem Content="20%" Tag="0.2" />
             <ComboBoxItem Content="50%" Tag="0.5" />

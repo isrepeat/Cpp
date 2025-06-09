@@ -2,11 +2,19 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.TextManager.Interop;
+using Microsoft.VisualStudio.ComponentModelHost;
 
-namespace TabsManagerExtension.Overlay.TextEditor {
+namespace TabsManagerExtension.VsShell.TextEditor.Overlay {
 
     /// <summary>
     /// Отвечает за управление жизненным циклом визуального оверлея (`TextEditorOverlayControl`),
@@ -61,7 +69,7 @@ namespace TabsManagerExtension.Overlay.TextEditor {
         public void UpdateState() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool hasOpenDocuments = _dte.Documents.Cast<Document>().Any();
+            bool hasOpenDocuments = _dte.Documents.Cast<EnvDTE.Document>().Any();
             if (hasOpenDocuments) {
                 this.EnsureCreated();
             }

@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.ToolWindows {
     internal sealed class TabsManagerToolWindowCommand {
         public const int CommandId = 0x0100;
 
@@ -68,28 +68,7 @@ namespace TabsManagerExtension {
 
 
         private void Execute(object sender, EventArgs e) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            EarlyPackageLoadHackToolWindow.Instance.TEST_MoveToSmth();
-
-            ////if (VsixVisualTreeHelper.IsCustomTabsInjected) {
-            ////    VsixVisualTreeHelper.RestoreOriginalTabs();
-            ////}
-            ////else {
-            ////    //VsixVisualTreeHelper.ScheduleInjectionTabsManagerControl();
-            ////    VsixVisualTreeHelper.TryInject();
-            ////}
-
-            //// Get the instance number 0 of this tool window. This window is single instance so this instance
-            //// is actually the only one.
-            //// The last flag is set to true so that if the tool window does not exists it will be created.
-            //ToolWindowPane window = this.package.FindToolWindow(typeof(TabsManagerToolWindow), 0, true);
-            //if ((null == window) || (null == window.Frame)) {
-            //    throw new NotSupportedException("Cannot create tool window");
-            //}
-
-            //IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            //Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+            VsixVisualTreeHelper.Instance.ToggleCustomTabs();
         }
     }
 }

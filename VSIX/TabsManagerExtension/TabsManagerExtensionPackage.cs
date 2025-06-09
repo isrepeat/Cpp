@@ -27,15 +27,13 @@ namespace System.Runtime.CompilerServices {
 }
 #endif
 
-
 namespace TabsManagerExtension {
-
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(EarlyPackageLoadHackToolWindow))]
-    [ProvideToolWindow(typeof(TabsManagerToolWindow))]
+    [ProvideToolWindow(typeof(ToolWindows.EarlyPackageLoadHackToolWindow))]
+    [ProvideToolWindow(typeof(ToolWindows.TabsManagerToolWindow))]
     [Guid(TabsManagerExtensionPackage.PackageGuidString)]
     public sealed class TabsManagerExtensionPackage : AsyncPackage {
         public const string PackageGuidString = "7a0ce045-e2ba-4f14-8b80-55cfd666e3d8";
@@ -50,67 +48,107 @@ namespace TabsManagerExtension {
             //var initFlags = CppFeatures.Cx.InitFlags.DefaultFlags | CppFeatures.Cx.InitFlags.CreateInPackageFolder;
             //CppFeatures.Cx.Logger.Init(AppConstants.LogFilename, initFlags);
 
-            EarlyPackageLoadHackToolWindow.Initialize(this);
-
-            await TabsManagerToolWindowCommand.InitializeAsync(this);
+            ToolWindows.EarlyPackageLoadHackToolWindow.Initialize(this); // Call VsixVisualTreeHelper.ToggleCustomTabs(true) inside.
+            await ToolWindows.TabsManagerToolWindowCommand.InitializeAsync(this);
         }
     }
 
 
 
-    public static class VsixVisualTreeHelper {
-        private static DispatcherTimer? _timer;
-        private static UIElement? _originalTabListHostContent;
-        private static Decorator? _tabHostDecorator;
+    public class VsixVisualTreeHelper {
+        private static readonly VsixVisualTreeHelper _instance = new();
+        public static VsixVisualTreeHelper Instance => _instance;
 
-        public static bool IsCustomTabsInjected {
+        private UIElement? _originalTabListHostContent;
+        private WeakReference<Decorator>? _currentTabHost;
+        private WeakReference<UIElement>? _lastInjectedContent;
+        private bool _isCustomTabsEnabled = false;
+
+        private VsixVisualTreeHelper() {
+        }
+
+        public bool IsCustomTabsInjected {
             get {
-                return _tabHostDecorator?.Child is Controls.TabsManagerToolWindowControl;
+                return _currentTabHost?.TryGetTarget(out var decorator) == true &&
+                       decorator.Child is Controls.TabsManagerToolWindowControl;
             }
         }
 
-        public static void ScheduleInjectionTabsManagerControl() {
-            _timer = new DispatcherTimer {
-                Interval = TimeSpan.FromMilliseconds(500)
-            };
+        /// <summary>
+        /// Переключает отображение между оригинальным содержимым PART_TabListHost и кастомным контролом.
+        /// </summary>
+        /// <param name="enable">Если true — включить кастомные вкладки, иначе вернуть оригинал.</param>
+        public void ToggleCustomTabs(bool enable) {
+            this._isCustomTabsEnabled = enable;
 
-            _timer.Tick += (s, e) => {
-                TryInject();
-            };
-
-            _timer.Start();
-        }
-
-        public static void TryInject() {
-            //Application.Current.Dispatcher.InvokeAsync(() => {
             var mainWindow = Application.Current.MainWindow;
             if (mainWindow == null) {
                 return;
             }
 
-            var tabHost = Helpers.VisualTree.FindElementByName(mainWindow, "PART_TabListHost");
-            if (tabHost is Decorator decorator) {
-                if (_originalTabListHostContent == null) {
-                    _originalTabListHostContent = decorator.Child;
-                    _tabHostDecorator = decorator;
+            var tabHost = Helpers.VisualTree.FindElementByName(mainWindow, "PART_TabListHost") as Decorator;
+            if (tabHost == null) {
+                Helpers.Diagnostic.Logger.LogWarning("PART_TabListHost not found");
+                return;
+            }
+
+            // Если Decorator пересоздан — сбросим оригинальный контент
+            if (this._currentTabHost == null || !this._currentTabHost.TryGetTarget(out var knownHost) || knownHost != tabHost) {
+                this._originalTabListHostContent = tabHost.Child;
+                this._currentTabHost = new WeakReference<Decorator>(tabHost);
+            }
+
+            if (enable) {
+                if (tabHost.Child is Controls.TabsManagerToolWindowControl) {
+                    return; // Уже вставлено
                 }
+                
+                Services.ExtensionServices.Initialize();
 
-                //decorator.Child = new ControlsTestTabsControl();
-                decorator.Child = new Controls.TabsManagerToolWindowControl();
+                var customControl = new Controls.TabsManagerToolWindowControl();
+                customControl.Unloaded += this.OnInjectedControlUnloaded;
 
-                _timer?.Stop();
-                _timer = null;
+                tabHost.Child = customControl;
+                this._lastInjectedContent = new WeakReference<UIElement>(customControl);
+
+                Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl injected.");
             }
             else {
-                Helpers.Diagnostic.Logger.LogWarning($"tabHost not found");
+                if (this._originalTabListHostContent != null) {
+                    tabHost.Child = this._originalTabListHostContent;
+                    this._lastInjectedContent = null;
+                    Helpers.Diagnostic.Logger.LogDebug("Restored original tab content.");
+
+                    Services.ExtensionServices.Shutdown();
+                }
             }
-            //}, DispatcherPriority.Loaded);
         }
 
-        public static void RestoreOriginalTabs() {
-            if (_tabHostDecorator != null && _originalTabListHostContent != null) {
-                _tabHostDecorator.Child = _originalTabListHostContent;
-            }
+        /// <summary>
+        /// Автоматическое переключение между оригинальным и кастомным таб-контролом.
+        /// </summary>
+        public void ToggleCustomTabs() {
+            this.ToggleCustomTabs(!this._isCustomTabsEnabled);
         }
+
+        private void OnInjectedControlUnloaded(object sender, RoutedEventArgs e) {
+            if (sender is FrameworkElement element) {
+                element.Unloaded -= this.OnInjectedControlUnloaded;
+            }
+
+            Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl.Unloaded — re-evaluating state...");
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                if (this._isCustomTabsEnabled) {
+                    this.ToggleCustomTabs(true); // повторно инжектим
+                }
+            }), DispatcherPriority.Background);
+        }
+    }
+}
+
+
+namespace TabsManagerExtension.Behaviours {
+    public class Dummy {
     }
 }

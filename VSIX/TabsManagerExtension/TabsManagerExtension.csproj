@@ -76,14 +76,17 @@
       <DependentUpon>TabItemsGroupControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\OrBooleanToVisibilityMultiConverter.cs" />
-    <Compile Include="Listeners\EarlyPackageLoadHackToolWindow.cs" />
+    <Compile Include="ExtensionServices.cs" />
+    <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
-    <Compile Include="VsShell\VsSelectionTracker.cs" />
-    <Compile Include="Overlay\TextEditorOverlayController.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
+    <Compile Include="VsShell\OleCommandFilterBase.cs" />
+    <Compile Include="VsShell\VsSelectionTrackerService.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
       <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VsShell\TextEditor\DocumentActivationTracker.cs" />
+    <Compile Include="VsShell\TextEditor\DocumentActivationTrackerService.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorFocusTracker.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorControlHelper.cs" />
     <Compile Include="Controls\TabsManagerToolWindowControl.xaml.cs">
@@ -100,13 +103,13 @@
     </Compile>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiConditionVisibilityConverter.cs" />
-    <Compile Include="Behaviours\ListBoxSelectedItemsBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="State\Constants.cs" />
     <Compile Include="State\Document.cs" />
     <Compile Include="TabsManagerExtensionPackage.cs" />
-    <Compile Include="TabsManagerToolWindow.cs" />
-    <Compile Include="TabsManagerToolWindowCommand.cs" />
+    <Compile Include="ToolWindows\TabsManagerToolWindow.cs" />
+    <Compile Include="ToolWindows\TabsManagerToolWindowCommand.cs" />
+    <Compile Include="Win32_TODO_remove_to_helpers\WindowWin32Controller.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

@@ -24,7 +24,6 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Task = System.Threading.Tasks.Task;
 using Helpers.Ex;
 using TabsManagerExtension.State.Document;
-using TabsManagerExtension.VsShell.TextEditor;
 
 
 namespace TabsManagerExtension.Controls {
@@ -37,7 +36,7 @@ namespace TabsManagerExtension.Controls {
                 if (_scaleFactor != value) {
                     _scaleFactor = value;
                     OnPropertyChanged();
-                    ApplyDocumentScale();
+                    this.ApplyDocumentScale();
                 }
             }
         }
@@ -84,10 +83,9 @@ namespace TabsManagerExtension.Controls {
 
         private DispatcherTimer _tabsManagerStateTimer;
         private FileSystemWatcher _fileWatcher;
-        private VsShell.VsSelectionTracker? _vsSelectionTracker;
 
         private Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase> _tabItemsSelectionCoordinator;
-        private Overlay.TextEditor.TextEditorOverlayController _textEditorOverlayController;
+        private VsShell.TextEditor.Overlay.TextEditorOverlayController _textEditorOverlayController;
 
 
         public ICommand OnPinTabItemCommand { get; }
@@ -156,7 +154,7 @@ namespace TabsManagerExtension.Controls {
                 this.FocusStealer.Focus();
 
                 // Глобально сбрасываем клавишный фокус со всего.
-                //Keyboard.ClearFocus()
+                //Keyboard.ClearFocus();
 
                 Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
                 e.Handled = true;
@@ -265,17 +263,12 @@ namespace TabsManagerExtension.Controls {
         // ░ VsShellTrackers 
         //
         private void InitializeVsShellTrackers() {
-            _vsSelectionTracker = new VsShell.VsSelectionTracker();
-            _vsSelectionTracker.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
-
-            VsShell.TextEditor.DocumentActivationTracker.Initialize();
-            VsShell.TextEditor.DocumentActivationTracker.OnDocumentActivated += this.OnDocumentActivatedExternally;
+            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
         }
         private void UninitializeVsShellTrackers() {
-            VsShell.TextEditor.DocumentActivationTracker.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            VsShell.TextEditor.DocumentActivationTracker.Dispose();
-
-            _vsSelectionTracker.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
+            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
         }
 
 
@@ -324,10 +317,11 @@ namespace TabsManagerExtension.Controls {
             _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
 
 
-            _textEditorOverlayController = new Overlay.TextEditor.TextEditorOverlayController(_dte);
+            _textEditorOverlayController = new VsShell.TextEditor.Overlay.TextEditorOverlayController(_dte);
         }
 
         private void UninitializeTabItemsSelectionCoordinator() {
+            _textEditorOverlayController.Hide();
         }
 
 
@@ -912,10 +906,6 @@ namespace TabsManagerExtension.Controls {
         // 
         // ░ ScaleSelectorControl
         //
-        private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {
-            this.ApplyDocumentScale();
-        }
-
         private void ApplyDocumentScale() {
             if (this.DocumentScaleTransform != null) {
                 this.DocumentScaleTransform.ScaleX = this.ScaleFactor;
@@ -961,12 +951,13 @@ namespace TabsManagerExtension.Controls {
 
             this.SyncActiveDocumentWithPrimaryTabItem();
 
-
-            if (TextEditorControlHelper.IsEditorActive()) {
-                Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
-                _textEditorOverlayController.Show();
-                _textEditorOverlayController.Update();
-            }
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                if (VsShell.TextEditor.TextEditorControlHelper.IsEditorActive()) {
+                    Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
+                    _textEditorOverlayController.Show();
+                    _textEditorOverlayController.Update();
+                }
+            }), DispatcherPriority.Background);
         }
 
 

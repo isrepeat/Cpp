@@ -18,7 +18,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            
+
             <!--<Style x:Key="CustomBorderStyle" TargetType="Border">
                 <Setter Property="Margin" Value="0,-2,0,0" />
                 <Setter Property="Focusable" Value="False"/>
@@ -72,7 +72,7 @@
                                 <DataTrigger Binding="{Binding Anchors.Count}" Value="0">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
-                                
+
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#3E3E42"/>
                                     <Setter Property="BorderBrush" Value="#666"/>
@@ -136,7 +136,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -144,25 +144,25 @@
     <Grid>
         <Grid Style="{StaticResource AnchorContainerStyle}">
             <Border BorderThickness="1"
-                     BorderBrush="#00ffffff"
-                     >
+                    BorderBrush="#00ffffff"
+                    >
                 <Grid>
                     <ToggleButton Style="{StaticResource AnchorToggleButtonStyle}"
-                                   Command="{Binding OnToggleAnchorListCommand}"
-                                   IsChecked="{Binding IsAnchorListVisible, Mode=OneWay}"
-                                   Content="📌"
-                                   />
+                                  Command="{Binding OnToggleAnchorListCommand}"
+                                  IsChecked="{Binding IsAnchorListVisible, Mode=OneWay}"
+                                  Content="📌"
+                                  />
                     <Border Background="White"
-                             Visibility="{Binding IsAnchorListVisible.Visibility}"
-                             VerticalAlignment="Top"
-                             HorizontalAlignment="Right"
-                             Margin="0,35,5,0"
-                             >
+                            Visibility="{Binding IsAnchorListVisible.Visibility}"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right"
+                            Margin="0,35,5,0"
+                            >
                         <ListBox Style="{StaticResource AnchorListBoxStyle}"
-                                  ItemContainerStyle="{StaticResource AnchorListBoxItemStyle}"
-                                  ItemsSource="{Binding Anchors}"   
-                                  SelectedItem="{Binding SelectedAnchor, Mode=TwoWay}"
-                                  >
+                                 ItemContainerStyle="{StaticResource AnchorListBoxItemStyle}"
+                                 ItemsSource="{Binding Anchors}"   
+                                 SelectedItem="{Binding SelectedAnchor, Mode=TwoWay}"
+                                 >
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>

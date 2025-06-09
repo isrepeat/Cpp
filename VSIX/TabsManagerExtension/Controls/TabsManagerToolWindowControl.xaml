@@ -182,10 +182,10 @@
 
 
         <!-- Контейнер с выбором масштаба -->
-        <localControls:ScaleSelectorControl Grid.Row="2"
+        <localControls:ScaleSelectorControl x:Name="ScaleSelectorControl"
+                                            Grid.Row="2"
                                             Style="{StaticResource CustomScaleSelectorControlStyle}"
                                             ScaleFactor="{Binding DataContext.ScaleFactor, Mode=TwoWay}" 
-                                            ScaleChanged="ScaleSelectorControl_ScaleChanged" 
                                             />
 
         <!-- VirtualMenuControl с настраиваемым контентом -->
