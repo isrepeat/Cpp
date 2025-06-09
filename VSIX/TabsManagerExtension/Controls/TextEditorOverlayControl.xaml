@@ -3,6 +3,7 @@
                          xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localEnums="clr-namespace:TabsManagerExtension.Enums"
                          xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
                          xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
                          xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
@@ -37,7 +38,6 @@
                 </Style.Triggers>
             </Style>-->
 
-
             <Style x:Key="AnchorContainerStyle" TargetType="Grid">
                 <Setter Property="Width" Value="auto"/>
                 <Setter Property="Margin" Value="0,30,30,0"/>
@@ -69,6 +69,10 @@
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Anchors.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#3E3E42"/>
                                     <Setter Property="BorderBrush" Value="#666"/>
@@ -101,13 +105,18 @@
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="IsEnabled" Value="True"/>
+                <Setter Property="Focusable" Value="True"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListBoxItem">
-                            <Border x:Name="Bd" Background="Transparent">
+                            <Border x:Name="Bd" 
+                                    Background="Transparent"
+                                    >
                                 <ContentPresenter HorizontalAlignment="Left"
-                                      VerticalAlignment="Center"
-                                      Margin="4,0"/>
+                                                  VerticalAlignment="Center"
+                                                  Margin="4,0"
+                                                  />
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
@@ -118,47 +127,92 @@
                                     <Setter TargetName="Bd" Property="Background" Value="#007ACC"/>
                                     <Setter Property="Foreground" Value="White"/>
                                 </Trigger>
+                                <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                    <Setter Property="Focusable" Value="False"/>
+                                </DataTrigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
-
-
+            
         </ResourceDictionary>
     </UserControl.Resources>
 
 
-    <Grid Width="auto">
+    <Grid>
         <Grid Style="{StaticResource AnchorContainerStyle}">
             <Border BorderThickness="1"
-                    BorderBrush="#00ffffff"
-                    >
+                     BorderBrush="#00ffffff"
+                     >
                 <Grid>
                     <ToggleButton Style="{StaticResource AnchorToggleButtonStyle}"
-                                  Command="{Binding OnToggleAnchorListCommand}"
-                                  IsChecked="{Binding IsAnchorListVisible, Mode=OneWay}"
-                                  Content="📌"
-                                  />
+                                   Command="{Binding OnToggleAnchorListCommand}"
+                                   IsChecked="{Binding IsAnchorListVisible, Mode=OneWay}"
+                                   Content="📌"
+                                   />
                     <Border Background="White"
-                            Visibility="{Binding IsAnchorListVisible.Visibility}"
-                            VerticalAlignment="Top"
-                            HorizontalAlignment="Right"
-                            Margin="0,35,5,0"
-                            >
+                             Visibility="{Binding IsAnchorListVisible.Visibility}"
+                             VerticalAlignment="Top"
+                             HorizontalAlignment="Right"
+                             Margin="0,35,5,0"
+                             >
                         <ListBox Style="{StaticResource AnchorListBoxStyle}"
-                                 ItemContainerStyle="{StaticResource AnchorListBoxItemStyle}"
-                                 ItemsSource="{Binding Anchors}"   
-                                 SelectedItem="{Binding SelectedAnchor, Mode=TwoWay}"
-                                 >
+                                  ItemContainerStyle="{StaticResource AnchorListBoxItemStyle}"
+                                  ItemsSource="{Binding Anchors}"   
+                                  SelectedItem="{Binding SelectedAnchor, Mode=TwoWay}"
+                                  >
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
-                                        <TextBlock Text=" (line " />
-                                        <TextBlock Text="{Binding LineNumber}" />
-                                        <TextBlock Text=")" />
-                                    </StackPanel>
+                                    <Grid>
+                                        <!-- Text -->
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="13"
+                                                   >
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Section}">
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                            <Setter Property="Padding" Value="5,5,5,5"/>
+                                                            <Setter Property="Margin" Value="0,2,0,2"/>
+                                                        </DataTrigger>
+
+                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Subsection}">
+                                                            <Setter Property="Foreground" Value="#CCCCCC"/>
+                                                            <Setter Property="FontWeight" Value="Normal"/>
+                                                            <Setter Property="Padding" Value="5,5,5,5"/>
+                                                            <Setter Property="Margin" Value="12,2,0,2"/>
+                                                        </DataTrigger>
+
+                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <!-- Separator -->
+                                        <Rectangle Height="1"
+                                                    Fill="#444"
+                                                    Margin="0,6,0,6"
+                                                    >
+                                            <Rectangle.Style>
+                                                <Style TargetType="Rectangle">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Rectangle.Style>
+                                        </Rectangle>
+                                    </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>

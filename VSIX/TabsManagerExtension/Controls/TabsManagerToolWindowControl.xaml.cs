@@ -24,6 +24,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Task = System.Threading.Tasks.Task;
 using Helpers.Ex;
 using TabsManagerExtension.State.Document;
+using TabsManagerExtension.VsShell.TextEditor;
 
 
 namespace TabsManagerExtension.Controls {
@@ -426,7 +427,7 @@ namespace TabsManagerExtension.Controls {
             }
 
             var addedOrExistTabItem = this.AddTabItemToAutoDeterminedGroupIfMissing(tabItem);
-            addedOrExistTabItem.IsSelected = true; // Select after tabItem exist added to group.
+            addedOrExistTabItem.IsSelected = true;
 
             this.UpdateWindowTabsInfo();
 
@@ -959,6 +960,13 @@ namespace TabsManagerExtension.Controls {
             }
 
             this.SyncActiveDocumentWithPrimaryTabItem();
+
+
+            if (TextEditorControlHelper.IsEditorActive()) {
+                Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
+                _textEditorOverlayController.Show();
+                _textEditorOverlayController.Update();
+            }
         }
 
 
@@ -969,9 +977,8 @@ namespace TabsManagerExtension.Controls {
             // No need remove old because preview tab item group
             // guarded with ItemInsertMode == SingleWithReplaceExisting.
 
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
-            tabItemDocument.IsPreviewTab = true;
-            tabItemDocument.IsSelected = true; // [?] Select after tabItem added to group.
+            var addedOrExistTabItem = this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
+            addedOrExistTabItem.IsSelected = true;
         }
 
 

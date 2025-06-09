@@ -104,14 +104,16 @@ namespace TabsManagerExtension.Controls {
             }
 
             var point = textDoc.StartPoint.CreateEditPoint();
-            var allLines = new List<string>();
+            var lines = new List<string>();
 
             for (int i = 1; i <= textDoc.EndPoint.Line; i++) {
-                allLines.Add(point.GetLines(i, i + 1));
+                lines.Add(point.GetLines(i, i + 1));
             }
 
-            var anchors = AnchorParser.ParseLines(allLines);
-            foreach (var anchor in anchors) {
+            var anchors = AnchorParser.ParseLinesWithContextWindow(lines);
+            var final = AnchorParser.InsertSeparators(anchors);
+
+            foreach (var anchor in final) {
                 this.Anchors.Add(anchor);
             }
         }
@@ -121,9 +123,18 @@ namespace TabsManagerExtension.Controls {
 
             var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
             if (dte?.ActiveDocument?.Object("TextDocument") is EnvDTE.TextDocument textDoc) {
-                EnvDTE.EditPoint point = textDoc.StartPoint.CreateEditPoint();
-                point.MoveToLineAndOffset(lineNumber, 1);
-                point.TryToShow(EnvDTE.vsPaneShowHow.vsPaneShowTop);
+                var selection = textDoc.Selection;
+
+                // Перемещаем каретку на нужную строку (на неё и останется курсор)
+                selection.MoveToLineAndOffset(lineNumber, 1);
+
+                // Для скролинга создаем точку выше — с контекстом
+                int scrollLine = Math.Max(1, lineNumber - 5); // гарантируем что >= 1
+                var scrollPoint = textDoc.CreateEditPoint();
+                scrollPoint.MoveToLineAndOffset(scrollLine, 1);
+
+                // Скроллим так, чтобы scrollLine оказался в самом верху
+                scrollPoint.TryToShow(EnvDTE.vsPaneShowHow.vsPaneShowTop);
             }
         }
     }
