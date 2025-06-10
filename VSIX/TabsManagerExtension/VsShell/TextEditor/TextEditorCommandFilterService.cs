@@ -2,72 +2,77 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Collections.Generic;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
-using System.Windows.Threading;
 
 
 namespace TabsManagerExtension.VsShell.TextEditor {
     public class TextEditorCommandFilter : OleCommandFilterBase {
-        /// <summary>
-        /// Управляет тем, активна ли фильтрация команд.
-        /// Если false — все команды проходят дальше без перехвата.
-        /// </summary>
+
+        public event Action<Guid, uint>? CommandPassedThrough;
+        public event Action<Guid, uint>? CommandIntercepted;
         public bool IsEnabled { get; set; } = false;
 
-        /// <summary>
-        /// Вызывается, когда команда была перехвачена и не передана редактору.
-        /// </summary>
-        public event Action<VSConstants.VSStd2KCmdID>? CommandIntercepted;
+        private readonly IReadOnlyCollection<VSConstants.VSStd2KCmdID> _trackedCommands;
+        private readonly IReadOnlyCollection<VSConstants.VSStd97CmdID> _trackedMappedToStd97Commands;
+        private readonly Dictionary<VSConstants.VSStd2KCmdID, VSConstants.VSStd97CmdID> _2kTo97 = new();
+        private readonly Dictionary<VSConstants.VSStd97CmdID, VSConstants.VSStd2KCmdID> _97To2k = new();
 
-        /// <summary>
-        /// Вызывается, когда команда была передана дальше (редактору).
-        /// </summary>
-        public event Action<VSConstants.VSStd2KCmdID>? CommandPassedThrough;
-
-
-        private readonly HashSet<VSConstants.VSStd2KCmdID> _interceptedCommands;
-
-        public TextEditorCommandFilter(IEnumerable<VSConstants.VSStd2KCmdID> blockedCommands) {
-            _interceptedCommands = new HashSet<VSConstants.VSStd2KCmdID>(blockedCommands);
+        public TextEditorCommandFilter(IEnumerable<VSConstants.VSStd2KCmdID> trackedCommands) {
+            _trackedCommands = new HashSet<VSConstants.VSStd2KCmdID>(trackedCommands);
+            _trackedMappedToStd97Commands = VsShell.VsCommandMapper.GetMappedStd97FromStd2kCommands(trackedCommands);
         }
 
+        public Key? TryResolveKey(Guid cmdGroup, uint cmdId) {
+            if (cmdGroup == VSConstants.VSStd2K && Enum.IsDefined(typeof(VSConstants.VSStd2KCmdID), (int)cmdId)) {
+                var std2kCmd = (VSConstants.VSStd2KCmdID)cmdId;
+                return VsShell.VsCommandMapper.TryMapToKey(std2kCmd);
+            }
+
+            if (cmdGroup == VSConstants.GUID_VSStandardCommandSet97 && Enum.IsDefined(typeof(VSConstants.VSStd97CmdID), (int)cmdId)) {
+                var std97Cmd = (VSConstants.VSStd97CmdID)cmdId;
+                if (_trackedMappedToStd97Commands.Contains(std97Cmd) && VsShell.VsCommandMapper.TryMapStd97ToStd2kCommand(std97Cmd, out var std2kCmd)) {
+                    return VsShell.VsCommandMapper.TryMapToKey(std2kCmd);
+                }
+            }
+
+            return null;
+        }
+
+
         protected override bool TryHandleCommand(Guid cmdGroup, uint cmdId) {
-            if (!IsEnabled || cmdGroup != VSConstants.VSStd2K) {
+            if (!IsEnabled) {
                 return false;
             }
 
-            var cmd = (VSConstants.VSStd2KCmdID)cmdId;
-            return _interceptedCommands.Contains(cmd);
+            if (cmdGroup == VSConstants.VSStd2K && Enum.IsDefined(typeof(VSConstants.VSStd2KCmdID), (int)cmdId)) {
+                var cmd = (VSConstants.VSStd2KCmdID)cmdId;
+                return _trackedCommands.Contains(cmd);
+            }
+
+            if (cmdGroup == VSConstants.GUID_VSStandardCommandSet97 && Enum.IsDefined(typeof(VSConstants.VSStd97CmdID), (int)cmdId)) {
+                var cmd97 = (VSConstants.VSStd97CmdID)cmdId;
+                return _trackedMappedToStd97Commands.Contains(cmd97);
+            }
+
+            return false;
         }
 
         protected override void OnCommandIntercepted(Guid cmdGroup, uint cmdId) {
-            if (cmdGroup == VSConstants.VSStd2K && Enum.IsDefined(typeof(VSConstants.VSStd2KCmdID), (int)cmdId)) {
-                var cmd = (VSConstants.VSStd2KCmdID)cmdId;
-                CommandIntercepted?.Invoke(cmd);
-            }
+            this.CommandIntercepted?.Invoke(cmdGroup, cmdId);
         }
 
         protected override void OnCommandPassedThrough(Guid cmdGroup, uint cmdId) {
-            if (cmdGroup == VSConstants.VSStd2K && Enum.IsDefined(typeof(VSConstants.VSStd2KCmdID), (int)cmdId)) {
-                var cmd = (VSConstants.VSStd2KCmdID)cmdId;
-                CommandPassedThrough?.Invoke(cmd);
-            }
-        }
-
-        public static string FormatCommand(VSConstants.VSStd2KCmdID cmd) {
-            if (Enum.IsDefined(typeof(VSConstants.VSStd2KCmdID), cmd)) {
-                var name = ((VSConstants.VSStd2KCmdID)cmd).ToString();
-                return $"VSStd2K::{name}";
-            }
-            return $"VSStd2K::Unknown({cmd})";
+            this.CommandPassedThrough?.Invoke(cmdGroup, cmdId);
         }
     }
 }
+
 
 
 namespace TabsManagerExtension.VsShell.TextEditor.Services {
@@ -78,9 +83,6 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
     public sealed class TextEditorCommandFilterService :
         TabsManagerExtension.Services.SingletonServiceBase<TextEditorCommandFilterService>,
         TabsManagerExtension.Services.IExtensionService {
-
-        public event Action<VSConstants.VSStd2KCmdID>? CommandIntercepted;
-        public event Action<VSConstants.VSStd2KCmdID>? CommandPassedThrough;
 
         private IVsTextView? _currentTextView;
         private TextEditorCommandFilter? _currentFilter;
@@ -95,6 +97,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             VSConstants.VSStd2KCmdID.LEFT,
             VSConstants.VSStd2KCmdID.RIGHT,
             VSConstants.VSStd2KCmdID.RETURN,
+            VSConstants.VSStd2KCmdID.DELETE,
             VSConstants.VSStd2KCmdID.BACKSPACE,
         };
 
@@ -103,7 +106,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
             VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
-            this.CommandIntercepted += this.OnCommandIntercepted;
+            
             this.InstallToActiveEditor();
 
             Helpers.Diagnostic.Logger.LogDebug("[TextEditorCommandFilterController] Initialized.");
@@ -150,7 +153,8 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             element.LostKeyboardFocus -= OnTargetLostFocus;
 
             if (ReferenceEquals(_lastInputTarget, element)) {
-                this.UpdateFocusStateDeferred();
+                this.Disable();
+                _lastInputTarget = null;
             }
         }
 
@@ -169,41 +173,21 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
 
         private void OnVsWindowFrameActivated(IVsWindowFrame vsWindowFrame) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.OnVsWindowFrameActivated()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.OnActiveViewChanged();
+            // Используем диспетчер чтобы дать время IVsTextView стать активным.
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                this.InstallToActiveEditor();
+            }), DispatcherPriority.Background);
         }
 
 
         private void OnDocumentActivatedExternally(string _ /* file path unused */) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.OnDocumentActivatedExternally()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.OnActiveViewChanged();
-        }
-
-
-        private void OnActiveViewChanged() {
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager != null &&
-                textManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK &&
-                newView != null &&
-                !ReferenceEquals(_currentTextView, newView)) {
-
-                this.UninstallFilter();
-                this.InstallFilterToView(newView);
-            }
-        }
-
-
-        private void OnCommandIntercepted(VSConstants.VSStd2KCmdID cmd) {
-            if (_lastInputTarget != null && _lastInputTarget.IsKeyboardFocusWithin) {
-                var key = this.TryMapCommandToKey(cmd);
-                if (key.HasValue) {
-                    this.RedirectKeyInput(_lastInputTarget, key.Value);
-                }
-            }
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                this.InstallToActiveEditor();
+            }), DispatcherPriority.Background);
         }
 
 
@@ -214,24 +198,47 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
 
         private void OnTargetLostFocus(object sender, RoutedEventArgs e) {
-            // нужен, чтобы дождаться перехода фокуса (иначе LostFocus будет до GotFocus следующего).
-            this.UpdateFocusStateDeferred();
+            this.Disable();
+            _lastInputTarget = null;
         }
 
 
+        private void OnCommandPassedThrough(Guid cmdGroup, uint cmdId) {
+            // ...
+        }
 
-        private void InstallToActiveEditor() {
-            ThreadHelper.ThrowIfNotOnUIThread();
 
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager != null &&
-                textManager.GetActiveView(1, null, out var view) == VSConstants.S_OK &&
-                view != null) {
-                this.InstallFilterToView(view);
+        private void OnCommandIntercepted(Guid cmdGroup, uint cmdId) {
+            if (_lastInputTarget == null || !_lastInputTarget.IsKeyboardFocusWithin) {
+                return;
+            }
+
+            if (_currentFilter != null) {
+                var key = _currentFilter.TryResolveKey(cmdGroup, cmdId);
+                if (key.HasValue) {
+                    this.RedirectKeyInput(_lastInputTarget, key.Value);
+                }
             }
         }
 
+
+        private void InstallToActiveEditor() {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.InstallToActiveEditor()");
+
+            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
+            if (textManager != null && textManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK) {
+                if (newView != null) {
+                    if (!ReferenceEquals(_currentTextView, newView)) {
+                        this.UninstallFilter();
+                        this.InstallFilterToView(newView);
+                    }
+                }
+            }
+        }
+
+
         private void InstallFilterToView(IVsTextView view) {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.InstallFilterToView()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var filter = new TextEditorCommandFilter(_defaultCommands);
@@ -239,45 +246,33 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
             if (result == VSConstants.S_OK) {
                 filter.SetNext(next);
-                filter.CommandIntercepted += cmd => this.CommandIntercepted?.Invoke(cmd);
-                filter.CommandPassedThrough += cmd => this.CommandPassedThrough?.Invoke(cmd);
+                filter.CommandPassedThrough += this.OnCommandPassedThrough;
+                filter.CommandIntercepted += this.OnCommandIntercepted;
 
                 _currentFilter = filter;
                 _currentTextView = view;
-
-                Helpers.Diagnostic.Logger.LogDebug("[TextEditorCommandFilterController] Фильтр установлен.");
             }
             else {
                 Helpers.Diagnostic.Logger.LogWarning($"[TextEditorCommandFilterController] Не удалось установить фильтр. HRESULT = 0x{result:X8}");
             }
         }
 
+
         private void UninstallFilter() {
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.UninstallFilter()");
+
             if (_currentFilter != null) {
                 _currentFilter.IsEnabled = false;
+                _currentFilter.CommandIntercepted -= this.OnCommandIntercepted;
+                _currentFilter.CommandPassedThrough -= this.OnCommandPassedThrough;
+            }
+            if (_currentTextView != null) {
+                _currentTextView.RemoveCommandFilter(_currentFilter);
             }
             _currentTextView = null;
             _currentFilter = null;
-
-            Helpers.Diagnostic.Logger.LogDebug("[TextEditorCommandFilterController] Фильтр отключён.");
         }
 
-
-
-        /// <summary>
-        /// Проверяет, остался ли фокус внутри одного из отслеживаемых элементов.
-        /// Если нет — отключает фильтрацию ввода и сбрасывает текущую цель.
-        /// Использует отложенное выполнение (BeginInvoke), потому что в момент LostFocus
-        /// следующий элемент ещё не получил фокус, и прямой вызов даст ложный результат.
-        /// </summary>
-        private void UpdateFocusStateDeferred() {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
-                if (!_trackedElements.Any(el => el.IsKeyboardFocusWithin)) {
-                    this.Disable();
-                    _lastInputTarget = null;
-                }
-            }), DispatcherPriority.Background);
-        }
 
         private void RedirectKeyInput(FrameworkElement target, Key key) {
             var inputEvent = new KeyEventArgs(
@@ -288,19 +283,6 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             inputEvent.RoutedEvent = Keyboard.KeyDownEvent;
 
             InputManager.Current.ProcessInput(inputEvent);
-        }
-
-        private Key? TryMapCommandToKey(VSConstants.VSStd2KCmdID cmd) {
-            return cmd switch {
-                VSConstants.VSStd2KCmdID.TAB => Key.Tab,
-                VSConstants.VSStd2KCmdID.UP => Key.Up,
-                VSConstants.VSStd2KCmdID.DOWN => Key.Down,
-                VSConstants.VSStd2KCmdID.LEFT => Key.Left,
-                VSConstants.VSStd2KCmdID.RIGHT => Key.Right,
-                VSConstants.VSStd2KCmdID.RETURN => Key.Enter,
-                VSConstants.VSStd2KCmdID.BACKSPACE => Key.Back,
-                _ => null
-            };
         }
     }
 }

@@ -36,7 +36,7 @@ namespace TabsManagerExtension.Controls {
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
             this.ScaleComboBox.LostFocus += this.ScaleComboBox_OnLostFocus;
-            this.ScaleComboBox.PreviewKeyDown += this.ScaleComboBox_OnPreviewKeyDown;
+            this.ScaleComboBox.KeyDown += this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.SelectionChanged += this.ScaleComboBox_OnSelectionChanged;
             VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.AddTrackedInputElement(this);
 
@@ -48,7 +48,7 @@ namespace TabsManagerExtension.Controls {
         private void OnUnloaded(object sender, RoutedEventArgs e) {
             VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.RemoveTrackedInputElement(this);
             this.ScaleComboBox.SelectionChanged -= this.ScaleComboBox_OnSelectionChanged;
-            this.ScaleComboBox.PreviewKeyDown -= this.ScaleComboBox_OnPreviewKeyDown;
+            this.ScaleComboBox.KeyDown -= this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.LostFocus -= this.ScaleComboBox_OnLostFocus;
         }
 
@@ -57,7 +57,7 @@ namespace TabsManagerExtension.Controls {
             this.ApplyScaleFromText();
         }
 
-        private void ScaleComboBox_OnPreviewKeyDown(object sender, KeyEventArgs e) {
+        private void ScaleComboBox_OnKeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
                 this.ApplyScaleFromText();
                 e.Handled = true;
@@ -105,6 +105,12 @@ namespace TabsManagerExtension.Controls {
 
                 if (_comboBoxTextBox.Text != newText) {
                     _comboBoxTextBox.Text = newText;
+
+                    // Ставим каретку перед символом '%'
+                    int caretPos = newText.LastIndexOf('%');
+                    if (caretPos > 0) {
+                        _comboBoxTextBox.CaretIndex = caretPos - 1; // перед пробелом
+                    }
                 }
             }
         }
