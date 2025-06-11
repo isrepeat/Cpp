@@ -45,9 +45,6 @@ namespace WpfTestApp.Controls {
             this.DataContext = this;
         }
 
-        private void OnBlockMouseWheelBubbling(object sender, MouseWheelEventArgs e) {
-            e.Handled = true;
-        }
 
 
         public void DisplayText(string text) {
@@ -112,6 +109,10 @@ namespace WpfTestApp.Controls {
             double targetOffset = currentOffset + relativePosition.Y - offset;
 
             scrollViewer.ScrollToVerticalOffset(targetOffset);
+        }
+
+        private void OnBlockMouseWheelBubbling(object sender, MouseWheelEventArgs e) {
+            e.Handled = true;
         }
     }
 }

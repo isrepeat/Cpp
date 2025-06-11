@@ -155,7 +155,6 @@ namespace WpfTestApp {
 
 
     public partial class MainWindow_4_TextEditorAnchorMenu : Window {
-        
         public MainWindow_4_TextEditorAnchorMenu() {
             this.InitializeComponent();
             this.__AnchorTextViewerControl.DisplayText(System.IO.File.ReadAllText("Controls\\4\\TestCodeFile.rs.txt"));
@@ -166,6 +165,7 @@ namespace WpfTestApp {
 
         private void OnNavigateToSmth(object sender, RoutedEventArgs e) {
             this.OnNavigateToLine(52);
+            Helpers.BaseUserControlResourceHelper.UpdateDynamicResource(this, "AppAccentBrush", new SolidColorBrush(Colors.Green));
         }
 
         private void OnNavigateToLine(int lineNumber) {

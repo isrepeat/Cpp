@@ -30,28 +30,26 @@
             UseAeroCaptionButtons="False" />
     </shell:WindowChrome.WindowChrome>
     <Window.Resources>
-        <SolidColorBrush x:Key="AppPanelColor" Color="Transparent"/>
-        <SolidColorBrush x:Key="AppBorderColor" Color="#FF3C3C3C"/>
-        <SolidColorBrush x:Key="AppAccentColor" Color="#FF10A37F"/>
-        <SolidColorBrush x:Key="AppIsMouseOverColor" Color="#FF3C3C3C"/>
-        <SolidColorBrush x:Key="AppSelectedFocusedColor" Color="#FF2D5B86"/>
-        <SolidColorBrush x:Key="AppSelectedUnfocusedColor" Color="#662D5B86"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/WpfTestApp;component/Styles/BrushResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
+            <!-- Global theme styles (must be inherited for a specific element) -->
+            <Style x:Key="DarkButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="#444444" />
+                <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
+            </Style>
 
-        <!-- Global theme styles (must be inherited for a specific element) -->
-        <Style x:Key="DarkButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#444444" />
-            <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
-        </Style>
-
-        <Style x:Key="DarkTextBlockStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
-        </Style>
+            <Style x:Key="DarkTextBlockStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
 
     <DockPanel>
-        <localControls:CustomTitleBar DockPanel.Dock="Top"/>
+        <localControls:CustomTitleBar DockPanel.Dock="Top" />
 
         <!-- Main content -->
         <Grid>
@@ -66,7 +64,7 @@
 
             <localControls:TextEditorOverlayControl x:Name="__TextEditorOverlayControl"
                                                     Grid.Row="0"/>
-            
+
             <Button Grid.Row="1"
                     Content="Navigate to something"
                     Click="OnNavigateToSmth"
