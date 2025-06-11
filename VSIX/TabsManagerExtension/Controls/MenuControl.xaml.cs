@@ -46,27 +46,18 @@ namespace TabsManagerExtension.Controls {
                 new PropertyMetadata(null));
 
 
-        public object CommandParameterContext {
-            get => this.GetValue(CommandParameterContextProperty);
-            set => this.SetValue(CommandParameterContextProperty, value);
-        }
-
-        public static readonly DependencyProperty CommandParameterContextProperty =
-            DependencyProperty.Register(
-                nameof(CommandParameterContext),
-                typeof(object),
-                typeof(MenuControl),
-                new PropertyMetadata(null));
-
-
-
-        public class ContextMenuOpenRequest {
+        public class MenuOpeningArgs {
             public object DataContext { get; set; } = default!;
             public bool ShouldOpen { get; set; } = true;
+        }
+        public class MenuClosedArgs {
+            public object DataContext { get; set; } = default!;
         }
 
         public event EventHandler MouseEnteredPopup;
         public event EventHandler MouseLeftPopup;
+
+        private MenuClosedArgs _menuControlClosedArgs = null;
 
         public MenuControl() {
             this.InitializeComponent();
@@ -76,15 +67,13 @@ namespace TabsManagerExtension.Controls {
             this.MouseRightButtonUp += this.OnBlockMouseBubbling;
         }
 
-        private void OnBlockMouseBubbling(object sender, MouseButtonEventArgs e) {
-            e.Handled = true;
-        }
-
-
-        public void ShowMenu(PlacementMode placementMode, bool isStaysOpen, Point? screenPosition = null) {
+        public void ShowMenu(object dataContext, PlacementMode placementMode, bool isStaysOpen, Point? screenPosition = null) {
             if (this.OpenCommand != null && this.OpenCommand.CanExecute(null)) {
-                var request = new MenuControl.ContextMenuOpenRequest {
-                    DataContext = this.CommandParameterContext
+                var request = new MenuControl.MenuOpeningArgs {
+                    DataContext = dataContext
+                };
+                _menuControlClosedArgs = new MenuControl.MenuClosedArgs {
+                    DataContext = dataContext
                 };
 
                 // Через команду заполняются MenuItems.
@@ -103,10 +92,13 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        public void UpdateMenu(Point? screenPosition = null) {
+        public void UpdateMenu(object dataContext, Point? screenPosition = null) {
             if (this.OpenCommand != null && this.OpenCommand.CanExecute(null)) {
-                var request = new MenuControl.ContextMenuOpenRequest {
-                    DataContext = this.CommandParameterContext
+                var request = new MenuControl.MenuOpeningArgs {
+                    DataContext = dataContext
+                };
+                _menuControlClosedArgs = new MenuControl.MenuClosedArgs {
+                    DataContext = dataContext
                 };
 
                 // Через команду заполняются MenuItems.
@@ -120,7 +112,6 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
-
         public void MoveMenu(Point screenPosition) {
             this.MenuPopup.HorizontalOffset = screenPosition.X;
             this.MenuPopup.VerticalOffset = screenPosition.Y;
@@ -128,15 +119,25 @@ namespace TabsManagerExtension.Controls {
 
 
 
-        private void MenuPopup_Closed(object sender, System.EventArgs e) {
-            if (this.CloseCommand != null && this.CloseCommand.CanExecute(this.CommandParameterContext)) {
-                this.CloseCommand.Execute(this.CommandParameterContext);
+        private void OnBlockMouseBubbling(object sender, MouseButtonEventArgs e) {
+            e.Handled = true;
+        }
+
+        private void MenuPopup_OnClosed(object sender, System.EventArgs e) {
+            if (_menuControlClosedArgs == null) { // not expected case.
+                _menuControlClosedArgs = new MenuClosedArgs { };
+                System.Diagnostics.Debugger.Break();
+            }
+
+            if (this.CloseCommand != null && this.CloseCommand.CanExecute(_menuControlClosedArgs)) {
+                this.CloseCommand.Execute(_menuControlClosedArgs);
+                _menuControlClosedArgs = null;
             }
         }
-        private void MenuPopup_MouseEnter(object sender, MouseEventArgs e) {
+        private void MenuPopup_OnMouseEnter(object sender, MouseEventArgs e) {
             this.MouseEnteredPopup?.Invoke(this, EventArgs.Empty);
         }
-        private void MenuPopup_MouseLeave(object sender, MouseEventArgs e) {
+        private void MenuPopup_OnMouseLeave(object sender, MouseEventArgs e) {
             this.MouseLeftPopup?.Invoke(this, EventArgs.Empty);
         }
     }

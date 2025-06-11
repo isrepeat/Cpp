@@ -145,8 +145,7 @@ namespace TabsManagerExtension.Controls {
         /// Устанавливает DataContext, позицию, делает видимым.
         /// </summary>
         private void InternalShowPopup(Point position, object dataContext) {
-            this.VirtualMenu.CommandParameterContext = dataContext;
-            this.VirtualMenu.ShowMenu(PlacementMode.Absolute, isStaysOpen: true, position);
+            this.VirtualMenu.ShowMenu(dataContext, PlacementMode.Absolute, isStaysOpen: true, position);
             this.VirtualMenu._Border.Opacity = this.hasUserInteracted 
                 ? this.maxOpacity
                 : this.defaultOpacity;
@@ -166,8 +165,7 @@ namespace TabsManagerExtension.Controls {
         /// Вызывается при повторном наведении, когда popup уже показан.
         /// </summary>
         private void UpdateContent(Point position, object dataContext) {
-            this.VirtualMenu.CommandParameterContext = dataContext;
-            this.VirtualMenu.UpdateMenu(position);
+            this.VirtualMenu.UpdateMenu(dataContext, position);
         }
 
         /// <summary>

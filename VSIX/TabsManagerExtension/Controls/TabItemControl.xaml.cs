@@ -111,7 +111,7 @@ namespace TabsManagerExtension.Controls {
 
             if (menuControl != null) {
                 var mouseScreenPoint = this.ex_ToDpiAwareScreen(e.GetPosition(this));
-                menuControl.ShowMenu(PlacementMode.Absolute, isStaysOpen: false, mouseScreenPoint);
+                menuControl.ShowMenu(this.DataContext, PlacementMode.Absolute, isStaysOpen: false, mouseScreenPoint);
             }
 
             e.Handled = true;

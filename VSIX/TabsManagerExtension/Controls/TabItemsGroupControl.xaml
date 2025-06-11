@@ -20,9 +20,9 @@
 
     <StackPanel>
         <!-- Заголовок группы -->
-        <TextBlock FontSize="12"
-                   FontWeight="Normal"
-                   Foreground="#aaaaaa"
+        <TextBlock FontSize="{StaticResource AppTabItemsGroupFontSize}"
+                   FontWeight="{StaticResource AppTabItemsGroupFontWeight}"
+                   Foreground="{StaticResource AppTabItemsGroupForegroundBrush}"
                    Text="{Binding GroupName}"
                    />
 

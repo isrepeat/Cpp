@@ -55,7 +55,7 @@
                         <ControlTemplate TargetType="Separator">
                             <Rectangle Fill="{TemplateBinding Background}"
                                        Height="{TemplateBinding Height}"
-                            />
+                                       />
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -65,9 +65,9 @@
     
 
     <Popup x:Name="MenuPopup"
-           Closed="MenuPopup_Closed"
-           MouseEnter="MenuPopup_MouseEnter"
-           MouseLeave="MenuPopup_MouseLeave"
+           Closed="MenuPopup_OnClosed"
+           MouseEnter="MenuPopup_OnMouseEnter"
+           MouseLeave="MenuPopup_OnMouseLeave"
            PopupAnimation="Fade"
            AllowsTransparency="True"
            >
@@ -86,7 +86,7 @@
                         <MenuItem Style="{StaticResource CustomMenuItemStyle}"
                                   Header="{Binding Header}"
                                   Command="{Binding Command}"
-                                  CommandParameter="{Binding CommandParameterContext, ElementName=__MenuControl}"
+                                  CommandParameter="{Binding CommandParameterContext}"
                                   />
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type helpers:MenuItemSeparator}">
