@@ -1,0 +1,16 @@
+﻿<helpers:BaseUserControl x:Class="Helpers.Controls.Separator"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__Separator"
+                         >
+    <UserControl.Resources>
+    </UserControl.Resources>
+
+    <Rectangle x:Name="PART_Line"
+               Fill="{Binding LineColor, ElementName=__Separator}"
+               Height="{Binding LineThickness, ElementName=__Separator}"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Stretch"
+               />
+</helpers:BaseUserControl>

@@ -15,8 +15,11 @@ namespace Helpers {
     public interface IMenuItem { }
 
     public class MenuItemBase : IMenuItem, INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName) {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+            if (propertyName == null) {
+                throw new ArgumentNullException(nameof(propertyName), "CallerMemberName did not supply a property name.");
+            }
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
@@ -28,7 +31,7 @@ namespace Helpers {
             set {
                 if (_header != value) {
                     _header = value;
-                    OnPropertyChanged(nameof(Header));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -42,7 +45,7 @@ namespace Helpers {
             set {
                 if (_header != value) {
                     _header = value;
-                    OnPropertyChanged(nameof(Header));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -53,7 +56,18 @@ namespace Helpers {
             set {
                 if (_command != value) {
                     _command = value;
-                    OnPropertyChanged(nameof(Command));
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private object _commandParameterContext;
+        public object CommandParameterContext {
+            get => _commandParameterContext;
+            set {
+                if (_commandParameterContext != value) {
+                    _commandParameterContext = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -61,5 +75,4 @@ namespace Helpers {
 
 
     public class MenuItemSeparator : IMenuItem { }
-
 }

@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Media.Media3D;
 
 namespace Helpers {
     public static class VisualTree {
@@ -185,10 +186,18 @@ namespace Helpers {
                         break;
                     }
 
-                    current = VisualTreeHelper.GetParent(current);
+                    // Безопасно получить родителя (например если current это Run, который является ligical element)
+                    current = GetSafeParent(current);
                 }
 
                 return false;
+            }
+
+            private static DependencyObject? GetSafeParent(DependencyObject child) {
+                if (child is Visual || child is Visual3D) {
+                    return VisualTreeHelper.GetParent(child);
+                }
+                return LogicalTreeHelper.GetParent(child);
             }
         }
     }
