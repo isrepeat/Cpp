@@ -7,6 +7,17 @@ using System.Windows.Threading;
 
 namespace TabsManagerExtension.Controls {
     public partial class ScaleSelectorControl : Helpers.BaseUserControl {
+        public string Title {
+            get { return (string)this.GetValue(TitleProperty); }
+            set { this.SetValue(TitleProperty, value); }
+        }
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(
+                nameof(Title),
+                typeof(string),
+                typeof(ScaleSelectorControl),
+                new PropertyMetadata(""));
+
         public double ScaleFactor {
             get => (double)GetValue(ScaleFactorProperty);
             set => SetValue(ScaleFactorProperty, value);
@@ -22,6 +33,8 @@ namespace TabsManagerExtension.Controls {
         public event EventHandler<double> ScaleChanged;
 
         private TextBox _comboBoxTextBox;
+        private double _minScale = 0.5;
+        private double _maxScale = 1.5;
 
         public ScaleSelectorControl() {
             this.InitializeComponent();
@@ -67,7 +80,7 @@ namespace TabsManagerExtension.Controls {
         private void ScaleComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (this.ScaleComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag != null) {
                 if (double.TryParse(selectedItem.Tag.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double scaleFactor)) {
-                    scaleFactor = Helpers.Math.Clamp(scaleFactor, 0.1, 5.0);
+                    scaleFactor = Helpers.Math.Clamp(scaleFactor, _minScale, _maxScale);
 
                     if (Math.Abs(this.ScaleFactor - scaleFactor) > 0.001) {
                         this.ScaleFactor = scaleFactor;
@@ -83,7 +96,7 @@ namespace TabsManagerExtension.Controls {
                 string input = _comboBoxTextBox.Text.Replace("%", "").Trim();
 
                 if (double.TryParse(input, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double scaleValue)) {
-                    scaleValue = Helpers.Math.Clamp(scaleValue / 100.0, 0.1, 5.0);
+                    scaleValue = Helpers.Math.Clamp(scaleValue / 100.0, _minScale, _maxScale);
 
                     if (Math.Abs(this.ScaleFactor - scaleValue) > 0.001) {
                         this.ScaleFactor = scaleValue;
