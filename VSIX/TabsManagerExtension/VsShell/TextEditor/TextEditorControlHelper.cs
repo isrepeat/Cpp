@@ -1,18 +1,18 @@
 ﻿using System;
+using System.Windows.Threading;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Utilities;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.TextManager.Interop;
-using System.Windows.Threading;
+using Microsoft.VisualStudio.ComponentModelHost;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell.TextEditor {
     /// <summary>
     /// Управляет фокусом и режимом редактирования активного текстового редактора.
     /// </summary>

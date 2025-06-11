@@ -32,7 +32,7 @@ namespace TabsManagerExtension.Controls {
                 var parentButton = Helpers.VisualTree.FindParentByType<Button>(d);
                 if (parentButton == null) {
                     // Клик по пустому месту → перехватываем фокус
-                    TextEditorControlHelper.FocusEditor();
+                    VsShell.TextEditor.TextEditorControlHelper.FocusEditor();
                     this.FocusStealer.Focus();
                     //Keyboard.ClearFocus(); // глобально сбрасываем клавишный фокус со всего.
                     e.Handled = true;

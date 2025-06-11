@@ -1,13 +1,15 @@
-﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.MenuControl"
-                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:local="clr-namespace:TabsManagerExtension"
-                              xmlns:localHelpers="clr-namespace:Helpers"
-                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                              x:Name="__MenuControl"
-                              >
+﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.MenuControl"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__MenuControl"
+                         >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -28,9 +30,9 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="MenuItem">
                             <Border x:Name="_Border"
-                         Padding="{TemplateBinding Padding}"
-                         Background="{TemplateBinding Background}"
-                         >
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="{TemplateBinding Background}"
+                                    >
                                 <ContentPresenter ContentSource="Header" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -53,7 +55,7 @@
                         <ControlTemplate TargetType="Separator">
                             <Rectangle Fill="{TemplateBinding Background}"
                                        Height="{TemplateBinding Height}"
-                            />
+                                       />
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -63,9 +65,9 @@
     
 
     <Popup x:Name="MenuPopup"
-           Closed="MenuPopup_Closed"
-           MouseEnter="MenuPopup_MouseEnter"
-           MouseLeave="MenuPopup_MouseLeave"
+           Closed="MenuPopup_OnClosed"
+           MouseEnter="MenuPopup_OnMouseEnter"
+           MouseLeave="MenuPopup_OnMouseLeave"
            PopupAnimation="Fade"
            AllowsTransparency="True"
            >
@@ -77,22 +79,21 @@
                 >
             <ItemsControl ItemsSource="{Binding MenuItems, ElementName=__MenuControl}">
                 <ItemsControl.Resources>
-                    <DataTemplate DataType="{x:Type localHelpers:MenuItemHeader}">
+                    <DataTemplate DataType="{x:Type helpers:MenuItemHeader}">
                         <TextBlock Text="{Binding Header}" />
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type localHelpers:MenuItemCommand}">
+                    <DataTemplate DataType="{x:Type helpers:MenuItemCommand}">
                         <MenuItem Style="{StaticResource CustomMenuItemStyle}"
                                   Header="{Binding Header}"
                                   Command="{Binding Command}"
-                                  CommandParameter="{Binding CommandParameterContext, ElementName=__MenuControl}"
-                                  Focusable="False"
+                                  CommandParameter="{Binding CommandParameterContext}"
                                   />
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type localHelpers:MenuItemSeparator}">
+                    <DataTemplate DataType="{x:Type helpers:MenuItemSeparator}">
                         <Separator Style="{StaticResource CustomSeparatorStyle}" />
                     </DataTemplate>
                 </ItemsControl.Resources>
             </ItemsControl>
         </Border>
     </Popup>
-</localHelpers:BaseUserControl>
+</helpers:BaseUserControl>

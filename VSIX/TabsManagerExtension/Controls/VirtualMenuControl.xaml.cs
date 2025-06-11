@@ -94,9 +94,8 @@ namespace TabsManagerExtension.Controls {
             this.pendingDataContext = dataContext;
 
             if (this.showTimer == null) {
-                this.showTimer = new DispatcherTimer {
-                    Interval = TimeSpan.FromMilliseconds(300)
-                };
+                this.showTimer = new DispatcherTimer(DispatcherPriority.Render);
+                this.showTimer.Interval = TimeSpan.FromMilliseconds(700);
 
                 this.showTimer.Tick += (s, e) => {
                     this.showTimer.Stop();
@@ -120,10 +119,8 @@ namespace TabsManagerExtension.Controls {
             this.CancelShowTimer(); // отменяем отложенный показ, если ещё не отработал
 
             if (this.hideTimer == null) {
-                this.hideTimer = new DispatcherTimer {
-                    Interval = TimeSpan.FromMilliseconds(300)
-                };
-
+                this.hideTimer = new DispatcherTimer(DispatcherPriority.Render);
+                this.hideTimer.Interval = TimeSpan.FromMilliseconds(700);
                 this.hideTimer.Tick += (s, e) => {
                     this.hideTimer.Stop();
 
@@ -148,8 +145,7 @@ namespace TabsManagerExtension.Controls {
         /// Устанавливает DataContext, позицию, делает видимым.
         /// </summary>
         private void InternalShowPopup(Point position, object dataContext) {
-            this.VirtualMenu.CommandParameterContext = dataContext;
-            this.VirtualMenu.ShowMenu(PlacementMode.Absolute, isStaysOpen: true, position);
+            this.VirtualMenu.ShowMenu(dataContext, PlacementMode.Absolute, isStaysOpen: true, position);
             this.VirtualMenu._Border.Opacity = this.hasUserInteracted 
                 ? this.maxOpacity
                 : this.defaultOpacity;
@@ -169,8 +165,7 @@ namespace TabsManagerExtension.Controls {
         /// Вызывается при повторном наведении, когда popup уже показан.
         /// </summary>
         private void UpdateContent(Point position, object dataContext) {
-            this.VirtualMenu.CommandParameterContext = dataContext;
-            this.VirtualMenu.UpdateMenu(position);
+            this.VirtualMenu.UpdateMenu(dataContext, position);
         }
 
         /// <summary>

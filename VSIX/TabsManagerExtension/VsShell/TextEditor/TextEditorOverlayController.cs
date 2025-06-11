@@ -2,11 +2,19 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.TextManager.Interop;
+using Microsoft.VisualStudio.ComponentModelHost;
 
-namespace TabsManagerExtension.Overlay {
+namespace TabsManagerExtension.VsShell.TextEditor.Overlay {
 
     /// <summary>
     /// Отвечает за управление жизненным циклом визуального оверлея (`TextEditorOverlayControl`),
@@ -28,6 +36,31 @@ namespace TabsManagerExtension.Overlay {
             _dte = dte;
         }
 
+
+        public void Show() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.EnsureCreated();
+        }
+
+        public void Hide() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            this.EnsureDisposed();
+        }
+
+        public void Update() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (_overlayManager == null || !_overlayManager.IsAttached) {
+                return;
+            }
+
+            var textEditorOverlayControl = _overlayManager.Overlay;
+            if (textEditorOverlayControl != null) {
+                textEditorOverlayControl.LoadAnchorsFromActiveDocument();
+            }
+        }
+
+
+
         /// <summary>
         /// Обновляет состояние оверлея:
         /// - создаёт, если есть хотя бы один открытый документ;
@@ -36,7 +69,7 @@ namespace TabsManagerExtension.Overlay {
         public void UpdateState() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool hasOpenDocuments = _dte.Documents.Cast<Document>().Any();
+            bool hasOpenDocuments = _dte.Documents.Cast<EnvDTE.Document>().Any();
             if (hasOpenDocuments) {
                 this.EnsureCreated();
             }

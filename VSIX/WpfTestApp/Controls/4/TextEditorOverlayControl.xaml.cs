@@ -13,12 +13,13 @@ using System.Windows.Shapes;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.VisualStudio.Shell;
-using TabsManagerExtension.State.TextEditor;
+using Local = WpfTestApp.__Local;
+using WpfTestApp.__Local;
 
-
-namespace TabsManagerExtension.Controls {
+namespace WpfTestApp.Controls {
     public partial class TextEditorOverlayControl : Helpers.BaseUserControl {
+        public Action<int>? OnNavigateToLine;
+
         private Helpers.VisibilityProperty _isAnchorToggleButtonVisible = new();
         public Helpers.VisibilityProperty IsAnchorToggleButtonVisible {
             get => _isAnchorToggleButtonVisible;
@@ -41,17 +42,18 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
-        public ObservableCollection<AnchorPoint> Anchors { get; } = new();
+        public ObservableCollection<Local.AnchorPoint> Anchors { get; } = new();
 
-        private AnchorPoint? _selectedAnchor;
-        public AnchorPoint? SelectedAnchor {
+        private Local.AnchorPoint? _selectedAnchor;
+        public Local.AnchorPoint? SelectedAnchor {
             get => _selectedAnchor;
             set {
                 if (_selectedAnchor != value) {
                     _selectedAnchor = value;
                     this.OnPropertyChanged();
-                    if (value != null) {
-                        this.NavigateToLine(value.LineNumber);
+
+                    if (_selectedAnchor != null) {
+                        this.OnNavigateToLine?.Invoke(_selectedAnchor.LineNumber);
                     }
                 }
             }
@@ -69,17 +71,12 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
-            //VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.AddTrackedInputElement(this);
-
             // IsHitTestVisible могут быть унаследованы от родителя (например, AdornerLayer),
             // поэтому значения из XAML не применяются гарантированно — устанавливаем явно в OnLoaded.
             this.IsHitTestVisible = true;
-
-            this.LoadAnchorsFromActiveDocument();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e) {
-            //VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.RemoveTrackedInputElement(this);
             this.Anchors.Clear();
         }
 
@@ -94,23 +91,10 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        public void LoadAnchorsFromActiveDocument() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
+        public void LoadAnchorsFromText(string text) {
             this.Anchors.Clear();
 
-            var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            if (dte?.ActiveDocument?.Object("TextDocument") is not EnvDTE.TextDocument textDoc) {
-                return;
-            }
-
-            var point = textDoc.StartPoint.CreateEditPoint();
-            var lines = new List<string>();
-
-            for (int i = 1; i <= textDoc.EndPoint.Line; i++) {
-                lines.Add(point.GetLines(i, i + 1));
-            }
-
+            var lines = text.Replace("\r", "").Split('\n').ToList();
             var anchors = AnchorParser.ParseLinesWithContextWindow(lines);
             var final = AnchorParser.InsertSeparators(anchors);
 
@@ -120,23 +104,6 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void NavigateToLine(int lineNumber) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            if (dte?.ActiveDocument?.Object("TextDocument") is EnvDTE.TextDocument textDoc) {
-                var selection = textDoc.Selection;
-
-                // Перемещаем каретку на нужную строку (на неё и останется курсор)
-                selection.MoveToLineAndOffset(lineNumber, 1);
-
-                // Для скролинга создаем точку выше — с контекстом
-                int scrollLine = Math.Max(1, lineNumber - 5); // гарантируем что >= 1
-                var scrollPoint = textDoc.CreateEditPoint();
-                scrollPoint.MoveToLineAndOffset(scrollLine, 1);
-
-                // Скроллим так, чтобы scrollLine оказался в самом верху
-                scrollPoint.TryToShow(EnvDTE.vsPaneShowHow.vsPaneShowTop);
-            }
         }
     }
 }

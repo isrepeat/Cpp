@@ -1,16 +1,18 @@
-﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabsManagerToolWindowControl"
-                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-                              xmlns:local="clr-namespace:TabsManagerExtension"
-                              xmlns:localHelpers="clr-namespace:Helpers"
-                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                              x:Name="__TabsManagerToolWindowControl"
-                              Background="#1F1F1F"
-                              Foreground="#d4d4d4"
-                              >
+﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabsManagerToolWindowControl"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         xmlns:helpersControls="clr-namespace:Helpers.Controls"
+                         x:Name="__TabsManagerToolWindowControl"
+                         Background="#1F1F1F"
+                         Foreground="#d4d4d4"
+                         >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -40,7 +42,7 @@
                             <ControlTemplate.Triggers>
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static localHelpers:GlobalFlags.Metadata}}" Value="True" />
+                                        <Condition Binding="{Binding [TextEditorFrameFocused], Source={x:Static helpers:GlobalFlags.Metadata}}" Value="True" />
                                     </MultiDataTrigger.Conditions>
                                     <Setter TargetName="TopBorder" Property="Fill" Value="{StaticResource AppAccentBrush}" />
                                 </MultiDataTrigger>
@@ -93,18 +95,15 @@
                     MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                     OpenCommand="{Binding OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                     CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
-                    CommandParameterContext="{Binding}" />
+                    />
             </DataTemplate>
 
         </ResourceDictionary>
     </UserControl.Resources>
 
-    
-    
+
+
     <Grid>
-        <Grid.Resources>
-            <localHelpers:BindingProxy x:Key="TabsManagerToolWindowControlProxy2" Data="{Binding ElementName=__TabsManagerToolWindowControl}" />
-        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="*" />
@@ -130,7 +129,7 @@
             <!-- MAIN LAYOUT -->
             <ItemsControl ItemsSource="{Binding SortedTabItemsGroups}">
                 <ItemsControl.Resources>
-                    <DataTemplate DataType="{x:Type local:TabItemsPreviewGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsPreviewGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -145,7 +144,7 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:TabItemsPinnedGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsPinnedGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -160,7 +159,7 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:TabItemsDefaultGroup}">
+                    <DataTemplate DataType="{x:Type localStateDocument:TabItemsDefaultGroup}">
                         <localControls:TabItemsGroupControl>
                             <localControls:TabItemsGroupControl.TabItemTemplate>
                                 <DataTemplate>
@@ -175,19 +174,22 @@
                             </localControls:TabItemsGroupControl.TabItemTemplate>
                         </localControls:TabItemsGroupControl>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type local:SeparatorTabItemsGroup}">
-                        <Separator Margin="0,10"/>
+                    <DataTemplate DataType="{x:Type localStateDocument:SeparatorTabItemsGroup}">
+                        <helpersControls:Separator Margin="0,2,0,5"
+                                                   Padding="5,0"
+                                                   LineColor="{StaticResource AppTabItemsGroupSeparatorBrush}"
+                                                   LineThickness="1"
+                                                   />
                     </DataTemplate>
                 </ItemsControl.Resources>
             </ItemsControl>
         </Grid>
 
-
         <!-- Контейнер с выбором масштаба -->
         <localControls:ScaleSelectorControl Grid.Row="2"
                                             Style="{StaticResource CustomScaleSelectorControlStyle}"
-                                            ScaleFactor="{Binding DataContext.ScaleFactor, Mode=TwoWay}" 
-                                            ScaleChanged="ScaleSelectorControl_ScaleChanged" 
+                                            Title="Tabs: "
+                                            ScaleFactor="{Binding ScaleFactorTabsCompactness, Mode=TwoWay}" 
                                             />
 
         <!-- VirtualMenuControl с настраиваемым контентом -->
@@ -200,4 +202,4 @@
         <!-- Перехватчик фокуса при клике на контрол -->
         <Border x:Name="FocusStealer" Focusable="True" Width="0" Height="0" />
     </Grid>
-</localHelpers:BaseUserControl>
+</helpers:BaseUserControl>

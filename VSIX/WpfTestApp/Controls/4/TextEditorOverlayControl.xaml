@@ -1,24 +1,18 @@
-﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TextEditorOverlayControl"
+﻿<helpers:BaseUserControl x:Class="WpfTestApp.Controls.TextEditorOverlayControl"
                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                         xmlns:local="clr-namespace:TabsManagerExtension"
-                         xmlns:localEnums="clr-namespace:TabsManagerExtension.Enums"
-                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:local="clr-namespace:WpfTestApp"
+                         xmlns:localEnums="clr-namespace:WpfTestApp.__Local.Enums"
                          xmlns:helpers="clr-namespace:Helpers"
                          x:Name="__TextEditorOverlayControl"
-                         VerticalAlignment="Top"
-                         HorizontalAlignment="Left"
+                         VerticalAlignment="Stretch"
+                         HorizontalAlignment="Stretch"
                          >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/TabsManagerExtension;component/Styles/BrushResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
+            
             <!--<Style x:Key="CustomBorderStyle" TargetType="Border">
                 <Setter Property="Margin" Value="0,-2,0,0" />
                 <Setter Property="Focusable" Value="False"/>
@@ -37,6 +31,7 @@
                     </MultiDataTrigger>
                 </Style.Triggers>
             </Style>-->
+
 
             <Style x:Key="AnchorContainerStyle" TargetType="Grid">
                 <Setter Property="Width" Value="auto"/>
@@ -69,10 +64,6 @@
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Anchors.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#3E3E42"/>
                                     <Setter Property="BorderBrush" Value="#666"/>
@@ -127,7 +118,7 @@
                                     <Setter TargetName="Bd" Property="Background" Value="#007ACC"/>
                                     <Setter Property="Foreground" Value="White"/>
                                 </Trigger>
-                                <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                <DataTrigger Binding="{Binding Level}" Value="{x:Static localEnums:AnchorLevel.Separator}">
                                     <Setter Property="IsEnabled" Value="False"/>
                                     <Setter Property="Focusable" Value="False"/>
                                 </DataTrigger>
@@ -136,6 +127,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -174,21 +166,24 @@
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Section}">
+                                                        <!-- Стили для Section -->
+                                                        <DataTrigger Binding="{Binding Level}" Value="{x:Static localEnums:AnchorLevel.Section}">
                                                             <Setter Property="Foreground" Value="White"/>
                                                             <Setter Property="FontWeight" Value="Bold"/>
                                                             <Setter Property="Padding" Value="5,5,5,5"/>
                                                             <Setter Property="Margin" Value="0,2,0,2"/>
                                                         </DataTrigger>
-
-                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Subsection}">
+                                                        
+                                                        <!-- Стили для Subsection -->
+                                                        <DataTrigger Binding="{Binding Level}" Value="{x:Static localEnums:AnchorLevel.Subsection}">
                                                             <Setter Property="Foreground" Value="#CCCCCC"/>
                                                             <Setter Property="FontWeight" Value="Normal"/>
                                                             <Setter Property="Padding" Value="5,5,5,5"/>
                                                             <Setter Property="Margin" Value="12,2,0,2"/>
                                                         </DataTrigger>
-
-                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                                        
+                                                        <!-- Скрыть при Separator -->
+                                                        <DataTrigger Binding="{Binding Level}" Value="{x:Static localEnums:AnchorLevel.Separator}">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -198,14 +193,14 @@
 
                                         <!-- Separator -->
                                         <Rectangle Height="1"
-                                                    Fill="#444"
-                                                    Margin="0,6,0,6"
-                                                    >
+                                                   Fill="#444"
+                                                   Margin="0,6,0,6"
+                                                   >
                                             <Rectangle.Style>
                                                 <Style TargetType="Rectangle">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AnchorKind}" Value="{x:Static localEnums:AnchorKind.Separator}">
+                                                        <DataTrigger Binding="{Binding Level}" Value="{x:Static localEnums:AnchorLevel.Separator}">
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>

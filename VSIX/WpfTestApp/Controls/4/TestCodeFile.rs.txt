@@ -1,0 +1,77 @@
+﻿// ░ Initialization
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void Initialize() {
+    // ░ Load config
+    var config = LoadConfiguration();
+
+    // ░ Init services
+    InitServices();
+
+    // ░ Start engine
+    Engine.Start();
+}
+
+// ░ Event handlers
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void HookEvents() {
+    // ░ Attach events
+    this.SomeEvent += OnSomeEvent;
+
+    // ░ Detach events
+    this.SomeEvent -= OnSomeEvent;
+
+    // ░ Raise events
+    RaiseSomething();
+}
+
+// ░ Internal logic
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void Execute() {
+    // ░ Diagnostics
+    RunDiagnostics();
+
+    // ░ Validation
+    ValidateInputs();
+
+    // ░ Execution
+    Run();
+}
+
+// ░ UI layer
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void BuildUI() {
+    // ░ Load templates
+    TemplateLoader.LoadAll();
+
+    // ░ Setup bindings
+    SetupBindings();
+
+    // ░ Render layout
+    LayoutManager.Render();
+}
+
+// ░ Persistence
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void SaveState() {
+    // ░ Collect data
+    var state = Collect();
+
+    // ░ Serialize
+    SaveToFile(state);
+
+    // ░ Confirm
+    Log("Saved.");
+}
+
+// ░ Debug tools
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
+void DebugStuff() {
+    // ░ Print info
+    PrintState();
+
+    // ░ Toggle flags
+    ToggleDebug();
+
+    // ░ Dump logs
+    DumpLog();
+}

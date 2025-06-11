@@ -1,36 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
-using System.Collections.Generic;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.VsShell.Services {
     /// <summary>
     /// Универсальный трекер, подписывающийся на события выбора и активации окон в Visual Studio.
     /// Позволяет отслеживать:
     /// - смену активного окна (frame)
     /// - выбор элементов в Solution Explorer
     /// </summary>
-    public sealed class VsSelectionTracker : IVsSelectionEvents, IDisposable {
+   public sealed class VsSelectionTrackerService :
+        TabsManagerExtension.Services.SingletonServiceBase<VsSelectionTrackerService>,
+        TabsManagerExtension.Services.IExtensionService,
+        IVsSelectionEvents {
+
         private readonly IVsMonitorSelection _monitorSelection;
         private readonly IVsUIShell _uiShell;
         private uint _cookie;
 
-        /// <summary>
-        /// Событие вызывается при смене активного окна (IVsWindowFrame).
-        /// </summary>
         public event Action<IVsWindowFrame>? VsWindowFrameActivated;
-
-        /// <summary>
-        /// Событие вызывается при выборе ProjectItem в Solution Explorer.
-        /// </summary>
         public event Action<EnvDTE.ProjectItem>? ProjectItemSelected;
 
-        public VsSelectionTracker() {
+        public VsSelectionTrackerService() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection))
@@ -43,13 +40,21 @@ namespace TabsManagerExtension {
             ErrorHandler.ThrowOnFailure(hr);
         }
 
-        public void Dispose() {
+        public void Initialize() {
+            // Инициализация уже произошла в конструкторе, ничего не делаем.
+            Helpers.Diagnostic.Logger.LogDebug("[VsSelectionTracker] Initialized.");
+        }
+
+        public void Shutdown() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (_cookie != 0) {
                 _monitorSelection.UnadviseSelectionEvents(_cookie);
                 _cookie = 0;
             }
+
+            ClearInstance();
+            Helpers.Diagnostic.Logger.LogDebug("[VsSelectionTracker] Disposed.");
         }
 
         public int OnElementValueChanged(uint elementid, object oldValue, object newValue) {

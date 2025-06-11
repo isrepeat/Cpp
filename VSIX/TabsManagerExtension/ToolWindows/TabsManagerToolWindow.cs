@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
-namespace TabsManagerExtension {
+namespace TabsManagerExtension.ToolWindows {
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
     /// </summary>

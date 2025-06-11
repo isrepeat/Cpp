@@ -1,13 +1,15 @@
-﻿<localHelpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabItemsGroupControl"
-                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:local="clr-namespace:TabsManagerExtension"
-                              xmlns:localHelpers="clr-namespace:Helpers"
-                              xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
-                              xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
-                              xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
-                              x:Name="__TabItemsGroupControl"
-                              >
+﻿<helpers:BaseUserControl x:Class="TabsManagerExtension.Controls.TabItemsGroupControl"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:TabsManagerExtension"
+                         xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
+                         xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                         xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                         xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__TabItemsGroupControl"
+                         >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,9 +20,9 @@
 
     <StackPanel>
         <!-- Заголовок группы -->
-        <TextBlock FontSize="12"
-                   FontWeight="Normal"
-                   Foreground="#aaaaaa"
+        <TextBlock FontSize="{StaticResource AppTabItemsGroupFontSize}"
+                   FontWeight="{StaticResource AppTabItemsGroupFontWeight}"
+                   Foreground="{StaticResource AppTabItemsGroupForegroundBrush}"
                    Text="{Binding GroupName}"
                    />
 
@@ -40,4 +42,4 @@
 
         <Border Background="Transparent" Height="5" />
     </StackPanel>
-</localHelpers:BaseUserControl>
+</helpers:BaseUserControl>

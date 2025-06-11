@@ -17,29 +17,19 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Design;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.TextManager.Interop;
 using Task = System.Threading.Tasks.Task;
 using Helpers.Ex;
+using TabsManagerExtension.State.Document;
 
 
 namespace TabsManagerExtension.Controls {
-    public partial class TabsManagerToolWindowControl : Helpers.BaseUserControl, INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
+    public partial class TabsManagerToolWindowControl : Helpers.BaseUserControl {
 
         // Properties:
-        private double _scaleFactor = 0.9;
-        public double ScaleFactor {
-            get => _scaleFactor;
-            set {
-                if (_scaleFactor != value) {
-                    _scaleFactor = value;
-                    OnPropertyChanged();
-                    ApplyDocumentScale();
-                }
-            }
-        }
-
         private Helpers.SortedObservableCollection<TabItemsGroupBase> _sortedTabItemsGroups;
         public Helpers.SortedObservableCollection<TabItemsGroupBase> SortedTabItemsGroups {
             get => _sortedTabItemsGroups;
@@ -73,6 +63,30 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
+        private double _scaleFactorUI = 1.0;
+        public double ScaleFactorUI {
+            get => _scaleFactorUI;
+            set {
+                if (_scaleFactorUI != value) {
+                    _scaleFactorUI = value;
+                    OnPropertyChanged();
+                    this.ApplyScaleUI();
+                }
+            }
+        }
+
+        private double _scaleFactorTabsCompactness = 1.0;
+        public double ScaleFactorTabsCompactness {
+            get => _scaleFactorTabsCompactness;
+            set {
+                if (_scaleFactorTabsCompactness != value) {
+                    _scaleFactorTabsCompactness = value;
+                    OnPropertyChanged();
+                    this.ApplyScaleTabsCompactness();
+                }
+            }
+        }
+
 
         // Internal:
         private EnvDTE80.DTE2 _dte;
@@ -82,9 +96,10 @@ namespace TabsManagerExtension.Controls {
 
         private DispatcherTimer _tabsManagerStateTimer;
         private FileSystemWatcher _fileWatcher;
-        private VsSelectionTracker? _vsSelectionTracker;
 
         private Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase> _tabItemsSelectionCoordinator;
+        private VsShell.TextEditor.Overlay.TextEditorOverlayController _textEditorOverlayController;
+
 
         public ICommand OnPinTabItemCommand { get; }
         public ICommand OnUnpinTabItemCommand { get; }
@@ -152,7 +167,7 @@ namespace TabsManagerExtension.Controls {
                 this.FocusStealer.Focus();
 
                 // Глобально сбрасываем клавишный фокус со всего.
-                //Keyboard.ClearFocus()
+                //Keyboard.ClearFocus();
 
                 Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
                 e.Handled = true;
@@ -261,17 +276,12 @@ namespace TabsManagerExtension.Controls {
         // ░ VsShellTrackers 
         //
         private void InitializeVsShellTrackers() {
-            _vsSelectionTracker = new VsSelectionTracker();
-            _vsSelectionTracker.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
-
-            DocumentActivationTracker.Initialize();
-            DocumentActivationTracker.OnDocumentActivated += this.OnDocumentActivatedExternally;
+            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
         }
         private void UninitializeVsShellTrackers() {
-            DocumentActivationTracker.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            DocumentActivationTracker.Dispose();
-
-            _vsSelectionTracker.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
+            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
         }
 
 
@@ -318,9 +328,13 @@ namespace TabsManagerExtension.Controls {
             _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase>(this.SortedTabItemsGroups);
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = this.OnTabItemSelectionChanged;
             _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
+
+
+            _textEditorOverlayController = new VsShell.TextEditor.Overlay.TextEditorOverlayController(_dte);
         }
 
         private void UninitializeTabItemsSelectionCoordinator() {
+            _textEditorOverlayController.Hide();
         }
 
 
@@ -359,6 +373,8 @@ namespace TabsManagerExtension.Controls {
             else {
                 this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemDocument);
             }
+
+            _textEditorOverlayController.Update();
         }
 
 
@@ -388,7 +404,7 @@ namespace TabsManagerExtension.Controls {
                 Helpers.Diagnostic.Logger.LogWarning($"\"{document?.Name}\" not found in collections");
             }
         }
-
+        
 
         private void OnWindowActivated(EnvDTE.Window gotFocus, EnvDTE.Window lostFocus) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnWindowActivated()");
@@ -418,9 +434,11 @@ namespace TabsManagerExtension.Controls {
             }
 
             var addedOrExistTabItem = this.AddTabItemToAutoDeterminedGroupIfMissing(tabItem);
-            addedOrExistTabItem.IsSelected = true; // Select after tabItem exist added to group.
+            addedOrExistTabItem.IsSelected = true;
 
             this.UpdateWindowTabsInfo();
+
+            _textEditorOverlayController.Update();
         }
 
 
@@ -509,15 +527,21 @@ namespace TabsManagerExtension.Controls {
             bool isMdiChild = mode != null && (VSFRAMEMODE)(int)mode == VSFRAMEMODE.VSFM_MdiChild;
             Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", isMdiChild);
 
-            //// Получаем содержимое активного окна (View)
-            //vsWindowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var docView);
 
-            //// Если это кодовое окно, запрашиваем его "основной" текстовый редактор
-            //if (docView is IVsCodeWindow codeWindow) {
-            //    if (codeWindow.GetPrimaryView(out var textView) == VSConstants.S_OK && textView != null) {
-            //        // Это полноценный редактор
-            //    }
-            //}
+            if (isMdiChild) {
+                // Получаем содержимое активного окна (View)
+                vsWindowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocView, out var docView);
+
+                // Если это кодовое окно, запрашиваем его "основной" текстовый редактор
+                if (docView is IVsCodeWindow codeWindow) {
+                    if (codeWindow.GetPrimaryView(out var textView) == VSConstants.S_OK && textView != null) {
+                        // Это полноценный редактор
+                        _textEditorOverlayController.Show();
+                        return;
+                    }
+                }
+            }
+            _textEditorOverlayController.Hide();
         }
 
         private void OnDocumentActivatedExternally(string documentFullName) {
@@ -754,13 +778,26 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
+        private void OnMoveTabItemToRelatedProject(object parameter) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnMoveTabItemToRelatedProject()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
+                this.MoveDocumentToProjectGroup(
+                    documentProjectReferenceInfo.TabItemDocument,
+                    documentProjectReferenceInfo.TabItemProject
+                    );
+            }
+        }
+
 
         // 
         // ░ ContextMenu
         //
         private void OnTabItemContextMenuOpen(object parameter) {
-            if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
-                if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
+            if (parameter is Controls.MenuControl.MenuOpeningArgs contextMenuOpeningArgs) {
+                if (contextMenuOpeningArgs.DataContext is TabItemBase tabItem) {
+
                     switch (_tabItemsSelectionCoordinator.SelectionState) {
                         case Helpers.Enums.SelectionState.Single:
                             if (tabItem is TabItemDocument tabItemDocument) {
@@ -768,21 +805,24 @@ namespace TabsManagerExtension.Controls {
 
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                     new Helpers.MenuItemCommand {
-                                        Header = Constants.UI.OpenTabLocation,
-                                        Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem)
+                                        Header = State.Constants.UI.OpenTabLocation,
+                                        Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem),
+                                        CommandParameterContext = contextMenuOpeningArgs.DataContext,
                                     },
                                     new Helpers.MenuItemSeparator(),
                                     new Helpers.MenuItemCommand {
-                                        Header = Constants.UI.CloseTab,
-                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
+                                        Header = State.Constants.UI.CloseTab,
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem),
+                                        CommandParameterContext = contextMenuOpeningArgs.DataContext,
                                     },
                                 };
                             }
                             else if (tabItem is TabItemWindow tabItemWindow) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                     new Helpers.MenuItemCommand {
-                                        Header = Constants.UI.CloseTab,
-                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
+                                        Header = State.Constants.UI.CloseTab,
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem),
+                                        CommandParameterContext = contextMenuOpeningArgs.DataContext,
                                     },
                                 };
                             }
@@ -795,13 +835,14 @@ namespace TabsManagerExtension.Controls {
                             if (isTabItemAmongSelectedItems) {
                                 this.ContextMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                                     new Helpers.MenuItemCommand {
-                                        Header = Constants.UI.CloseSelectedTabs,
-                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
+                                        Header = State.Constants.UI.CloseSelectedTabs,
+                                        Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem),
+                                        CommandParameterContext = contextMenuOpeningArgs.DataContext,
                                     }
                                 };
                             }
                             else {
-                                contextMenuOpenRequest.ShouldOpen = false;
+                                contextMenuOpeningArgs.ShouldOpen = false;
                                 tabItem.IsSelected = true;
                             }
                             break;
@@ -811,8 +852,10 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnTabItemContextMenuClosed(object parameter) {
-            if (parameter is TabItemBase tabItem) {
-                tabItem.Metadata.SetFlag("IsCtxMenuOpenned", false);
+            if (parameter is Controls.MenuControl.MenuClosedArgs contextMenuClosedArgs) {
+                if (contextMenuClosedArgs.DataContext is TabItemBase tabItem) {
+                    tabItem.Metadata.SetFlag("IsCtxMenuOpenned", false);
+                }
             }
         }
 
@@ -833,9 +876,6 @@ namespace TabsManagerExtension.Controls {
 
                 // Получаем привязанный объект (TabItemDocument)
                 if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
-                    if (tabItemDocument.ShellDocument != null) {
-                        tabItemDocument.UpdateProjectReferenceList();
-                    }
                     var screenPoint = interactiveArea.ex_ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
                     this.VirtualMenuControl.Show(screenPoint, tabItemDocument);
                 }
@@ -850,10 +890,11 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnTabItemVirtualMenuOpen(object parameter) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemVirtualMenuOpen()");
+            //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnTabItemVirtualMenuOpen()");
 
-            if (parameter is Controls.MenuControl.ContextMenuOpenRequest contextMenuOpenRequest) {
-                if (contextMenuOpenRequest.DataContext is TabItemBase tabItem) {
+            if (parameter is Controls.MenuControl.MenuOpeningArgs virtualMenuOpeningArgs) {
+                if (virtualMenuOpeningArgs.DataContext is TabItemBase tabItem) {
+                    
                     if (tabItem is TabItemDocument tabItemDocument) {
                         this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                             new Helpers.MenuItemHeader {
@@ -861,22 +902,43 @@ namespace TabsManagerExtension.Controls {
                             },
                             new Helpers.MenuItemSeparator(),
                             new Helpers.MenuItemCommand {
-                                Header = Constants.UI.OpenTabLocation,
-                                Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem)
+                                Header = State.Constants.UI.OpenTabLocation,
+                                Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem),
+                                CommandParameterContext = virtualMenuOpeningArgs.DataContext,
                             },
                             new Helpers.MenuItemCommand {
-                                Header = Constants.UI.CloseTab,
-                                Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem)
+                                Header = State.Constants.UI.CloseTab,
+                                Command = new Helpers.RelayCommand<object>(this.OnCloseTabItem),
+                                CommandParameterContext = virtualMenuOpeningArgs.DataContext,
                             },
                         };
+                        if (tabItemDocument.ShellDocument != null) {
+                            tabItemDocument.UpdateProjectReferenceList();
+
+                            if (tabItemDocument.ProjectReferenceList.Count > 0) {
+                                this.VirtualMenuItems.Add(new Helpers.MenuItemSeparator());
+
+                                foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
+                                    this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
+                                        Header = projRefEntry.TabItemProject.Caption,
+                                        Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
+                                        CommandParameterContext = projRefEntry,
+                                    });
+                                }
+                            }
+                        }
                     }
                     else if (tabItem is TabItemWindow tabItemWindow) {
-                        contextMenuOpenRequest.ShouldOpen = false;
+                        virtualMenuOpeningArgs.ShouldOpen = false;
                     }
                 }
             }
         }
         private void OnTabItemVirtualMenuClosed(object parameter) {
+            if (parameter is Controls.MenuControl.MenuClosedArgs virtualMenuClosedArgs) {
+                if (virtualMenuClosedArgs.DataContext is TabItemBase tabItem) {
+                }
+            }
         }
 
 
@@ -893,17 +955,17 @@ namespace TabsManagerExtension.Controls {
 
 
         // 
-        // ░ ScaleSelectorControl
+        // ░ ScaleSelectorControl(s)
         //
-        private void ScaleSelectorControl_ScaleChanged(object sender, double scaleFactor) {
-            this.ApplyDocumentScale();
+        private void ApplyScaleUI() {
+            if (this.DocumentScaleTransform != null) {
+                this.DocumentScaleTransform.ScaleX = this.ScaleFactorUI;
+                this.DocumentScaleTransform.ScaleY = this.ScaleFactorUI;
+            }
         }
 
-        private void ApplyDocumentScale() {
-            if (this.DocumentScaleTransform != null) {
-                this.DocumentScaleTransform.ScaleX = this.ScaleFactor;
-                this.DocumentScaleTransform.ScaleY = this.ScaleFactor;
-            }
+        private void ApplyScaleTabsCompactness() {
+            Helpers.BaseUserControlResourceHelper.UpdateDynamicResource(this, "AppTabItemHeight", this.ScaleFactorTabsCompactness * 22);
         }
 
 
@@ -943,6 +1005,14 @@ namespace TabsManagerExtension.Controls {
             }
 
             this.SyncActiveDocumentWithPrimaryTabItem();
+
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+                if (VsShell.TextEditor.TextEditorControlHelper.IsEditorActive()) {
+                    Helpers.GlobalFlags.SetFlag("TextEditorFrameFocused", true);
+                    _textEditorOverlayController.Show();
+                    _textEditorOverlayController.Update();
+                }
+            }), DispatcherPriority.Background);
         }
 
 
@@ -953,9 +1023,8 @@ namespace TabsManagerExtension.Controls {
             // No need remove old because preview tab item group
             // guarded with ItemInsertMode == SingleWithReplaceExisting.
 
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
-            tabItemDocument.IsPreviewTab = true;
-            tabItemDocument.IsSelected = true; // [?] Select after tabItem added to group.
+            var addedOrExistTabItem = this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsPreviewGroup());
+            addedOrExistTabItem.IsSelected = true;
         }
 
 
@@ -1147,11 +1216,6 @@ namespace TabsManagerExtension.Controls {
 
             var primaryTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
             if (primaryTabItem is IActivatableTab activatableTab) {
-                if (_dte.ActiveDocument != null && string.Equals(_dte.ActiveDocument.FullName, primaryTabItem.FullName, StringComparison.OrdinalIgnoreCase)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"Skip Activate, alredy active - \"{primaryTabItem.Caption}\"");
-                    return;
-                }
-
                 Helpers.Diagnostic.Logger.LogDebug($"Activate - \"{primaryTabItem.Caption}\"");
                 activatableTab.Activate();
             }
@@ -1287,11 +1351,6 @@ namespace TabsManagerExtension.Controls {
             string extension = Path.GetExtension(fullPath);
             return extension.Equals(".TMP", StringComparison.OrdinalIgnoreCase) ||
                    fullPath.Contains("~") && fullPath.Contains(".TMP");
-        }
-
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

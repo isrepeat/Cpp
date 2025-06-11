@@ -20,7 +20,6 @@ namespace Helpers {
         /// <param name="childElement">UIElement, который будет наложен.</param>
         public AdornerWithChild(UIElement adornedElement, T childElement) : base(adornedElement) {
             _child = childElement;
-            _child.IsHitTestVisible = false;
             this.AddVisualChild(_child);
 
             // Обновляем позиционирование при изменении размера
@@ -120,7 +119,13 @@ namespace Helpers {
     /// Синхронизирует размеры и автоматически удаляет оверлей при выгрузке.
     /// </summary>
     public class AdornerOverlayManager<T> where T : FrameworkElement {
-        public bool IsAttached { get; private set; } = true;
+        public bool IsAttached { get; private set; } = false;
+        public T? Overlay {
+            get {
+                _overlayRef.TryGetTarget(out var overlay);
+                return overlay;
+            }
+        }
 
         private readonly System.WeakReference<FrameworkElement> _targetRef;
         private readonly System.WeakReference<T> _overlayRef;
@@ -151,6 +156,7 @@ namespace Helpers {
 
             // Добавление в слой наложений
             _adorner = AdornerService.AddAdorner(target, overlay);
+            this.IsAttached = true;
         }
 
         /// <summary>
