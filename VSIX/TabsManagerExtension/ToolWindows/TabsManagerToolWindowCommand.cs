@@ -79,7 +79,7 @@ namespace TabsManagerExtension.ToolWindows {
             //}
 
             var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
-            analyzer.LogAllIncludesInSolution();
+            //analyzer.LogAllIncludesInSolution();
             analyzer.Build();
             var whoIncludes= analyzer.GetFilesIncludingTransitive("Logger.h");
 
