@@ -79,6 +79,8 @@ namespace TabsManagerExtension {
         /// </summary>
         /// <param name="enable">Если true — включить кастомные вкладки, иначе вернуть оригинал.</param>
         public void ToggleCustomTabs(bool enable) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"OnDocumentActivatedExternally({enable})");
+
             this._isCustomTabsEnabled = enable;
 
             var mainWindow = Application.Current.MainWindow;
@@ -119,7 +121,7 @@ namespace TabsManagerExtension {
                     this._lastInjectedContent = null;
                     Helpers.Diagnostic.Logger.LogDebug("Restored original tab content.");
 
-                    Services.ExtensionServices.Shutdown();
+                    Services.ExtensionServices.RequestShutdown();
                 }
             }
         }

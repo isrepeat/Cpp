@@ -40,6 +40,10 @@ namespace TabsManagerExtension.VsShell.Services {
             ErrorHandler.ThrowOnFailure(hr);
         }
 
+        public IReadOnlyList<Type> DependsOn() {
+            return Array.Empty<Type>();
+        }
+
         public void Initialize() {
             // Инициализация уже произошла в конструкторе, ничего не делаем.
             Helpers.Diagnostic.Logger.LogDebug("[VsSelectionTracker] Initialized.");

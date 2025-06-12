@@ -48,6 +48,8 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e) {
+            Services.ExtensionServices.BeginUsage();
+
             this.ScaleComboBox.LostFocus += this.ScaleComboBox_OnLostFocus;
             this.ScaleComboBox.KeyDown += this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.SelectionChanged += this.ScaleComboBox_OnSelectionChanged;
@@ -63,6 +65,8 @@ namespace TabsManagerExtension.Controls {
             this.ScaleComboBox.SelectionChanged -= this.ScaleComboBox_OnSelectionChanged;
             this.ScaleComboBox.KeyDown -= this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.LostFocus -= this.ScaleComboBox_OnLostFocus;
+
+            Services.ExtensionServices.EndUsage();
         }
 
 

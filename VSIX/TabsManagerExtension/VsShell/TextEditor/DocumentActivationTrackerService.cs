@@ -34,6 +34,10 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
         public DocumentActivationTrackerService() { }
 
+        public IReadOnlyList<Type> DependsOn() {
+            return Array.Empty<Type>();
+        }
+
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 

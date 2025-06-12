@@ -101,6 +101,13 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             VSConstants.VSStd2KCmdID.BACKSPACE,
         };
 
+        public IReadOnlyList<Type> DependsOn() {
+            return new[] {
+                typeof(VsShell.Services.VsSelectionTrackerService),
+                typeof(VsShell.TextEditor.Services.DocumentActivationTrackerService)
+            };
+        }
+
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
