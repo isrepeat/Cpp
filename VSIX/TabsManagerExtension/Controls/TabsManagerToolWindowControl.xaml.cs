@@ -135,6 +135,8 @@ namespace TabsManagerExtension.Controls {
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
         //
         private void OnLoaded(object sender, RoutedEventArgs e) {
+            Services.ExtensionServices.BeginUsage();
+
             this.InitializeDTE();
             this.InitializeFileWatcher();
             this.InitializeVsShellTrackers();
@@ -150,6 +152,8 @@ namespace TabsManagerExtension.Controls {
             this.UninitializeVsShellTrackers();
             this.UninitializeFileWatcher();
             this.UninitializeDTE();
+
+            Services.ExtensionServices.EndUsage();
         }
 
         private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e) {
@@ -552,10 +556,11 @@ namespace TabsManagerExtension.Controls {
 
             var tabItem = this.FindTabItem(documentFullName);
             if (tabItem != null) {
+                tabItem.Metadata.SetFlag("IsActivatedExternally", true);
                 tabItem.IsSelected = true;
             }
         }
-
+        
 
         // 
         // ░ TabItemsSelectionCoordinator
@@ -563,8 +568,17 @@ namespace TabsManagerExtension.Controls {
         private void OnTabItemSelectionChanged(TabItemsGroupBase group, TabItemBase tabItem, bool isSelected) {
             Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
 
+            var isActivatedExtarnally = tabItem.Metadata.GetFlag("IsActivatedExternally");
+            if (isActivatedExtarnally) {
+                tabItem.Metadata.SetFlag("IsActivatedExternally", false);
+            }
+
             if (isSelected) {
-                this.ActivatePrimaryTabItem();
+                // При внешней активации (например, из Solution Explorer) фокус остаётся вне редактора —
+                // в этом случае не трогаем его вручную, чтобы не сбивать пользовательский фокус.
+                if (!isActivatedExtarnally) {
+                    this.ActivatePrimaryTabItem();
+                }
             }
         }
 
@@ -876,6 +890,9 @@ namespace TabsManagerExtension.Controls {
 
                 // Получаем привязанный объект (TabItemDocument)
                 if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
+                    if (this.VirtualMenuControl.CurrentMenuDataContext is TabItemDocument previousTabItemDocument) {
+                        previousTabItemDocument.Metadata.SetFlag("IsVirtualMenuOpenned", false);
+                    }
                     var screenPoint = interactiveArea.ex_ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
                     this.VirtualMenuControl.Show(screenPoint, tabItemDocument);
                 }
@@ -896,11 +913,12 @@ namespace TabsManagerExtension.Controls {
                 if (virtualMenuOpeningArgs.DataContext is TabItemBase tabItem) {
                     
                     if (tabItem is TabItemDocument tabItemDocument) {
+                        tabItemDocument.Metadata.SetFlag("IsVirtualMenuOpenned", true);
+
                         this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                             new Helpers.MenuItemHeader {
                                 Header = tabItem.Caption,
                             },
-                            new Helpers.MenuItemSeparator(),
                             new Helpers.MenuItemCommand {
                                 Header = State.Constants.UI.OpenTabLocation,
                                 Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem),
@@ -915,7 +933,7 @@ namespace TabsManagerExtension.Controls {
                         if (tabItemDocument.ShellDocument != null) {
                             tabItemDocument.UpdateProjectReferenceList();
 
-                            if (tabItemDocument.ProjectReferenceList.Count > 0) {
+                            if (tabItemDocument.ProjectReferenceList.Count > 1) {
                                 this.VirtualMenuItems.Add(new Helpers.MenuItemSeparator());
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
@@ -937,6 +955,7 @@ namespace TabsManagerExtension.Controls {
         private void OnTabItemVirtualMenuClosed(object parameter) {
             if (parameter is Controls.MenuControl.MenuClosedArgs virtualMenuClosedArgs) {
                 if (virtualMenuClosedArgs.DataContext is TabItemBase tabItem) {
+                    tabItem.Metadata.SetFlag("IsVirtualMenuOpenned", false);
                 }
             }
         }

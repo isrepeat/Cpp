@@ -20,7 +20,7 @@
             <Style x:Key="SelectableCheckBoxContainerStyle" TargetType="CheckBox">
                 <Setter Property="Focusable" Value="False"/>
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"/>
+                <Setter Property="Foreground" Value="#FF808080"/>
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="Height" Value="{DynamicResource AppTabItemHeight}" />
                 <Setter Property="Template">
@@ -46,10 +46,16 @@
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
                         <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                        <Setter Property="Foreground" Value="White"/>
                     </Trigger>
 
                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
                         <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding IsPinnedTab}" Value="True">
+                        <Setter Property="Foreground" Value="White"/>
                     </DataTrigger>
 
                     <MultiDataTrigger>
@@ -76,6 +82,16 @@
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
                         <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                        <Setter Property="Foreground" Value="White"/>
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Metadata[IsVirtualMenuOpenned]}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Background" Value="{StaticResource AppIsMouseOverBrush}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource AppIsMouseOverBrush}" />
+                        <Setter Property="Foreground" Value="White"/>
                     </MultiDataTrigger>
 
                     <MultiDataTrigger>
@@ -145,7 +161,6 @@
                 <TextBlock Grid.Column="0"
                            Margin="5,0,5,0"
                            FontSize="{StaticResource AppTabItemFontSize}"
-                           Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Left"
                            TextTrimming="CharacterEllipsis"

@@ -47,6 +47,7 @@ namespace TabsManagerExtension.Controls {
                 new PropertyMetadata(null));
 
 
+        public object CurrentMenuDataContext { get; private set; }
         
         private DispatcherTimer showTimer;
         private DispatcherTimer hideTimer;
@@ -81,6 +82,8 @@ namespace TabsManagerExtension.Controls {
         /// Если popup закрыт — запускает таймер, и через 300 мс показывает popup, если пользователь всё ещё на элементе.
         /// </summary>
         public void Show(Point position, object dataContext) {
+            this.CurrentMenuDataContext = dataContext;
+
             this.CancelHideTimer(); // предотвращаем закрытие, если вдруг оно было запущено
 
             if (this.VirtualMenu.MenuPopup.IsOpen) {
