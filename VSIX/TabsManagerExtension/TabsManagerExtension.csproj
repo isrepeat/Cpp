@@ -28,7 +28,9 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <!--<StartArguments>/RootSuffix Exp</StartArguments>-->
     <StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>
+    <!--<StartArguments>"d:\WORK\C++\Cpp\Cpp.sln" /RootSuffix Exp</StartArguments>-->
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

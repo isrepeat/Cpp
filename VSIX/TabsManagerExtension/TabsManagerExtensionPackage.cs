@@ -28,9 +28,13 @@ namespace System.Runtime.CompilerServices {
 #endif
 
 namespace TabsManagerExtension {
+    /// <summary>
+    /// Благодаря <b>[ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]</b>
+    /// новоустановленный пакет загрузиться в бэкграунде (через ~5c), после загрузки решения.
+    /// Далее мы используем EarlyPackageLoadHackToolWindow, чтобы пакет загружался сразу при запуске VS.
+    /// </summary>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
-    [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(ToolWindows.EarlyPackageLoadHackToolWindow))]
     [ProvideToolWindow(typeof(ToolWindows.TabsManagerToolWindow))]
@@ -43,6 +47,9 @@ namespace TabsManagerExtension {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            
+            Console.Beep(1000, 500); // 1000 Гц, 500 мс
+            Services.ExtensionServices.Initialize();
 
             // TODO: adapt the CppFeatures nuget to net472 (WPF?)
             //var initFlags = CppFeatures.Cx.InitFlags.DefaultFlags | CppFeatures.Cx.InitFlags.CreateInPackageFolder;
@@ -55,17 +62,9 @@ namespace TabsManagerExtension {
 
 
 
-    public class VsixVisualTreeHelper {
+    public class VsixVisualTreeHelper : Helpers.ObservableObject {
         private static readonly VsixVisualTreeHelper _instance = new();
         public static VsixVisualTreeHelper Instance => _instance;
-
-        private UIElement? _originalTabListHostContent;
-        private WeakReference<Decorator>? _currentTabHost;
-        private WeakReference<UIElement>? _lastInjectedContent;
-        private bool _isCustomTabsEnabled = false;
-
-        private VsixVisualTreeHelper() {
-        }
 
         public bool IsCustomTabsInjected {
             get {
@@ -74,14 +73,31 @@ namespace TabsManagerExtension {
             }
         }
 
+        private bool _isCustomTabsEnabled = false;
+        public bool IsCustomTabsEnabled {
+            get => _isCustomTabsEnabled;
+            private set {
+                if (_isCustomTabsEnabled != value) {
+                    _isCustomTabsEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
+        private UIElement? _originalTabListHostContent;
+        private WeakReference<Decorator>? _currentTabHost;
+        private WeakReference<UIElement>? _lastInjectedContent;
+
+        private VsixVisualTreeHelper() {
+        }
+
         /// <summary>
         /// Переключает отображение между оригинальным содержимым PART_TabListHost и кастомным контролом.
         /// </summary>
         /// <param name="enable">Если true — включить кастомные вкладки, иначе вернуть оригинал.</param>
         public void ToggleCustomTabs(bool enable) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"OnDocumentActivatedExternally({enable})");
-
-            this._isCustomTabsEnabled = enable;
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"ToggleCustomTabs({enable})");
 
             var mainWindow = Application.Current.MainWindow;
             if (mainWindow == null) {
@@ -105,7 +121,7 @@ namespace TabsManagerExtension {
                     return; // Уже вставлено
                 }
                 
-                Services.ExtensionServices.Initialize();
+                //Services.ExtensionServices.Initialize();
 
                 var customControl = new Controls.TabsManagerToolWindowControl();
                 customControl.Unloaded += this.OnInjectedControlUnloaded;
@@ -113,15 +129,18 @@ namespace TabsManagerExtension {
                 tabHost.Child = customControl;
                 this._lastInjectedContent = new WeakReference<UIElement>(customControl);
 
+                this._isCustomTabsEnabled = true;
                 Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl injected.");
             }
             else {
                 if (this._originalTabListHostContent != null) {
                     tabHost.Child = this._originalTabListHostContent;
                     this._lastInjectedContent = null;
+
+                    this._isCustomTabsEnabled = false;
                     Helpers.Diagnostic.Logger.LogDebug("Restored original tab content.");
 
-                    Services.ExtensionServices.RequestShutdown();
+                    //Services.ExtensionServices.RequestShutdown();
                 }
             }
         }

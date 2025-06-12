@@ -138,8 +138,6 @@ namespace TabsManagerExtension.ToolWindows {
         }
 
         private void OnLoadedRootContent(object sender, RoutedEventArgs e) {
-            VsixVisualTreeHelper.Instance.ToggleCustomTabs(true);
-
 #if OLD_LOGIC
             if (_suppressAutoHide) {
                 return;
@@ -162,7 +160,7 @@ namespace TabsManagerExtension.ToolWindows {
                         _toolWindowWin32Controller.Hide();
                     }
 
-                    // Update window position to be centered to IDE and then hide window.
+                    // Update window position to be placed in corner of IDE.
                     ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
                         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

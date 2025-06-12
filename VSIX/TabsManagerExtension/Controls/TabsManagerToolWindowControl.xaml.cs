@@ -255,17 +255,19 @@ namespace TabsManagerExtension.Controls {
                     _fileWatcher.Renamed -= this.OnFileRenamed;
                     _fileWatcher.Deleted -= this.OnFileDeleted;
 
+                    var watcherToDispose = _fileWatcher;
+                    _fileWatcher = null;
+
                     // Dispatcher.BeginInvoke(..., DispatcherPriority.ApplicationIdle) — ждет, пока текущий UI-цикл и все запланированные задачи завершатся.
                     // Таким образом Dispose() вызывается после завершения Run(...) внутри событий FileSystemWatcher
                     Dispatcher.BeginInvoke(new Action(() => {
                         try {
-                            _fileWatcher.Dispose();
+                            // Копируем ссылку на _fileWatcher чтобы продлить жизнь, т.к. _fileWatcher уже может быть удален
+                            // во время исполнения лямбды, но его ресурсы так и не будут освобождены.
+                            watcherToDispose.Dispose();
                         }
                         catch (Exception ex) {
                             Helpers.Diagnostic.Logger.LogError($"Delayed dispose of FileSystemWatcher failed: {ex}");
-                        }
-                        finally {
-                            _fileWatcher = null;
                         }
                     }), DispatcherPriority.ApplicationIdle);
                 }
