@@ -53,27 +53,6 @@ namespace TabsManagerExtension.VsShell.Solution {
             this._dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
         }
 
-        //public void Build() {
-        //    ThreadHelper.ThrowIfNotOnUIThread();
-
-        //    this._includesMap.Clear();
-
-        //    foreach (ProjectItem item in this.GetAllProjectItems()) {
-        //        if (item.FileCount > 0) {
-        //            string filePath = item.FileNames[1];
-
-        //            string ext = Path.GetExtension(filePath);
-        //            if (!File.Exists(filePath) || ext is ".filters" or ".vcxproj" or ".props") {
-        //                continue;
-        //            }
-
-        //            var includes = ExtractRawIncludes(filePath, 200);
-        //            this._includesMap[filePath] = includes;
-        //        }
-        //    }
-        //}
-
-
         public void Build() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -150,10 +129,6 @@ namespace TabsManagerExtension.VsShell.Solution {
 
             return result;
         }
-
-
-
-
 
 
         private IEnumerable<ProjectItem> GetAllProjectItems() {
