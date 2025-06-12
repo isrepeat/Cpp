@@ -18,6 +18,7 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using System.Diagnostics;
 
 namespace TabsManagerExtension.ToolWindows {
     internal sealed class TabsManagerToolWindowCommand {
@@ -67,8 +68,36 @@ namespace TabsManagerExtension.ToolWindows {
         }
 
 
-        private void Execute(object sender, EventArgs e) {
-            VsixVisualTreeHelper.Instance.ToggleCustomTabs();
+        private async void Execute(object sender, EventArgs e) {
+            //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
+
+            //// Вызов из команды или инициализации в VSIX-проекте
+            //var projects = await IncludeFinder.FindProjectsThatIncludeAsync("RenderPipeline.h");
+
+            //foreach (var proj in projects) {
+            //    System.Diagnostics.Debug.WriteLine($"Included in: {proj.Name}");
+            //}
+
+            var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
+            analyzer.LogAllIncludesInSolution();
+            analyzer.Build();
+            var whoIncludes= analyzer.GetFilesIncludingTransitive("Logger.h");
+
+
+            ////var files = analyzer.FindAllReferencingFiles("RenderPipeline.h");
+            ////var projects = analyzer.GetProjectsForFiles(files);
+
+            ////foreach (var proj in projects) {
+            ////    System.Diagnostics.Debug.WriteLine($"Project uses file: {proj.Name}");
+            ////}
+
+
+            //var projects = analyzer.FindAllReferencingProjects("Logger.h");
+            //foreach (var p in projects) {
+            //    Debug.WriteLine($"Uses: {p.Name}");
+            //}
+
+            int xx = 9;
         }
     }
 }

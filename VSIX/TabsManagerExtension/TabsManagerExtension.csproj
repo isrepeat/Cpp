@@ -81,8 +81,9 @@
     <Compile Include="ExtensionServices.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
-    <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
+    <Compile Include="VsShell\Solution\IncludeDependencyAnalyzer.cs" />
     <Compile Include="VsShell\VsSelectionTrackerService.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
@@ -134,10 +135,19 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine">
+      <Version>17.14.40264</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.VCCodeModel">
+      <HintPath>C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\PublicAssembliesMicrosoft.VisualStudio.VCCodeModel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\TabsManagerToolWindowControl.xaml">

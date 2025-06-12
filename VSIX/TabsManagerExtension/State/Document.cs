@@ -1,13 +1,14 @@
-﻿using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+
 
 namespace TabsManagerExtension.State.Document {
     public class ShellProject {
@@ -71,6 +72,60 @@ namespace TabsManagerExtension.State.Document {
 
             return projects.Select(p => new TabItemProject(p)).ToList();
         }
+
+
+        public List<TabItemProject> GetDocumentProjectsIncludingIndirect() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var projects = new List<EnvDTE.Project>();
+            var alreadyAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // ① Основной проект + shared project
+            foreach (var p in this.GetDocumentProjects()) {
+                if (alreadyAdded.Add(p.ShellProject.Project.UniqueName)) {
+                    projects.Add(p.ShellProject.Project);
+                }
+            }
+
+            // ② Подключения по пути (включения .h в других проектах)
+            var rdt = (IVsRunningDocumentTable)Package.GetGlobalService(typeof(SVsRunningDocumentTable));
+            var solution = (IVsSolution)Package.GetGlobalService(typeof(SVsSolution));
+
+            if (rdt != null && solution != null) {
+                rdt.GetRunningDocumentsEnum(out IEnumRunningDocuments enumDocs);
+                uint[] pCookie = new uint[1];
+                uint fetched;
+
+                while (enumDocs.Next(1, pCookie, out fetched) == VSConstants.S_OK && fetched == 1) {
+                    rdt.GetDocumentInfo(
+                        pCookie[0],
+                        out _,
+                        out _,
+                        out _,
+                        out string docPath,
+                        out var pHierarchy,
+                        out var pItemId,
+                        out var docData);
+
+                    if (!string.Equals(docPath, this.Document.FullName, StringComparison.OrdinalIgnoreCase)) {
+                        continue;
+                    }
+
+                    if (pHierarchy != null) {
+                        if (ErrorHandler.Succeeded(pHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out var extObject))) {
+                            if (extObject is EnvDTE.Project project) {
+                                if (alreadyAdded.Add(project.UniqueName)) {
+                                    projects.Add(project);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return projects.Select(p => new TabItemProject(p)).ToList();
+        }
+
 
         public bool IsDocumentInPreviewTab() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -330,14 +385,25 @@ namespace TabsManagerExtension.State.Document {
                 Helpers.Diagnostic.Logger.LogError($"Unexpected error activating document '{this.Caption}': {ex.Message}");
             }
         }
+        //public void UpdateProjectReferenceList() {
+        //    this.ProjectReferenceList.Clear();
+
+        //    var projects = this.ShellDocument.GetDocumentProjects()
+        //        .Select(p => new DocumentProjectReferenceInfo(
+        //            tabItemProject: p,
+        //            tabItemDocument: this
+        //        ));
+
+        //    foreach (var project in projects) {
+        //        this.ProjectReferenceList.Add(project);
+        //    }
+        //}
+
         public void UpdateProjectReferenceList() {
             this.ProjectReferenceList.Clear();
 
-            var projects = this.ShellDocument.GetDocumentProjects()
-                .Select(p => new DocumentProjectReferenceInfo(
-                    tabItemProject: p,
-                    tabItemDocument: this
-                ));
+            var projects = this.ShellDocument.GetDocumentProjectsIncludingIndirect()
+                .Select(p => new DocumentProjectReferenceInfo(p, this));
 
             foreach (var project in projects) {
                 this.ProjectReferenceList.Add(project);
