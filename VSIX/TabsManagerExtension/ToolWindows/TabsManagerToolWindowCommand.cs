@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 using System.Diagnostics;
+using TabsManagerExtension.VsShell.Solution;
 
 namespace TabsManagerExtension.ToolWindows {
     internal sealed class TabsManagerToolWindowCommand {
@@ -81,7 +82,9 @@ namespace TabsManagerExtension.ToolWindows {
             var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
             //analyzer.LogAllIncludesInSolution();
             analyzer.Build();
-            var whoIncludes= analyzer.GetFilesIncludingTransitive("Logger.h");
+            
+            var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive("RenderPipeline.h");
+            var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive("RenderPipeline.h");
 
 
             ////var files = analyzer.FindAllReferencingFiles("RenderPipeline.h");

@@ -20,26 +20,21 @@ namespace TabsManagerExtension.VsShell.Solution {
     public class IncludeFile {
         public string RawInclude { get; }
         public string NormalizedName { get; }
+        public EnvDTE.Project OwnerProject { get; }
 
-        public IncludeFile(string rawInclude) {
+        public IncludeFile(string rawInclude, EnvDTE.Project ownerProject) {
             this.RawInclude = rawInclude;
             this.NormalizedName = Path.GetFileName(rawInclude);
+            this.OwnerProject = ownerProject;
         }
 
-        public override string ToString() {
-            return this.NormalizedName;
-        }
+        public override string ToString() => this.NormalizedName;
 
-        public override int GetHashCode() {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.NormalizedName);
-        }
+        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(this.NormalizedName);
 
         public override bool Equals(object? obj) {
-            if (obj is not IncludeFile other) {
-                return false;
-            }
-
-            return string.Equals(this.NormalizedName, other.NormalizedName, StringComparison.OrdinalIgnoreCase);
+            return obj is IncludeFile other &&
+                   StringComparer.OrdinalIgnoreCase.Equals(this.NormalizedName, other.NormalizedName);
         }
     }
 
@@ -58,14 +53,45 @@ namespace TabsManagerExtension.VsShell.Solution {
 
             this._includesMap.Clear();
 
-            foreach (ProjectItem item in GetAllProjectItems()) {
-                if (item.FileCount > 0 && item.FileCodeModel is VCFileCodeModel vcFileCodeModel) {
-                    string filePath = item.FileNames[1];
+            foreach (var project in GetAllProjects(this._dte)) {
+                var stack = new Stack<ProjectItem>();
 
-                    var includes = ExtractRawIncludes(filePath).ToList();
-                    this._includesMap[filePath] = includes;
+                foreach (ProjectItem item in project.ProjectItems) {
+                    stack.Push(item);
+                }
+
+                while (stack.Count > 0) {
+                    var current = stack.Pop();
+
+                    if (current.FileCount > 0 && current.FileCodeModel is VCFileCodeModel) {
+                        string filePath = current.FileNames[1];
+
+                        var includes = ExtractRawIncludes(filePath, project);
+                        this._includesMap[filePath] = includes;
+                    }
+
+                    if (current.ProjectItems != null) {
+                        foreach (ProjectItem child in current.ProjectItems) {
+                            stack.Push(child);
+                        }
+                    }
                 }
             }
+        }
+
+        public IReadOnlyCollection<State.Document.TabItemProject> GetProjectsIncludingTransitive(string includeName) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var transitiveIncludingFiles = this.GetFilesIncludingTransitive(includeName);
+
+            var projects = transitiveIncludingFiles
+                .SelectMany(f => _includesMap.TryGetValue(f, out var includes) ? includes : Enumerable.Empty<IncludeFile>())
+                .Select(i => i.OwnerProject)
+                .Distinct()
+                .Select(p => new State.Document.TabItemProject(p))
+                .ToList();
+
+            return projects;
         }
 
         public IReadOnlyList<string> GetFilesIncludingTransitive(string includeName) {
@@ -98,7 +124,7 @@ namespace TabsManagerExtension.VsShell.Solution {
             return result.ToList();
         }
 
-        public static List<IncludeFile> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
+        public static List<IncludeFile> ExtractRawIncludes(string filePath, EnvDTE.Project ownerProject, int maxLinesToRead = 200) {
             var result = new List<IncludeFile>();
 
             using var reader = new StreamReader(filePath);
@@ -122,13 +148,14 @@ namespace TabsManagerExtension.VsShell.Solution {
                 if (start >= 0 && end > start) {
                     string raw = trimmed.Substring(start + 1, end - start - 1).Trim();
                     if (!string.IsNullOrWhiteSpace(raw)) {
-                        result.Add(new IncludeFile(raw));
+                        result.Add(new IncludeFile(raw, ownerProject));
                     }
                 }
             }
 
             return result;
         }
+
 
 
         private IEnumerable<ProjectItem> GetAllProjectItems() {
