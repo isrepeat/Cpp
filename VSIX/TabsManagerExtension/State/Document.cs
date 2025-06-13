@@ -496,21 +496,21 @@ namespace TabsManagerExtension.State.Document {
 
     public class TabItemProject : TabItemBase {
         public ShellProject ShellProject { get; private set; }
-        public List<string> PublicIncludeDirectories { get; private set; }
-        public List<string> AdditionalIncludeDirectories { get; private set; }
+        //public List<string> PublicIncludeDirectories { get; private set; }
+        //public List<string> AdditionalIncludeDirectories { get; private set; }
 
         public TabItemProject(ShellProject shellProject) {
             base.Caption = shellProject.Project.Name;
             base.FullName = shellProject.Project.FullName;
             this.ShellProject = shellProject;
-            this.PublicIncludeDirectories = this.ShellProject.GetMsBuildProjectPropertyList("PublicIncludeDirectories");
-            this.AdditionalIncludeDirectories = this.ShellProject.GetAdditionalIncludeDirectories();
-            if (this.PublicIncludeDirectories.Count > 0) {
-                int xx = 9;
-            }
-            if (this.AdditionalIncludeDirectories.Count > 0) {
-                int xx = 9;
-            }
+            //this.PublicIncludeDirectories = this.ShellProject.GetMsBuildProjectPropertyList("PublicIncludeDirectories");
+            //this.AdditionalIncludeDirectories = this.ShellProject.GetAdditionalIncludeDirectories();
+            //if (this.PublicIncludeDirectories.Count > 0) {
+            //    int xx = 9;
+            //}
+            //if (this.AdditionalIncludeDirectories.Count > 0) {
+            //    int xx = 9;
+            //}
         }
 
         public TabItemProject(EnvDTE.Project project)

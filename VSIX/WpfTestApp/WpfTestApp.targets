@@ -44,7 +44,7 @@
     <Message Importance="High" Text="%(XamlsToExclude.Identity)"/>
 	</Target>
 	
-	
+
   
 	<Target Name="GenerateMainWindowFactory" BeforeTargets="PrepareForBuild">
 		<PropertyGroup>

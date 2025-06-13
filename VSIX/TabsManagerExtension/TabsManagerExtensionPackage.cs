@@ -30,60 +30,6 @@ namespace System.Runtime.CompilerServices {
 #endif
 
 namespace TabsManagerExtension {
-    public class IncludeFinder {
-        public static async Task<List<EnvDTE.Project>> FindProjectsThatIncludeAsync(string includeFileName) {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var result = new List<EnvDTE.Project>();
-            var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            var projects = GetAllProjects(dte);
-
-            foreach (EnvDTE.Project proj in projects) {
-                if (!(proj.Object is VCProject vcProj))
-                    continue;
-                
-                var vcCodeModel = proj.CodeModel as VCCodeModel;
-                if (vcCodeModel == null)
-                    continue;
-
-                foreach (VCCodeInclude include in vcCodeModel.Includes) {
-                    var name = include.Name?.Trim('"', '<', '>');
-
-                    if (name != null && name.EndsWith(includeFileName, System.StringComparison.OrdinalIgnoreCase)) {
-                        result.Add(proj);
-                        break; // уже нашли в этом проекте
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        private static IEnumerable<EnvDTE.Project> GetAllProjects(EnvDTE80.DTE2 dte) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var queue = new Queue<EnvDTE.Project>();
-            foreach (EnvDTE.Project p in dte.Solution.Projects)
-                queue.Enqueue(p);
-
-            while (queue.Count > 0) {
-                var proj = queue.Dequeue();
-                if (proj.Kind == EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder) {
-                    // Проекты внутри solution folder
-                    var items = proj.ProjectItems;
-                    for (short i = 1; i <= items.Count; i++) {
-                        var sub = items.Item(i).SubProject;
-                        if (sub != null)
-                            queue.Enqueue(sub);
-                    }
-                }
-                else {
-                    yield return proj;
-                }
-            }
-        }
-    }
-
-
     /// <summary>
     /// Благодаря <b>[ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]</b>
     /// новоустановленный пакет загрузиться в бэкграунде (через ~5c), после загрузки решения.

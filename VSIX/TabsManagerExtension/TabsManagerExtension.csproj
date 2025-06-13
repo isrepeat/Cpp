@@ -28,10 +28,8 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
-    
     <StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>
     <!--<StartArguments>"d:\WORK\C++\Cpp\Cpp.sln" /RootSuffix Exp</StartArguments>-->
-    
     <!--<StartArguments>/RootSuffix Exp</StartArguments>-->
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -84,6 +82,7 @@
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
+    <Compile Include="VsShell\Solution\MsBuildSolutionWatcher.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
     <Compile Include="VsShell\Solution\IncludeDependencyAnalyzer.cs" />
     <Compile Include="VsShell\VsSelectionTrackerService.cs" />
@@ -136,14 +135,18 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build" Version="17.8.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.6.10" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine">
       <Version>17.14.40264</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.VCCodeModel">
