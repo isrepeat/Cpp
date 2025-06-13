@@ -82,9 +82,16 @@ namespace TabsManagerExtension.ToolWindows {
             var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
             //analyzer.LogAllIncludesInSolution();
             analyzer.Build();
-            
-            var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive("RenderPipeline.h");
-            var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive("RenderPipeline.h");
+            //analyzer.LogIncludeTree();
+
+            // BUG: RenderPipeline.h находит неверный транзитивный файл - SimpleApp.WinUI3.App.xaml.cpp
+            //      думаю это связано с тем что мы проверяем только по нормализировнным #include'ам, а предыдущий
+            //      инклюд был DxPlayer\App.xaml.h соответственно далее будет искать все файлы которые включают App.xaml.h.
+
+            //string includeTaget = "Logger.h";
+            string includeTaget = "RenderPipeline.h";
+            var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive(includeTaget);
+            var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive(includeTaget);
 
 
             ////var files = analyzer.FindAllReferencingFiles("RenderPipeline.h");

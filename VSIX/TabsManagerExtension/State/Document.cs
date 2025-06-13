@@ -346,6 +346,17 @@ namespace TabsManagerExtension.State.Document {
         public TabItemProject(EnvDTE.Project project)
             : this(new ShellProject(project)) {
         }
+
+        public override bool Equals(object? obj) {
+           return obj is TabItemProject other &&
+                StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
+        }
+
+        public override int GetHashCode() {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
+        }
+
+        public override string ToString() => base.FullName;
     }
 
 
