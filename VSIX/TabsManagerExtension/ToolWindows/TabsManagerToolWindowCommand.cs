@@ -75,8 +75,8 @@ namespace TabsManagerExtension.ToolWindows {
             var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
             analyzer.Build();
             
-            //string includeTaget = "Logger.h";
-            string includeTaget = "RenderPipeline.h";
+            string includeTaget = "Logger.h";
+            //string includeTaget = "RenderPipeline.h";
             var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive(includeTaget);
             var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive(includeTaget);
 

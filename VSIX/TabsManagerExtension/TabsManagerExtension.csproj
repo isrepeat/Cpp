@@ -28,7 +28,8 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>
+    <StartArguments>"d:\WORK\TEST\Extensions\TestIncludeSolution\TestIncludeSolution.sln" /RootSuffix Exp</StartArguments>
+    <!--<StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>-->
     <!--<StartArguments>"d:\WORK\C++\Cpp\Cpp.sln" /RootSuffix Exp</StartArguments>-->
     <!--<StartArguments>/RootSuffix Exp</StartArguments>-->
   </PropertyGroup>

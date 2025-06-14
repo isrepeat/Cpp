@@ -37,11 +37,14 @@ namespace TabsManagerExtension.VsShell.Solution {
 
         public override bool Equals(object? obj) {
             return obj is ResolvedIncludeEntry other &&
+                   this.IncludeEntry.Equals(other.IncludeEntry) &&
                    StringComparer.OrdinalIgnoreCase.Equals(this.ResolvedPath, other.ResolvedPath);
         }
 
         public override int GetHashCode() {
-            return this.ResolvedPath is null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(this.ResolvedPath);
+            int h1 = this.IncludeEntry.GetHashCode();
+            int h2 = this.ResolvedPath is null ? 0 : StringComparer.OrdinalIgnoreCase.GetHashCode(this.ResolvedPath);
+            return (h1 * 397) ^ h2;
         }
 
         public override string ToString() => $"{this.IncludeEntry.RawInclude} → {this.ResolvedPath ?? "unresolved"}";
