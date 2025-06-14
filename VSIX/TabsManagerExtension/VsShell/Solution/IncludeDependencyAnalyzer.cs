@@ -53,26 +53,22 @@ namespace TabsManagerExtension.VsShell.Solution {
                 while (stack.Count > 0) {
                     var current = stack.Pop();
 
-                    if (current.FileCount > 0) {
-                        if (current.FileCodeModel is VCFileCodeModel) {
-                            string filePath = current.FileNames[1];
-                            string ext = Path.GetExtension(filePath);
+                    if (current.FileCount > 0 && current.FileCodeModel is VCFileCodeModel) {
+                        string filePath = current.FileNames[1];
+                        string ext = Path.GetExtension(filePath);
 
-                            bool isCppProjectFile =
-                                string.Equals(ext, ".h", StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(ext, ".hpp", StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
+                        bool isCppProjectFile =
+                            string.Equals(ext, ".h", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(ext, ".hpp", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
 
-                            if (isCppProjectFile) {
-                                var source = new SourceFile(filePath, tabItemProject);
-                                var includes = this.ExtractRawIncludes(filePath);
-                                source.Includes.AddRange(includes);
-
-                                _solutionSourceFileGraph.Add(source);
-                            }
-                            else {
-                                Helpers.Diagnostic.Logger.LogDebug($"[skip non cpp file] {filePath}");
-                            }
+                        if (isCppProjectFile) {
+                            var source = new SourceFile(filePath, tabItemProject);
+                            var includeEntries = this.ExtractRawIncludes(filePath);
+                            _solutionSourceFileGraph.AddWithIncludes(source, includeEntries);
+                        }
+                        else {
+                            Helpers.Diagnostic.Logger.LogDebug($"[skip non cpp file] {filePath}");
                         }
                     }
 
@@ -82,9 +78,9 @@ namespace TabsManagerExtension.VsShell.Solution {
                         }
                     }
                 }
-            }
 
-            _solutionSourceFileGraph.BuildReverseMap();
+                // ⛔️ BuildReverseMap больше не нужен
+            }
 
             string? rootDir = Path.GetDirectoryName(_dte.Solution.FullName);
             if (rootDir != null && Directory.Exists(rootDir)) {
@@ -121,14 +117,14 @@ namespace TabsManagerExtension.VsShell.Solution {
 
             // Построение индекса FileName → List<SourceFile>
             var filesByName = _solutionSourceFileGraph.AllSourceFiles
-            .GroupBy(sf => Path.GetFileName(sf.FilePath), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+                .GroupBy(sf => Path.GetFileName(sf.FilePath), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
             // Основной проход
-            foreach (var source in _solutionSourceFileGraph.AllSourceFiles) {
-                foreach (var include in source.Includes) {
+            foreach (var sourceFile in _solutionSourceFileGraph.AllSourceFiles) {
+                foreach (var resolvedInclude in _solutionSourceFileGraph.GetResolvedIncludesFor(sourceFile)) {
                     // Быстрая фильтрация по имени: если имя include не совпадает — пропускаем
-                    if (!Path.GetFileName(include.RawInclude).Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
+                    if (!Path.GetFileName(resolvedInclude.IncludeEntry.RawInclude).Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
                         continue;
                     }
 
@@ -140,10 +136,10 @@ namespace TabsManagerExtension.VsShell.Solution {
                     foreach (var candidate in candidates) {
                         // Проверяем: действительно ли includeRaw из `source` разрешается в файл `candidate`
                         if (Service.IncludeResolverService.IncludeResolvesToFile(
-                            include.RawInclude,
-                            source.FilePath,
+                            resolvedInclude.IncludeEntry.RawInclude,
+                            sourceFile.FilePath,
                             candidate.FilePath,
-                            source.Project,
+                            sourceFile.Project,
                             _msBuildSolutionWatcher)) {
 
                             if (result.Add(candidate)) {
@@ -166,7 +162,7 @@ namespace TabsManagerExtension.VsShell.Solution {
                     continue;
                 }
 
-                foreach (var includer in _solutionSourceFileGraph.GetSourceFilesWhoInclude(current)) {
+                foreach (var includer in _solutionSourceFileGraph.GetSourceFilesWhoIncludeResolved(current.FilePath)) {
                     if (result.Add(includer)) {
                         stack.Push(includer);
                         Helpers.Diagnostic.Logger.LogDebug($"[transitive] {includer.FilePath} includes → {current.FilePath}");
@@ -182,15 +178,17 @@ namespace TabsManagerExtension.VsShell.Solution {
         public void LogIncludeTree() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var source in _solutionSourceFileGraph.AllSourceFiles.OrderBy(f => f.FilePath)) {
-                Helpers.Diagnostic.Logger.LogDebug($"[File] {source.FilePath}");
+            foreach (var sourceFile in _solutionSourceFileGraph.AllSourceFiles.OrderBy(f => f.FilePath)) {
+                Helpers.Diagnostic.Logger.LogDebug($"[File] {sourceFile.FilePath}");
 
-                foreach (var include in source.Includes) {
-                    string normalized = include.RawInclude.Replace('\\', '/');
-                    Helpers.Diagnostic.Logger.LogDebug($"  └─ #include \"{normalized}\"");
+                var resolvedIncludes = _solutionSourceFileGraph.GetResolvedIncludesFor(sourceFile);
+                if (resolvedIncludes.Any()) {
+                    foreach (var resolvedInclude in resolvedIncludes) {
+                        string normalized = resolvedInclude.IncludeEntry.RawInclude.Replace('\\', '/');
+                        Helpers.Diagnostic.Logger.LogDebug($"  └─ #include \"{normalized}\"");
+                    }
                 }
-
-                if (source.Includes.Count == 0) {
+                else {
                     Helpers.Diagnostic.Logger.LogDebug("  └─ (no includes)");
                 }
             }
@@ -209,7 +207,6 @@ namespace TabsManagerExtension.VsShell.Solution {
             _debounceTimer.Start();
         }
 
-
         private void OnDebounceTimerTick() {
             _debounceTimer.Stop();
 
@@ -224,13 +221,13 @@ namespace TabsManagerExtension.VsShell.Solution {
             }
         }
 
-
         private void OnFileChanged(string changedFilePath) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var ext = Path.GetExtension(changedFilePath);
             switch (ext) {
                 case ".h":
+                case ".hpp":
                 case ".cpp":
                     break;
 
@@ -242,37 +239,32 @@ namespace TabsManagerExtension.VsShell.Solution {
                 return;
             }
 
-            if (!_solutionSourceFileGraph.TryGetSourceFileByPath(changedFilePath, out var oldFile)) {
+            if (!_solutionSourceFileGraph.TryGetSourceFileRepresentationsForPath(changedFilePath, out var candidates)) {
                 return;
             }
 
-            var newIncludes = this.ExtractRawIncludes(changedFilePath);
-
-            // Быстрое сравнение (по количеству и строкам)
-            bool changed = newIncludes.Count != oldFile.Includes.Count ||
-                           !newIncludes.SequenceEqual(oldFile.Includes);
-
-            if (!changed) {
-                return; // ничего не поменялось
+            if (candidates.Count > 1) {
+                Helpers.Diagnostic.Logger.LogDebug($"[ambiguous path] {changedFilePath} → found in {candidates.Count} projects");
             }
 
-            var updatedFile = new SourceFile(changedFilePath, oldFile.Project);
-            updatedFile.Includes.AddRange(newIncludes);
+            foreach (var oldFile in candidates) {
+                var newIncludeEntries = this.ExtractRawIncludes(changedFilePath);
+                var oldIncludeEntries = _solutionSourceFileGraph.GetResolvedIncludesFor(oldFile)
+                    .Select(resolvedInclude => resolvedInclude.IncludeEntry)
+                    .ToList();
 
-            _solutionSourceFileGraph.UpdateSourceFile(updatedFile, (include, includer) => {
-                var resolvedPath = Service.IncludeResolverService.TryResolveInclude(
-                    include.RawInclude,
-                    includer.FilePath,
-                    includer.Project,
-                    _msBuildSolutionWatcher
-                );
+                bool changed = newIncludeEntries.Count != oldIncludeEntries.Count ||
+                               !newIncludeEntries.SequenceEqual(oldIncludeEntries);
 
-                return resolvedPath != null && _solutionSourceFileGraph.TryGetSourceFileByPath(resolvedPath, out var included)
-                    ? included
-                    : null;
-            });
+                if (!changed) {
+                    continue;
+                }
 
-            Helpers.Diagnostic.Logger.LogDebug($"[include changed] {changedFilePath} → includes updated");
+                var updatedFile = new SourceFile(changedFilePath, oldFile.Project);
+                _solutionSourceFileGraph.UpdateSourceFile(updatedFile, newIncludeEntries);
+
+                Helpers.Diagnostic.Logger.LogDebug($"[include changed] {changedFilePath} [{oldFile.Project.ShellProject.Project.UniqueName}] → includes updated");
+            }
         }
 
 
@@ -328,8 +320,8 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        private List<IncludeFile> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
-            var result = new List<IncludeFile>();
+        private List<IncludeEntry> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
+            var resultIncludeEntries = new List<IncludeEntry>();
 
             using var reader = new StreamReader(filePath);
             int lineCount = 0;
@@ -350,14 +342,14 @@ namespace TabsManagerExtension.VsShell.Solution {
                 int end = trimmed.LastIndexOfAny(new[] { '"', '>' });
 
                 if (start >= 0 && end > start) {
-                    string raw = trimmed.Substring(start + 1, end - start - 1).Trim();
-                    if (!string.IsNullOrWhiteSpace(raw)) {
-                        result.Add(new IncludeFile(raw));
+                    string rawInclude = trimmed.Substring(start + 1, end - start - 1).Trim();
+                    if (!string.IsNullOrWhiteSpace(rawInclude)) {
+                        resultIncludeEntries.Add(new IncludeEntry(rawInclude));
                     }
                 }
             }
 
-            return result;
+            return resultIncludeEntries;
         }
     }
 }
