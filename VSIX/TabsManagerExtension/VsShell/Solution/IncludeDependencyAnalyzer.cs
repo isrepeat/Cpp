@@ -12,81 +12,37 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
-using Microsoft.VisualStudio.Package;
 
 
 namespace TabsManagerExtension.VsShell.Solution {
-
-    public class IncludeFile {
-        public string RawInclude { get; }
-        public string NormalizedName { get; }
-        public IncludeFile(string rawInclude) {
-            this.RawInclude = rawInclude;
-            this.NormalizedName = Path.GetFileName(rawInclude);
-        }
-
-        public override string ToString() => this.NormalizedName;
-
-        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(this.NormalizedName);
-
-        public override bool Equals(object? obj) {
-            return obj is IncludeFile other &&
-                   StringComparer.OrdinalIgnoreCase.Equals(this.NormalizedName, other.NormalizedName);
-        }
-    }
-
-
-    public class SourceFile {
-        public string FilePath { get; }
-        public State.Document.TabItemProject Project { get; }
-        public List<IncludeFile> Includes { get; } = new();
-
-        public SourceFile(string filePath, State.Document.TabItemProject project) {
-            this.FilePath = filePath;
-            this.Project = project;
-        }
-
-        public override int GetHashCode() {
-            int h1 = StringComparer.OrdinalIgnoreCase.GetHashCode(this.FilePath);
-            int h2 = StringComparer.OrdinalIgnoreCase.GetHashCode(this.Project.ShellProject.Project.UniqueName);
-            return (h1 * 397) ^ h2; // HashCode.Combine(h1, h2);
-        }
-
-        public override bool Equals(object? obj) {
-            return obj is SourceFile other &&
-                   StringComparer.OrdinalIgnoreCase.Equals(this.FilePath, other.FilePath) &&
-                   StringComparer.OrdinalIgnoreCase.Equals(
-                       this.Project.ShellProject.Project.UniqueName,
-                       other.Project.ShellProject.Project.UniqueName
-                       );
-        }
-
-        public override string ToString() => $"{this.FilePath} [{this.Project.ShellProject.Project.UniqueName}]";
-    }
-
-
-
-
-
     public class IncludeDependencyAnalyzer {
         private readonly EnvDTE80.DTE2 _dte;
-        private readonly HashSet<SourceFile> _sourceFiles = new();
         private MsBuildSolutionWatcher _msBuildSolutionWatcher;
+        private SolutionSourceFileGraph _solutionSourceFileGraph;
+
+        private FileSystemWatcher? _vcSourceFilesWatcher;
+        private readonly HashSet<string> _pendingChangedFiles = new(StringComparer.OrdinalIgnoreCase);
+        private readonly DispatcherTimer _debounceTimer;
+
         public IncludeDependencyAnalyzer() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this._dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
+            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
+
+            _debounceTimer = new DispatcherTimer {
+                Interval = TimeSpan.FromMilliseconds(300)
+            };
+            _debounceTimer.Tick += (_, _) => this.OnDebounceTimerTick();
         }
 
         public void Build() {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("Build()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this._sourceFiles.Clear();
+            var cppSolutionProjects = this.GetAllCppProjects(_dte);
+            _msBuildSolutionWatcher = new MsBuildSolutionWatcher(cppSolutionProjects);
+            _solutionSourceFileGraph = new SolutionSourceFileGraph(_msBuildSolutionWatcher);
 
-            var solutionProjects = GetAllProjects(this._dte);
-            _msBuildSolutionWatcher = new MsBuildSolutionWatcher(solutionProjects);
-
-            foreach (var project in solutionProjects) {
+            foreach (var project in cppSolutionProjects) {
                 var tabItemProject = new State.Document.TabItemProject(project);
 
                 var stack = new Stack<EnvDTE.ProjectItem>();
@@ -97,14 +53,27 @@ namespace TabsManagerExtension.VsShell.Solution {
                 while (stack.Count > 0) {
                     var current = stack.Pop();
 
-                    if (current.FileCount > 0 && current.FileCodeModel is VCFileCodeModel) {
-                        string filePath = current.FileNames[1];
+                    if (current.FileCount > 0) {
+                        if (current.FileCodeModel is VCFileCodeModel) {
+                            string filePath = current.FileNames[1];
+                            string ext = Path.GetExtension(filePath);
 
-                        var source = new SourceFile(filePath, tabItemProject);
-                        var includes = ExtractRawIncludes(filePath);
-                        source.Includes.AddRange(includes);
+                            bool isCppProjectFile =
+                                string.Equals(ext, ".h", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(ext, ".hpp", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
 
-                        this._sourceFiles.Add(source);
+                            if (isCppProjectFile) {
+                                var source = new SourceFile(filePath, tabItemProject);
+                                var includes = this.ExtractRawIncludes(filePath);
+                                source.Includes.AddRange(includes);
+
+                                _solutionSourceFileGraph.Add(source);
+                            }
+                            else {
+                                Helpers.Diagnostic.Logger.LogDebug($"[skip non cpp file] {filePath}");
+                            }
+                        }
                     }
 
                     if (current.ProjectItems != null) {
@@ -114,107 +83,49 @@ namespace TabsManagerExtension.VsShell.Solution {
                     }
                 }
             }
-        }
 
-        public void LogIncludeTree() {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            _solutionSourceFileGraph.BuildReverseMap();
 
-            foreach (var source in this._sourceFiles.OrderBy(f => f.FilePath)) {
-                Helpers.Diagnostic.Logger.LogDebug($"[File] {source.FilePath}");
+            string? rootDir = Path.GetDirectoryName(_dte.Solution.FullName);
+            if (rootDir != null && Directory.Exists(rootDir)) {
+                _vcSourceFilesWatcher = new FileSystemWatcher(rootDir) {
+                    Filter = "*.*",
+                    IncludeSubdirectories = true,
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName
+                };
 
-                foreach (var include in source.Includes) {
-                    string normalized = include.RawInclude.Replace('\\', '/');
-                    Helpers.Diagnostic.Logger.LogDebug($"  └─ #include \"{normalized}\"");
-                }
-
-                if (source.Includes.Count == 0) {
-                    Helpers.Diagnostic.Logger.LogDebug("  └─ (no includes)");
-                }
+                _vcSourceFilesWatcher.Changed += (_, e) => this.OnRawFileChanged(e.FullPath);
+                _vcSourceFilesWatcher.Created += (_, e) => this.OnRawFileChanged(e.FullPath);
+                _vcSourceFilesWatcher.Renamed += (_, e) => this.OnRawFileChanged(e.FullPath);
+                _vcSourceFilesWatcher.EnableRaisingEvents = true;
             }
         }
+
+
 
         public IReadOnlyCollection<State.Document.TabItemProject> GetProjectsIncludingTransitive(string includeName) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var transitiveFilePaths = this.GetFilesIncludingTransitive(includeName);
-
-            var projects_ = transitiveFilePaths
-                .Select(sf => sf.Project)
+            var transitive = this.GetFilesIncludingTransitive(includeName);
+            return transitive
+                .Select(f => f.Project)
                 .Distinct()
                 .ToList();
-
-            return projects_;
         }
 
 
         public IReadOnlyList<SourceFile> GetFilesIncludingTransitive(string includeName) {
             var result = new HashSet<SourceFile>();
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var visited = new HashSet<SourceFile>();
             var stack = new Stack<SourceFile>();
 
-            //// ① Найти все файлы, у которых в Includes есть нужное имя
-            //foreach (var source in this._sourceFiles) {
-            //    foreach (var include in source.Includes) {
-            //        if (Path.GetFileName(include.RawInclude).Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
-            //            // Проверка: действительно ли include разрешается в нужный файл?
-            //            // Для этого нужно, чтобы includeName было путём, иначе разрешать нечего
-            //            // Но если мы хотим поддерживать просто имя файла — разрешим всё
-            //            // Альтернатива — всегда доверять Path.GetFileName без FilesAreSame
-
-            //            if (result.Add(source)) {
-            //                stack.Push(source);
-            //            }
-            //            break;
-            //        }
-            //    }
-            //}
-
-
-
-
-            //// ① Найти все файлы, у которых в Includes есть нужное имя
-            //foreach (var source in this._sourceFiles) {
-            //    foreach (var include in source.Includes) {
-            //        // Быстрая фильтрация по имени: если имя include не совпадает — пропускаем
-            //        if (!Path.GetFileName(include.RawInclude)
-            //                 .Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
-            //            continue;
-            //        }
-
-            //        // Второй проход: пытаемся сопоставить include с реальным файлом проекта
-            //        foreach (var candidate in this._sourceFiles) {
-            //            // Имена должны совпадать, чтобы была хотя бы теоретическая возможность разрешения
-            //            if (!Path.GetFileName(candidate.FilePath)
-            //                     .Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
-            //                continue;
-            //            }
-
-            //            // Проверяем: действительно ли includeRaw из `source` разрешается в файл `candidate`
-            //            if (this.FilesAreSame(include.RawInclude, source.FilePath, candidate.FilePath, source.Project)) {
-            //                if (result.Add(candidate)) {
-            //                    stack.Push(candidate);
-            //                }
-
-            //                // Дальше проверять нет смысла — include уже разрешился в один из файлов
-            //                break;
-            //            }
-            //        }
-
-            //        // Даже если не удалось разрешить — мы не пробуем другие include'ы в этом source-файле
-            //        // (такая логика была и раньше: считаем, что достаточно одного совпадения)
-            //        break;
-            //    }
-            //}
-
-
-
             // Построение индекса FileName → List<SourceFile>
-            var filesByName = this._sourceFiles
-                .GroupBy(sf => Path.GetFileName(sf.FilePath), StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            var filesByName = _solutionSourceFileGraph.AllSourceFiles
+            .GroupBy(sf => Path.GetFileName(sf.FilePath), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
             // Основной проход
-            foreach (var source in this._sourceFiles) {
+            foreach (var source in _solutionSourceFileGraph.AllSourceFiles) {
                 foreach (var include in source.Includes) {
                     // Быстрая фильтрация по имени: если имя include не совпадает — пропускаем
                     if (!Path.GetFileName(include.RawInclude).Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
@@ -228,10 +139,17 @@ namespace TabsManagerExtension.VsShell.Solution {
 
                     foreach (var candidate in candidates) {
                         // Проверяем: действительно ли includeRaw из `source` разрешается в файл `candidate`
-                        if (this.FilesAreSame(include.RawInclude, source.FilePath, candidate.FilePath, source.Project)) {
+                        if (Service.IncludeResolverService.IncludeResolvesToFile(
+                            include.RawInclude,
+                            source.FilePath,
+                            candidate.FilePath,
+                            source.Project,
+                            _msBuildSolutionWatcher)) {
+
                             if (result.Add(candidate)) {
                                 stack.Push(candidate);
                             }
+
                             break; // include разрешён — идём к следующему файлу
                         }
                     }
@@ -240,32 +158,18 @@ namespace TabsManagerExtension.VsShell.Solution {
                 }
             }
 
-
-
             // ② Обратный обход: кто включает найденные файлы
             while (stack.Count > 0) {
                 var current = stack.Pop();
 
-                if (!visited.Add(current.FilePath)) {
+                if (!visited.Add(current)) {
                     continue;
                 }
 
-                foreach (var source in this._sourceFiles) {
-                    foreach (var include in source.Includes) {
-                        //if (source.FilePath == "d:\\WORK\\C++\\Cpp\\DirectX\\Desktop\\DxDesktop\\[02] Dx SwapChain simple render\\SimpleSceneRenderer.h") {
-                        //    int xx = 8;
-                        //}
-                        //if (source.FilePath == "d:\\WORK\\TEST\\Extensions\\SimpleSolution\\DxDesktop\\SimpleSceneRenderer.h") {
-                        //    int xx = 8;
-                        //}
-
-                        if (this.FilesAreSame(include.RawInclude, source.FilePath, current.FilePath, source.Project)) {
-                            if (result.Add(source)) {
-                                stack.Push(source);
-                                Helpers.Diagnostic.Logger.LogDebug($"[transitive] {source.FilePath} includes → {current.FilePath}");
-                                break;
-                            }
-                        }
+                foreach (var includer in _solutionSourceFileGraph.GetSourceFilesWhoInclude(current)) {
+                    if (result.Add(includer)) {
+                        stack.Push(includer);
+                        Helpers.Diagnostic.Logger.LogDebug($"[transitive] {includer.FilePath} includes → {current.FilePath}");
                     }
                 }
             }
@@ -274,37 +178,158 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
+        
+        public void LogIncludeTree() {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-        private bool FilesAreSame(string includeRaw, string includingFilePath, string candidateFilePath, State.Document.TabItemProject ownerProject) {
-            try {
-                string candidateFull = Path.GetFullPath(candidateFilePath);
+            foreach (var source in _solutionSourceFileGraph.AllSourceFiles.OrderBy(f => f.FilePath)) {
+                Helpers.Diagnostic.Logger.LogDebug($"[File] {source.FilePath}");
 
-                // ① Пробуем как относительный путь от файла
-                string baseDir = Path.GetDirectoryName(includingFilePath)!;
-                string resolvedFromLocal = Path.GetFullPath(Path.Combine(baseDir, includeRaw.Replace('/', '\\')));
-                if (string.Equals(resolvedFromLocal, candidateFull, StringComparison.OrdinalIgnoreCase)) {
-                    return true;
+                foreach (var include in source.Includes) {
+                    string normalized = include.RawInclude.Replace('\\', '/');
+                    Helpers.Diagnostic.Logger.LogDebug($"  └─ #include \"{normalized}\"");
                 }
 
-                // ② Пробуем директории проекта (ограниченно)
-                var projectIncludeDirs = _msBuildSolutionWatcher.GetIncludeDirectoriesFor(ownerProject.FullName);
-                foreach (var includeDir in projectIncludeDirs) {
-                    string resolved = Path.GetFullPath(Path.Combine(includeDir, includeRaw.Replace('/', '\\')));
-                    if (string.Equals(resolved, candidateFull, StringComparison.OrdinalIgnoreCase)) {
-                        return true;
+                if (source.Includes.Count == 0) {
+                    Helpers.Diagnostic.Logger.LogDebug("  └─ (no includes)");
+                }
+            }
+        }
+
+
+        //
+        // ░ Event handlers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        private void OnRawFileChanged(string path) {
+            lock (_pendingChangedFiles) {
+                _pendingChangedFiles.Add(path);
+            }
+
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
+        }
+
+
+        private void OnDebounceTimerTick() {
+            _debounceTimer.Stop();
+
+            List<string> changed;
+            lock (_pendingChangedFiles) {
+                changed = _pendingChangedFiles.ToList();
+                _pendingChangedFiles.Clear();
+            }
+
+            foreach (var filePath in changed) {
+                this.OnFileChanged(filePath);
+            }
+        }
+
+
+        private void OnFileChanged(string changedFilePath) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var ext = Path.GetExtension(changedFilePath);
+            switch (ext) {
+                case ".h":
+                case ".cpp":
+                    break;
+
+                default:
+                    return;
+            }
+
+            if (!File.Exists(changedFilePath)) {
+                return;
+            }
+
+            if (!_solutionSourceFileGraph.TryGetSourceFileByPath(changedFilePath, out var oldFile)) {
+                return;
+            }
+
+            var newIncludes = this.ExtractRawIncludes(changedFilePath);
+
+            // Быстрое сравнение (по количеству и строкам)
+            bool changed = newIncludes.Count != oldFile.Includes.Count ||
+                           !newIncludes.SequenceEqual(oldFile.Includes);
+
+            if (!changed) {
+                return; // ничего не поменялось
+            }
+
+            var updatedFile = new SourceFile(changedFilePath, oldFile.Project);
+            updatedFile.Includes.AddRange(newIncludes);
+
+            _solutionSourceFileGraph.UpdateSourceFile(updatedFile, (include, includer) => {
+                var resolvedPath = Service.IncludeResolverService.TryResolveInclude(
+                    include.RawInclude,
+                    includer.FilePath,
+                    includer.Project,
+                    _msBuildSolutionWatcher
+                );
+
+                return resolvedPath != null && _solutionSourceFileGraph.TryGetSourceFileByPath(resolvedPath, out var included)
+                    ? included
+                    : null;
+            });
+
+            Helpers.Diagnostic.Logger.LogDebug($"[include changed] {changedFilePath} → includes updated");
+        }
+
+
+        //
+        // ░ Internal logic
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
+        /// <summary>
+        /// Возвращает все C++ проекты решения, включая C++/CLI, C++/CX, C++/WinRT.
+        /// <br/> Все C++ проекты реализуют интерфейс VCProject.
+        /// <br/> Проверка `project.Object is VCProject` — надёжный способ отфильтровать C++.
+        /// <br/> Некоторые не-C++ проекты могут выбрасывать исключение при доступе к .Object — это игнорируется.
+        /// </summary>
+        private List<EnvDTE.Project> GetAllCppProjects(EnvDTE80.DTE2 dte) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            const string VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}";
+            var result = new List<EnvDTE.Project>();
+            var queue = new Queue<EnvDTE.Project>();
+
+            foreach (EnvDTE.Project p in dte.Solution.Projects) {
+                queue.Enqueue(p);
+            }
+
+            while (queue.Count > 0) {
+                var project = queue.Dequeue();
+
+                if (string.Equals(project.Kind, VsProjectKindMisc, StringComparison.OrdinalIgnoreCase)) {
+                    continue;
+                }
+
+                if (string.Equals(project.Kind, EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder, StringComparison.OrdinalIgnoreCase)) {
+                    foreach (EnvDTE.ProjectItem item in project.ProjectItems) {
+                        if (item.SubProject != null) {
+                            queue.Enqueue(item.SubProject);
+                        }
+                    }
+                }
+                else {
+                    try {
+                        // все C++ проекты реализуют VCProject
+                        if (project.Object is Microsoft.VisualStudio.VCProjectEngine.VCProject) {
+                            result.Add(project);
+                        }
+                    }
+                    catch {
+                        // безопасно игнорируем исключения от .NET/SDK-проектов
                     }
                 }
             }
-            catch {
-                // ignore
-            }
 
-            return false;
+            return result;
         }
 
-        private static List<IncludeFile> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
+
+        private List<IncludeFile> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
             var result = new List<IncludeFile>();
-            string fileDir = Path.GetDirectoryName(filePath)!;
 
             using var reader = new StreamReader(filePath);
             int lineCount = 0;
@@ -329,42 +354,6 @@ namespace TabsManagerExtension.VsShell.Solution {
                     if (!string.IsNullOrWhiteSpace(raw)) {
                         result.Add(new IncludeFile(raw));
                     }
-                }
-            }
-
-            return result;
-        }
-
-
-
-        private static List<EnvDTE.Project> GetAllProjects(EnvDTE80.DTE2 dte) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            const string VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}";
-
-            var result = new List<EnvDTE.Project>();
-            var queue = new Queue<EnvDTE.Project>();
-
-            foreach (EnvDTE.Project p in dte.Solution.Projects) {
-                queue.Enqueue(p);
-            }
-
-            while (queue.Count > 0) {
-                var project = queue.Dequeue();
-
-                if (string.Equals(project.Kind, VsProjectKindMisc, StringComparison.OrdinalIgnoreCase)) {
-                    continue;
-                }
-
-                if (string.Equals(project.Kind, EnvDTE80.ProjectKinds.vsProjectKindSolutionFolder, StringComparison.OrdinalIgnoreCase)) {
-                    foreach (EnvDTE.ProjectItem item in project.ProjectItems) {
-                        if (item.SubProject != null) {
-                            queue.Enqueue(item.SubProject);
-                        }
-                    }
-                }
-                else {
-                    result.Add(project);
                 }
             }
 

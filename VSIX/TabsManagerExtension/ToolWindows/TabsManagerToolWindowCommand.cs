@@ -72,40 +72,13 @@ namespace TabsManagerExtension.ToolWindows {
         private async void Execute(object sender, EventArgs e) {
             //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
 
-            //// Вызов из команды или инициализации в VSIX-проекте
-            //var projects = await IncludeFinder.FindProjectsThatIncludeAsync("RenderPipeline.h");
-
-            //foreach (var proj in projects) {
-            //    System.Diagnostics.Debug.WriteLine($"Included in: {proj.Name}");
-            //}
-
             var analyzer = new VsShell.Solution.IncludeDependencyAnalyzer();
-            //analyzer.LogAllIncludesInSolution();
             analyzer.Build();
-            //analyzer.LogIncludeTree();
-
-            // BUG: RenderPipeline.h находит неверный транзитивный файл - SimpleApp.WinUI3.App.xaml.cpp
-            //      думаю это связано с тем что мы проверяем только по нормализировнным #include'ам, а предыдущий
-            //      инклюд был DxPlayer\App.xaml.h соответственно далее будет искать все файлы которые включают App.xaml.h.
-
+            
             //string includeTaget = "Logger.h";
             string includeTaget = "RenderPipeline.h";
             var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive(includeTaget);
             var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive(includeTaget);
-
-
-            ////var files = analyzer.FindAllReferencingFiles("RenderPipeline.h");
-            ////var projects = analyzer.GetProjectsForFiles(files);
-
-            ////foreach (var proj in projects) {
-            ////    System.Diagnostics.Debug.WriteLine($"Project uses file: {proj.Name}");
-            ////}
-
-
-            //var projects = analyzer.FindAllReferencingProjects("Logger.h");
-            //foreach (var p in projects) {
-            //    Debug.WriteLine($"Uses: {p.Name}");
-            //}
 
             int xx = 9;
         }

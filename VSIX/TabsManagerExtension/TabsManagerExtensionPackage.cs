@@ -113,9 +113,9 @@ namespace TabsManagerExtension {
             }
 
             // Если Decorator пересоздан — сбросим оригинальный контент
-            if (this._currentTabHost == null || !this._currentTabHost.TryGetTarget(out var knownHost) || knownHost != tabHost) {
-                this._originalTabListHostContent = tabHost.Child;
-                this._currentTabHost = new WeakReference<Decorator>(tabHost);
+            if (_currentTabHost == null || !_currentTabHost.TryGetTarget(out var knownHost) || knownHost != tabHost) {
+                _originalTabListHostContent = tabHost.Child;
+                _currentTabHost = new WeakReference<Decorator>(tabHost);
             }
 
             if (enable) {
@@ -129,17 +129,17 @@ namespace TabsManagerExtension {
                 customControl.Unloaded += this.OnInjectedControlUnloaded;
 
                 tabHost.Child = customControl;
-                this._lastInjectedContent = new WeakReference<UIElement>(customControl);
+                _lastInjectedContent = new WeakReference<UIElement>(customControl);
 
-                this._isCustomTabsEnabled = true;
+                _isCustomTabsEnabled = true;
                 Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl injected.");
             }
             else {
-                if (this._originalTabListHostContent != null) {
-                    tabHost.Child = this._originalTabListHostContent;
-                    this._lastInjectedContent = null;
+                if (_originalTabListHostContent != null) {
+                    tabHost.Child = _originalTabListHostContent;
+                    _lastInjectedContent = null;
 
-                    this._isCustomTabsEnabled = false;
+                    _isCustomTabsEnabled = false;
                     Helpers.Diagnostic.Logger.LogDebug("Restored original tab content.");
 
                     //Services.ExtensionServices.RequestShutdown();
@@ -151,7 +151,7 @@ namespace TabsManagerExtension {
         /// Автоматическое переключение между оригинальным и кастомным таб-контролом.
         /// </summary>
         public void ToggleCustomTabs() {
-            this.ToggleCustomTabs(!this._isCustomTabsEnabled);
+            this.ToggleCustomTabs(!_isCustomTabsEnabled);
         }
 
         private void OnInjectedControlUnloaded(object sender, RoutedEventArgs e) {
@@ -162,7 +162,7 @@ namespace TabsManagerExtension {
             Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl.Unloaded — re-evaluating state...");
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() => {
-                if (this._isCustomTabsEnabled) {
+                if (_isCustomTabsEnabled) {
                     this.ToggleCustomTabs(true); // повторно инжектим
                 }
             }), DispatcherPriority.Background);

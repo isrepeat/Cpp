@@ -82,6 +82,9 @@
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
+    <Compile Include="VsShell\Solution\SourceFile.cs" />
+    <Compile Include="VsShell\Solution\IncludeResolverService.cs" />
+    <Compile Include="VsShell\Solution\SolutionSourceFileGraph.cs" />
     <Compile Include="VsShell\Solution\MsBuildSolutionWatcher.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
     <Compile Include="VsShell\Solution\IncludeDependencyAnalyzer.cs" />

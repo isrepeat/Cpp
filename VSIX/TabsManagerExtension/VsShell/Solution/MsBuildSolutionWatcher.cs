@@ -27,12 +27,21 @@ namespace TabsManagerExtension.VsShell.Solution {
                 return;
             }
 
-            //MSBuildLocator.RegisterDefaults();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            Environment.SetEnvironmentVariable(
-                "VCTargetsPath",
-                @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\"
-            );
+            bool isRunningInsideVisualStudio = Package.GetGlobalService(typeof(SDTE)) is EnvDTE.DTE;
+            if (!isRunningInsideVisualStudio) {
+                /// Вызов MSBuildLocator.RegisterDefaults() необходим в обычных .NET приложениях,
+                /// чтобы указать путь к используемой версии MSBuild. Однако в Visual Studio (внутри VSIX) MSBuild-сборки
+                /// уже загружены, и попытка вызвать RegisterDefaults() вызовет исключение,
+                /// т.к. Visual Studio уже настроена на нужную среду MSBuild.
+                MSBuildLocator.RegisterDefaults();
+
+                Environment.SetEnvironmentVariable(
+                    "VCTargetsPath",
+                    @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\"
+                );
+            }
 
             _initialized = true;
         }
@@ -49,7 +58,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         public IReadOnlyList<string> CurrentReferences {
             get {
                 lock (this) {
-                    return this._currentReferences.ToList();
+                    return _currentReferences.ToList();
                 }
             }
         }
@@ -59,7 +68,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         public IReadOnlyList<string> AdditionalIncludeDirectories {
             get {
                 lock (this) {
-                    return this._additionalIncludeDirs.ToList();
+                    return _additionalIncludeDirs.ToList();
                 }
             }
         }
@@ -70,7 +79,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         public IReadOnlyList<string> PublicIncludeDirectoriesFromReferences {
             get {
                 lock (this) {
-                    return this._publicIncludeDirsFromReferences.ToList();
+                    return _publicIncludeDirsFromReferences.ToList();
                 }
             }
         }
@@ -83,52 +92,48 @@ namespace TabsManagerExtension.VsShell.Solution {
         public MsBuildProjectAnalyzer(string projectFilePath) {
             MsBuildEnvironment.EnsureInitialized();
 
-            this._projectFilePath = Path.GetFullPath(projectFilePath);
+            _projectFilePath = Path.GetFullPath(projectFilePath);
 
-            this._watcher = new FileSystemWatcher(Path.GetDirectoryName(this._projectFilePath)!) {
-                Filter = Path.GetFileName(this._projectFilePath),
+            _watcher = new FileSystemWatcher(Path.GetDirectoryName(_projectFilePath)!) {
+                Filter = Path.GetFileName(_projectFilePath),
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
                 EnableRaisingEvents = true
             };
 
-            this._watcher.Changed += (_, _) => this.ReloadProject();
-            this._watcher.Created += (_, _) => this.ReloadProject();
-            this._watcher.Renamed += (_, _) => this.ReloadProject();
+            _watcher.Changed += (_, _) => this.ReloadProject();
+            _watcher.Created += (_, _) => this.ReloadProject();
+            _watcher.Renamed += (_, _) => this.ReloadProject();
 
             this.ReloadProject();
         }
 
         public void Dispose() {
-            this._watcher.Dispose();
-            this._loadedProject?.ProjectCollection?.UnloadAllProjects();
+            _watcher.Dispose();
+            _loadedProject?.ProjectCollection?.UnloadAllProjects();
         }
 
         private void ReloadProject() {
             try {
-                //var project = new Project(this._projectFilePath);
-                //this._loadedProject = project;
-
                 var projectCollection = new ProjectCollection();
-                var project = projectCollection.LoadProject(this._projectFilePath);
-                this._loadedProject = project;
-
+                var project = projectCollection.LoadProject(_projectFilePath);
+                _loadedProject = project;
 
                 var newRefs = project.GetItems("ProjectReference")
                     .Select(i => Path.GetFullPath(Path.Combine(
-                        Path.GetDirectoryName(this._projectFilePath)!,
+                        Path.GetDirectoryName(_projectFilePath)!,
                         i.EvaluatedInclude)))
                     .ToList();
 
                 bool changed;
                 lock (this) {
-                    changed = !newRefs.SequenceEqual(this._currentReferences, StringComparer.OrdinalIgnoreCase);
+                    changed = !newRefs.SequenceEqual(_currentReferences, StringComparer.OrdinalIgnoreCase);
 
                     if (changed) {
-                        this._currentReferences = newRefs;
-                        this._publicIncludeDirsFromReferences = this.RecalculatePublicIncludeDirectories(newRefs);
+                        _currentReferences = newRefs;
+                        _publicIncludeDirsFromReferences = this.RecalculatePublicIncludeDirectories(newRefs);
                     }
 
-                    this._additionalIncludeDirs = this.RecalculateAdditionalIncludeDirectories(this._loadedProject);
+                    _additionalIncludeDirs = this.RecalculateAdditionalIncludeDirectories(_loadedProject);
                 }
 
                 if (changed) {
@@ -206,11 +211,12 @@ namespace TabsManagerExtension.VsShell.Solution {
 
 
     public sealed class MsBuildSolutionWatcher : IDisposable {
-        public event Action<string>? OnProjectReferencesChanged; // параметр — путь к .vcxproj
+        public event Action<string>? OnProjectReferencesChanged;    
 
         private readonly Dictionary<string, MsBuildProjectAnalyzer> _analyzers = new(StringComparer.OrdinalIgnoreCase);
 
         public MsBuildSolutionWatcher(IEnumerable<EnvDTE.Project> projects) {
+            ThreadHelper.ThrowIfNotOnUIThread();
             MsBuildEnvironment.EnsureInitialized();
 
             foreach (var project in projects) {
@@ -222,19 +228,6 @@ namespace TabsManagerExtension.VsShell.Solution {
                 }
             }
         }
-
-        //public MsBuildSolutionWatcher(IEnumerable<string> vcxprojPaths) {
-        //        MsBuildEnvironment.EnsureInitialized();
-
-        //    foreach (string path in vcxprojPaths) {
-        //        string fullPath = Path.GetFullPath(path);
-        //        if (File.Exists(fullPath)) {
-        //            var analyzer = new MsBuildProjectAnalyzer(fullPath);
-        //            analyzer.OnReferencesChanged += _ => this.OnProjectReferencesChanged?.Invoke(fullPath);
-        //            _analyzers[fullPath] = analyzer;
-        //        }
-        //    }
-        //}
 
         public IReadOnlyList<string> GetIncludeDirectoriesFor(string projectPath) {
             string fullPath = Path.GetFullPath(projectPath);
