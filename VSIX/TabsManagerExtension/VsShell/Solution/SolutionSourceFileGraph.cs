@@ -39,7 +39,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         private readonly MsBuildSolutionWatcher _msBuildSolutionWatcher;
 
         public SolutionSourceFileGraph(MsBuildSolutionWatcher msBuildSolutionWatcher) {
-            this._msBuildSolutionWatcher = msBuildSolutionWatcher;
+            _msBuildSolutionWatcher = msBuildSolutionWatcher;
         }
 
         public void AddSourceFileWithIncludes(SourceFile sourceFile, List<IncludeEntry> includeEntries) {
@@ -51,9 +51,75 @@ namespace TabsManagerExtension.VsShell.Solution {
             this.ApplyIncludes(sourceFile, includeEntries);
         }
 
+        public IEnumerable<IncludeEntry> GetRawIncludes(SourceFile file) {
+            if (_sourceFileToIncludeEntriesMap.TryGetValue(file, out var list)) {
+                return list;
+            }
+
+            return Array.Empty<IncludeEntry>();
+        }
+
+        public IEnumerable<KeyValuePair<SourceFile, List<ResolvedIncludeEntry>>> GetAllResolvedIncludeEntries() {
+            return _sourceFileToResolvedIncludeEntriesMap;
+        }
+
+        public IEnumerable<ResolvedIncludeEntry> GetResolvedIncludes(SourceFile file) {
+            if (_sourceFileToResolvedIncludeEntriesMap.TryGetValue(file, out var list)) {
+                return list;
+            }
+
+            return Array.Empty<ResolvedIncludeEntry>();
+        }
+
+
+        public IEnumerable<SourceFile> GetSourceFilesByInclude(IncludeEntry entry) {
+            if (_includeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
+                return list;
+            }
+
+            return Array.Empty<SourceFile>();
+        }
+
+        public IEnumerable<SourceFile> GetSourceFilesByResolved(ResolvedIncludeEntry entry) {
+            if (_resolvedIncludeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
+                return list;
+            }
+
+            return Array.Empty<SourceFile>();
+        }
+
+        public IEnumerable<SourceFile> GetSourceFilesByResolvedPath(string resolvedPath) {
+            if (_resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var list)) {
+                return list;
+            }
+
+            return Array.Empty<SourceFile>();
+        }
+
+
+        public bool TryGetSourceFileRepresentations(string filePath, out IReadOnlyList<SourceFile> result) {
+            if (_sourceFileRepresentationsMap.TryGetValue(filePath, out var list)) {
+                result = list;
+                return true;
+            }
+
+            result = Array.Empty<SourceFile>();
+            return false;
+        }
+
+        public void Clear() {
+            _sourceFileToIncludeEntriesMap.Clear();
+            _includeEntryToSourceFilesMap.Clear();
+            _sourceFileToResolvedIncludeEntriesMap.Clear();
+            _resolvedIncludeEntryToSourceFilesMap.Clear();
+            _resolvedIncludePathsToSourceFilesMap.Clear();
+            _sourceFileRepresentationsMap.Clear();
+        }
+
+
         private void ApplyIncludes(SourceFile sourceFile, List<IncludeEntry> includeEntries) {
             // ① Запоминаем сырой список IncludeEntry
-            this._sourceFileToIncludeEntriesMap[sourceFile] = includeEntries;
+            _sourceFileToIncludeEntriesMap[sourceFile] = includeEntries;
 
             var resolvedIncludes = new List<ResolvedIncludeEntry>();
 
@@ -63,160 +129,88 @@ namespace TabsManagerExtension.VsShell.Solution {
                     includeEntry.RawInclude,
                     sourceFile.FilePath,
                     sourceFile.Project,
-                    this._msBuildSolutionWatcher
+                    _msBuildSolutionWatcher
                 );
 
-                var resolved = new ResolvedIncludeEntry(includeEntry, resolvedPath);
-                resolvedIncludes.Add(resolved);
+                var resolvedInclude = new ResolvedIncludeEntry(includeEntry, resolvedPath);
+                resolvedIncludes.Add(resolvedInclude);
 
-                // ③ Обновляем словарь: IncludeEntry → SourceFile[]
-                if (!this._includeEntryToSourceFilesMap.TryGetValue(includeEntry, out var rawList)) {
-                    rawList = new List<SourceFile>();
-                    this._includeEntryToSourceFilesMap[includeEntry] = rawList;
+                // ③ Обновляем Dictionary<IncludeEntry, List<SourceFile>>
+                if (!_includeEntryToSourceFilesMap.TryGetValue(includeEntry, out var rawSourcesList)) {
+                    rawSourcesList = new List<SourceFile>();
+                    _includeEntryToSourceFilesMap[includeEntry] = rawSourcesList;
                 }
-                if (!rawList.Contains(sourceFile)) {
-                    rawList.Add(sourceFile);
-                }
-
-                // ④ Обновляем словарь: ResolvedIncludeEntry → SourceFile[]
-                if (!this._resolvedIncludeEntryToSourceFilesMap.TryGetValue(resolved, out var resolvedList)) {
-                    resolvedList = new List<SourceFile>();
-                    this._resolvedIncludeEntryToSourceFilesMap[resolved] = resolvedList;
-                }
-                if (!resolvedList.Contains(sourceFile)) {
-                    resolvedList.Add(sourceFile);
+                if (!rawSourcesList.Contains(sourceFile)) {
+                    rawSourcesList.Add(sourceFile);
                 }
 
-                // ⑤ Обновляем: ResolvedPath (если есть) → SourceFile[]
+                // ④ Обновляем Dictionary<ResolvedIncludeEntry, List<SourceFile>>
+                if (!_resolvedIncludeEntryToSourceFilesMap.TryGetValue(resolvedInclude, out var resolvedIncludesSourcesList)) {
+                    resolvedIncludesSourcesList = new List<SourceFile>();
+                    _resolvedIncludeEntryToSourceFilesMap[resolvedInclude] = resolvedIncludesSourcesList;
+                }
+                if (!resolvedIncludesSourcesList.Contains(sourceFile)) {
+                    resolvedIncludesSourcesList.Add(sourceFile);
+                }
+
+                // ⑤ Обновляем: Dictionary<string, List<SourceFile>> (если есть resolvedPath)
                 if (resolvedPath is not null) {
-                    if (!this._resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var pathList)) {
-                        pathList = new List<SourceFile>();
-                        this._resolvedIncludePathsToSourceFilesMap[resolvedPath] = pathList;
+                    if (!_resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var resolvedIncludePathsSourcesList)) {
+                        resolvedIncludePathsSourcesList = new List<SourceFile>();
+                        _resolvedIncludePathsToSourceFilesMap[resolvedPath] = resolvedIncludePathsSourcesList;
                     }
-                    if (!pathList.Contains(sourceFile)) {
-                        pathList.Add(sourceFile);
+                    if (!resolvedIncludePathsSourcesList.Contains(sourceFile)) {
+                        resolvedIncludePathsSourcesList.Add(sourceFile);
                     }
                 }
             }
 
             // ⑥ Запоминаем список ResolvedIncludeEntry для SourceFile
-            this._sourceFileToResolvedIncludeEntriesMap[sourceFile] = resolvedIncludes;
+            _sourceFileToResolvedIncludeEntriesMap[sourceFile] = resolvedIncludes;
 
             // ⑦ Обновляем представления файлов
-            if (!this._sourceFileRepresentationsMap.TryGetValue(sourceFile.FilePath, out var reps)) {
-                reps = new List<SourceFile>();
-                this._sourceFileRepresentationsMap[sourceFile.FilePath] = reps;
+            if (!_sourceFileRepresentationsMap.TryGetValue(sourceFile.FilePath, out var sourceFilePathsRepresentationList)) {
+                sourceFilePathsRepresentationList = new List<SourceFile>();
+                _sourceFileRepresentationsMap[sourceFile.FilePath] = sourceFilePathsRepresentationList;
             }
 
-            reps.RemoveAll(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectId, sourceFile.ProjectId));
-            reps.Add(sourceFile);
+            sourceFilePathsRepresentationList.RemoveAll(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectId, sourceFile.ProjectId));
+            sourceFilePathsRepresentationList.Add(sourceFile);
         }
 
 
-
-
         private void RemoveOldIndexes(SourceFile sourceFile) {
-            if (!this._sourceFileToResolvedIncludeEntriesMap.TryGetValue(sourceFile, out var oldResolved)) {
+            if (!_sourceFileToResolvedIncludeEntriesMap.TryGetValue(sourceFile, out var oldResolved)) {
                 return;
             }
 
             foreach (var resolved in oldResolved) {
                 var raw = resolved.IncludeEntry;
-
-                // ① Remove from IncludeEntry → SourceFile[]
-                if (this._includeEntryToSourceFilesMap.TryGetValue(raw, out var rawList)) {
+                if (_includeEntryToSourceFilesMap.TryGetValue(raw, out var rawList)) {
                     rawList.Remove(sourceFile);
                     if (rawList.Count == 0) {
-                        this._includeEntryToSourceFilesMap.Remove(raw);
+                        _includeEntryToSourceFilesMap.Remove(raw);
                     }
                 }
 
-                // ② Remove from ResolvedIncludeEntry → SourceFile[]
-                if (this._resolvedIncludeEntryToSourceFilesMap.TryGetValue(resolved, out var resolvedList)) {
+                if (_resolvedIncludeEntryToSourceFilesMap.TryGetValue(resolved, out var resolvedList)) {
                     resolvedList.Remove(sourceFile);
                     if (resolvedList.Count == 0) {
-                        this._resolvedIncludeEntryToSourceFilesMap.Remove(resolved);
+                        _resolvedIncludeEntryToSourceFilesMap.Remove(resolved);
                     }
                 }
 
-                // ③ Remove from ResolvedPath (если он есть) → SourceFile[]
                 if (resolved.ResolvedPath is string path &&
-                    this._resolvedIncludePathsToSourceFilesMap.TryGetValue(path, out var pathList)) {
+                    _resolvedIncludePathsToSourceFilesMap.TryGetValue(path, out var pathList)) {
                     pathList.Remove(sourceFile);
                     if (pathList.Count == 0) {
-                        this._resolvedIncludePathsToSourceFilesMap.Remove(path);
+                        _resolvedIncludePathsToSourceFilesMap.Remove(path);
                     }
                 }
             }
 
-            // ④ Удаляем SourceFile → ResolvedIncludeEntry[]
-            this._sourceFileToResolvedIncludeEntriesMap.Remove(sourceFile);
-
-            // ⑤ Удаляем SourceFile → IncludeEntry[]
-            this._sourceFileToIncludeEntriesMap.Remove(sourceFile);
-        }
-
-
-
-
-
-        public void Clear() {
-            this._sourceFileToIncludeEntriesMap.Clear();
-            this._includeEntryToSourceFilesMap.Clear();
-            this._sourceFileToResolvedIncludeEntriesMap.Clear();
-            this._resolvedIncludeEntryToSourceFilesMap.Clear();
-            this._resolvedIncludePathsToSourceFilesMap.Clear();
-            this._sourceFileRepresentationsMap.Clear();
-        }
-
-        public IEnumerable<IncludeEntry> GetRawIncludes(SourceFile file) {
-            if (this._sourceFileToIncludeEntriesMap.TryGetValue(file, out var list)) {
-                return list;
-            }
-
-            return Array.Empty<IncludeEntry>();
-        }
-
-        public IEnumerable<ResolvedIncludeEntry> GetResolvedIncludes(SourceFile file) {
-            if (this._sourceFileToResolvedIncludeEntriesMap.TryGetValue(file, out var list)) {
-                return list;
-            }
-
-            return Array.Empty<ResolvedIncludeEntry>();
-        }
-
-        public IEnumerable<SourceFile> GetSourceFilesByInclude(IncludeEntry entry) {
-            if (this._includeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
-                return list;
-            }
-
-            return Array.Empty<SourceFile>();
-        }
-
-        public IEnumerable<SourceFile> GetSourceFilesByResolved(ResolvedIncludeEntry entry) {
-            if (this._resolvedIncludeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
-                return list;
-            }
-
-            return Array.Empty<SourceFile>();
-        }
-
-        public IEnumerable<SourceFile> GetSourceFilesByResolvedPath(string resolvedPath) {
-            if (this._resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var list)) {
-                return list;
-            }
-
-            return Array.Empty<SourceFile>();
-        }
-
-        public bool TryGetSourceFileRepresentations(string filePath, out IReadOnlyList<SourceFile> result) {
-            if (this._sourceFileRepresentationsMap.TryGetValue(filePath, out var list)) {
-                result = list;
-                return true;
-            }
-
-            result = Array.Empty<SourceFile>();
-            return false;
+            _sourceFileToResolvedIncludeEntriesMap.Remove(sourceFile);
+            _sourceFileToIncludeEntriesMap.Remove(sourceFile);
         }
     }
 
@@ -380,34 +374,48 @@ namespace TabsManagerExtension.VsShell.Solution {
 
 
 /*
+// Editor подключает Helpers.Shared как shared-проект (.vcxitems)
+// Game и Engine используют .h-файлы через относительные пути
+
 TestIncludeSolution/
 ├── Game/
-│   ├── Game.cpp                 // #include "Logger.h", "Config.h", "Missing.h"
-│   ├── GameShared.cpp          // #include "../Helpers.Shared/SharedUtils.h"
-│   └── LocalIncludes/Logger.h  // ← shadow Logger.h
+│   ├── Game.cpp                      // #include "Logger.h", "Config.h", "Missing.h"
+│   ├── GameShared.cpp               // #include "../Helpers.Shared/SharedUtils.h"
+│   └── LocalIncludes/Logger.h
 ├── Editor/
-│   ├── Editor.cpp              // #include "../Helpers.Shared/Logger.h"
-│   └── GameLink.cpp            // #include "Logger.h"
+│   ├── Editor.cpp                   // #include "../Helpers.Shared/Logger.h"
+│   └── GameLink.cpp                 // #include "Logger.h"
 ├── Engine/
-│   ├── Engine.cpp              // #include "SharedUtils.h"
-│   └── Nested/Inner.cpp       // #include "../../Helpers.Shared/Logger.h"
+│   ├── Engine.cpp                   // #include "SharedUtils.h"
+│   └── Nested/Inner.cpp            // #include "../../Helpers.Shared/Logger.h"
 └── Helpers.Shared/
-    ├── Config.h
     ├── Logger.h
+    ├── Config.h
     └── SharedUtils.h
 
 
 1. Dictionary<SourceFile, List<IncludeEntry>> [_sourceFileToIncludeEntiresMap]
 {
-    Game.cpp       => [ "Logger.h", "Config.h", "Missing.h" ],
-    GameShared.cpp => [ "../Helpers.Shared/SharedUtils.h" ],
-    Editor.cpp     => [ "../Helpers.Shared/Logger.h" ],
-    GameLink.cpp   => [ "Logger.h" ],
-    Engine.cpp     => [ "SharedUtils.h" ],
-    Inner.cpp      => [ "../../Helpers.Shared/Logger.h" ]
+    Game.cpp [Game]                 => [ "Logger.h", "Config.h", "Missing.h" ],
+    GameShared.cpp [Game]           => [ "../Helpers.Shared/SharedUtils.h" ],
+    Logger.h [Game]                 => [ ],
+
+    Editor.cpp [Editor]             => [ "../Helpers.Shared/Logger.h" ],
+    GameLink.cpp [Editor]           => [ "Logger.h" ],
+    Logger.h [Editor]               => [ ],
+    Config.h [Editor]               => [ ],
+    SharedUtils.h [Editor]          => [ ],
+
+    Engine.cpp [Engine]             => [ "SharedUtils.h" ],
+    Inner.cpp [Engine]              => [ "../../Helpers.Shared/Logger.h" ],
+    Logger.h [Engine]               => [ ],
+
+    Logger.h [Helpers.Shared]       => [ ],
+    Config.h [Helpers.Shared]       => [ ],
+    SharedUtils.h [Helpers.Shared]  => [ ]
 }
 
-2. Dictionary<IncludeEntry, List<SourceFile>> [_includeEntiresSourceFilesMap]
+2. Dictionary<IncludeEntry, List<SourceFile>> [_includeEntryToSourceFilesMap]
 {
     "Logger.h"                          => [ Game.cpp, GameLink.cpp ],
     "Config.h"                          => [ Game.cpp ],
@@ -428,30 +436,41 @@ TestIncludeSolution/
     GameShared.cpp => [
         ("../Helpers.Shared/SharedUtils.h" → "Helpers.Shared/SharedUtils.h")
     ],
+    Logger.h [Game] => [ ],
+
     Editor.cpp => [
         ("../Helpers.Shared/Logger.h" → "Helpers.Shared/Logger.h")
     ],
     GameLink.cpp => [
         ("Logger.h" → "Helpers.Shared/Logger.h")
     ],
+    Logger.h [Editor] => [ ],
+    Config.h [Editor] => [ ],
+    SharedUtils.h [Editor] => [ ],
+
     Engine.cpp => [
         ("SharedUtils.h" → "Helpers.Shared/SharedUtils.h")
     ],
     Inner.cpp => [
         ("../../Helpers.Shared/Logger.h" → "Helpers.Shared/Logger.h")
-    ]
+    ],
+    Logger.h [Engine] => [ ],
+
+    Logger.h [Helpers.Shared] => [ ],
+    Config.h [Helpers.Shared] => [ ],
+    SharedUtils.h [Helpers.Shared] => [ ]
 }
 
-4. Dictionary<ResolvedIncludeEntry, List<SourceFile>> [_resolvedIncludeEntriesToSourceFilesMap]
+4. Dictionary<ResolvedIncludeEntry, List<SourceFile>> [_resolvedIncludeEntryToSourceFilesMap]
 {
-    ("Logger.h" → "Game/LocalIncludes/Logger.h")                      => [ Game.cpp ],
-    ("Logger.h" → "Helpers.Shared/Logger.h")                          => [ GameLink.cpp ],
+    ("Logger.h" → "Game/LocalIncludes/Logger.h")                     => [ Game.cpp ],
+    ("Logger.h" → "Helpers.Shared/Logger.h")                         => [ GameLink.cpp ],
     ("../Helpers.Shared/Logger.h" → "Helpers.Shared/Logger.h")       => [ Editor.cpp ],
     ("../../Helpers.Shared/Logger.h" → "Helpers.Shared/Logger.h")    => [ Inner.cpp ],
-    ("Config.h" → "Helpers.Shared/Config.h")                          => [ Game.cpp ],
-    ("SharedUtils.h" → "Helpers.Shared/SharedUtils.h")               => [ Engine.cpp ],
+    ("Config.h" → "Helpers.Shared/Config.h")                         => [ Game.cpp ],
+    ("SharedUtils.h" → "Helpers.Shared/SharedUtils.h")              => [ Engine.cpp ],
     ("../Helpers.Shared/SharedUtils.h" → "Helpers.Shared/SharedUtils.h") => [ GameShared.cpp ],
-    ("Missing.h" → null)                                              => [ Game.cpp ]
+    ("Missing.h" → null)                                             => [ Game.cpp ]
 }
 
 5. Dictionary<string, List<SourceFile>> [_resolvedIncludePathsToSourceFilesMap]
@@ -464,20 +483,19 @@ TestIncludeSolution/
 
 6. Dictionary<string, List<SourceFile>> [_sourceFileRepresentationsMap]
 {
-    "Helpers.Shared/Logger.h" => [
+    "Game/LocalIncludes/Logger.h"     => [ SourceFile { ..., Project = Game } ],
+    "Helpers.Shared/Logger.h"         => [
+        SourceFile { ..., Project = Helpers.Shared },
         SourceFile { ..., Project = Editor },
-        SourceFile { ..., Project = GameLink },
         SourceFile { ..., Project = Engine }
     ],
-    "Helpers.Shared/Config.h" => [
-        SourceFile { ..., Project = Game }
+    "Helpers.Shared/Config.h"         => [
+        SourceFile { ..., Project = Helpers.Shared },
+        SourceFile { ..., Project = Editor }
     ],
-    "Helpers.Shared/SharedUtils.h" => [
-        SourceFile { ..., Project = Game },
-        SourceFile { ..., Project = Engine }
-    ],
-    "Game/LocalIncludes/Logger.h" => [
-        SourceFile { ..., Project = Game }
+    "Helpers.Shared/SharedUtils.h"    => [
+        SourceFile { ..., Project = Helpers.Shared },
+        SourceFile { ..., Project = Editor }
     ]
 }
  */

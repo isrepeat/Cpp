@@ -174,7 +174,49 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        
+
+
+        public IReadOnlyCollection<State.Document.TabItemProject> GetProjectsIncludingResolvedTransitive(string resolvedPath) {
+            return this.GetFilesIncludingResolvedTransitive(resolvedPath)
+                .Select(f => f.Project)
+                .Distinct()
+                .ToList();
+        }
+
+
+        public IEnumerable<SourceFile> GetFilesIncludingResolvedTransitive(string resolvedPath) {
+            var directFiles = _solutionSourceFileGraph.GetSourceFilesByResolvedPath(resolvedPath);
+            if (directFiles.Count() == 0) {
+                return Enumerable.Empty<SourceFile>();
+            }
+
+            var result = new HashSet<SourceFile>(directFiles);
+            var queue = new Queue<SourceFile>(directFiles);
+
+            while (queue.Count > 0) {
+                var current = queue.Dequeue();
+
+                foreach (var kvp in this._solutionSourceFileGraph.GetAllResolvedIncludeEntries()) {
+                    var source = kvp.Key;
+                    var includes = kvp.Value;
+
+                    foreach (var entry in includes) {
+                        if (entry.ResolvedPath != null &&
+                            StringComparer.OrdinalIgnoreCase.Equals(entry.ResolvedPath, current.FilePath)) {
+
+                            if (result.Add(source)) {
+                                queue.Enqueue(source);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+
         public void LogIncludeTree() {
             ThreadHelper.ThrowIfNotOnUIThread();
 

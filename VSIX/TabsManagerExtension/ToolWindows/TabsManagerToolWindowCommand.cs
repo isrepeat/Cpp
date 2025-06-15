@@ -80,6 +80,10 @@ namespace TabsManagerExtension.ToolWindows {
             var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive(includeTaget);
             var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive(includeTaget);
 
+            string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
+            var transitiveIncludingFiles2 = analyzer.GetFilesIncludingResolvedTransitive(includeTagetFullName);
+            var transitiveIncludingProjects2 = analyzer.GetProjectsIncludingResolvedTransitive(includeTagetFullName);
+
             int xx = 9;
         }
     }
