@@ -99,10 +99,17 @@ namespace TabsManagerExtension.VsShell.Solution {
 
 
 
-        public IReadOnlyCollection<State.Document.TabItemProject> GetProjectsIncludingTransitive(string includeName) {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        public IReadOnlyCollection<State.Document.TabItemProject> GetTransitiveProjectsIncludersByIncludeString(string includeString) {
+            var transitiveIncluders = this.GetTransitiveFilesIncludersByIncludeString(includeString);
+            return transitiveIncluders
+                .Select(f => f.Project)
+                .Distinct()
+                .ToList();
+        }
 
-            var transitive = this.GetFilesIncludingTransitive(includeName);
+
+        public IReadOnlyCollection<State.Document.TabItemProject> GetTransitiveProjectsIncludersByIncludePath(string includePath) {
+            var transitive = this.GetTransitiveFilesIncludersByIncludePath(includePath);
             return transitive
                 .Select(f => f.Project)
                 .Distinct()
@@ -110,62 +117,63 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        public IReadOnlyList<SourceFile> GetFilesIncludingTransitive(string includeName) {
+        /// <summary>
+        /// Находит все <see cref="SourceFile"/>'ы, которые транзитивно включают include с заданным именем.
+        /// </summary>
+        /// <remarks>
+        /// Используется двухфазный алгоритм: сначала ищутся прямые попадания по <c>RawInclude</c>,
+        /// затем выполняется транзитивный обход вверх по цепочке включений.
+        ///
+        /// Если включён строгий режим, то кроме совпадения по имени, также сравнивается имя файла в <c>ResolvedPath</c>,
+        /// чтобы исключить ложные срабатывания при совпадении <c>RawInclude</c>, но разном физическом файле.
+        /// </remarks>
+        /// <param name="includeString">Имя include-файла (например, <c>"Logger.h"</c>).</param>
+        /// <param name="strictResolvedMatch">
+        /// Включает строгую фильтрацию: true — требует совпадения не только по <c>RawInclude</c>, но и по <c>ResolvedPath</c>.
+        /// </param>
+        /// <returns>Список всех файлов, которые напрямую или транзитивно включают данный include.</returns>
+        public IReadOnlyList<SourceFile> GetTransitiveFilesIncludersByIncludeString(string includeString, bool strictResolvedMatch = false) {
             var result = new HashSet<SourceFile>();
-            var visited = new HashSet<SourceFile>();
-            var stack = new Stack<SourceFile>();
+            var queue = new Queue<SourceFile>();
 
-            // Построение индекса FileName → List<SourceFile>
-            var filesByName = _solutionSourceFileGraph.AllSourceFiles
-                .GroupBy(sf => Path.GetFileName(sf.FilePath), StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+            // ① Перебираем все ResolvedIncludeEntry во всех исходных файлах
+            foreach (var kvp in _solutionSourceFileGraph.GetAllResolvedIncludeEntries()) {
+                var sourceFile = kvp.Key;
+                var resolvedList = kvp.Value;
 
-            // Основной проход
-            foreach (var sourceFile in _solutionSourceFileGraph.AllSourceFiles) {
-                foreach (var resolvedInclude in _solutionSourceFileGraph.GetResolvedIncludes(sourceFile)) {
-                    // Быстрая фильтрация по имени: если имя include не совпадает — пропускаем
-                    if (!Path.GetFileName(resolvedInclude.IncludeEntry.RawInclude).Equals(includeName, StringComparison.OrdinalIgnoreCase)) {
+                foreach (var resolved in resolvedList) {
+                    var raw = resolved.IncludeEntry.RawInclude;
+
+                    // ② Быстрая фильтрация по имени: проверяем RawInclude (например, "Logger.h")
+                    if (!Path.GetFileName(raw).Equals(includeString, StringComparison.OrdinalIgnoreCase)) {
                         continue;
                     }
 
-                    // Быстро получаем кандидатов по имени
-                    if (!filesByName.TryGetValue(includeName, out var candidates)) {
-                        continue;
-                    }
-
-                    foreach (var candidate in candidates) {
-                        // Проверяем: действительно ли includeRaw из `source` разрешается в файл `candidate`
-                        if (Service.IncludeResolverService.IncludeResolvesToFile(
-                            resolvedInclude.IncludeEntry.RawInclude,
-                            sourceFile.FilePath,
-                            candidate.FilePath,
-                            sourceFile.Project,
-                            _msBuildSolutionWatcher)) {
-
-                            if (result.Add(candidate)) {
-                                stack.Push(candidate);
-                            }
-
-                            break; // include разрешён — идём к следующему файлу
+                    // ③ Строгий режим: фильтруем также по ResolvedPath → EndsWith("Logger.h")
+                    if (strictResolvedMatch && resolved.ResolvedPath is not null) {
+                        if (!Path.GetFileName(resolved.ResolvedPath).Equals(includeString, StringComparison.OrdinalIgnoreCase)) {
+                            continue;
                         }
                     }
 
-                    break; // не проверяем другие include'ы этого source-файла
+                    // ④ Получаем все SourceFile'ы, в которые реально резолвится include
+                    if (resolved.ResolvedPath is not null) {
+                        foreach (var includedFile in _solutionSourceFileGraph.GetSourceFilesByResolvedPath(resolved.ResolvedPath)) {
+                            if (result.Add(includedFile)) {
+                                queue.Enqueue(includedFile); // положим в очередь для обратного обхода
+                            }
+                        }
+                    }
                 }
             }
 
-            // ② Обратный обход: кто включает найденные файлы
-            while (stack.Count > 0) {
-                var current = stack.Pop();
-
-                if (!visited.Add(current)) {
-                    continue;
-                }
+            // ⑤ Обратный обход: кто включает те файлы, что мы уже нашли (транзитивно вверх)
+            while (queue.Count > 0) {
+                var current = queue.Dequeue();
 
                 foreach (var includer in _solutionSourceFileGraph.GetSourceFilesByResolvedPath(current.FilePath)) {
                     if (result.Add(includer)) {
-                        stack.Push(includer);
-                        Helpers.Diagnostic.Logger.LogDebug($"[transitive] {includer.FilePath} includes → {current.FilePath}");
+                        queue.Enqueue(includer); // продолжаем подниматься вверх по графу
                     }
                 }
             }
@@ -176,16 +184,27 @@ namespace TabsManagerExtension.VsShell.Solution {
 
 
 
-        public IReadOnlyCollection<State.Document.TabItemProject> GetProjectsIncludingResolvedTransitive(string resolvedPath) {
-            return this.GetFilesIncludingResolvedTransitive(resolvedPath)
-                .Select(f => f.Project)
-                .Distinct()
-                .ToList();
-        }
 
-
-        public IEnumerable<SourceFile> GetFilesIncludingResolvedTransitive(string resolvedPath) {
-            var directFiles = _solutionSourceFileGraph.GetSourceFilesByResolvedPath(resolvedPath);
+        /// <summary>
+        /// Находит все <see cref="SourceFile"/>'ы, которые транзитивно включают файл с заданным <c>ResolvedPath</c>.
+        /// </summary>
+        /// <remarks>
+        /// Метод начинает с прямых включений указанного файла (по точному <c>ResolvedPath</c>),
+        /// после чего выполняет транзитивный обход вверх — находит все исходные файлы,
+        /// которые включают его опосредованно.
+        ///
+        /// Это наиболее точный и надёжный способ анализа, исключающий неоднозначности,
+        /// возникающие при использовании только имени include-файла.
+        /// </remarks>
+        /// <param name="includePath">
+        /// Абсолютный путь до включаемого файла, например:
+        /// <c>"d:\PROJECT\Helpers.Shared\Logger.h"</c>.
+        /// </param>
+        /// <returns>
+        /// Список <see cref="SourceFile"/>-файлов, которые напрямую или транзитивно включают указанный путь.
+        /// </returns>
+        public IEnumerable<SourceFile> GetTransitiveFilesIncludersByIncludePath(string includePath) {
+            var directFiles = _solutionSourceFileGraph.GetSourceFilesByResolvedPath(includePath);
             if (directFiles.Count() == 0) {
                 return Enumerable.Empty<SourceFile>();
             }

@@ -77,12 +77,13 @@ namespace TabsManagerExtension.ToolWindows {
             
             string includeTaget = "Logger.h";
             //string includeTaget = "RenderPipeline.h";
-            var transitiveIncludingFiles = analyzer.GetFilesIncludingTransitive(includeTaget);
-            var transitiveIncludingProjects = analyzer.GetProjectsIncludingTransitive(includeTaget);
+
+            var transitiveIncludingFiles = analyzer.GetTransitiveFilesIncludersByIncludeString(includeTaget);
+            var transitiveIncludingProjects = analyzer.GetTransitiveProjectsIncludersByIncludeString(includeTaget);
 
             string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
-            var transitiveIncludingFiles2 = analyzer.GetFilesIncludingResolvedTransitive(includeTagetFullName);
-            var transitiveIncludingProjects2 = analyzer.GetProjectsIncludingResolvedTransitive(includeTagetFullName);
+            var transitiveIncludingFiles2 = analyzer.GetTransitiveFilesIncludersByIncludePath(includeTagetFullName);
+            var transitiveIncludingProjects2 = analyzer.GetTransitiveProjectsIncludersByIncludePath(includeTagetFullName);
 
             int xx = 9;
         }
