@@ -13,6 +13,8 @@
       <DependentUpon>Separator.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
