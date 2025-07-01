@@ -70,8 +70,8 @@ namespace TabsManagerExtension {
         }
 
 
-        private void OnSolutionLoaded() {
-            Helpers.Diagnostic.Logger.LogDebug("[Package] OnSolutionLoaded()");
+        private void OnSolutionLoaded(string solutionName) {
+            Helpers.Diagnostic.Logger.LogDebug($"[Package] OnSolutionLoaded(): solutionName = {solutionName}");
 
             if (VsixVisualTreeHelper.Instance.IsCustomTabsEnabled) {
                 return;
@@ -83,8 +83,8 @@ namespace TabsManagerExtension {
         }
 
 
-        private void OnSolutionClosed() {
-            Helpers.Diagnostic.Logger.LogDebug("[Package] OnSolutionClosed()");
+        private void OnSolutionClosed(string solutionName) {
+            Helpers.Diagnostic.Logger.LogDebug($"[Package] OnSolutionClosed(): solutionName = {solutionName}");
 
             if (!VsixVisualTreeHelper.Instance.IsCustomTabsEnabled) {
                 return;

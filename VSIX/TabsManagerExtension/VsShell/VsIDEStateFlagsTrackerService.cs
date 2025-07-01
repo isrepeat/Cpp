@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Utilities;
 using System.Windows.Threading;
 using TabsManagerExtension;
 
+
 namespace TabsManagerExtension.VsShell.Services {
     public sealed class VsIDEStateFlagsTrackerService :
         VsShell.Services.VsSelectionEventsServiceBase<VsIDEStateFlagsTrackerService>,
@@ -20,9 +21,10 @@ namespace TabsManagerExtension.VsShell.Services {
         public static readonly Guid SolutionExistsGuid = new Guid(UIContextGuids80.SolutionExists);
 
         public Helpers.Events.TriggeredAction<Guid, bool> IDEStateFlagsChanged = new();
-        public Helpers.Events.TriggeredAction SolutionLoaded = new();
-        public Helpers.Events.TriggeredAction SolutionClosed = new();
+        public Helpers.Events.TriggeredAction<string> SolutionLoaded = new();
+        public Helpers.Events.TriggeredAction<string> SolutionClosed = new();
 
+        private IVsSolution _vsSolution;
         private IVsMonitorSelection _monitorSelection;
         private readonly Dictionary<Guid, bool> _contextStateMap = new();
         private readonly Dictionary<uint, Guid> _contextCookiesMap = new();
@@ -38,6 +40,9 @@ namespace TabsManagerExtension.VsShell.Services {
 
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            _vsSolution = (IVsSolution)Package.GetGlobalService(typeof(SVsSolution))
+                ?? throw new InvalidOperationException("Cannot get IVsSolution");
 
             _monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection))
                 ?? throw new InvalidOperationException("Cannot get IVsMonitorSelection");
@@ -101,16 +106,31 @@ namespace TabsManagerExtension.VsShell.Services {
             _contextStateMap[contextGuid] = isActive;
 
             if (contextGuid == SolutionExistsGuid) {
+                string? solutionName = this.GetCurrentSolutionName();
+
                 if (isActive) {
-                    this.SolutionLoaded.Invoke();
+                    this.SolutionLoaded.Invoke(solutionName ?? string.Empty);
                 }
                 else {
-                    this.SolutionClosed.Invoke();
+                    this.SolutionClosed.Invoke(solutionName ?? string.Empty);
                 }
             }
             else {
                 this.IDEStateFlagsChanged.Invoke(contextGuid, isActive);
             }
+        }
+
+        private string? GetCurrentSolutionName() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_vsSolution != null) {
+                _vsSolution.GetSolutionInfo(out string solutionDir, out string solutionFile, out string userOpts);
+                if (!string.IsNullOrEmpty(solutionFile)) {
+                    return Path.GetFileName(solutionFile);
+                }
+            }
+
+            return null;
         }
     }
 }
