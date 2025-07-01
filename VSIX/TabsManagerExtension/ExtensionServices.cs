@@ -79,7 +79,21 @@ namespace TabsManagerExtension.Services {
                 return;
             }
 
-            ExtensionServices.Register(VsShell.Services.VsSelectionTrackerService.Create());
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Services.VsIDEStateFlagsTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Solution.Services.VsWindowFrameActivationTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Solution.Services.VsSolutionExplorerSelectionTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Solution.Services.VsProjectItemsTrackerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.VsSolutionEventsTrackerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.IncludeDependencyAnalyzerService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.TextEditorCommandFilterService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.DocumentActivationTrackerService.Create());
 

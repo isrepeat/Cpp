@@ -101,9 +101,14 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             VSConstants.VSStd2KCmdID.BACKSPACE,
         };
 
+        public TextEditorCommandFilterService() { }
+
+        //
+        // IExtensionService
+        //
         public IReadOnlyList<Type> DependsOn() {
             return new[] {
-                typeof(VsShell.Services.VsSelectionTrackerService),
+                typeof(VsShell.Solution.Services.VsWindowFrameActivationTrackerService),
                 typeof(VsShell.TextEditor.Services.DocumentActivationTrackerService)
             };
         }
@@ -111,7 +116,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
             
             this.InstallToActiveEditor();
@@ -124,7 +129,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
             this.UninstallFilter();
             ClearInstance();
 

@@ -34,6 +34,9 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
 
         public DocumentActivationTrackerService() { }
 
+        //
+        // IExtensionService
+        //
         public IReadOnlyList<Type> DependsOn() {
             return Array.Empty<Type>();
         }

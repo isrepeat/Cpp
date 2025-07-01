@@ -15,11 +15,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Design;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.VCProjectEngine;
+using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.TextManager.Interop;
-using Microsoft.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 #if NET_FRAMEWORK_472
 namespace System.Runtime.CompilerServices {
@@ -48,15 +50,49 @@ namespace TabsManagerExtension {
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             
-            Console.Beep(1000, 500); // 1000 Гц, 500 мс
-            Services.ExtensionServices.Initialize();
-
             // TODO: adapt the CppFeatures nuget to net472 (WPF?)
             //var initFlags = CppFeatures.Cx.InitFlags.DefaultFlags | CppFeatures.Cx.InitFlags.CreateInPackageFolder;
             //CppFeatures.Cx.Logger.Init(AppConstants.LogFilename, initFlags);
 
-            ToolWindows.EarlyPackageLoadHackToolWindow.Initialize(this); // Call VsixVisualTreeHelper.ToggleCustomTabs(true) inside.
+            //Console.Beep(1000, 500); // 1000 Гц, 500 мс
+            Services.ExtensionServices.Initialize();
+
+            this.InitializeEvents();
+
+            ToolWindows.EarlyPackageLoadHackToolWindow.Initialize(this);
             await ToolWindows.TabsManagerToolWindowCommand.InitializeAsync(this);
+        }
+
+
+        private void InitializeEvents() {
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed += this.OnSolutionClosed;
+        }
+
+
+        private void OnSolutionLoaded() {
+            Helpers.Diagnostic.Logger.LogDebug("[Package] OnSolutionLoaded()");
+
+            if (VsixVisualTreeHelper.Instance.IsCustomTabsEnabled) {
+                return;
+            }
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                VsixVisualTreeHelper.Instance.ToggleCustomTabs(true);
+            }), DispatcherPriority.Background);
+        }
+
+
+        private void OnSolutionClosed() {
+            Helpers.Diagnostic.Logger.LogDebug("[Package] OnSolutionClosed()");
+
+            if (!VsixVisualTreeHelper.Instance.IsCustomTabsEnabled) {
+                return;
+            }
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                VsixVisualTreeHelper.Instance.ToggleCustomTabs(false);
+            }), DispatcherPriority.Background);
         }
     }
 
@@ -111,9 +147,9 @@ namespace TabsManagerExtension {
             }
 
             // Если Decorator пересоздан — сбросим оригинальный контент
-            if (this._currentTabHost == null || !this._currentTabHost.TryGetTarget(out var knownHost) || knownHost != tabHost) {
-                this._originalTabListHostContent = tabHost.Child;
-                this._currentTabHost = new WeakReference<Decorator>(tabHost);
+            if (_currentTabHost == null || !_currentTabHost.TryGetTarget(out var knownHost) || knownHost != tabHost) {
+                _originalTabListHostContent = tabHost.Child;
+                _currentTabHost = new WeakReference<Decorator>(tabHost);
             }
 
             if (enable) {
@@ -127,17 +163,17 @@ namespace TabsManagerExtension {
                 customControl.Unloaded += this.OnInjectedControlUnloaded;
 
                 tabHost.Child = customControl;
-                this._lastInjectedContent = new WeakReference<UIElement>(customControl);
+                _lastInjectedContent = new WeakReference<UIElement>(customControl);
 
-                this._isCustomTabsEnabled = true;
+                _isCustomTabsEnabled = true;
                 Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl injected.");
             }
             else {
-                if (this._originalTabListHostContent != null) {
-                    tabHost.Child = this._originalTabListHostContent;
-                    this._lastInjectedContent = null;
+                if (_originalTabListHostContent != null) {
+                    tabHost.Child = _originalTabListHostContent;
+                    _lastInjectedContent = null;
 
-                    this._isCustomTabsEnabled = false;
+                    _isCustomTabsEnabled = false;
                     Helpers.Diagnostic.Logger.LogDebug("Restored original tab content.");
 
                     //Services.ExtensionServices.RequestShutdown();
@@ -149,7 +185,7 @@ namespace TabsManagerExtension {
         /// Автоматическое переключение между оригинальным и кастомным таб-контролом.
         /// </summary>
         public void ToggleCustomTabs() {
-            this.ToggleCustomTabs(!this._isCustomTabsEnabled);
+            this.ToggleCustomTabs(!_isCustomTabsEnabled);
         }
 
         private void OnInjectedControlUnloaded(object sender, RoutedEventArgs e) {
@@ -160,7 +196,7 @@ namespace TabsManagerExtension {
             Helpers.Diagnostic.Logger.LogDebug("TabsManagerToolWindowControl.Unloaded — re-evaluating state...");
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() => {
-                if (this._isCustomTabsEnabled) {
+                if (_isCustomTabsEnabled) {
                     this.ToggleCustomTabs(true); // повторно инжектим
                 }
             }), DispatcherPriority.Background);
