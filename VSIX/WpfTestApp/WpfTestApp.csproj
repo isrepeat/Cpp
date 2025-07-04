@@ -13,5 +13,9 @@
 	<Import Project="$(MSBuildThisFileDirectory)\WpfTestApp.targets" />
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.14.0" />
+    <PackageReference Include="Microsoft.Build" Version="17.8.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.6.10" />
 	</ItemGroup>
 </Project>

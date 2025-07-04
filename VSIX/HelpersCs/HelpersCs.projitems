@@ -13,6 +13,9 @@
       <DependentUpon>Separator.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
@@ -32,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Win32\WindowWin32Controller.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)MarkupExtensions\" />

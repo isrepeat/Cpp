@@ -8,6 +8,7 @@
                          xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
                          xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
                          xmlns:helpers="clr-namespace:Helpers"
+                         xmlns:helpersControls="clr-namespace:Helpers.Controls"
                          x:Name="__MenuControl"
                          >
     <UserControl.Resources>
@@ -19,26 +20,35 @@
             <localConverters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" IsInverted="True"/>
             <localConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-            <Style x:Key="CustomMenuItemStyle" TargetType="MenuItem">
-                <Setter Property="Foreground" Value="#ffffff" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="Padding" Value="10,5" />
-                <Setter Property="Margin" Value="0" />
-                <Setter Property="Cursor" Value="Arrow" />
+            <Style x:Key="MenuItemHeaderStyle" TargetType="TextBlock">
+                <Setter Property="Margin" Value="10,5" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Foreground" Value="#FF999999" />
+            </Style>
+
+            <Style x:Key="MenuItemCommandStyle" TargetType="MenuItem">
+                <Setter Property="Foreground" Value="#DDD"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="10,5"/>
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="Cursor" Value="Arrow"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="MenuItem">
                             <Border x:Name="_Border"
                                     Padding="{TemplateBinding Padding}"
                                     Background="{TemplateBinding Background}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
                                     >
-                                <ContentPresenter ContentSource="Header" />
+                                <ContentPresenter ContentSource="Header"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter TargetName="_Border" Property="Background" Value="#2D2D2D" />
-                                    <Setter Property="Foreground" Value="#33BFFF" />
+                                    <Setter TargetName="_Border" Property="Background" Value="#2D2D2D"/>
+                                    <Setter TargetName="_Border" Property="BorderBrush" Value="#888FA0"/>
+                                    <Setter Property="Foreground" Value="#FFFFFF"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -46,19 +56,10 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="CustomSeparatorStyle" TargetType="Separator">
-                <Setter Property="Margin" Value="5,2" />
-                <Setter Property="Height" Value="1" />
-                <Setter Property="Background" Value="#666" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Separator">
-                            <Rectangle Fill="{TemplateBinding Background}"
-                                       Height="{TemplateBinding Height}"
-                                       />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
+            <Style x:Key="MenuItemSeparatorStyle" TargetType="helpersControls:Separator">
+                <Setter Property="Padding" Value="5,0" />
+                <Setter Property="LineColor" Value="#80666666" />
+                <Setter Property="LineThickness" Value="1" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -72,25 +73,36 @@
            AllowsTransparency="True"
            >
         <Border x:Name="_Border"
-                Background="#333"
+                Background="#202020"
                 Padding="5"
                 CornerRadius="4"
+                BorderBrush="Transparent"
+                BorderThickness="0"
                 MaxWidth="300"
                 >
             <ItemsControl ItemsSource="{Binding MenuItems, ElementName=__MenuControl}">
                 <ItemsControl.Resources>
                     <DataTemplate DataType="{x:Type helpers:MenuItemHeader}">
-                        <TextBlock Text="{Binding Header}" />
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MenuItemHeaderStyle}"
+                                       Text="{Binding Header}"
+                                       />
+                            <helpersControls:Separator Style="{StaticResource MenuItemSeparatorStyle}"
+                                                       Margin="0,2,0,5"
+                                                       />
+                        </StackPanel>
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type helpers:MenuItemCommand}">
-                        <MenuItem Style="{StaticResource CustomMenuItemStyle}"
+                        <MenuItem Style="{StaticResource MenuItemCommandStyle}"
                                   Header="{Binding Header}"
                                   Command="{Binding Command}"
                                   CommandParameter="{Binding CommandParameterContext}"
                                   />
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type helpers:MenuItemSeparator}">
-                        <Separator Style="{StaticResource CustomSeparatorStyle}" />
+                        <helpersControls:Separator Style="{StaticResource MenuItemSeparatorStyle}"
+                                                   Margin="0,5,0,5"
+                                                   />
                     </DataTemplate>
                 </ItemsControl.Resources>
             </ItemsControl>

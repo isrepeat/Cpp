@@ -107,7 +107,7 @@ namespace TabsManagerExtension.ToolWindows {
 
                         var ideRectInfo = await Instance.GetRightCornerIdeRectInfoAsync();
 
-                        var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(Instance);
+                        var toolWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromToolWindow(Instance);
                         if (toolWindowWin32Controller != null) {
                             toolWindowWin32Controller.SetPositionWithoutShow(
                                 ideRectInfo.X,
@@ -138,8 +138,6 @@ namespace TabsManagerExtension.ToolWindows {
         }
 
         private void OnLoadedRootContent(object sender, RoutedEventArgs e) {
-            VsixVisualTreeHelper.Instance.ToggleCustomTabs(true);
-
 #if OLD_LOGIC
             if (_suppressAutoHide) {
                 return;
@@ -157,18 +155,18 @@ namespace TabsManagerExtension.ToolWindows {
             if (sender is DependencyObject d) {
                 d.Dispatcher.BeginInvoke(new Action(() => {
                     // Hide as soon as possible.
-                    var _toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
+                    var _toolWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                     if (_toolWindowWin32Controller != null) {
                         _toolWindowWin32Controller.Hide();
                     }
 
-                    // Update window position to be centered to IDE and then hide window.
+                    // Update window position to be placed in corner of IDE.
                     ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
                         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                         var ideRectInfo = await this.GetRightCornerIdeRectInfoAsync();
 
-                        var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
+                        var toolWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                         if (toolWindowWin32Controller != null) {
                             toolWindowWin32Controller.SetPositionWithoutShow(
                                 ideRectInfo.X,
@@ -194,7 +192,7 @@ namespace TabsManagerExtension.ToolWindows {
             var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(vsShell);
 
-            var vsShellWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            var vsShellWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
             if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
                 int ideWidth = ideRect.Right - ideRect.Left;
                 int ideHeight = ideRect.Bottom - ideRect.Top;
@@ -219,9 +217,9 @@ namespace TabsManagerExtension.ToolWindows {
             var vsShell = await _package.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             Assumes.Present(vsShell);
 
-            var vsShellWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
+            var vsShellWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromVsShell(vsShell);
             if (vsShellWindowWin32Controller.GetRect(out var ideRect)) {
-                float dpiScale = Win32.WindowWin32Controller.GetSystemDpiScale();
+                float dpiScale = Helpers.Win32.WindowWin32Controller.GetSystemDpiScale();
 
                 int widthLogical = 150;
                 int heightLogical = 50;
@@ -251,7 +249,7 @@ namespace TabsManagerExtension.ToolWindows {
                     frame.Show();
                 }
 
-                var toolWindowWin32Controller = Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
+                var toolWindowWin32Controller = Helpers.Win32.WindowWin32Controller.TryCreateFromToolWindow(this);
                 if (toolWindowWin32Controller != null) {
                     //toolWindowWin32Controller.Hide();
                     toolWindowWin32Controller.Show();

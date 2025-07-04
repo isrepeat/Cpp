@@ -89,7 +89,6 @@ namespace TabsManagerExtension.Controls {
 
 
         // Internal:
-        private EnvDTE80.DTE2 _dte;
         private EnvDTE.WindowEvents _windowEvents;
         private EnvDTE.DocumentEvents _documentEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
@@ -135,6 +134,8 @@ namespace TabsManagerExtension.Controls {
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
         //
         private void OnLoaded(object sender, RoutedEventArgs e) {
+            Services.ExtensionServices.BeginUsage();
+
             this.InitializeDTE();
             this.InitializeFileWatcher();
             this.InitializeVsShellTrackers();
@@ -150,6 +151,8 @@ namespace TabsManagerExtension.Controls {
             this.UninitializeVsShellTrackers();
             this.UninitializeFileWatcher();
             this.UninitializeDTE();
+
+            Services.ExtensionServices.EndUsage();
         }
 
         private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e) {
@@ -184,18 +187,16 @@ namespace TabsManagerExtension.Controls {
         private void InitializeDTE() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-
-            _documentEvents = _dte.Events.DocumentEvents;
+            _documentEvents = PackageServices.Dte2.Events.DocumentEvents;
             _documentEvents.DocumentOpened += OnDocumentOpened;
             _documentEvents.DocumentSaved += OnDocumentSaved;
             _documentEvents.DocumentClosing += OnDocumentClosing;
 
-            _windowEvents = _dte.Events.WindowEvents;
+            _windowEvents = PackageServices.Dte2.Events.WindowEvents;
             _windowEvents.WindowActivated += OnWindowActivated;
             _windowEvents.WindowClosing += OnWindowClosing;
 
-            _solutionEvents = _dte.Events.SolutionEvents;
+            _solutionEvents = PackageServices.Dte2.Events.SolutionEvents;
             _solutionEvents.BeforeClosing += OnSolutionClosing;
         }
 
@@ -219,7 +220,7 @@ namespace TabsManagerExtension.Controls {
         private void InitializeFileWatcher() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var solution = _dte.Solution;
+            var solution = PackageServices.Dte2.Solution;
             var solutionDir = string.IsNullOrEmpty(solution.FullName) 
                 ? null 
                 : Path.GetDirectoryName(solution.FullName);
@@ -251,17 +252,19 @@ namespace TabsManagerExtension.Controls {
                     _fileWatcher.Renamed -= this.OnFileRenamed;
                     _fileWatcher.Deleted -= this.OnFileDeleted;
 
+                    var watcherToDispose = _fileWatcher;
+                    _fileWatcher = null;
+
                     // Dispatcher.BeginInvoke(..., DispatcherPriority.ApplicationIdle) — ждет, пока текущий UI-цикл и все запланированные задачи завершатся.
                     // Таким образом Dispose() вызывается после завершения Run(...) внутри событий FileSystemWatcher
                     Dispatcher.BeginInvoke(new Action(() => {
                         try {
-                            _fileWatcher.Dispose();
+                            // Копируем ссылку на _fileWatcher чтобы продлить жизнь, т.к. _fileWatcher уже может быть удален
+                            // во время исполнения лямбды, но его ресурсы так и не будут освобождены.
+                            watcherToDispose.Dispose();
                         }
                         catch (Exception ex) {
                             Helpers.Diagnostic.Logger.LogError($"Delayed dispose of FileSystemWatcher failed: {ex}");
-                        }
-                        finally {
-                            _fileWatcher = null;
                         }
                     }), DispatcherPriority.ApplicationIdle);
                 }
@@ -276,12 +279,12 @@ namespace TabsManagerExtension.Controls {
         // ░ VsShellTrackers 
         //
         private void InitializeVsShellTrackers() {
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
         }
         private void UninitializeVsShellTrackers() {
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
         }
 
 
@@ -329,8 +332,7 @@ namespace TabsManagerExtension.Controls {
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = this.OnTabItemSelectionChanged;
             _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
 
-
-            _textEditorOverlayController = new VsShell.TextEditor.Overlay.TextEditorOverlayController(_dte);
+            _textEditorOverlayController = new VsShell.TextEditor.Overlay.TextEditorOverlayController(PackageServices.Dte2);
         }
 
         private void UninitializeTabItemsSelectionCoordinator() {
@@ -419,7 +421,7 @@ namespace TabsManagerExtension.Controls {
                 return;
             }
 
-            var activatedShellWindow = new ShellWindow(gotFocus);
+            var activatedShellWindow = new VsShell.Document.ShellWindow(gotFocus);
             if (!activatedShellWindow.IsTabWindow()) {
                 Helpers.Diagnostic.Logger.LogDebug($"Skip non tab window - \"{activatedShellWindow.Window.Caption}\"");
                 return;
@@ -552,10 +554,11 @@ namespace TabsManagerExtension.Controls {
 
             var tabItem = this.FindTabItem(documentFullName);
             if (tabItem != null) {
+                tabItem.Metadata.SetFlag("IsActivatedExternally", true);
                 tabItem.IsSelected = true;
             }
         }
-
+        
 
         // 
         // ░ TabItemsSelectionCoordinator
@@ -563,8 +566,17 @@ namespace TabsManagerExtension.Controls {
         private void OnTabItemSelectionChanged(TabItemsGroupBase group, TabItemBase tabItem, bool isSelected) {
             Helpers.Diagnostic.Logger.LogDebug($"[{(isSelected ? "Selected" : "Unselected")}] {tabItem.Caption} in group {group.GroupName}");
 
+            var isActivatedExtarnally = tabItem.Metadata.GetFlag("IsActivatedExternally");
+            if (isActivatedExtarnally) {
+                tabItem.Metadata.SetFlag("IsActivatedExternally", false);
+            }
+
             if (isSelected) {
-                this.ActivatePrimaryTabItem();
+                // При внешней активации (например, из Solution Explorer) фокус остаётся вне редактора —
+                // в этом случае не трогаем его вручную, чтобы не сбивать пользовательский фокус.
+                if (!isActivatedExtarnally) {
+                    this.ActivatePrimaryTabItem();
+                }
             }
         }
 
@@ -591,7 +603,7 @@ namespace TabsManagerExtension.Controls {
             // === [A] Обновление статуса сохранения документов ===
             foreach (var tabItemsGroup in this.SortedTabItemsGroups.ToList()) {
                 foreach (var tabItem in tabItemsGroup.Items.ToList()) {
-                    var document = _dte.Documents.Cast<EnvDTE.Document>()
+                    var document = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
                         .FirstOrDefault(d => d.FullName == tabItem.FullName);
 
                     if (document != null) {
@@ -623,9 +635,9 @@ namespace TabsManagerExtension.Controls {
             var openWindowIds = new HashSet<string>();
 
             try {
-                openWindowIds = _dte.Windows
+                openWindowIds = PackageServices.Dte2.Windows
                     .Cast<EnvDTE.Window>() // Приводим COM-коллекцию к типизированной, чтобы использовать LINQ
-                    .Select(w => ShellWindow.GetWindowId(w))
+                    .Select(w => VsShell.Document.ShellWindow.GetWindowId(w))
                     .Where(id => !string.IsNullOrEmpty(id))
                     .ToHashSet();
             }
@@ -876,6 +888,9 @@ namespace TabsManagerExtension.Controls {
 
                 // Получаем привязанный объект (TabItemDocument)
                 if (listViewItem.DataContext is TabItemDocument tabItemDocument) {
+                    if (this.VirtualMenuControl.CurrentMenuDataContext is TabItemDocument previousTabItemDocument) {
+                        previousTabItemDocument.Metadata.SetFlag("IsVirtualMenuOpenned", false);
+                    }
                     var screenPoint = interactiveArea.ex_ToDpiAwareScreen(new Point(interactiveArea.ActualWidth + 20, -60));
                     this.VirtualMenuControl.Show(screenPoint, tabItemDocument);
                 }
@@ -896,11 +911,12 @@ namespace TabsManagerExtension.Controls {
                 if (virtualMenuOpeningArgs.DataContext is TabItemBase tabItem) {
                     
                     if (tabItem is TabItemDocument tabItemDocument) {
+                        tabItemDocument.Metadata.SetFlag("IsVirtualMenuOpenned", true);
+
                         this.VirtualMenuItems = new ObservableCollection<Helpers.IMenuItem> {
                             new Helpers.MenuItemHeader {
                                 Header = tabItem.Caption,
                             },
-                            new Helpers.MenuItemSeparator(),
                             new Helpers.MenuItemCommand {
                                 Header = State.Constants.UI.OpenTabLocation,
                                 Command = new Helpers.RelayCommand<object>(this.OnOpenLocationTabItem),
@@ -937,19 +953,8 @@ namespace TabsManagerExtension.Controls {
         private void OnTabItemVirtualMenuClosed(object parameter) {
             if (parameter is Controls.MenuControl.MenuClosedArgs virtualMenuClosedArgs) {
                 if (virtualMenuClosedArgs.DataContext is TabItemBase tabItem) {
+                    tabItem.Metadata.SetFlag("IsVirtualMenuOpenned", false);
                 }
-            }
-        }
-
-
-        private void ProjectMenuItem_Click(object sender, RoutedEventArgs e) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("ProjectMenuItem_Click()");
-
-            if (sender is Button button && button.CommandParameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
-                this.MoveDocumentToProjectGroup(
-                    documentProjectReferenceInfo.TabItemDocument,
-                    documentProjectReferenceInfo.TabItemProject
-                    );
             }
         }
 
@@ -981,7 +986,7 @@ namespace TabsManagerExtension.Controls {
 
             this.SortedTabItemsGroups.ToList();
             this.SortedTabItemsGroups.Clear();
-            foreach (EnvDTE.Document document in _dte.Documents) {
+            foreach (EnvDTE.Document document in PackageServices.Dte2.Documents) {
                 var tabItemDocument = new TabItemDocument(document);
                 this.AddTabItemToAutoDeterminedGroupIfMissing(tabItemDocument);
             }
@@ -990,12 +995,12 @@ namespace TabsManagerExtension.Controls {
             // видимо в конфиг файле, т.к. среди _dte.Windows их нет.
             //
             // TODO: Добавляй ToolWindows не из открытых окон, а из конфиг файла хранящего предыдущую сессию.
-            foreach (EnvDTE.Window window in _dte.Windows) {
+            foreach (EnvDTE.Window window in PackageServices.Dte2.Windows) {
                 if (window.Document != null) {
                     continue; // skip documents
                 }
 
-                var shellWindow = new ShellWindow(window);
+                var shellWindow = new VsShell.Document.ShellWindow(window);
                 if (!shellWindow.IsTabWindow()) {
                     continue; // skip non tab windows
                 }
@@ -1112,8 +1117,21 @@ namespace TabsManagerExtension.Controls {
             Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
             Helpers.Diagnostic.Logger.LogParam($"tabItemProject.Caption = {tabItemProject?.Caption}");
 
-            this.RemoveTabItemFromGroups(tabItemDocument);
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(tabItemProject.Caption));
+            if (tabItemProject.ShellProject is VsShell.Project.ProjectNode projectNode) {
+                // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
+                // если в externalDependenciesAnalyzer была обновлена таблица в течении этого времени.
+                var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
+                var externalInclude = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
+                    .GetExternalIncludeByProjectAndIncludePath(projectNode, tabItemDocument.FullName);
+
+                if (externalInclude != null) {
+                    Helpers.Diagnostic.Logger.LogDebug("OpenWithProjectContext");
+                    externalInclude.OpenWithProjectContext();
+
+                    this.RemoveTabItemFromGroups(tabItemDocument);
+                    this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(tabItemProject.Caption));
+                }
+            }
         }
 
         private void RemoveTabItemFromGroups(TabItemBase tabItem) {
@@ -1190,9 +1208,9 @@ namespace TabsManagerExtension.Controls {
             this.ForEachTab<TabItemWindow>(tabItemWindow => {
                 ThreadHelper.ThrowIfNotOnUIThread();
                 try {
-                    var matchingWindow = _dte.Windows
+                    var matchingWindow = PackageServices.Dte2.Windows
                         .Cast<EnvDTE.Window>()
-                        .FirstOrDefault(w => ShellWindow.GetWindowId(w) == tabItemWindow.WindowId);
+                        .FirstOrDefault(w => VsShell.Document.ShellWindow.GetWindowId(w) == tabItemWindow.WindowId);
 
                     if (matchingWindow != null && tabItemWindow.Caption != matchingWindow.Caption) {
                         Helpers.Diagnostic.Logger.LogDebug($"Updating TabItemWindow caption: '{tabItemWindow.Caption}' → '{matchingWindow.Caption}'");
@@ -1224,7 +1242,7 @@ namespace TabsManagerExtension.Controls {
         private void SyncActiveDocumentWithPrimaryTabItem() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var activeWindow = _dte.ActiveWindow;
+            var activeWindow = PackageServices.Dte2.ActiveWindow;
             if (activeWindow == null) {
                 return;
             }
@@ -1232,7 +1250,7 @@ namespace TabsManagerExtension.Controls {
             var selectedTabItem = _tabItemsSelectionCoordinator.PrimarySelection?.Item;
             TabItemBase targetTabItem = null;
 
-            if (ShellWindow.IsTabWindow(activeWindow)) {
+            if (VsShell.Document.ShellWindow.IsTabWindow(activeWindow)) {
                 // Document or Tool Window can be activated.
                 if (activeWindow.Document == null) {
                     if (string.Equals(activeWindow.Caption, selectedTabItem?.Caption, StringComparison.OrdinalIgnoreCase)) {
@@ -1251,7 +1269,7 @@ namespace TabsManagerExtension.Controls {
             }
             else {
                 // Only Document can be activated (for example when choose document from SolutionExplorer)
-                var activeDocument = _dte.ActiveDocument;
+                var activeDocument = PackageServices.Dte2.ActiveDocument;
                 if (activeDocument == null) {
                     return;
                 }

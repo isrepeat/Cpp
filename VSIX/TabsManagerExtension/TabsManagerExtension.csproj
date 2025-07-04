@@ -28,7 +28,10 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>
+    <StartArguments>"d:\WORK\TEST\Extensions\TestIncludeSolution\TestIncludeSolution.sln" /RootSuffix Exp</StartArguments>
+    <!--<StartArguments>"d:\WORK\TEST\Extensions\SimpleSolution\SimpleSolution.sln" /RootSuffix Exp</StartArguments>-->
+    <!--<StartArguments>"d:\WORK\C++\Cpp\Cpp.sln" /RootSuffix Exp</StartArguments>-->
+    <!--<StartArguments>/RootSuffix Exp</StartArguments>-->
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,16 +57,16 @@
   -->
   <PropertyGroup>
     <!-- Убираем префикс 'v' -->
-    <!--<VersionStr>$([System.String]::Copy($(TargetFrameworkVersion).Substring(1)))</VersionStr>-->
     <VersionStr>$([System.String]::Copy($(TargetFrameworkVersion.Replace('v', ''))))</VersionStr>
     <!-- Убираем точки -->
     <VersionDigits>$([System.String]::Copy($(VersionStr.Replace('.', ''))))</VersionDigits>
     <!-- Формируем финальный символ -->
     <FrameworkDefineSymbol>NET_FRAMEWORK_$(VersionDigits)</FrameworkDefineSymbol>
-    <DefineConstants>
-      $(DefineConstants);
-      $(FrameworkDefineSymbol);
-    </DefineConstants>
+    <DefineConstants>$(DefineConstants);$(FrameworkDefineSymbol)</DefineConstants>
+  </PropertyGroup>
+  <!-- VISX project always include "Microsoft.VisualStudio.SDK" pacakge. -->
+  <PropertyGroup Condition="'$(IncludeAssemblyInVSIXContainer)' == 'true'">
+    <DefineConstants>$(DefineConstants);VSSDK</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controls\MenuControl.xaml.cs">
@@ -79,9 +82,27 @@
     <Compile Include="ExtensionServices.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
-    <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
+    <Compile Include="VsShell\Document\IncludeEntry.cs" />
+    <Compile Include="VsShell\Document\ShellWindow.cs" />
+    <Compile Include="VsShell\Document\ShellDocument.cs" />
+    <Compile Include="VsShell\Project\ProjectNode.cs" />
+    <Compile Include="VsShell\Project\ShellProject.cs" />
+    <Compile Include="VsShell\Document\SourceFile.cs" />
+    <Compile Include="VsShell\Utils\VsHierarchyWalker.cs" />
+    <Compile Include="VsShell\Utils\EnvDteUtils.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
-    <Compile Include="VsShell\VsSelectionTrackerService.cs" />
+    <Compile Include="VsShell\Solution\ExternalDependenciesAnalyzerService.cs" />
+    <Compile Include="VsShell\VsIDEStateFlagsTrackerService.cs" />
+    <Compile Include="VsShell\VsSelectionEventsServiceBase.cs" />
+    <Compile Include="VsShell\Solution\VsSolutionExplorerSelectionTrackerService.cs" />
+    <Compile Include="VsShell\Solution\VsWindowFrameActivationTrackerService.cs" />
+    <Compile Include="VsShell\Solution\VsSolutionEventsTrackerService.cs" />
+    <Compile Include="VsShell\Solution\IncludeResolverService.cs" />
+    <Compile Include="VsShell\Solution\SolutionSourceFileGraph.cs" />
+    <Compile Include="VsShell\Solution\MsBuildSolutionWatcher.cs" />
+    <Compile Include="VsShell\TextEditor\TextEditorCommandFilterService.cs" />
+    <Compile Include="VsShell\Solution\IncludeDependencyAnalyzerService.cs" />
+    <Compile Include="VsShell\Solution\VsProjectItemsTrackerService.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorOverlayController.cs" />
     <Compile Include="Controls\TextEditorOverlayControl.xaml.cs">
       <DependentUpon>TextEditorOverlayControl.xaml</DependentUpon>
@@ -109,7 +130,6 @@
     <Compile Include="TabsManagerExtensionPackage.cs" />
     <Compile Include="ToolWindows\TabsManagerToolWindow.cs" />
     <Compile Include="ToolWindows\TabsManagerToolWindowCommand.cs" />
-    <Compile Include="Win32_TODO_remove_to_helpers\WindowWin32Controller.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
@@ -131,11 +151,24 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Build" Version="17.8.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.6.10" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine">
+      <Version>17.14.40264</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.VCCodeModel">
+      <HintPath>C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\PublicAssembliesMicrosoft.VisualStudio.VCCodeModel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\TabsManagerToolWindowControl.xaml">

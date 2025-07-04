@@ -4,12 +4,14 @@
     <NewLine>%0D%0A</NewLine>
 	  <!--<XamlsDir>$(MSBuildThisFileDirectory)\Xamls</XamlsDir>-->
 	  <XamlsDir>Xamls</XamlsDir>
+	  <ControlsDir>Controls</ControlsDir>
 
 	  <!-- Здесь выбирается нужное окно -->
 	  <!--<SelectedMainWindow>MainWindow_1_ListBoxBehaviour</SelectedMainWindow>-->
 	  <!--<SelectedMainWindow>MainWindow_2_SelectionViewModel</SelectedMainWindow>-->
 	  <!--<SelectedMainWindow>MainWindow_3_MarkupExtensions</SelectedMainWindow>-->
-	  <SelectedMainWindow>MainWindow_4_TextEditorAnchorMenu</SelectedMainWindow>
+	  <!--<SelectedMainWindow>MainWindow_4_TextEditorAnchorMenu</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_5_ProjectParser</SelectedMainWindow>
   </PropertyGroup>
 
 
@@ -24,6 +26,7 @@
 
 			<!-- Всё остальное исключаем -->
 			<XamlsToExclude Include="@(AllXamls)" Exclude="@(BuildXamls)" />
+			<XamlsToExclude Include="$(ControlsDir)\4\*.xaml" />
 
 			<!-- Удаляем из компиляции .xaml.cs -->
 			<Compile Remove="@(XamlsToExclude->'%(RelativeDir)%(Filename).xaml.cs')" />
@@ -41,7 +44,7 @@
     <Message Importance="High" Text="%(XamlsToExclude.Identity)"/>
 	</Target>
 	
-	
+
   
 	<Target Name="GenerateMainWindowFactory" BeforeTargets="PrepareForBuild">
 		<PropertyGroup>

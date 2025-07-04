@@ -101,10 +101,22 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             VSConstants.VSStd2KCmdID.BACKSPACE,
         };
 
+        public TextEditorCommandFilterService() { }
+
+        //
+        // IExtensionService
+        //
+        public IReadOnlyList<Type> DependsOn() {
+            return new[] {
+                typeof(VsShell.Solution.Services.VsWindowFrameActivationTrackerService),
+                typeof(VsShell.TextEditor.Services.DocumentActivationTrackerService)
+            };
+        }
+
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
             
             this.InstallToActiveEditor();
@@ -117,7 +129,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
-            VsShell.Services.VsSelectionTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
             this.UninstallFilter();
             ClearInstance();
 
@@ -225,8 +237,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         private void InstallToActiveEditor() {
             //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.InstallToActiveEditor()");
 
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager != null && textManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK) {
+            if (PackageServices.VsTextManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK) {
                 if (newView != null) {
                     if (!ReferenceEquals(_currentTextView, newView)) {
                         this.UninstallFilter();

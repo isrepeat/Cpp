@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Collections.Generic;
 
 
 namespace TabsManagerExtension.Services {
     public interface IExtensionService {
+        /// <summary>
+        /// Список типов сервисов, от которых зависит данный.
+        /// </summary>
+        IReadOnlyList<Type> DependsOn();
         void Initialize();
         void Shutdown();
     }
@@ -58,42 +64,144 @@ namespace TabsManagerExtension.Services {
     /// Инициализирует и завершает работу всех IExtensionService-синглтонов.
     /// </summary>
     public static class ExtensionServices {
-        private static readonly List<IExtensionService> _services = new() {
-            VsShell.Services.VsSelectionTrackerService.Create(),
-            VsShell.TextEditor.Services.TextEditorCommandFilterService.Create(),
-            VsShell.TextEditor.Services.DocumentActivationTrackerService.Create(),
-        };
-
         private static bool _isInitialized;
+        private static readonly Dictionary<Type, IExtensionService> _services = new();
 
-        /// <summary>
-        /// Инициализирует все сервисы один раз.
-        /// </summary>
+        private static int _activeUserCount = 0;
+        private static bool _shutdownRequested = false;
+        private static readonly object _sync = new();
+
         public static void Initialize() {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"ExtensionServices.Initialize()");
+
             if (_isInitialized) {
+                Helpers.Diagnostic.Logger.LogDebug($"ExtensionServices already initialized, ignore.");
                 return;
             }
 
-            foreach (var service in _services) {
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Services.VsIDEStateFlagsTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Solution.Services.VsWindowFrameActivationTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
+                VsShell.Solution.Services.VsSolutionExplorerSelectionTrackerService
+                >.Create());
+
+            ExtensionServices.Register(VsShell.Solution.Services.VsProjectItemsTrackerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.VsSolutionEventsTrackerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Create());
+            ExtensionServices.Register(VsShell.TextEditor.Services.TextEditorCommandFilterService.Create());
+            ExtensionServices.Register(VsShell.TextEditor.Services.DocumentActivationTrackerService.Create());
+
+            foreach (var service in _services.Values) {
                 service.Initialize();
             }
 
             _isInitialized = true;
         }
 
-        /// <summary>
-        /// Завершает работу всех сервисов.
-        /// </summary>
-        public static void Shutdown() {
+
+        public static void RequestShutdown() {
+            lock (_sync) {
+                if (_activeUserCount == 0) {
+                    ExtensionServices.Shutdown();
+                }
+                else {
+                    _shutdownRequested = true;
+                    Helpers.Diagnostic.Logger.LogDebug($"[ExtensionServices] Shutdown requested, but deferred until all consumers are released.");
+                }
+            }
+        }
+
+
+        public static void BeginUsage() {
+            Interlocked.Increment(ref _activeUserCount);
+        }
+
+        public static void EndUsage() {
+            var newCount = Interlocked.Decrement(ref _activeUserCount);
+
+            // Если был запрос на Shutdown и сейчас никого нет — запускаем
+            if (newCount == 0) {
+                lock (_sync) {
+                    if (_shutdownRequested) {
+                        _shutdownRequested = false;
+                        ExtensionServices.Shutdown();
+                    }
+                }
+            }
+        }
+
+
+
+        private static void Shutdown() {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope($"ExtensionServices.Shutdown()");
+
             if (!_isInitialized) {
+                Helpers.Diagnostic.Logger.LogDebug($"ExtensionServices already disposed, ignore.");
                 return;
             }
 
-            foreach (var service in _services) {
+            // Лог всех зарегистрированных сервисов и их зависимостей
+            ExtensionServices.LogServices($"\n[ExtensionServices] Registered services and dependencies:", _services.Values.ToList());
+
+            var visited = new HashSet<Type>();
+            var result = new List<IExtensionService>();
+
+            foreach (var type in _services.Keys) {
+                ExtensionServices.VisitForToposortRecursive(type, visited, result);
+            }
+
+            // Выполняем завершение в обратном порядке (зависимые — последними)
+            var reversedResult = Enumerable.Reverse(result);
+
+            // Лог порядка выключения
+            ExtensionServices.LogServices($"\n[ExtensionServices] Shutdown order:", reversedResult.ToList());
+
+            foreach (var service in reversedResult) {
                 service.Shutdown();
             }
 
             _isInitialized = false;
+        }
+
+
+        private static void Register<T>(T instance) where T : IExtensionService {
+            _services[typeof(T)] = instance;
+        }
+
+
+        private static void VisitForToposortRecursive(Type type, HashSet<Type> visited, List<IExtensionService> result) {
+            if (visited.Contains(type)) {
+                return;
+            }
+
+            visited.Add(type);
+
+            if (_services.TryGetValue(type, out var service)) {
+                foreach (var dep in service.DependsOn()) {
+                    ExtensionServices.VisitForToposortRecursive(dep, visited, result);
+                }
+
+                result.Add(service);
+            }
+        }
+
+        private static void LogServices(string title, List<IExtensionService> services) {
+            Helpers.Diagnostic.Logger.LogDebug($"{title}");
+            int i = 1;
+
+            foreach (var service in services) {
+                Helpers.Diagnostic.Logger.LogDebug($"{i++}. {service.GetType().Name}");
+
+                foreach (var dep in service.DependsOn()) {
+                    Helpers.Diagnostic.Logger.LogDebug($"    └─ depends on: {dep.Name}");
+                }
+            }
         }
     }
 }

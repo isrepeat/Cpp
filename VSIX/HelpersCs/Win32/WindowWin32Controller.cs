@@ -12,12 +12,13 @@ using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using Microsoft;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
+#if VSSDK
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+#endif
 
 
-namespace TabsManagerExtension.Win32 {
+namespace Helpers.Win32 {
     public class WindowWin32Controller {
         private readonly IntPtr _hwnd;
         public IntPtr Hwnd => _hwnd;
@@ -55,6 +56,7 @@ namespace TabsManagerExtension.Win32 {
             _hwnd = hwnd;
         }
 
+#if VSSDK
         public static WindowWin32Controller? TryCreateFromVsShell(IVsUIShell vsShell) {
             vsShell.GetDialogOwnerHwnd(out IntPtr hwnd);
             return new WindowWin32Controller(hwnd);
@@ -67,6 +69,7 @@ namespace TabsManagerExtension.Win32 {
             }
             return null;
         }
+#endif
 
         public static float GetSystemDpiScale() {
             using var g = Graphics.FromHwnd(IntPtr.Zero);
