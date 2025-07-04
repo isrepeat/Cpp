@@ -29,7 +29,7 @@ namespace TabsManagerExtension.VsShell.Solution {
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool isRunningInsideVisualStudio = Package.GetGlobalService(typeof(SDTE)) is EnvDTE.DTE;
+            bool isRunningInsideVisualStudio = PackageServices.TryGetDte2() is EnvDTE80.DTE2;
             if (!isRunningInsideVisualStudio) {
                 /// Вызов MSBuildLocator.RegisterDefaults() необходим в обычных .NET приложениях,
                 /// чтобы указать путь к используемой версии MSBuild. Однако в Visual Studio (внутри VSIX) MSBuild-сборки
@@ -87,7 +87,7 @@ namespace TabsManagerExtension.VsShell.Solution {
 
         private readonly string _projectFilePath;
         private readonly FileSystemWatcher _watcher;
-        private Project? _loadedProject;
+        private Microsoft.Build.Evaluation.Project? _loadedProject;
 
         public MsBuildProjectAnalyzer(string projectFilePath) {
             MsBuildEnvironment.EnsureInitialized();
@@ -146,7 +146,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        private List<string> RecalculateAdditionalIncludeDirectories(Project project) {
+        private List<string> RecalculateAdditionalIncludeDirectories(Microsoft.Build.Evaluation.Project project) {
             var result = new List<string>();
             string baseDir = Path.GetDirectoryName(project.FullPath)!;
 

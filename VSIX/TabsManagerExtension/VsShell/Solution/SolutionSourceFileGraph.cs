@@ -27,14 +27,14 @@ namespace TabsManagerExtension.VsShell.Solution {
     /// </summary>
 
     public class SolutionSourceFileGraph {
-        public IEnumerable<SourceFile> AllSourceFiles => _sourceFileToResolvedIncludeEntriesMap.Keys;
+        public IEnumerable<Document.SourceFile> AllSourceFiles => _sourceFileToResolvedIncludeEntriesMap.Keys;
 
-        private readonly Dictionary<SourceFile, List<IncludeEntry>> _sourceFileToIncludeEntriesMap = new();
-        private readonly Dictionary<IncludeEntry, List<SourceFile>> _includeEntryToSourceFilesMap = new();
-        private readonly Dictionary<SourceFile, List<ResolvedIncludeEntry>> _sourceFileToResolvedIncludeEntriesMap = new();
-        private readonly Dictionary<ResolvedIncludeEntry, List<SourceFile>> _resolvedIncludeEntryToSourceFilesMap = new();
-        private readonly Dictionary<string, List<SourceFile>> _resolvedIncludePathsToSourceFilesMap = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, List<SourceFile>> _sourceFileRepresentationsMap = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<Document.SourceFile, List<Document.IncludeEntry>> _sourceFileToIncludeEntriesMap = new();
+        private readonly Dictionary<Document.IncludeEntry, List<Document.SourceFile>> _includeEntryToSourceFilesMap = new();
+        private readonly Dictionary<Document.SourceFile, List<Document.ResolvedIncludeEntry>> _sourceFileToResolvedIncludeEntriesMap = new();
+        private readonly Dictionary<Document.ResolvedIncludeEntry, List<Document.SourceFile>> _resolvedIncludeEntryToSourceFilesMap = new();
+        private readonly Dictionary<string, List<Document.SourceFile>> _resolvedIncludePathsToSourceFilesMap = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, List<Document.SourceFile>> _sourceFileRepresentationsMap = new(StringComparer.OrdinalIgnoreCase);
 
         private readonly MsBuildSolutionWatcher _msBuildSolutionWatcher;
 
@@ -42,72 +42,72 @@ namespace TabsManagerExtension.VsShell.Solution {
             _msBuildSolutionWatcher = msBuildSolutionWatcher;
         }
 
-        public void AddSourceFileWithIncludes(SourceFile sourceFile, List<IncludeEntry> includeEntries) {
+        public void AddSourceFileWithIncludes(Document.SourceFile sourceFile, List<Document.IncludeEntry> includeEntries) {
             this.ApplyIncludes(sourceFile, includeEntries);
         }
 
-        public void UpdateSourceFileWithIncludes(SourceFile sourceFile, List<IncludeEntry> includeEntries) {
+        public void UpdateSourceFileWithIncludes(Document.SourceFile sourceFile, List<Document.IncludeEntry> includeEntries) {
             this.RemoveSourceFileInternal(sourceFile);
             this.ApplyIncludes(sourceFile, includeEntries);
         }
-        public void RemoveSourceFile(SourceFile sourceFile) {
+        public void RemoveSourceFile(Document.SourceFile sourceFile) {
             this.RemoveSourceFileInternal(sourceFile);
         }
 
 
-        public IEnumerable<IncludeEntry> GetRawIncludes(SourceFile file) {
+        public IEnumerable<Document.IncludeEntry> GetRawIncludes(Document.SourceFile file) {
             if (_sourceFileToIncludeEntriesMap.TryGetValue(file, out var list)) {
                 return list;
             }
 
-            return Array.Empty<IncludeEntry>();
+            return Array.Empty<Document.IncludeEntry>();
         }
 
-        public IEnumerable<KeyValuePair<SourceFile, List<ResolvedIncludeEntry>>> GetAllResolvedIncludeEntries() {
+        public IEnumerable<KeyValuePair<Document.SourceFile, List<Document.ResolvedIncludeEntry>>> GetAllResolvedIncludeEntries() {
             return _sourceFileToResolvedIncludeEntriesMap;
         }
 
-        public IEnumerable<ResolvedIncludeEntry> GetResolvedIncludes(SourceFile file) {
+        public IEnumerable<Document.ResolvedIncludeEntry> GetResolvedIncludes(Document.SourceFile file) {
             if (_sourceFileToResolvedIncludeEntriesMap.TryGetValue(file, out var list)) {
                 return list;
             }
 
-            return Array.Empty<ResolvedIncludeEntry>();
+            return Array.Empty<Document.ResolvedIncludeEntry>();
         }
 
 
-        public IEnumerable<SourceFile> GetSourceFilesByInclude(IncludeEntry entry) {
+        public IEnumerable<Document.SourceFile> GetSourceFilesByInclude(Document.IncludeEntry entry) {
             if (_includeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
                 return list;
             }
 
-            return Array.Empty<SourceFile>();
+            return Array.Empty<Document.SourceFile>();
         }
 
-        public IEnumerable<SourceFile> GetSourceFilesByResolved(ResolvedIncludeEntry entry) {
+        public IEnumerable<Document.SourceFile> GetSourceFilesByResolved(Document.ResolvedIncludeEntry entry) {
             if (_resolvedIncludeEntryToSourceFilesMap.TryGetValue(entry, out var list)) {
                 return list;
             }
 
-            return Array.Empty<SourceFile>();
+            return Array.Empty<Document.SourceFile>();
         }
 
-        public IEnumerable<SourceFile> GetSourceFilesByResolvedPath(string resolvedPath) {
+        public IEnumerable<Document.SourceFile> GetSourceFilesByResolvedPath(string resolvedPath) {
             if (_resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var list)) {
                 return list;
             }
 
-            return Array.Empty<SourceFile>();
+            return Array.Empty<Document.SourceFile>();
         }
 
 
-        public bool TryGetSourceFileRepresentations(string filePath, out IReadOnlyList<SourceFile> result) {
+        public bool TryGetSourceFileRepresentations(string filePath, out IReadOnlyList<Document.SourceFile> result) {
             if (_sourceFileRepresentationsMap.TryGetValue(filePath, out var list)) {
                 result = list;
                 return true;
             }
 
-            result = Array.Empty<SourceFile>();
+            result = Array.Empty<Document.SourceFile>();
             return false;
         }
 
@@ -121,7 +121,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        private void ApplyIncludes(SourceFile sourceFile, List<IncludeEntry> includeEntries) {
+        private void ApplyIncludes(Document.SourceFile sourceFile, List<Document.IncludeEntry> includeEntries) {
             if (_sourceFileToIncludeEntriesMap.TryGetValue(sourceFile, out var sourcesIncludesList)) {
                 Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.ApplyIncludes] sourceFile already added: {sourceFile.FilePath} [{sourceFile.ProjectId}]");
                 return;
@@ -131,7 +131,7 @@ namespace TabsManagerExtension.VsShell.Solution {
             // Это потом используется для получения «сырых» зависимостей без резолвинга путей
             _sourceFileToIncludeEntriesMap[sourceFile] = includeEntries;
 
-            var resolvedIncludes = new List<ResolvedIncludeEntry>();
+            var resolvedIncludes = new List<Document.ResolvedIncludeEntry>();
 
             foreach (var includeEntry in includeEntries) {
                 // ② Резолвим путь (т.е. превращаем #include "Logger.h" в абсолютный/относительный путь если смогли)
@@ -142,14 +142,14 @@ namespace TabsManagerExtension.VsShell.Solution {
                     _msBuildSolutionWatcher
                 );
 
-                var resolvedInclude = new ResolvedIncludeEntry(includeEntry, resolvedPath);
+                var resolvedInclude = new Document.ResolvedIncludeEntry(includeEntry, resolvedPath);
                 resolvedIncludes.Add(resolvedInclude);
 
                 // ③ Строим обратную карту для сырых include'ов:
-                // Dictionary<IncludeEntry, List<SourceFile>>
+                // Dictionary<IncludeEntry, List<Document.SourceFile>>
                 // Чтобы быстро узнать, какие файлы включают "Logger.h"
                 if (!_includeEntryToSourceFilesMap.TryGetValue(includeEntry, out var rawSourcesList)) {
-                    rawSourcesList = new List<SourceFile>();
+                    rawSourcesList = new List<Document.SourceFile>();
                     _includeEntryToSourceFilesMap[includeEntry] = rawSourcesList;
                 }
                 if (!rawSourcesList.Contains(sourceFile)) {
@@ -157,10 +157,10 @@ namespace TabsManagerExtension.VsShell.Solution {
                 }
 
                 // ④ Строим обратную карту для ResolvedIncludeEntry:
-                // Dictionary<ResolvedIncludeEntry, List<SourceFile>>
+                // Dictionary<ResolvedIncludeEntry, List<Document.SourceFile>>
                 // Чтобы быстро узнать, какие файлы включают "Logger.h" → "Helpers.Shared/Logger.h"
                 if (!_resolvedIncludeEntryToSourceFilesMap.TryGetValue(resolvedInclude, out var resolvedIncludesSourcesList)) {
-                    resolvedIncludesSourcesList = new List<SourceFile>();
+                    resolvedIncludesSourcesList = new List<Document.SourceFile>();
                     _resolvedIncludeEntryToSourceFilesMap[resolvedInclude] = resolvedIncludesSourcesList;
                 }
                 if (!resolvedIncludesSourcesList.Contains(sourceFile)) {
@@ -168,10 +168,10 @@ namespace TabsManagerExtension.VsShell.Solution {
                 }
 
                 // ⑤ Также индексируем по строковому пути (если удалось его получить)
-                // Dictionary<string, List<SourceFile>> - по resolvedPath
+                // Dictionary<string, List<Document.SourceFile>> - по resolvedPath
                 if (resolvedPath is not null) {
                     if (!_resolvedIncludePathsToSourceFilesMap.TryGetValue(resolvedPath, out var resolvedIncludePathsSourcesList)) {
-                        resolvedIncludePathsSourcesList = new List<SourceFile>();
+                        resolvedIncludePathsSourcesList = new List<Document.SourceFile>();
                         _resolvedIncludePathsToSourceFilesMap[resolvedPath] = resolvedIncludePathsSourcesList;
                     }
                     if (!resolvedIncludePathsSourcesList.Contains(sourceFile)) {
@@ -185,9 +185,9 @@ namespace TabsManagerExtension.VsShell.Solution {
             _sourceFileToResolvedIncludeEntriesMap[sourceFile] = resolvedIncludes;
 
             // ⑦ Обновляем «репрезентации» файла:
-            // т.е. для одного физического пути могут быть SourceFile из разных проектов.
+            // т.е. для одного физического пути могут быть Document.SourceFile из разных проектов.
             if (!_sourceFileRepresentationsMap.TryGetValue(sourceFile.FilePath, out var sourceFilePathsRepresentationList)) {
-                sourceFilePathsRepresentationList = new List<SourceFile>();
+                sourceFilePathsRepresentationList = new List<Document.SourceFile>();
                 _sourceFileRepresentationsMap[sourceFile.FilePath] = sourceFilePathsRepresentationList;
             }
             if (!sourceFilePathsRepresentationList.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectId, sourceFile.ProjectId))) {
@@ -196,7 +196,7 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
 
-        private void RemoveSourceFileInternal(SourceFile sourceFile) {
+        private void RemoveSourceFileInternal(Document.SourceFile sourceFile) {
             if (!_sourceFileToResolvedIncludeEntriesMap.TryGetValue(sourceFile, out var oldResolvedIncludes)) {
                 Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.RemoveSourceFileInternal] sourceFile already removed: {sourceFile.FilePath} [{sourceFile.ProjectId}]");
                 return;

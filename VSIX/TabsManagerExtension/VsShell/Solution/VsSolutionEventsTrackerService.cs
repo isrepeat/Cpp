@@ -24,7 +24,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public event Action<EnvDTE.Project>? ProjectLoaded;
         public event Action<EnvDTE.Project>? ProjectUnloaded;
 
-        private IVsSolution? _solution;
+        private IVsSolution? _vsSolution;
         private uint _cookie;
 
         public VsSolutionEventsTrackerService() { }
@@ -39,20 +39,20 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _solution = Package.GetGlobalService(typeof(SVsSolution)) as IVsSolution;
-            if (_solution == null) {
+            _vsSolution = PackageServices.TryGetVsSolution();
+            if (_vsSolution == null) {
                 throw new InvalidOperationException("Cannot get SVsSolution");
             }
 
-            ErrorHandler.ThrowOnFailure(_solution.AdviseSolutionEvents(this, out _cookie));
+            ErrorHandler.ThrowOnFailure(_vsSolution.AdviseSolutionEvents(this, out _cookie));
             Helpers.Diagnostic.Logger.LogDebug("[VsSolutionEventsTrackerService] Initialized.");
         }
 
         public void Shutdown() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_solution != null && _cookie != 0) {
-                _solution.UnadviseSolutionEvents(_cookie);
+            if (_vsSolution != null && _cookie != 0) {
+                _vsSolution.UnadviseSolutionEvents(_cookie);
                 _cookie = 0;
             }
 

@@ -57,16 +57,16 @@
   -->
   <PropertyGroup>
     <!-- Убираем префикс 'v' -->
-    <!--<VersionStr>$([System.String]::Copy($(TargetFrameworkVersion).Substring(1)))</VersionStr>-->
     <VersionStr>$([System.String]::Copy($(TargetFrameworkVersion.Replace('v', ''))))</VersionStr>
     <!-- Убираем точки -->
     <VersionDigits>$([System.String]::Copy($(VersionStr.Replace('.', ''))))</VersionDigits>
     <!-- Формируем финальный символ -->
     <FrameworkDefineSymbol>NET_FRAMEWORK_$(VersionDigits)</FrameworkDefineSymbol>
-    <DefineConstants>
-      $(DefineConstants);
-      $(FrameworkDefineSymbol);
-    </DefineConstants>
+    <DefineConstants>$(DefineConstants);$(FrameworkDefineSymbol)</DefineConstants>
+  </PropertyGroup>
+  <!-- VISX project always include "Microsoft.VisualStudio.SDK" pacakge. -->
+  <PropertyGroup Condition="'$(IncludeAssemblyInVSIXContainer)' == 'true'">
+    <DefineConstants>$(DefineConstants);VSSDK</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controls\MenuControl.xaml.cs">
@@ -82,13 +82,21 @@
     <Compile Include="ExtensionServices.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
+    <Compile Include="VsShell\Document\IncludeEntry.cs" />
+    <Compile Include="VsShell\Document\ShellWindow.cs" />
+    <Compile Include="VsShell\Document\ShellDocument.cs" />
+    <Compile Include="VsShell\Project\ProjectNode.cs" />
+    <Compile Include="VsShell\Project\ShellProject.cs" />
+    <Compile Include="VsShell\Document\SourceFile.cs" />
+    <Compile Include="VsShell\Utils\VsHierarchyWalker.cs" />
+    <Compile Include="VsShell\Utils\EnvDteUtils.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
+    <Compile Include="VsShell\Solution\ExternalDependenciesAnalyzerService.cs" />
     <Compile Include="VsShell\VsIDEStateFlagsTrackerService.cs" />
     <Compile Include="VsShell\VsSelectionEventsServiceBase.cs" />
     <Compile Include="VsShell\Solution\VsSolutionExplorerSelectionTrackerService.cs" />
     <Compile Include="VsShell\Solution\VsWindowFrameActivationTrackerService.cs" />
     <Compile Include="VsShell\Solution\VsSolutionEventsTrackerService.cs" />
-    <Compile Include="VsShell\Solution\SourceFile.cs" />
     <Compile Include="VsShell\Solution\IncludeResolverService.cs" />
     <Compile Include="VsShell\Solution\SolutionSourceFileGraph.cs" />
     <Compile Include="VsShell\Solution\MsBuildSolutionWatcher.cs" />
@@ -122,7 +130,6 @@
     <Compile Include="TabsManagerExtensionPackage.cs" />
     <Compile Include="ToolWindows\TabsManagerToolWindow.cs" />
     <Compile Include="ToolWindows\TabsManagerToolWindowCommand.cs" />
-    <Compile Include="Win32_TODO_remove_to_helpers\WindowWin32Controller.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

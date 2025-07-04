@@ -12,24 +12,21 @@ using Microsoft.VisualStudio.Utilities;
 using TabsManagerExtension.Services;
 using TabsManagerExtension.VsShell.Solution.Services;
 
+
 namespace TabsManagerExtension.VsShell.Services {
     public abstract class VsSelectionEventsServiceBase<TService> :
         TabsManagerExtension.Services.SingletonServiceBase<TService>,
         IVsSelectionEvents
         where TService : VsSelectionEventsServiceBase<TService>, IExtensionService, new() {
 
-        private readonly IVsMonitorSelection _monitorSelection;
         private uint _selectionEventsCookie;
 
         protected VsSelectionEventsServiceBase() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection))
-                ?? throw new InvalidOperationException("Cannot get IVsMonitorSelection");
-
             // Подписываем этот класс (реализует IVsSelectionEvents) на события Visual Studio,
             // чтобы получать уведомления о смене selection.
-            int hr = _monitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
+            int hr = PackageServices.VsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
         }
 
@@ -37,7 +34,7 @@ namespace TabsManagerExtension.VsShell.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (_selectionEventsCookie != 0) {
-                _monitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
+                PackageServices.VsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
                 _selectionEventsCookie = 0;
             }
         }

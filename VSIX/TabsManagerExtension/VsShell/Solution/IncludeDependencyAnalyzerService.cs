@@ -13,15 +13,12 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
 using TabsManagerExtension.VsShell.Services;
-using System.Net;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
     public class IncludeDependencyAnalyzerService :
         TabsManagerExtension.Services.SingletonServiceBase<IncludeDependencyAnalyzerService>,
         TabsManagerExtension.Services.IExtensionService {
-
-        private EnvDTE80.DTE2 _dte;
 
         private MsBuildSolutionWatcher _msBuildSolutionWatcher;
         private SolutionSourceFileGraph _solutionSourceFileGraph;
@@ -48,8 +45,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            _dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
 
             Services.VsSolutionEventsTrackerService.Instance.ProjectLoaded += this.OnProjectLoaded;
             Services.VsSolutionEventsTrackerService.Instance.ProjectUnloaded += this.OnProjectUnloaded;
@@ -125,13 +120,13 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         /// Включает строгую фильтрацию: true — требует совпадения не только по <c>RawInclude</c>, но и по <c>ResolvedPath</c>.
         /// </param>
         /// <returns>Список всех файлов, которые напрямую или транзитивно включают данный include.</returns>
-        public IReadOnlyList<SourceFile> GetTransitiveFilesIncludersByIncludeString(string includeString, bool strictResolvedMatch = false) {
+        public IReadOnlyList<Document.SourceFile> GetTransitiveFilesIncludersByIncludeString(string includeString, bool strictResolvedMatch = false) {
             if (!this.IsReady()) {
                 return null;
             }
 
-            var result = new HashSet<SourceFile>();
-            var queue = new Queue<SourceFile>();
+            var result = new HashSet<Document.SourceFile>();
+            var queue = new Queue<Document.SourceFile>();
 
             // ① Перебираем все ResolvedIncludeEntry во всех исходных файлах
             foreach (var kvp in _solutionSourceFileGraph.GetAllResolvedIncludeEntries()) {
@@ -197,18 +192,18 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         /// <returns>
         /// Список <see cref="SourceFile"/>-файлов, которые напрямую или транзитивно включают указанный путь.
         /// </returns>
-        public IEnumerable<SourceFile> GetTransitiveFilesIncludersByIncludePath(string includePath) {
+        public IEnumerable<Document.SourceFile> GetTransitiveFilesIncludersByIncludePath(string includePath) {
             if (!this.IsReady()) {
                 return null;
             }
 
             var directFiles = _solutionSourceFileGraph.GetSourceFilesByResolvedPath(includePath);
             if (directFiles.Count() == 0) {
-                return Enumerable.Empty<SourceFile>();
+                return Enumerable.Empty<Document.SourceFile>();
             }
 
-            var result = new HashSet<SourceFile>(directFiles);
-            var queue = new Queue<SourceFile>(directFiles);
+            var result = new HashSet<Document.SourceFile>(directFiles);
+            var queue = new Queue<Document.SourceFile>(directFiles);
 
             while (queue.Count > 0) {
                 var current = queue.Dequeue();
@@ -345,7 +340,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             _msBuildSolutionWatcher?.Dispose();
             _solutionDirWatcher?.Dispose();
 
-            var cppProjects = this.GetAllCppProjects(_dte);
+            var cppProjects = this.GetAllCppProjects();
             _msBuildSolutionWatcher = new MsBuildSolutionWatcher(cppProjects);
             _solutionSourceFileGraph = new SolutionSourceFileGraph(_msBuildSolutionWatcher);
 
@@ -353,7 +348,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 this.UpdateProjectGraph(cppProject);
             }
 
-            string? solutionDir = Path.GetDirectoryName(_dte.Solution.FullName);
+            string? solutionDir = Path.GetDirectoryName(PackageServices.Dte2.Solution.FullName);
             if (solutionDir != null && Directory.Exists(solutionDir)) {
                 _solutionDirWatcher = new Helpers.DirectoryWatcher(solutionDir);
                 _solutionDirWatcher.DirectoryChanged += this.OnSolutionDirectoryChanged;
@@ -372,14 +367,14 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         /// <br/> Проверка `project.Object is VCProject` — надёжный способ отфильтровать C++.
         /// <br/> Некоторые не-C++ проекты могут выбрасывать исключение при доступе к .Object — это игнорируется.
         /// </summary>
-        private List<EnvDTE.Project> GetAllCppProjects(EnvDTE80.DTE2 dte) {
+        private List<EnvDTE.Project> GetAllCppProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             const string VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}";
             var result = new List<EnvDTE.Project>();
             var queue = new Queue<EnvDTE.Project>();
 
-            foreach (EnvDTE.Project p in dte.Solution.Projects) {
+            foreach (EnvDTE.Project p in PackageServices.Dte2.Solution.Projects) {
                 queue.Enqueue(p);
             }
 
@@ -446,7 +441,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
 
                     if (isCppProjectFile) {
-                        var newSourceFile = new SourceFile(filePath, tabItemProject);
+                        var newSourceFile = new Document.SourceFile(filePath, tabItemProject);
                         var newIncludeEntries = this.ExtractRawIncludes(filePath);
 
                         if (_solutionSourceFileGraph.TryGetSourceFileRepresentations(filePath, out var candidates) &&
@@ -478,8 +473,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private List<IncludeEntry> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
-            var resultIncludeEntries = new List<IncludeEntry>();
+        private List<Document.IncludeEntry> ExtractRawIncludes(string filePath, int maxLinesToRead = 10) {
+            var resultIncludeEntries = new List<Document.IncludeEntry>();
 
             using var reader = new StreamReader(filePath);
             int lineCount = 0;
@@ -502,7 +497,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 if (start >= 0 && end > start) {
                     string rawInclude = trimmed.Substring(start + 1, end - start - 1).Trim();
                     if (!string.IsNullOrWhiteSpace(rawInclude)) {
-                        resultIncludeEntries.Add(new IncludeEntry(rawInclude));
+                        resultIncludeEntries.Add(new Document.IncludeEntry(rawInclude));
                     }
                 }
             }
@@ -555,7 +550,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 changedUniqueVcxProjectNames.Add(projectName);
             }
 
-            foreach (var cppProject in this.GetAllCppProjects(_dte)) {
+            foreach (var cppProject in this.GetAllCppProjects()) {
                 foreach (var changedProjectName in changedUniqueVcxProjectNames) {
                     if (StringComparer.OrdinalIgnoreCase.Equals(changedProjectName, cppProject.Name)) {
                         this.UpdateProjectGraph(cppProject);
@@ -603,11 +598,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         }
 
                         // ⛔ Файл не найден в графе — ищем в проектах, возможно git checkout вернул файл
-                        foreach (EnvDTE.Project project in _dte.Solution.Projects) {
+                        foreach (EnvDTE.Project project in PackageServices.Dte2.Solution.Projects) {
                             if (this.IsFileInProject(changedFile.FullPath, project)) {
                                 var tabItemProject = new State.Document.TabItemProject(project);
                                 var newIncludes = this.ExtractRawIncludes(changedFile.FullPath);
-                                var newSourceFile = new SourceFile(changedFile.FullPath, tabItemProject);
+                                var newSourceFile = new Document.SourceFile(changedFile.FullPath, tabItemProject);
                                 _solutionSourceFileGraph.AddSourceFileWithIncludes(newSourceFile, newIncludes);
 
                                 Helpers.Diagnostic.Logger.LogDebug($"[auto re-added] {changedFile.FullPath} → found in {project.UniqueName}, graph updated by fswatcher");
@@ -632,8 +627,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void UpdateIncludesIfNeeded(string filePath, IReadOnlyList<SourceFile> candidates) {
-            var updated = new List<(SourceFile OldFile, List<IncludeEntry> NewIncludes)>();
+        private void UpdateIncludesIfNeeded(string filePath, IReadOnlyList<Document.SourceFile> candidates) {
+            var updated = new List<(Document.SourceFile OldFile, List<Document.IncludeEntry> NewIncludes)>();
 
             foreach (var oldFile in candidates) {
                 var newIncludeEntries = this.ExtractRawIncludes(filePath);
@@ -650,7 +645,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             foreach (var (oldFile, newIncludeEntries) in updated) {
-                var updatedFile = new SourceFile(filePath, oldFile.Project);
+                var updatedFile = new Document.SourceFile(filePath, oldFile.Project);
                 _solutionSourceFileGraph.UpdateSourceFileWithIncludes(updatedFile, newIncludeEntries);
                 Helpers.Diagnostic.Logger.LogDebug($"[include changed] {filePath} [{oldFile.Project.ShellProject.Project.UniqueName}] → includes updated");
             }

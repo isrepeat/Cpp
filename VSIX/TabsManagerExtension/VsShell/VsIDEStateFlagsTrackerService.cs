@@ -24,8 +24,6 @@ namespace TabsManagerExtension.VsShell.Services {
         public Helpers.Events.TriggeredAction<string> SolutionLoaded = new();
         public Helpers.Events.TriggeredAction<string> SolutionClosed = new();
 
-        private IVsSolution _vsSolution;
-        private IVsMonitorSelection _monitorSelection;
         private readonly Dictionary<Guid, bool> _contextStateMap = new();
         private readonly Dictionary<uint, Guid> _contextCookiesMap = new();
 
@@ -41,12 +39,6 @@ namespace TabsManagerExtension.VsShell.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _vsSolution = (IVsSolution)Package.GetGlobalService(typeof(SVsSolution))
-                ?? throw new InvalidOperationException("Cannot get IVsSolution");
-
-            _monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection))
-                ?? throw new InvalidOperationException("Cannot get IVsMonitorSelection");
-
             IEnumerable<Guid> trackedContextGuids = new List<Guid> {
                 SolutionExistsGuid,
             };
@@ -54,13 +46,13 @@ namespace TabsManagerExtension.VsShell.Services {
             foreach (var guid in trackedContextGuids) {
                 var contextGuid = guid; // make copy for pass by ref
 
-                int hr = _monitorSelection.GetCmdUIContextCookie(ref contextGuid, out uint cookie);
+                int hr = PackageServices.VsMonitorSelection.GetCmdUIContextCookie(ref contextGuid, out uint cookie);
                 ErrorHandler.ThrowOnFailure(hr);
 
                 _contextCookiesMap[cookie] = contextGuid;
 
                 // Проверяем состояние прямо сейчас для каждого контекста
-                hr = _monitorSelection.IsCmdUIContextActive(cookie, out int pfActive);
+                hr = PackageServices.VsMonitorSelection.IsCmdUIContextActive(cookie, out int pfActive);
                 if (ErrorHandler.Succeeded(hr)) {
                     this.HandleContextState(contextGuid, pfActive != 0);
                 }
@@ -123,14 +115,9 @@ namespace TabsManagerExtension.VsShell.Services {
         private string? GetCurrentSolutionName() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_vsSolution != null) {
-                _vsSolution.GetSolutionInfo(out string solutionDir, out string solutionFile, out string userOpts);
-                if (!string.IsNullOrEmpty(solutionFile)) {
-                    return Path.GetFileName(solutionFile);
-                }
-            }
-
-            return null;
+            
+            var dte2 = PackageServices.TryGetDte2();
+            return dte2?.Solution?.FileName;
         }
     }
 }

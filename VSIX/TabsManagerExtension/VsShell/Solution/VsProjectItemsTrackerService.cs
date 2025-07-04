@@ -44,13 +44,12 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _tracker = Package.GetGlobalService(typeof(SVsTrackProjectDocuments)) as IVsTrackProjectDocuments2;
+            _tracker = PackageServices.VsTrackProjectDocuments2;
             if (_tracker == null) {
                 throw new InvalidOperationException("Cannot get SVsTrackProjectDocuments");
             }
 
             ErrorHandler.ThrowOnFailure(_tracker.AdviseTrackProjectDocumentsEvents(this, out _cookie));
-
             Helpers.Diagnostic.Logger.LogDebug("[VsProjectFileTrackerService] Initialized.");
         }
 

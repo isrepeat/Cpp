@@ -237,8 +237,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         private void InstallToActiveEditor() {
             //using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("TextEditorCommandFilterService.InstallToActiveEditor()");
 
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager != null && textManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK) {
+            if (PackageServices.VsTextManager.GetActiveView(1, null, out var newView) == VSConstants.S_OK) {
                 if (newView != null) {
                     if (!ReferenceEquals(_currentTextView, newView)) {
                         this.UninstallFilter();

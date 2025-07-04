@@ -27,16 +27,16 @@ namespace TabsManagerExtension.VsShell.TextEditor {
         public static void FocusEditor() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Получаем глобальный сервис текстового менеджера — через него можно получить активный редактор.
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager == null) {
-                return;
-            }
+            //// Получаем глобальный сервис текстового менеджера — через него можно получить активный редактор.
+            //var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
+            //if (textManager == null) {
+            //    return;
+            //}
 
             // Получаем текущий активный IVsTextView (компонент редактора, управляющий текстом).
             // Параметр 'mustHaveFocus' = 1 означает, что мы хотим только активный редактор.
             // Этот объект нужен, чтобы передать Visual Studio команду на активацию редактора.
-            if (textManager.GetActiveView(1, null, out IVsTextView vsTextView) == VSConstants.S_OK && vsTextView != null) {
+            if (PackageServices.VsTextManager.GetActiveView(1, null, out IVsTextView vsTextView) == VSConstants.S_OK && vsTextView != null) {
 
                 // Отправляем явную команду фокусировки редактору.
                 // Это **не просто установка фокуса ввода**, а сигнал для среды Visual Studio (shell),
@@ -67,8 +67,7 @@ namespace TabsManagerExtension.VsShell.TextEditor {
         public static bool IsEditorActive() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager == null || textManager.GetActiveView(1, null, out var activeView) != VSConstants.S_OK) {
+            if (PackageServices.VsTextManager.GetActiveView(1, null, out var activeView) != VSConstants.S_OK) {
                 return false;
             }
 
@@ -144,8 +143,7 @@ namespace TabsManagerExtension.VsShell.TextEditor {
         public static IWpfTextViewHost? TryGetActiveViewHost() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var textManager = (IVsTextManager)Package.GetGlobalService(typeof(SVsTextManager));
-            if (textManager == null || textManager.GetActiveView(1, null, out var vsTextView) != VSConstants.S_OK) {
+            if (PackageServices.VsTextManager.GetActiveView(1, null, out var vsTextView) != VSConstants.S_OK) {
                 return null;
             }
 

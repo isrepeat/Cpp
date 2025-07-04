@@ -99,8 +99,7 @@ namespace TabsManagerExtension.Controls {
 
             this.Anchors.Clear();
 
-            var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            if (dte?.ActiveDocument?.Object("TextDocument") is not EnvDTE.TextDocument textDoc) {
+            if (PackageServices.Dte2?.ActiveDocument?.Object("TextDocument") is not EnvDTE.TextDocument textDoc) {
                 return;
             }
 
@@ -122,8 +121,7 @@ namespace TabsManagerExtension.Controls {
         private void NavigateToLine(int lineNumber) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dte = (EnvDTE80.DTE2)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            if (dte?.ActiveDocument?.Object("TextDocument") is EnvDTE.TextDocument textDoc) {
+            if (PackageServices.Dte2?.ActiveDocument?.Object("TextDocument") is EnvDTE.TextDocument textDoc) {
                 var selection = textDoc.Selection;
 
                 // Перемещаем каретку на нужную строку (на неё и останется курсор)

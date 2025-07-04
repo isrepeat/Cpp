@@ -25,15 +25,15 @@ namespace TabsManagerExtension.VsShell.TextEditor.Overlay {
     /// - удаляет оверлей, когда все редакторы закрыты.
     /// </summary>
     public class TextEditorOverlayController {
-        private readonly EnvDTE80.DTE2 _dte;
+        private readonly EnvDTE80.DTE2 _dte2;
 
         private Helpers.AdornerOverlayManager<Controls.TextEditorOverlayControl>? _overlayManager;
 
         /// <summary>
         /// Инициализирует контроллер, привязанный к текущему экземпляру Visual Studio (DTE).
         /// </summary>
-        public TextEditorOverlayController(EnvDTE80.DTE2 dte) {
-            _dte = dte;
+        public TextEditorOverlayController(EnvDTE80.DTE2 dte2) {
+            _dte2 = dte2;
         }
 
 
@@ -69,7 +69,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Overlay {
         public void UpdateState() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool hasOpenDocuments = _dte.Documents.Cast<EnvDTE.Document>().Any();
+            bool hasOpenDocuments = _dte2.Documents.Cast<EnvDTE.Document>().Any();
             if (hasOpenDocuments) {
                 this.EnsureCreated();
             }

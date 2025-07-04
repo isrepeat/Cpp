@@ -27,7 +27,6 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         /// </summary>
         public event Action<string>? OnDocumentActivated;
 
-        private IVsRunningDocumentTable? _rdt;
         private RdtEventHandler? _handler;
         private string _lastActivatedFilePath = string.Empty;
         private uint _cookie;
@@ -44,15 +43,8 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_rdt != null) {
-                return;
-            }
-
-            _rdt = (IVsRunningDocumentTable?)Package.GetGlobalService(typeof(SVsRunningDocumentTable))
-                ?? throw new InvalidOperationException("Failed to get IVsRunningDocumentTable");
-
             _handler = new RdtEventHandler(this);
-            int hr = _rdt.AdviseRunningDocTableEvents(_handler, out _cookie);
+            int hr = PackageServices.VsRunningDocumentTable.AdviseRunningDocTableEvents(_handler, out _cookie);
             ErrorHandler.ThrowOnFailure(hr);
 
             Helpers.Diagnostic.Logger.LogDebug("[DocumentActivationTracker] Initialized.");
@@ -61,16 +53,15 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
         public void Shutdown() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_rdt != null && _cookie != 0) {
-                _rdt.UnadviseRunningDocTableEvents(_cookie);
+            if (_cookie != 0) {
+                PackageServices.VsRunningDocumentTable.UnadviseRunningDocTableEvents(_cookie);
                 _cookie = 0;
             }
 
-            _rdt = null;
             _handler = null;
 
+            ClearInstance();
             Helpers.Diagnostic.Logger.LogDebug("[DocumentActivationTracker] Shutdown complete.");
-            ClearInstance(); // сбрасываем ссылку
         }
 
 
@@ -84,7 +75,7 @@ namespace TabsManagerExtension.VsShell.TextEditor.Services {
             public int OnBeforeDocumentWindowShow(uint docCookie, int fFirstShow, IVsWindowFrame pFrame) {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                _owner._rdt.GetDocumentInfo(docCookie, out _, out _, out _, out string moniker, out _, out _, out _);
+                PackageServices.VsRunningDocumentTable.GetDocumentInfo(docCookie, out _, out _, out _, out string moniker, out _, out _, out _);
 
                 if (!string.IsNullOrEmpty(moniker) &&
                     !string.Equals(moniker, _owner._lastActivatedFilePath, StringComparison.OrdinalIgnoreCase)) {
