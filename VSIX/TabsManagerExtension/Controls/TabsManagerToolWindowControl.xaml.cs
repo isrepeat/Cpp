@@ -931,7 +931,7 @@ namespace TabsManagerExtension.Controls {
                         if (tabItemDocument.ShellDocument != null) {
                             tabItemDocument.UpdateProjectReferenceList();
 
-                            if (tabItemDocument.ProjectReferenceList.Count > 1) {
+                            if (tabItemDocument.ProjectReferenceList.Count > 0) {
                                 this.VirtualMenuItems.Add(new Helpers.MenuItemSeparator());
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
@@ -1118,12 +1118,16 @@ namespace TabsManagerExtension.Controls {
             Helpers.Diagnostic.Logger.LogParam($"tabItemProject.Caption = {tabItemProject?.Caption}");
 
             if (tabItemProject.ShellProject is VsShell.Project.ProjectNode projectNode) {
+                // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
+                // если в externalDependenciesAnalyzer была обновлена таблица в течении этого времени.
                 var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
                 var externalInclude = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
                     .GetExternalIncludeByProjectAndIncludePath(projectNode, tabItemDocument.FullName);
 
                 if (externalInclude != null) {
+                    Helpers.Diagnostic.Logger.LogDebug("OpenWithProjectContext");
                     externalInclude.OpenWithProjectContext();
+
                     this.RemoveTabItemFromGroups(tabItemDocument);
                     this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(tabItemProject.Caption));
                 }

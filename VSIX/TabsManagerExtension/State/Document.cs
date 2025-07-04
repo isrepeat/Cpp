@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -94,8 +93,6 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-
-
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
         public TabItemProject TabItemProject { get; private set; }
         public TabItemDocument TabItemDocument { get; private set; }
@@ -151,7 +148,22 @@ namespace TabsManagerExtension.State.Document {
         public void UpdateProjectReferenceList() {
             this.ProjectReferenceList.Clear();
 
+            var ext = System.IO.Path.GetExtension(this.FullName);
+            switch (ext) {
+                case ".h":
+                case ".hpp":
+                    break;
+
+                default:
+                    return;
+            }
+
             var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
+            externalDependenciesAnalyzer.Analyze();
+            //if (!externalDependenciesAnalyzer.IsReady()) {
+            //    return;
+            //}
+
             var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
                 .GetProjectsByExternalIncludePath(this.FullName);
 

@@ -22,20 +22,34 @@ namespace TabsManagerExtension.VsShell.Document {
         public void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool needClose = false;
+            // Сохраняем активный документ до всех действий
+            var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
+
+            // Проверяем, совпадает ли уже активный документ с нашим файлом
+            bool wasAlreadyActive = 
+                activeDocumentBefore != null &&
+                string.Equals(activeDocumentBefore.FullName, this.FilePath, StringComparison.OrdinalIgnoreCase);
+
+            // Попытка найти первый cpp/h файл проекта,
+            // чтобы открыть его и "переключить" контекст редактора на нужный проект.
+            // Это нужно для того, чтобы при открытии внешнего include файла
+            // Visual Studio знала, что контекстом открытия является именно этот проект.
             string? contextSwitchFile = this.ProjectNode.FirstCppRelatedFile;
+            bool needCloseContextSwitchFile = false;
 
             if (!string.IsNullOrEmpty(contextSwitchFile)) {
-                
                 bool alreadyOpen = Utils.EnvDteUtils.IsDocumentOpen(contextSwitchFile);
                 if (!alreadyOpen) {
                     PackageServices.Dte2.ItemOperations.OpenFile(contextSwitchFile);
-                    needClose = true;
+                    needCloseContextSwitchFile = true;
                 }
             }
 
+            // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
+            // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
+            // по нему именно в контексте этого проекта в папке External Dependencies.
             if (this.ProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
-                Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
+            Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
                 const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
 
                 int hr = uiHierarchy.ExecCommand(
@@ -47,26 +61,36 @@ namespace TabsManagerExtension.VsShell.Document {
                     IntPtr.Zero);
 
                 if (ErrorHandler.Succeeded(hr)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[IncludeGraph] Opened '{this.FilePath}' in project '{this.ProjectNode.Project.UniqueName}'");
+                    Helpers.Diagnostic.Logger.LogDebug(
+                        $"[IncludeGraph] Opened '{this.FilePath}' in project '{this.ProjectNode.Project.UniqueName}'");
                 }
                 else {
-                    Helpers.Diagnostic.Logger.LogError($"[IncludeGraph] Failed to open '{this.FilePath}' in project '{this.ProjectNode.Project.UniqueName}', hr=0x{hr:X8}");
+                    Helpers.Diagnostic.Logger.LogError(
+                        $"[IncludeGraph] Failed to open '{this.FilePath}' in project '{this.ProjectNode.Project.UniqueName}', hr=0x{hr:X8}");
                     ErrorHandler.ThrowOnFailure(hr);
                 }
             }
 
-            if (needClose) {
+            // Закрываем временный файл переключения контекста
+            if (needCloseContextSwitchFile) {
                 var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
                     .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchFile, StringComparison.OrdinalIgnoreCase));
 
                 doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
             }
+
+            // Если наш файл изначально НЕ был активным, возвращаем активным предыдущий документ
+            if (!wasAlreadyActive && activeDocumentBefore != null) {
+                activeDocumentBefore.Activate();
+            }
         }
+
 
         public override string ToString() {
             return $"ExternalInclude(FilePath='{this.FilePath}', Project='{this.ProjectNode.Project.UniqueName}', ItemId={this.ItemId})";
         }
     }
+
 
 
     public class IncludeEntry {

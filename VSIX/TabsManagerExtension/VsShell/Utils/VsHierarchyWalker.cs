@@ -16,11 +16,11 @@ namespace TabsManagerExtension.VsShell.Utils {
         public static List<uint> GetChildren(IVsHierarchy hierarchy, uint parentId) {
             var result = new List<uint>();
 
-            if (TryGetFirstChild(hierarchy, parentId, out var childId)) {
+            if (VsHierarchyWalker.TryGetFirstChild(hierarchy, parentId, out var childId)) {
                 do {
                     result.Add(childId);
                 }
-                while (TryGetNextSibling(hierarchy, childId, out childId));
+                while (VsHierarchyWalker.TryGetNextSibling(hierarchy, childId, out childId));
             }
 
             return result;
@@ -50,6 +50,45 @@ namespace TabsManagerExtension.VsShell.Utils {
 
             siblingId = unchecked((uint)rawNext);
             return true;
+        }
+
+
+        public static void LogSolutionHierarchy() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vsSolution = PackageServices.VsSolution;
+            vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
+
+            var hierarchies = new IVsHierarchy[1];
+            uint fetched;
+
+            while (enumHierarchies.Next(1, hierarchies, out fetched) == VSConstants.S_OK && fetched == 1) {
+                var hierarchy = hierarchies[0];
+
+                string projectName = Utils.EnvDteUtils.GetDteProjectUniqueNameFromVsHierarchy(hierarchy);
+                Helpers.Diagnostic.Logger.LogDebug($"[Hierarchy] {projectName} (VSITEMID_ROOT)");
+
+                VsHierarchyWalker.LogSolutionHierarchyRecursive(hierarchy, VSConstants.VSITEMID_ROOT, 0);
+            }
+        }
+
+
+        private static void LogSolutionHierarchyRecursive(IVsHierarchy hierarchy, uint itemId, int indent) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (itemId != VSConstants.VSITEMID_ROOT) {
+                hierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+                var name = nameObj as string ?? "(null)";
+
+                hierarchy.GetCanonicalName(itemId, out var canonicalName);
+
+                string indentStr = new string(' ', indent * 2);
+                Helpers.Diagnostic.Logger.LogDebug($"[{itemId}]{indentStr}{name} ({canonicalName})");
+            }
+
+            foreach (var childId in Utils.VsHierarchyWalker.GetChildren(hierarchy, itemId)) {
+                VsHierarchyWalker.LogSolutionHierarchyRecursive(hierarchy, childId, indent + 1);
+            }
         }
     }
 }

@@ -86,12 +86,12 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private readonly ExternalIncludeRepresentationsTable _externalIncludeRepresentationsTable = new();
         public ExternalIncludeRepresentationsTable ExternalIncludeRepresentationsTable => _externalIncludeRepresentationsTable;
 
-
         private Helpers.DirectoryWatcher? _solutionDirectoryWatcher;
         private DispatcherTimer _delayedFileChangeTimer;
 
         private readonly HashSet<Helpers.DirectoryChangedEventArgs> _pendingChangedFiles = new();
         private string _lastLoadedSolutionName;
+        private bool _analyzingInProcess = false;
 
         public ExternalDependenciesAnalyzerService() { }
 
@@ -116,12 +116,12 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 _solutionDirectoryWatcher.DirectoryChanged += this.OnSolutionDirectoryChanged;
             }
 
-            // Используем таймер для отложенной обработки изменённых файлов:
-            // обработка произойдёт только через заданный интервал после последнего события.
-            _delayedFileChangeTimer = new DispatcherTimer {
-                Interval = TimeSpan.FromMilliseconds(300)
-            };
-            _delayedFileChangeTimer.Tick += (_, _) => this.OnDelayedFileChangeTimerTick();
+            //// Используем таймер для отложенной обработки изменённых файлов:
+            //// обработка произойдёт только через заданный интервал после последнего события.
+            //_delayedFileChangeTimer = new DispatcherTimer {
+            //    Interval = TimeSpan.FromMilliseconds(500)
+            //};
+            //_delayedFileChangeTimer.Tick += (_, _) => this.OnDelayedFileChangeTimerTick();
             Helpers.Diagnostic.Logger.LogDebug("[ExternalDependenciesGraphService] Initialized.");
         }
 
@@ -129,7 +129,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public void Shutdown() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _delayedFileChangeTimer.Stop();
+            //_delayedFileChangeTimer.Stop();
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded -= this.OnSolutionLoaded;
 
             ClearInstance();
@@ -143,6 +143,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         //
         public void Analyze() {
             ThreadHelper.ThrowIfNotOnUIThread();
+            
+            _analyzingInProcess = true;
+            _externalIncludeRepresentationsTable.Clear();
 
             var vsSolution = PackageServices.VsSolution;
             vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
@@ -165,32 +168,18 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             _externalIncludeRepresentationsTable.BuildRepresentations();
+            _analyzingInProcess = false;
 
-            this.LogGraph();
+            //this.LogProjectsExternallDependencies();
         }
 
 
-        public void LogAllItemIdsViaHierarchy() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var vsSolution = PackageServices.VsSolution;
-            vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
-
-            var hierarchies = new IVsHierarchy[1];
-            uint fetched;
-
-            while (enumHierarchies.Next(1, hierarchies, out fetched) == VSConstants.S_OK && fetched == 1) {
-                var hierarchy = hierarchies[0];
-
-                string projectName = Utils.EnvDteUtils.GetDteProjectUniqueNameFromVsHierarchy(hierarchy);
-                Helpers.Diagnostic.Logger.LogDebug($"[Hierarchy] {projectName} (VSITEMID_ROOT)");
-
-                this.LogHierarchyItemsRecursive(hierarchy, VSConstants.VSITEMID_ROOT, 0);
-            }
+        public bool IsReady() {
+            return !_analyzingInProcess;
         }
 
 
-        public void LogGraph() {
+        public void LogProjectsExternallDependencies() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Helpers.Diagnostic.Logger.LogDebug("[ExternalDependenciesGraphService] Graph dump:");
@@ -215,11 +204,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
             _lastLoadedSolutionName = solutionName;
 
-            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await Task.Delay(TimeSpan.FromSeconds(8));
-                this.Analyze();
-            });
+            //this.StartAnalyzeRoutineInBackground();
         }
 
 
@@ -242,8 +227,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 _pendingChangedFiles.Clear();
             }
 
-            //this.ProcessChangedVcxProjects(ref changedFiles);
-
             foreach (var changedFile in changedFiles) {
                 this.ProcessChangedFile(changedFile);
             }
@@ -257,6 +240,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private void ProcessChangedFile(Helpers.DirectoryChangedEventArgs changedFile) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+
             var ext = Path.GetExtension(changedFile.FullPath);
             switch (ext) {
                 case ".h":
@@ -268,36 +252,28 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                     return;
             }
 
+            Helpers.Diagnostic.Logger.LogDebug($"changedFile = {changedFile.FullPath}");
+
             switch (changedFile.ChangeType) {
                 case Helpers.DirectoryChangeType.Changed:
                 case Helpers.DirectoryChangeType.Created:
                 case Helpers.DirectoryChangeType.Renamed:
                 case Helpers.DirectoryChangeType.Deleted:
-                    ThreadHelper.JoinableTaskFactory.Run(async () => {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        this.Analyze();
-                    });
+                    //this.StartAnalyzeRoutineInBackground();
                     break;
             }
         }
 
+        private void StartAnalyzeRoutineInBackground() {
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private void LogHierarchyItemsRecursive(IVsHierarchy hierarchy, uint itemId, int indent) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (itemId != VSConstants.VSITEMID_ROOT) {
-                hierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
-                var name = nameObj as string ?? "(null)";
-
-                hierarchy.GetCanonicalName(itemId, out var canonicalName);
-
-                string indentStr = new string(' ', indent * 2);
-                Helpers.Diagnostic.Logger.LogDebug($"[{itemId}]{indentStr}{name} ({canonicalName})");
-            }
-
-            foreach (var childId in Utils.VsHierarchyWalker.GetChildren(hierarchy, itemId)) {
-                this.LogHierarchyItemsRecursive(hierarchy, childId, indent + 1);
-            }
+                int attempts = 5;
+                do {
+                    await Task.Delay(TimeSpan.FromSeconds(3));
+                    this.Analyze();
+                } while (--attempts > 0);
+            });
         }
     }
 }

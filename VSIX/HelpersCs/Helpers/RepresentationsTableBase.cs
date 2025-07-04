@@ -26,6 +26,10 @@ namespace Helpers {
             _records.AddRange(records);
         }
 
+        public void Clear() {
+            _records.Clear();
+        }
+
         public abstract void BuildRepresentations();
     }
 }
