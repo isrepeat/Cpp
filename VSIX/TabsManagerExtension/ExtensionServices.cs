@@ -93,7 +93,7 @@ namespace TabsManagerExtension.Services {
 
             ExtensionServices.Register(VsShell.Solution.Services.VsProjectItemsTrackerService.Create());
             ExtensionServices.Register(VsShell.Solution.Services.VsSolutionEventsTrackerService.Create());
-            ExtensionServices.Register(VsShell.Solution.Services.IncludeDependencyAnalyzerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.TextEditorCommandFilterService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.DocumentActivationTrackerService.Create());
 
@@ -108,7 +108,7 @@ namespace TabsManagerExtension.Services {
         public static void RequestShutdown() {
             lock (_sync) {
                 if (_activeUserCount == 0) {
-                    Shutdown();
+                    ExtensionServices.Shutdown();
                 }
                 else {
                     _shutdownRequested = true;
@@ -130,7 +130,7 @@ namespace TabsManagerExtension.Services {
                 lock (_sync) {
                     if (_shutdownRequested) {
                         _shutdownRequested = false;
-                        Shutdown();
+                        ExtensionServices.Shutdown();
                     }
                 }
             }
@@ -147,20 +147,20 @@ namespace TabsManagerExtension.Services {
             }
 
             // Лог всех зарегистрированных сервисов и их зависимостей
-            LogServices($"\n[ExtensionServices] Registered services and dependencies:", _services.Values.ToList());
+            ExtensionServices.LogServices($"\n[ExtensionServices] Registered services and dependencies:", _services.Values.ToList());
 
             var visited = new HashSet<Type>();
             var result = new List<IExtensionService>();
 
             foreach (var type in _services.Keys) {
-                VisitForToposort(type, visited, result);
+                ExtensionServices.VisitForToposortRecursive(type, visited, result);
             }
 
             // Выполняем завершение в обратном порядке (зависимые — последними)
             var reversedResult = Enumerable.Reverse(result);
 
             // Лог порядка выключения
-            LogServices($"\n[ExtensionServices] Shutdown order:", reversedResult.ToList());
+            ExtensionServices.LogServices($"\n[ExtensionServices] Shutdown order:", reversedResult.ToList());
 
             foreach (var service in reversedResult) {
                 service.Shutdown();
@@ -175,7 +175,7 @@ namespace TabsManagerExtension.Services {
         }
 
 
-        private static void VisitForToposort(Type type, HashSet<Type> visited, List<IExtensionService> result) {
+        private static void VisitForToposortRecursive(Type type, HashSet<Type> visited, List<IExtensionService> result) {
             if (visited.Contains(type)) {
                 return;
             }
@@ -184,7 +184,7 @@ namespace TabsManagerExtension.Services {
 
             if (_services.TryGetValue(type, out var service)) {
                 foreach (var dep in service.DependsOn()) {
-                    VisitForToposort(dep, visited, result);
+                    ExtensionServices.VisitForToposortRecursive(dep, visited, result);
                 }
 
                 result.Add(service);
