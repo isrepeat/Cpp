@@ -64,17 +64,13 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             foreach (var record in base.Records) {
                 var projectNode = record.ProjectNode;
                 var documenPath = record.FilePath;
-                var documentNode = new VsShell.Document.DocumentNode(
-                    projectNode,
-                    documenPath,
-                    record.ItemId);
 
                 if (!_mapProjectToDictFilePathToDocument.TryGetValue(projectNode, out var dictFilePathToDocument)) {
                     dictFilePathToDocument = new Dictionary<string, VsShell.Document.DocumentNode>(StringComparer.OrdinalIgnoreCase);
                     _mapProjectToDictFilePathToDocument[projectNode] = dictFilePathToDocument;
                 }
 
-                dictFilePathToDocument[documenPath] = documentNode;
+                dictFilePathToDocument[documenPath] = record;
             }
         }
 
@@ -107,8 +103,18 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         TabsManagerExtension.Services.SingletonServiceBase<SolutionHierarchyAnalyzerService>,
         TabsManagerExtension.Services.IExtensionService {
 
+        public enum AnalyzeType {
+            Documents,
+            ExternalIncludes,
+        }
+
         private readonly SolutionHierarchyRepresentationsTable _solutionHierarchyRepresentationsTable = new();
         public SolutionHierarchyRepresentationsTable SolutionHierarchyRepresentationsTable => _solutionHierarchyRepresentationsTable;
+
+
+        private readonly SolutionHierarchyRepresentationsTable _externalIncludeRepresentationsTable = new();
+        public SolutionHierarchyRepresentationsTable ExternalIncludeRepresentationsTable => _externalIncludeRepresentationsTable;
+
 
         //private Helpers.DirectoryWatcher? _solutionDirectoryWatcher;
         //private DispatcherTimer _delayedFileChangeTimer;
@@ -165,11 +171,20 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         // ░ API
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        public void Analyze() {
+        public void Analyze(AnalyzeType analyzeType) {
             ThreadHelper.ThrowIfNotOnUIThread();
             
             _analyzingInProcess = true;
-            _solutionHierarchyRepresentationsTable.Clear();
+
+            switch (analyzeType) {
+                case AnalyzeType.Documents:
+                    _solutionHierarchyRepresentationsTable.Clear();
+                    break;
+
+                case AnalyzeType.ExternalIncludes:
+                    _externalIncludeRepresentationsTable.Clear();
+                    break;
+            }
 
             var vsSolution = PackageServices.VsSolution;
             vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
@@ -184,14 +199,32 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                     var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(hierarchy);
                     if (dteProject != null) {
                         var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
-                        projectNode.UpdateDocumentNodes();
+                        
+                        switch (analyzeType) {
+                            case AnalyzeType.Documents:
+                                projectNode.UpdateDocuments();
+                                _solutionHierarchyRepresentationsTable.AddRange(projectNode.Sources);
+                                _solutionHierarchyRepresentationsTable.AddRange(projectNode.SharedItems);
+                                break;
 
-                        _solutionHierarchyRepresentationsTable.AddRange(projectNode.DocumentNodes);
+                            case AnalyzeType.ExternalIncludes:
+                                projectNode.UpdateExternalIncludes();
+                                _externalIncludeRepresentationsTable.AddRange(projectNode.ExternalIncludes);
+                                break;
+                        }
                     }
                 }
             }
 
-            _solutionHierarchyRepresentationsTable.BuildRepresentations();
+            switch (analyzeType) {
+                case AnalyzeType.Documents:
+                    _solutionHierarchyRepresentationsTable.BuildRepresentations();
+                    break;
+
+                case AnalyzeType.ExternalIncludes:
+                    _externalIncludeRepresentationsTable.BuildRepresentations();
+                    break;
+            }
             _analyzingInProcess = false;
         }
 
@@ -212,7 +245,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
             _lastLoadedSolutionName = solutionName;
 
-            this.Analyze();
+            this.Analyze(AnalyzeType.Documents);
             //this.StartAnalyzeRoutineInBackground();
         }
 
@@ -268,7 +301,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 case Helpers.DirectoryChangeType.Created:
                 case Helpers.DirectoryChangeType.Renamed:
                 case Helpers.DirectoryChangeType.Deleted:
-                    this.Analyze();
+                    //this.Analyze();
                     break;
             }
         }

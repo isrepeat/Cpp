@@ -88,6 +88,10 @@ namespace TabsManagerExtension.VsShell.Document.Services {
                 out _,
                 out _,
                 out _);
+            
+            if (string.IsNullOrEmpty(_lastActivatedDocumentFullname)) {
+                _lastActivatedDocumentFullname = PackageServices.Dte2.ActiveDocument?.FullName;
+            }
 
             if (!string.IsNullOrEmpty(documentFullName) &&
                 !string.Equals(documentFullName, _lastActivatedDocumentFullname, StringComparison.OrdinalIgnoreCase)

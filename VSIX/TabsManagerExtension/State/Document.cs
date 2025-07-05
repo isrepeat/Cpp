@@ -158,14 +158,17 @@ namespace TabsManagerExtension.State.Document {
                     return;
             }
 
-            var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-            externalDependenciesAnalyzer.Analyze();
-            //if (!externalDependenciesAnalyzer.IsReady()) {
-            //    return;
-            //}
+            //var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
+            //externalDependenciesAnalyzer.Analyze();
 
-            var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
-                .GetProjectsByExternalIncludePath(this.FullName);
+            //var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
+            //    .GetProjectsByExternalIncludePath(this.FullName);
+
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            solutionHierarchyAnalyzer.Analyze(VsShell.Solution.Services.SolutionHierarchyAnalyzerService.AnalyzeType.ExternalIncludes);
+            
+            var projectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
 
             var documentProjectReferences = projectNodes
                 .Select(projectNode => new DocumentProjectReferenceInfo(

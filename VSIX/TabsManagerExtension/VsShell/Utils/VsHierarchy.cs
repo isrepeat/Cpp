@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
+using static TabsManagerExtension.VsShell.Utils.VsHierarchy;
 
 
 namespace TabsManagerExtension.VsShell.Utils {
@@ -146,8 +147,20 @@ namespace TabsManagerExtension.VsShell.Utils {
 
                 hierarchy.GetCanonicalName(itemId, out var canonicalName);
 
+                string itemMarker = "";
+                
+                bool isSharedItem = false;
+                hierarchy.GetProperty(itemId,(int)__VSHPROPID7.VSHPROPID_IsSharedItem, out var isSharedItemObj);
+                if (isSharedItemObj is bool boolVal) {
+                    isSharedItem = boolVal;
+                }
+
+                if (isSharedItem) {
+                    itemMarker = " | Shared";
+                }
+
                 string indentStr = new string(' ', indent * 2);
-                Helpers.Diagnostic.Logger.LogDebug($"[{itemId}]{indentStr}{name} ({canonicalName})");
+                Helpers.Diagnostic.Logger.LogDebug($"[{itemId}]{indentStr}{name} ({canonicalName}){itemMarker}");
             }
 
             foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {

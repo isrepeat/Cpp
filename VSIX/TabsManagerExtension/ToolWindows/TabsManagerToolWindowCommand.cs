@@ -71,7 +71,7 @@ namespace TabsManagerExtension.ToolWindows {
         private async void Execute(object sender, EventArgs e) {
             //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
             //this.TestIncludeDependencyAnalyzer();
-
+            VsShell.Utils.VsHierarchy.LogSolutionHierarchy();
             int xx = 9;
         }
 

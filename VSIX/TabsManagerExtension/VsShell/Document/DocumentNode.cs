@@ -2,11 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
-using TabsManagerExtension.VsShell.Project;
-using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 
 namespace TabsManagerExtension.VsShell.Document {
@@ -54,6 +52,14 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
 
+    public sealed class SharedItemNode : DocumentNode {
+        public SharedItemNode(VsShell.Project.ProjectNode projectNode, string filePath, uint itemId)
+            : base(projectNode, filePath, itemId) {
+        }
+    }
+
+
+
     public sealed class ExternalInclude : DocumentNode {
         public ExternalInclude(VsShell.Project.ProjectNode projectNode, string filePath, uint itemId)
             : base(projectNode, filePath, itemId) {
@@ -75,10 +81,10 @@ namespace TabsManagerExtension.VsShell.Document {
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
             // Это нужно для того, чтобы при открытии внешнего include файла
             // Visual Studio знала, что контекстом открытия является именно этот проект.
-            if (this.ProjectNode.DocumentNodes.Count == 0) {
-                this.ProjectNode.UpdateDocumentNodes();
+            if (this.ProjectNode.Sources.Count == 0) {
+                this.ProjectNode.UpdateDocuments();
             }
-            string contextSwitchFile = this.ProjectNode.DocumentNodes.FirstOrDefault()?.FilePath;
+            string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
 
             bool needCloseContextSwitchFile = false;
             if (!string.IsNullOrEmpty(contextSwitchFile)) {

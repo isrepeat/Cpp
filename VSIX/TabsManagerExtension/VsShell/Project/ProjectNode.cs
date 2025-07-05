@@ -11,8 +11,13 @@ namespace TabsManagerExtension.VsShell.Project {
     public sealed class ProjectNode : ShellProject {
         public IVsHierarchy VsHierarchy { get; }
 
-        private readonly List<VsShell.Document.DocumentNode> _documentNodes = new();
-        public IReadOnlyList<VsShell.Document.DocumentNode> DocumentNodes => _documentNodes;
+
+        private readonly List<VsShell.Document.DocumentNode> _sources = new();
+        public IReadOnlyList<VsShell.Document.DocumentNode> Sources => _sources;
+
+
+        private readonly List<VsShell.Document.SharedItemNode> _sharedItems = new();
+        public IReadOnlyList<VsShell.Document.SharedItemNode> SharedItems => _sharedItems;
 
 
         private readonly List<VsShell.Document.ExternalInclude> _externalIncludes = new();
@@ -24,7 +29,7 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
 
-        public void UpdateDocumentNodes() {
+        public void UpdateDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var hierarchyItems = new List<Utils.VsHierarchy.HierarchyItem>();
@@ -44,13 +49,31 @@ namespace TabsManagerExtension.VsShell.Project {
                 }
             }
 
-            _documentNodes.Clear();
+            _sources.Clear();
+            _sharedItems.Clear();
+
             foreach (var hierarchyItem in hierarchyItems) {
+                bool isSharedItem = false;
+
+                this.VsHierarchy.GetProperty(
+                    hierarchyItem.ItemId,
+                    (int)__VSHPROPID7.VSHPROPID_IsSharedItem,
+                    out var isSharedItemObj);
+
+                if (isSharedItemObj is bool boolVal) {
+                    isSharedItem = boolVal;
+                }
+
                 var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
                 var normalizedPath = Path.GetFullPath(hierarchyItemName)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                _documentNodes.Add(new VsShell.Document.DocumentNode(this, normalizedPath, hierarchyItem.ItemId));
+                if (isSharedItem) {
+                    _sharedItems.Add(new VsShell.Document.SharedItemNode(this, normalizedPath, hierarchyItem.ItemId));
+                }
+                else {
+                    _sources.Add(new VsShell.Document.DocumentNode(this, normalizedPath, hierarchyItem.ItemId));
+                }
             }
         }
 
@@ -76,6 +99,7 @@ namespace TabsManagerExtension.VsShell.Project {
             }
 
             _externalIncludes.Clear();
+
             foreach (var hierarchyItem in hierarchyItems) {
                 var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
                 var normalizedPath = Path.GetFullPath(hierarchyItemName)

@@ -599,8 +599,8 @@ namespace TabsManagerExtension.Controls {
                 // TODO: add support .h (where fromProjectNodes.Count > 0).
                 var fromProjectNode = fromProjectNodes[0];
 
-                var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-                externalDependenciesAnalyzer.Analyze();
+
+                solutionHierarchyAnalyzer.Analyze(VsShell.Solution.Services.SolutionHierarchyAnalyzerService.AnalyzeType.ExternalIncludes);
 
                 this.MoveDocumentToProjectGroup(toTabItemDocument, new TabItemProject(fromProjectNode));
             }
@@ -1156,6 +1156,7 @@ namespace TabsManagerExtension.Controls {
             tabItemDocument.IsPreviewTab = false;
         }
 
+
         private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, TabItemProject tabItemProject) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -1167,11 +1168,17 @@ namespace TabsManagerExtension.Controls {
             if (tabItemProject.ShellProject is VsShell.Project.ProjectNode projectNode) {
                 // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
                 // если в externalDependenciesAnalyzer была обновлена таблица в течении этого времени.
-                var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-                var externalInclude = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
-                    .GetExternalIncludeByProjectAndIncludePath(projectNode, tabItemDocument.FullName);
+                // (Например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
+               
+                //var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
+                //var externalInclude = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
+                //    .GetExternalIncludeByProjectAndIncludePath(projectNode, tabItemDocument.FullName);
 
-                if (externalInclude != null) {
+                var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+                var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                    .GetDocumentNodeByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
+
+                if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
                     Helpers.Diagnostic.Logger.LogDebug("OpenWithProjectContext");
                     externalInclude.OpenWithProjectContext();
 
@@ -1181,6 +1188,7 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
+
         private void RemoveTabItemFromGroups(TabItemBase tabItem) {
             foreach (var group in this.SortedTabItemsGroups.ToList()) {
                 if (group.Items.Contains(tabItem)) {
@@ -1189,6 +1197,7 @@ namespace TabsManagerExtension.Controls {
                 }
             }
         }
+
 
         private void RemoveTabItemFromGroup(TabItemBase tabItem, TabItemsGroupBase group) {
             if (group.Items.Remove(tabItem)) {
@@ -1200,12 +1209,14 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
+
         private void RemoveTabItemsGroup(TabItemsGroupBase tabItemsGroup) {
             if (this.SortedTabItemsGroups.Remove(tabItemsGroup)) {
                 Helpers.Diagnostic.Logger.LogDebug($"Removed group \"{tabItemsGroup.GroupName}\"");
                 this.UpdateSeparatorsBetweenGroups();
             }
         }
+
 
         private void UpdateSeparatorsBetweenGroups() {
             // Remove existing separators
@@ -1222,7 +1233,6 @@ namespace TabsManagerExtension.Controls {
                 this.SortedTabItemsGroups.Add(new SeparatorTabItemsGroup("Pinned-Default"));
             }
         }
-
 
         private bool HasGroup<T>() where T : TabItemsGroupBase {
             return this.SortedTabItemsGroups.OfType<T>().Any();
