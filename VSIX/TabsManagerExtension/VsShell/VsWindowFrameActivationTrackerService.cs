@@ -11,7 +11,12 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 using TabsManagerExtension.VsShell.Services;
 
+
 namespace TabsManagerExtension.VsShell.Solution.Services {
+    /// <summary>
+    /// Отслеживает активацию окон (IVsWindowFrame), когда активируется новое окно VS 
+    /// (будь то редактор, Solution Explorer, Output и т.д.)
+    /// </summary>
     public sealed class VsWindowFrameActivationTrackerService :
          VsShell.Services.VsSelectionEventsServiceBase<VsWindowFrameActivationTrackerService>,
          TabsManagerExtension.Services.IExtensionService {

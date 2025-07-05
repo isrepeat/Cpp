@@ -10,7 +10,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 
-namespace TabsManagerExtension.VsShell.Solution.Services {
+
+namespace TabsManagerExtension.VsShell.Project.Services {
     /// <summary>
     /// Сервис отслеживания добавления и удаления файлов в проектах.
     /// Использует низкоуровневый интерфейс IVsTrackProjectDocumentsEvents2.
