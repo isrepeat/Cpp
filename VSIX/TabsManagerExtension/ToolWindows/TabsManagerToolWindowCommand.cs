@@ -72,37 +72,6 @@ namespace TabsManagerExtension.ToolWindows {
             //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
             //this.TestIncludeDependencyAnalyzer();
 
-            //var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-            //externalDependenciesAnalyzer.LogAllItemIdsViaHierarchy();
-            //externalDependenciesAnalyzer.Analyze();
-
-
-            //string engineProjectName = "Engine\\Engine.vcxproj";
-            //string engineCppFilepath = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Engine\\Engine.cpp";
-
-            //string gameProjectName = "Game\\Game.vcxproj";
-            //string gameCppFilepath = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Game\\Game.cpp";
-
-            //string includeFilepath = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
-
-            ////var nodes = graphService.Includes[includeFilepath];
-            ////nodes.FirstOrDefault()?.Open();
-            
-            //{
-            //    var project = graphService.Projects["Game\\Game.vcxproj"];
-            //    var externalIncludeNode = project.Includes.FirstOrDefault(i => String.Equals(i.FilePath, includeFilepath, StringComparison.OrdinalIgnoreCase));
-            //    externalIncludeNode?.Open();
-            //}
-            ////await Task.Delay(3000);
-            ////{
-            ////    var project = graphService.Projects["Engine\\Engine.vcxproj"];
-            ////    var externalIncludeNode = project.Includes.FirstOrDefault(i => String.Equals(i.FilePath, includeFilepath, StringComparison.OrdinalIgnoreCase));
-            ////    externalIncludeNode?.Open();
-            ////}
-
-            ////graphService.OpenIncludeInProjectContext(gameProjectName, includeFilepath);
-            ////graphService.OpenIncludeInProjectContext(engineProjectName, includeFilepath);
-
             int xx = 9;
         }
 

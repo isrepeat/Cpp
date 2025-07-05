@@ -13,7 +13,6 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
 using Task = System.Threading.Tasks.Task;
-using EnvDTE;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -86,8 +85,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private readonly ExternalIncludeRepresentationsTable _externalIncludeRepresentationsTable = new();
         public ExternalIncludeRepresentationsTable ExternalIncludeRepresentationsTable => _externalIncludeRepresentationsTable;
 
-        private Helpers.DirectoryWatcher? _solutionDirectoryWatcher;
-        private DispatcherTimer _delayedFileChangeTimer;
+        //private Helpers.DirectoryWatcher? _solutionDirectoryWatcher;
+        //private DispatcherTimer _delayedFileChangeTimer;
 
         private readonly HashSet<Helpers.DirectoryChangedEventArgs> _pendingChangedFiles = new();
         private string _lastLoadedSolutionName;
@@ -110,11 +109,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
 
-            string? solutionDir = Path.GetDirectoryName(PackageServices.Dte2.Solution.FullName);
-            if (solutionDir != null && Directory.Exists(solutionDir)) {
-                _solutionDirectoryWatcher = new Helpers.DirectoryWatcher(solutionDir);
-                _solutionDirectoryWatcher.DirectoryChanged += this.OnSolutionDirectoryChanged;
-            }
+            //string? solutionDir = Path.GetDirectoryName(PackageServices.Dte2.Solution.FullName);
+            //if (solutionDir != null && Directory.Exists(solutionDir)) {
+            //    _solutionDirectoryWatcher = new Helpers.DirectoryWatcher(solutionDir);
+            //    _solutionDirectoryWatcher.DirectoryChanged += this.OnSolutionDirectoryChanged;
+            //}
 
             //// Используем таймер для отложенной обработки изменённых файлов:
             //// обработка произойдёт только через заданный интервал после последнего события.
@@ -213,13 +212,13 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 _pendingChangedFiles.Add(e);
             }
 
-            _delayedFileChangeTimer.Stop();
-            _delayedFileChangeTimer.Start();
+            //_delayedFileChangeTimer.Stop();
+            //_delayedFileChangeTimer.Start();
         }
 
 
         private void OnDelayedFileChangeTimerTick() {
-            _delayedFileChangeTimer.Stop();
+            //_delayedFileChangeTimer.Stop();
 
             List<Helpers.DirectoryChangedEventArgs> changedFiles;
             lock (_pendingChangedFiles) {

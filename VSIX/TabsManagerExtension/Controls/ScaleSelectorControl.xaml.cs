@@ -53,7 +53,7 @@ namespace TabsManagerExtension.Controls {
             this.ScaleComboBox.LostFocus += this.ScaleComboBox_OnLostFocus;
             this.ScaleComboBox.KeyDown += this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.SelectionChanged += this.ScaleComboBox_OnSelectionChanged;
-            VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.AddTrackedInputElement(this);
+            VsShell.TextEditor.Services.TextEditorInputCommandFilterService.Instance.AddTrackedInputElement(this);
 
             // Получаем ссылку на текстовое поле внутри ComboBox (editable part)
             _comboBoxTextBox = (TextBox)this.ScaleComboBox.Template.FindName("PART_EditableTextBox", this.ScaleComboBox);
@@ -61,7 +61,7 @@ namespace TabsManagerExtension.Controls {
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e) {
-            VsShell.TextEditor.Services.TextEditorCommandFilterService.Instance.RemoveTrackedInputElement(this);
+            VsShell.TextEditor.Services.TextEditorInputCommandFilterService.Instance.RemoveTrackedInputElement(this);
             this.ScaleComboBox.SelectionChanged -= this.ScaleComboBox_OnSelectionChanged;
             this.ScaleComboBox.KeyDown -= this.ScaleComboBox_OnKeyDown;
             this.ScaleComboBox.LostFocus -= this.ScaleComboBox_OnLostFocus;

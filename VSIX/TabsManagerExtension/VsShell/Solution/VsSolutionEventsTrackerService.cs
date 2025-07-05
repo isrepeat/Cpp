@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Utilities;
 using System.Windows.Threading;
 using static System.Net.Mime.MediaTypeNames;
 
+
 namespace TabsManagerExtension.VsShell.Solution.Services {
     /// <summary>
     /// Сервис отслеживания загрузки и выгрузки проектов через IVsSolutionEvents.

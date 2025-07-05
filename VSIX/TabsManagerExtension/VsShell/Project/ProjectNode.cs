@@ -10,96 +10,91 @@ using Microsoft.VisualStudio;
 namespace TabsManagerExtension.VsShell.Project {
     public sealed class ProjectNode : ShellProject {
         public IVsHierarchy VsHierarchy { get; }
-        public string? FirstCppRelatedFile { get; }
 
-        
+        private readonly List<VsShell.Document.DocumentNode> _documentNodes = new();
+        public IReadOnlyList<VsShell.Document.DocumentNode> DocumentNodes => _documentNodes;
+
+
         private readonly List<VsShell.Document.ExternalInclude> _externalIncludes = new();
         public IReadOnlyList<VsShell.Document.ExternalInclude> ExternalIncludes => _externalIncludes;
 
 
-        public ProjectNode(
-            EnvDTE.Project dteProject,
-            IVsHierarchy hierarchy) : base(dteProject) {
-
+        public ProjectNode(EnvDTE.Project dteProject, IVsHierarchy hierarchy) : base(dteProject) {
             this.VsHierarchy = hierarchy;
-            this.FirstCppRelatedFile = this.FindFirstCppOrHeaderFile();
+        }
+
+
+        public void UpdateDocumentNodes() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hierarchyItems = new List<Utils.VsHierarchy.HierarchyItem>();
+
+            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(this.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
+                this.VsHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+                var name = nameObj as string;
+
+                // Игнорируем вложенные элементы для виртуальных GUID-папок (External Dependencies и проч.)
+                if (!this.IsGuidName(name)) {
+                    var resultItems = Utils.VsHierarchy.CollectItemsRecursive(
+                        this.VsHierarchy,
+                        childId,
+                        hierarchyItem => this.IsHeaderOrCppFile(hierarchyItem.CanonicalName));
+
+                    hierarchyItems.AddRange(resultItems);
+                }
+            }
+
+            _documentNodes.Clear();
+            foreach (var hierarchyItem in hierarchyItems) {
+                var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
+                var normalizedPath = Path.GetFullPath(hierarchyItemName)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                _documentNodes.Add(new VsShell.Document.DocumentNode(this, normalizedPath, hierarchyItem.ItemId));
+            }
         }
 
 
         public void UpdateExternalIncludes() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (var childId in Utils.VsHierarchyWalker.GetChildren(this.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
+            var hierarchyItems = new List<Utils.VsHierarchy.HierarchyItem>();
+
+            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(this.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
                 this.VsHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
                 // только для GUID-папок (External Dependencies) запускаем рекурсивную обработку
                 if (this.IsGuidName(name)) {
-                    this.CollectExternalIncludesRecursive(childId);
-                }
-            }
-        }
+                    var resultItems = Utils.VsHierarchy.CollectItemsRecursive(
+                        this.VsHierarchy,
+                        childId,
+                        hierarchyItem => this.IsExternalIncludeFile(hierarchyItem.CanonicalName));
 
-        private void CollectExternalIncludesRecursive(uint itemId) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            this.VsHierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
-            var name = nameObj as string;
-
-            this.VsHierarchy.GetCanonicalName(itemId, out var canonicalName);
-
-            // внутри виртуальной папки ищем файлы
-            if (this.IsExternalIncludeFile(name)) {
-                var fileKey = Path.GetFullPath(canonicalName ?? name)
-                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    .ToLowerInvariant();
-
-                var externalInclude = new VsShell.Document.ExternalInclude(this, fileKey, itemId);
-                this._externalIncludes.Add(externalInclude);
-            }
-
-            // продолжаем рекурсию для всех дочерних элементов
-            foreach (var childId in Utils.VsHierarchyWalker.GetChildren(this.VsHierarchy, itemId)) {
-                this.CollectExternalIncludesRecursive(childId);
-            }
-        }
-
-
-
-        private string? FindFirstCppOrHeaderFile() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            return this.FindFirstCppOrHeaderFileRecursive(this.VsHierarchy, VSConstants.VSITEMID_ROOT);
-        }
-
-        private string? FindFirstCppOrHeaderFileRecursive(IVsHierarchy hierarchy, uint itemId) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            hierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
-            var name = nameObj as string;
-
-            hierarchy.GetCanonicalName(itemId, out var canonicalName);
-
-            if (this.IsCppProjectRelatedFile(canonicalName)) {
-                return canonicalName;
-            }
-
-            // Не проверяем guid элементы такие как например "External Dependendies",
-            // потому что может найтись тот же файл который мы захотим открыть через ExternalInclude.Open.
-            if (!this.IsGuidName(name)) {
-                foreach (var childId in Utils.VsHierarchyWalker.GetChildren(hierarchy, itemId)) {
-                    var found = this.FindFirstCppOrHeaderFileRecursive(hierarchy, childId);
-                    if (found != null) {
-                        return found;
-                    }
+                    hierarchyItems.AddRange(resultItems);
                 }
             }
 
-            return null;
+            _externalIncludes.Clear();
+            foreach (var hierarchyItem in hierarchyItems) {
+                var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
+                var normalizedPath = Path.GetFullPath(hierarchyItemName)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                _externalIncludes.Add(new VsShell.Document.ExternalInclude(this, normalizedPath, hierarchyItem.ItemId));
+            }
         }
 
 
         private bool IsGuidName(string? name) {
             return !string.IsNullOrEmpty(name) && name.StartsWith("{") && name.EndsWith("}");
+        }
+        
+        private bool IsHeaderOrCppFile(string? name) {
+            return !string.IsNullOrEmpty(name) &&
+                (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
+                 name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase) ||
+                 name.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsExternalIncludeFile(string? name) {
@@ -108,11 +103,22 @@ namespace TabsManagerExtension.VsShell.Project {
                  name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase));
         }
 
-        private bool IsCppProjectRelatedFile(string? name) {
-            return !string.IsNullOrEmpty(name) &&
-                (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase));
+
+
+        public override bool Equals(object? obj) {
+            if (obj is not ProjectNode other) {
+                return false;
+            }
+
+            return StringComparer.OrdinalIgnoreCase.Equals(this.Project.UniqueName, other.Project.UniqueName);
+        }
+
+        public override int GetHashCode() {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.Project.UniqueName ?? string.Empty);
+        }
+
+        public override string ToString() {
+            return $"ProjectNode({this.Project.UniqueName})";
         }
     }
 }
