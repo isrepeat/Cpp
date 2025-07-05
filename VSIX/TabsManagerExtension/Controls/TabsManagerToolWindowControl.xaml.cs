@@ -279,12 +279,14 @@ namespace TabsManagerExtension.Controls {
         // ░ VsShellTrackers 
         //
         private void InitializeVsShellTrackers() {
+            VsShell.Document.Services.VsDocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
             VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated += this.OnVsWindowFrameActivated;
-            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated += this.OnDocumentActivatedExternally;
+            VsShell.TextEditor.Services.TextEditorFileNavigationCommandFilterService.Instance.OnNavigatedToDocument += this.OnTextEditorNavigatedToDocument;
         }
         private void UninitializeVsShellTrackers() {
-            VsShell.TextEditor.Services.DocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
+            VsShell.TextEditor.Services.TextEditorFileNavigationCommandFilterService.Instance.OnNavigatedToDocument -= this.OnTextEditorNavigatedToDocument;
             VsShell.Solution.Services.VsWindowFrameActivationTrackerService.Instance.VsWindowFrameActivated -= this.OnVsWindowFrameActivated;
+            VsShell.Document.Services.VsDocumentActivationTrackerService.Instance.OnDocumentActivated -= this.OnDocumentActivatedExternally;
         }
 
 
@@ -512,6 +514,20 @@ namespace TabsManagerExtension.Controls {
         //
         // ░ VsShellTrackers 
         //
+        private void OnDocumentActivatedExternally(_EventArgs.DocumentNavigationEventArgs e) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentActivatedExternally()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Helpers.Diagnostic.Logger.LogParam($"documentFullName = {e.CurrentDocumentFullName}");
+
+            var tabItem = this.FindTabItem(e.CurrentDocumentFullName);
+            if (tabItem != null) {
+                tabItem.Metadata.SetFlag("IsActivatedExternally", true);
+                tabItem.IsSelected = true;
+            }
+        }
+
+
         private void OnVsWindowFrameActivated(IVsWindowFrame vsWindowFrame) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnVsWindowFrameActivated()");
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -546,19 +562,50 @@ namespace TabsManagerExtension.Controls {
             _textEditorOverlayController.Hide();
         }
 
-        private void OnDocumentActivatedExternally(string documentFullName) {
-            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentActivatedExternally()");
-            ThreadHelper.ThrowIfNotOnUIThread();
 
-            Helpers.Diagnostic.Logger.LogParam($"documentFullName = {documentFullName}");
+        private void OnTextEditorNavigatedToDocument(_EventArgs.DocumentNavigationEventArgs e) {
+            if (e.PreviousDocumentFullName != null) {
+                var ext = System.IO.Path.GetExtension(e.PreviousDocumentFullName);
+                switch (ext) {
+                    //case ".h":
+                    //case ".hpp":
+                    case ".cpp":
+                        break;
 
-            var tabItem = this.FindTabItem(documentFullName);
-            if (tabItem != null) {
-                tabItem.Metadata.SetFlag("IsActivatedExternally", true);
-                tabItem.IsSelected = true;
+                    default:
+                        return;
+                }
+
+                var fromTabItemDocument = this.FindTabItem(e.PreviousDocumentFullName);
+                if (fromTabItemDocument == null) {
+                    return;
+                }                
+
+                var toTabItemDocument = this.FindTabItem(e.CurrentDocumentFullName);
+                if (toTabItemDocument == null) {
+                    // schedule?
+                    return;
+                }
+
+                var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+                var fromProjectNodes = solutionHierarchyAnalyzer.SolutionHierarchyRepresentationsTable
+                    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
+
+                if (fromProjectNodes.Count == 0) {
+                    return;
+                }
+
+                // NOTE: for .cpp fromProjectNodes.Count usually == 1.
+                // TODO: add support .h (where fromProjectNodes.Count > 0).
+                var fromProjectNode = fromProjectNodes[0];
+
+                var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
+                externalDependenciesAnalyzer.Analyze();
+
+                this.MoveDocumentToProjectGroup(toTabItemDocument, new TabItemProject(fromProjectNode));
             }
         }
-        
+
 
         // 
         // ░ TabItemsSelectionCoordinator
