@@ -9,14 +9,14 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TabsManagerExtension.VsShell.Document {
     public class DocumentNode {
-        public VsShell.Project.ProjectNode ProjectNode { get; }
-        public string FilePath { get; }
         public uint ItemId { get; }
+        public string FilePath { get; }
+        public VsShell.Project.ProjectNode ProjectNode { get; }
 
-        public DocumentNode(VsShell.Project.ProjectNode projectNode, string filePath, uint itemId) {
-            this.ProjectNode = projectNode;
-            this.FilePath = filePath;
+        public DocumentNode(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode) {
             this.ItemId = itemId;
+            this.FilePath = filePath;
+            this.ProjectNode = projectNode;
         }
 
         public override bool Equals(object? obj) {
@@ -45,24 +45,33 @@ namespace TabsManagerExtension.VsShell.Document {
             }
         }
 
+
+        protected string ToStringCore() {
+            return $"FilePath='{this.FilePath}', Project='{this.ProjectNode.Project.UniqueName}', ItemId={this.ItemId}";
+        }
+
         public override string ToString() {
-            return $"DocumentNode(FilePath='{this.FilePath}', Project='{this.ProjectNode.Project.UniqueName}', ItemId={this.ItemId})";
+            return $"DocumentNode({this.ToStringCore()})";
         }
     }
 
 
 
     public sealed class SharedItemNode : DocumentNode {
-        public SharedItemNode(VsShell.Project.ProjectNode projectNode, string filePath, uint itemId)
-            : base(projectNode, filePath, itemId) {
+        public SharedItemNode(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode)
+            : base(itemId, filePath, projectNode) {
+        }
+
+        public override string ToString() {
+            return $"SharedItemNode({base.ToStringCore()})";
         }
     }
 
 
 
     public sealed class ExternalInclude : DocumentNode {
-        public ExternalInclude(VsShell.Project.ProjectNode projectNode, string filePath, uint itemId)
-            : base(projectNode, filePath, itemId) {
+        public ExternalInclude(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode)
+            : base(itemId, filePath, projectNode) {
         }
 
         public void OpenWithProjectContext() {
@@ -81,9 +90,11 @@ namespace TabsManagerExtension.VsShell.Document {
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
             // Это нужно для того, чтобы при открытии внешнего include файла
             // Visual Studio знала, что контекстом открытия является именно этот проект.
+#if DEBUG
             if (this.ProjectNode.Sources.Count == 0) {
-                this.ProjectNode.UpdateDocuments();
+                System.Diagnostics.Debugger.Break();
             }
+#endif
             string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
 
             bool needCloseContextSwitchFile = false;
@@ -133,6 +144,10 @@ namespace TabsManagerExtension.VsShell.Document {
             if (!wasAlreadyActive && activeDocumentBefore != null) {
                 activeDocumentBefore.Activate();
             }
+        }
+
+        public override string ToString() {
+            return $"ExternalInclude({base.ToStringCore()})";
         }
     }
 }

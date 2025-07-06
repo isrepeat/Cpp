@@ -69,10 +69,10 @@ namespace TabsManagerExtension.VsShell.Project {
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
                 if (isSharedItem) {
-                    _sharedItems.Add(new VsShell.Document.SharedItemNode(this, normalizedPath, hierarchyItem.ItemId));
+                    _sharedItems.Add(new VsShell.Document.SharedItemNode(hierarchyItem.ItemId, normalizedPath, this));
                 }
                 else {
-                    _sources.Add(new VsShell.Document.DocumentNode(this, normalizedPath, hierarchyItem.ItemId));
+                    _sources.Add(new VsShell.Document.DocumentNode(hierarchyItem.ItemId, normalizedPath, this));
                 }
             }
         }
@@ -105,7 +105,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 var normalizedPath = Path.GetFullPath(hierarchyItemName)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                _externalIncludes.Add(new VsShell.Document.ExternalInclude(this, normalizedPath, hierarchyItem.ItemId));
+                _externalIncludes.Add(new VsShell.Document.ExternalInclude(hierarchyItem.ItemId, normalizedPath, this));
             }
         }
 

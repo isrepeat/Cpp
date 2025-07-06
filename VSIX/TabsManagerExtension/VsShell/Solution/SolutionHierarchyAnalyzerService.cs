@@ -19,31 +19,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
     /// <summary>
     /// SolutionHierarchyRepresentationsTable
     /// </summary>
-    //public sealed class SolutionHierarchyRepresentationsTable
-    //    : Helpers.RepresentationsTableBase<VsShell.Document.DocumentNode> {
-
-    //    private Dictionary<string, List<VsShell.Project.ProjectNode>> _mapFilePathToListProject = new();
-
-    //    public override void BuildRepresentations() {
-    //        _mapFilePathToListProject.Clear();
-
-    //        _mapFilePathToListProject = base.Records
-    //            .GroupBy(r => r.FilePath, StringComparer.OrdinalIgnoreCase)
-    //            .ToDictionary(
-    //                g => g.Key,
-    //                g => g.Select(r => r.ProjectNode).Distinct().ToList(),
-    //                StringComparer.OrdinalIgnoreCase);
-    //    }
-
-    //    public IReadOnlyList<VsShell.Project.ProjectNode> GetProjectsByDocumentPath(string documentPath) {
-    //        if (_mapFilePathToListProject.TryGetValue(documentPath, out var projectsList)) {
-    //            return projectsList;
-    //        }
-    //        return Array.Empty<VsShell.Project.ProjectNode>();
-    //    }
-    //}
-
-
     public sealed class SolutionHierarchyRepresentationsTable
         : Helpers.RepresentationsTableBase<VsShell.Document.DocumentNode> {
 
@@ -85,7 +60,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             return Array.Empty<VsShell.Project.ProjectNode>();
         }
 
-        public VsShell.Document.DocumentNode? GetDocumentNodeByProjectAndDocumentPath(VsShell.Project.ProjectNode projectNode, string documentPath) {
+        public VsShell.Document.DocumentNode? GetDocumentByProjectAndDocumentPath(VsShell.Project.ProjectNode projectNode, string documentPath) {
             if (_mapProjectToDictFilePathToDocument.TryGetValue(projectNode, out var dictFilePathToDocument)) {
                 if (dictFilePathToDocument.TryGetValue(documentPath, out var documentNode)) {
                     return documentNode;
@@ -103,13 +78,16 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         TabsManagerExtension.Services.SingletonServiceBase<SolutionHierarchyAnalyzerService>,
         TabsManagerExtension.Services.IExtensionService {
 
-        public enum AnalyzeType {
-            Documents,
-            ExternalIncludes,
-        }
+        private readonly List<VsShell.Project.ProjectNode> _projectNodes = new();
+        public IReadOnlyList<VsShell.Project.ProjectNode> ProjectNodes => _projectNodes;
 
-        private readonly SolutionHierarchyRepresentationsTable _solutionHierarchyRepresentationsTable = new();
-        public SolutionHierarchyRepresentationsTable SolutionHierarchyRepresentationsTable => _solutionHierarchyRepresentationsTable;
+
+        private readonly SolutionHierarchyRepresentationsTable _sourcesRepresentationsTable = new();
+        public SolutionHierarchyRepresentationsTable SourcesRepresentationsTable => _sourcesRepresentationsTable;
+
+
+        private readonly SolutionHierarchyRepresentationsTable _sharedItemsRepresentationsTable = new();
+        public SolutionHierarchyRepresentationsTable SharedItemsRepresentationsTable => _sharedItemsRepresentationsTable;
 
 
         private readonly SolutionHierarchyRepresentationsTable _externalIncludeRepresentationsTable = new();
@@ -171,60 +149,40 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         // ░ API
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        public void Analyze(AnalyzeType analyzeType) {
+        public void AnalyzeDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
-            
+
             _analyzingInProcess = true;
+            _sourcesRepresentationsTable.Clear();
+            _sharedItemsRepresentationsTable.Clear();
 
-            switch (analyzeType) {
-                case AnalyzeType.Documents:
-                    _solutionHierarchyRepresentationsTable.Clear();
-                    break;
-
-                case AnalyzeType.ExternalIncludes:
-                    _externalIncludeRepresentationsTable.Clear();
-                    break;
+            foreach (var projectNode in _projectNodes) {
+                projectNode.UpdateDocuments();
+                _sourcesRepresentationsTable.AddRange(projectNode.Sources);
+                _sharedItemsRepresentationsTable.AddRange(projectNode.SharedItems);
             }
 
-            var vsSolution = PackageServices.VsSolution;
-            vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
+            _sourcesRepresentationsTable.BuildRepresentations();
+            _sharedItemsRepresentationsTable.BuildRepresentations();
+            _analyzingInProcess = false;
+        }
 
-            var hierarchies = new IVsHierarchy[1];
-            uint fetched;
 
-            while (enumHierarchies.Next(1, hierarchies, out fetched) == VSConstants.S_OK && fetched == 1) {
-                var hierarchy = hierarchies[0];
+        // Держим отдельно ExternalIncludeRepresentationsTable чтобы не было пересечения filePath с SharedItems.
+        // Да и к тому же ExternalIncludes часто приходится обновлять при запросе, в то время как projectNode.Sources и
+        // projectNode.SharedItems обновлять можно по ивентам загрузки / выгрузки решения или изменения файлов проекта.
+        public void AnalyzeExternalIncludes() {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-                if (hierarchy is IVsProject vsProject) {
-                    var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(hierarchy);
-                    if (dteProject != null) {
-                        var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
-                        
-                        switch (analyzeType) {
-                            case AnalyzeType.Documents:
-                                projectNode.UpdateDocuments();
-                                _solutionHierarchyRepresentationsTable.AddRange(projectNode.Sources);
-                                _solutionHierarchyRepresentationsTable.AddRange(projectNode.SharedItems);
-                                break;
+            _analyzingInProcess = true;
+            _externalIncludeRepresentationsTable.Clear();
 
-                            case AnalyzeType.ExternalIncludes:
-                                projectNode.UpdateExternalIncludes();
-                                _externalIncludeRepresentationsTable.AddRange(projectNode.ExternalIncludes);
-                                break;
-                        }
-                    }
-                }
+            foreach (var projectNode in _projectNodes) {
+                projectNode.UpdateExternalIncludes();
+                _externalIncludeRepresentationsTable.AddRange(projectNode.ExternalIncludes);
             }
 
-            switch (analyzeType) {
-                case AnalyzeType.Documents:
-                    _solutionHierarchyRepresentationsTable.BuildRepresentations();
-                    break;
-
-                case AnalyzeType.ExternalIncludes:
-                    _externalIncludeRepresentationsTable.BuildRepresentations();
-                    break;
-            }
+            _externalIncludeRepresentationsTable.BuildRepresentations();
             _analyzingInProcess = false;
         }
 
@@ -245,7 +203,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
             _lastLoadedSolutionName = solutionName;
 
-            this.Analyze(AnalyzeType.Documents);
+            this.UpdateProjectNodes();
+            this.AnalyzeDocuments();
+            //this.Analyze(AnalyzeType.Documents);
             //this.StartAnalyzeRoutineInBackground();
         }
 
@@ -279,6 +239,29 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         // ░ Internal logic
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
+        private void UpdateProjectNodes() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            _projectNodes.Clear();
+
+            var vsSolution = PackageServices.VsSolution;
+            vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
+
+            var hierarchies = new IVsHierarchy[1];
+            uint fetched;
+
+            while (enumHierarchies.Next(1, hierarchies, out fetched) == VSConstants.S_OK && fetched == 1) {
+                var hierarchy = hierarchies[0];
+
+                if (hierarchy is IVsProject) {
+                    var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(hierarchy);
+                    if (dteProject != null) {
+                        var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
+                        _projectNodes.Add(projectNode);
+                    }
+                }
+            }
+        }
         private void ProcessChangedFile(Helpers.DirectoryChangedEventArgs changedFile) {
             ThreadHelper.ThrowIfNotOnUIThread();
 

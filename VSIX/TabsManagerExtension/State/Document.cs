@@ -57,6 +57,10 @@ namespace TabsManagerExtension.State.Document {
                 }
             }
         }
+
+        public override string ToString() {
+            return $"TabItemBase(FullName='{this.FullName}')";
+        }
     }
 
     public interface IActivatableTab {
@@ -65,50 +69,51 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    public class TabItemProject : TabItemBase {
-        public VsShell.Project.ShellProject ShellProject { get; private set; }
+    //public class TabItemProject : TabItemBase {
+    //    public VsShell.Project.ShellProject ShellProject { get; private set; }
         
-        public TabItemProject(VsShell.Project.ShellProject shellProject) {
-            base.Caption = shellProject.Project.Name;
-            base.FullName = shellProject.Project.FullName;
-            this.ShellProject = shellProject;
-        }
+    //    public TabItemProject(VsShell.Project.ShellProject shellProject) {
+    //        base.Caption = shellProject.Project.Name;
+    //        base.FullName = shellProject.Project.FullName;
+    //        this.ShellProject = shellProject;
+    //    }
 
-        public TabItemProject(EnvDTE.Project project)
-            : this(new VsShell.Project.ShellProject(project)) {
-        }
+    //    public TabItemProject(EnvDTE.Project project)
+    //        : this(new VsShell.Project.ShellProject(project)) {
+    //    }
 
-        public override bool Equals(object? obj) {
-           return obj is TabItemProject other &&
-                StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
-        }
+    //    public override bool Equals(object? obj) {
+    //       return obj is TabItemProject other &&
+    //            StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
+    //    }
 
-        public override int GetHashCode() {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
-        }
+    //    public override int GetHashCode() {
+    //        return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
+    //    }
 
-        public override string ToString() => base.FullName;
-    }
+    //    public override string ToString() => base.FullName;
+    //}
 
 
 
 
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
-        public TabItemProject TabItemProject { get; private set; }
         public TabItemDocument TabItemDocument { get; private set; }
+        public VsShell.Project.ProjectNode ProjectNode { get; private set; }
 
         public DocumentProjectReferenceInfo(
-            TabItemProject tabItemProject,
-            TabItemDocument tabItemDocument
+            TabItemDocument tabItemDocument,
+            VsShell.Project.ProjectNode projectNode
             ) {
-            this.TabItemProject = tabItemProject;
             this.TabItemDocument = tabItemDocument;
+            this.ProjectNode = projectNode;
         }
     }
 
 
     public class TabItemDocument : TabItemBase, IActivatableTab {
         public VsShell.Document.ShellDocument ShellDocument { get; private set; }
+        public VsShell.Project.ProjectNode ProjectNodeContext { get; set; }
 
 
         private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
@@ -158,27 +163,40 @@ namespace TabsManagerExtension.State.Document {
                     return;
             }
 
-            //var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-            //externalDependenciesAnalyzer.Analyze();
-
-            //var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
-            //    .GetProjectsByExternalIncludePath(this.FullName);
-
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            solutionHierarchyAnalyzer.Analyze(VsShell.Solution.Services.SolutionHierarchyAnalyzerService.AnalyzeType.ExternalIncludes);
+            solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
             
-            var projectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+            var externalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
-            var documentProjectReferences = projectNodes
-                .Select(projectNode => new DocumentProjectReferenceInfo(
-                    new TabItemProject(projectNode),
-                    this)
-                );
+            var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
+
+            var allProjectNodes = externalIncludesProjectNodes;
+            //var allProjectNodes = externalIncludesProjectNodes
+            //    .Concat(sharedItemsProjectNodes)
+            //    .ToList();
+
+            Helpers.Diagnostic.Logger.LogDebug($"[allProjectNodes]:");
+            foreach (var projectNode in allProjectNodes) {
+                Helpers.Diagnostic.Logger.LogDebug($"- {projectNode}");
+            }
+
+            if (allProjectNodes.Count < 2) {
+                return;
+            }
+
+            var documentProjectReferences = allProjectNodes
+                .Select(projectNode => new DocumentProjectReferenceInfo(this, projectNode));
 
             foreach (var documentProjectReference in documentProjectReferences) {
                 this.ProjectReferenceList.Add(documentProjectReference);
             }
+        }
+
+
+        public override string ToString() {
+            return $"TabItemDocument(FullName='{this.FullName}', ProjectCtx='{this.ProjectNodeContext}')";
         }
     }
 
