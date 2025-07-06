@@ -11,6 +11,8 @@ namespace TabsManagerExtension.VsShell.Project {
     public sealed class ProjectNode : ShellProject {
         public IVsHierarchy VsHierarchy { get; }
 
+        public Guid ProjectGuid { get; }
+
 
         private readonly List<VsShell.Document.DocumentNode> _sources = new();
         public IReadOnlyList<VsShell.Document.DocumentNode> Sources => _sources;
@@ -25,10 +27,16 @@ namespace TabsManagerExtension.VsShell.Project {
 
 
         public ProjectNode(EnvDTE.Project dteProject, IVsHierarchy hierarchy) : base(dteProject) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             this.VsHierarchy = hierarchy;
+            
+            PackageServices.VsSolution.GetGuidOfProject(hierarchy, out var projectGuid);
+            this.ProjectGuid = projectGuid;
         }
 
 
+        // NODE: Musts be called after SolutionHierarchyAnalyzerService build all projectNodes.
         public void UpdateDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -69,7 +77,26 @@ namespace TabsManagerExtension.VsShell.Project {
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
                 if (isSharedItem) {
-                    _sharedItems.Add(new VsShell.Document.SharedItemNode(hierarchyItem.ItemId, normalizedPath, this));
+                    IVsHierarchy? sharedProjectHierarchy = null;
+
+                    this.VsHierarchy.GetProperty(
+                        hierarchyItem.ItemId,
+                        (int)__VSHPROPID7.VSHPROPID_SharedProjectHierarchy,
+                        out var sharedProjectHierarchyObj);
+
+                    if (sharedProjectHierarchyObj is IVsHierarchy hierarchy) {
+                        sharedProjectHierarchy = hierarchy;
+                    }
+
+                    var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+                    var sharedProjectNode = solutionHierarchyAnalyzer.ProjectNodes
+                        .FirstOrDefault(p => Equals(p.VsHierarchy, sharedProjectHierarchy));
+
+                    if (sharedProjectNode == null) {
+                        System.Diagnostics.Debugger.Break();
+                    }
+
+                    _sharedItems.Add(new VsShell.Document.SharedItemNode(hierarchyItem.ItemId, normalizedPath, this, sharedProjectNode));
                 }
                 else {
                     _sources.Add(new VsShell.Document.DocumentNode(hierarchyItem.ItemId, normalizedPath, this));
@@ -134,15 +161,15 @@ namespace TabsManagerExtension.VsShell.Project {
                 return false;
             }
 
-            return StringComparer.OrdinalIgnoreCase.Equals(this.Project.UniqueName, other.Project.UniqueName);
+            return this.ProjectGuid == other.ProjectGuid;
         }
 
         public override int GetHashCode() {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.Project.UniqueName ?? string.Empty);
+            return this.ProjectGuid.GetHashCode();
         }
 
         public override string ToString() {
-            return $"ProjectNode({this.Project.UniqueName})";
+            return $"ProjectNode({this.UniqueName})";
         }
     }
 }

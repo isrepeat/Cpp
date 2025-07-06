@@ -5,16 +5,50 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 
 namespace TabsManagerExtension.VsShell.Project {
     public class ShellProject {
-        public EnvDTE.Project Project { get; private set; }
+        public EnvDTE.Project dteProject { get; private set; }
+
+        public string Name {
+            get {
+                try {
+                    return this.dteProject?.Name ?? "<unknown>";
+                }
+                catch (COMException) {
+                    return "<unloaded>";
+                }
+            }
+        }
+
+        public string FullName {
+            get {
+                try {
+                    return this.dteProject?.FullName ?? "<unknown>";
+                }
+                catch (COMException) {
+                    return "<unloaded>";
+                }
+            }
+        }
+
+        public string UniqueName {
+            get {
+                try {
+                    return this.dteProject?.UniqueName ?? "<unknown>";
+                }
+                catch (COMException) {
+                    return "<unloaded>";
+                }
+            }
+        }
 
         public ShellProject(EnvDTE.Project project) {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            this.Project = project;
+            
+            this.dteProject = project;
         }
 
 
@@ -30,7 +64,7 @@ namespace TabsManagerExtension.VsShell.Project {
             var result = new List<string>();
             string? rawValue = null;
 
-            var hierarchy = Utils.EnvDteUtils.GetVsHierarchyFromDteProject(this.Project);
+            var hierarchy = Utils.EnvDteUtils.GetVsHierarchyFromDteProject(this.dteProject);
             if (hierarchy is not IVsBuildPropertyStorage storage) {
                 return result;
             }
@@ -46,7 +80,7 @@ namespace TabsManagerExtension.VsShell.Project {
                     continue;
                 }
 
-                string expanded = ExpandMsBuildVariables(trimmed, this.Project);
+                string expanded = ExpandMsBuildVariables(trimmed, this.dteProject);
 
                 if (!expanded.Contains("%")) {
                     try {
@@ -63,13 +97,13 @@ namespace TabsManagerExtension.VsShell.Project {
 
         public List<string> GetAdditionalIncludeDirectories() {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("GetProjectIncludeDirectories()");
-            Helpers.Diagnostic.Logger.LogDebug($"  [Project.Name] = {this.Project.Name}");
+            Helpers.Diagnostic.Logger.LogDebug($"  [Project.Name] = {this.dteProject.Name}");
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var result = new List<string>();
 
-            if (this.Project.Object is Microsoft.VisualStudio.VCProjectEngine.VCProject vcProject) {
+            if (this.dteProject.Object is Microsoft.VisualStudio.VCProjectEngine.VCProject vcProject) {
                 var configs = vcProject.Configurations as Microsoft.VisualStudio.VCProjectEngine.IVCCollection;
                 if (configs == null) {
                     return result;
@@ -96,7 +130,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
                                 string trimmed = dir.Trim();
                                 if (!string.IsNullOrEmpty(trimmed)) {
-                                    string expanded = ExpandMsBuildVariables(trimmed, this.Project);
+                                    string expanded = ExpandMsBuildVariables(trimmed, this.dteProject);
 
                                     if (!expanded.Contains("%")) {
                                         try {

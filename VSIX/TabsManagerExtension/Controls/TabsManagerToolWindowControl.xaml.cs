@@ -996,7 +996,7 @@ namespace TabsManagerExtension.Controls {
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
                                     this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
-                                        Header = projRefEntry.ProjectNode.Project.Name,
+                                        Header = projRefEntry.ProjectNode.Name,
                                         Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
                                         CommandParameterContext = projRefEntry,
                                     });
@@ -1142,7 +1142,7 @@ namespace TabsManagerExtension.Controls {
 
                 var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                 var targetProjectNode = solutionHierarchyAnalyzer.ProjectNodes
-                    .FirstOrDefault(p => String.Equals(p.Project.Name, tabItemGroup.GroupName, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(p => String.Equals(p.Name, tabItemGroup.GroupName, StringComparison.OrdinalIgnoreCase));
 
                 tabItemDocument.ProjectNodeContext = targetProjectNode;
             }
@@ -1183,29 +1183,45 @@ namespace TabsManagerExtension.Controls {
 
             // Log params:
             Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
-            Helpers.Diagnostic.Logger.LogParam($"projectNode.Name = {projectNode?.Project?.Name}");
+            Helpers.Diagnostic.Logger.LogParam($"projectNode.Name = {projectNode?.Name}");
 
             if (projectNode == null) {
                 return;
             }
 
-            // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
-            // если в externalDependenciesAnalyzer была обновлена таблица в течении этого времени.
-            // (Например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
-            // Поэтому анализируем снова.
-            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
+            this.OpenTabItemWithProjectContext(tabItemDocument, projectNode);
 
+            this.RemoveTabItemFromGroups(tabItemDocument);
+            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(projectNode.Name));
+        }
+
+
+        private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.ProjectNode projectNode) {
+            // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
+            // если solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable не была обновлена в течении
+            // этого времени (например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            solutionHierarchyAnalyzer.AnalyzeExternalIncludes(); // Поэтому анализируем снова.
+
+            // Ищем соответствующий externalInclude для этого проекта по tabItemDocument.FullName.
             var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
                 .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
 
             if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
                 externalInclude.OpenWithProjectContext();
                 Console.Beep(frequency: 1000, duration: 300);
+                return;
             }
 
-            this.RemoveTabItemFromGroups(tabItemDocument);
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(projectNode.Project.Name));
+            // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
+            documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
+
+            if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
+                sharedItemNode.OpenWithProjectContext();
+                Console.Beep(frequency: 2000, duration: 150);
+                Console.Beep(frequency: 2000, duration: 150);
+            }
         }
 
 

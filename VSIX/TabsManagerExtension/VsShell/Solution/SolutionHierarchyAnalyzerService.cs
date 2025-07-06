@@ -13,6 +13,8 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
 using Task = System.Threading.Tasks.Task;
+using TabsManagerExtension.VsShell.Project;
+using stdole;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -74,6 +76,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
     /// <summary>
     /// SolutionHierarchyAnalyzerService
     /// </summary>
+    // TODO: перед использованием класса убедись что анализ ProjectNodes закончен.
+    // Сделай что-то типа отложнного выполнений дальнешей логики в caller после завершения анализа, 
+    // например когда происходит выгрузка / загрука проекта.
     public class SolutionHierarchyAnalyzerService :
         TabsManagerExtension.Services.SingletonServiceBase<SolutionHierarchyAnalyzerService>,
         TabsManagerExtension.Services.IExtensionService {
@@ -100,6 +105,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private readonly HashSet<Helpers.DirectoryChangedEventArgs> _pendingChangedFiles = new();
         private string _lastLoadedSolutionName;
         private bool _analyzingInProcess = false;
+        private bool _ignoreProjectEvents = false;
+
+        private readonly List<VsShell.Project.ProjectNode> _pendingLoadedProjects = new();
+        private readonly List<VsShell.Project.ProjectNode> _pendingUnloadedProjects = new();
+        private bool _handleProjectEventsImmediatelly = true;
 
         public SolutionHierarchyAnalyzerService() { }
 
@@ -109,6 +119,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public IReadOnlyList<Type> DependsOn() {
             return new[] {
                 typeof(VsShell.Services.VsIDEStateFlagsTrackerService),
+                typeof(VsShell.Solution.Services.VsSolutionEventsTrackerService),
             };
         }
 
@@ -117,6 +128,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed += this.OnSolutionClosed;
+            VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectLoaded += this.OnProjectLoaded;
+            VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectUnloaded += this.OnProjectUnloaded;
 
             //string? solutionDir = Path.GetDirectoryName(PackageServices.Dte2.Solution.FullName);
             //if (solutionDir != null && Directory.Exists(solutionDir)) {
@@ -138,7 +152,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             //_delayedFileChangeTimer.Stop();
-            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded -= this.OnSolutionLoaded;
+            VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectUnloaded -= this.OnProjectUnloaded;
+            VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectLoaded -= this.OnProjectLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed -= this.OnSolutionClosed;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+
 
             ClearInstance();
             Helpers.Diagnostic.Logger.LogDebug("[ExternalDependenciesGraphService] Disposed.");
@@ -191,22 +209,93 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             return !_analyzingInProcess;
         }
 
+
+        public IDisposable AccumulateProjectEventsScoped() {
+            _handleProjectEventsImmediatelly = false;
+
+            return new Helpers.DisposableAction(() => {
+                _handleProjectEventsImmediatelly = true;
+                this.HandlePedingProjects();
+            });
+        }
+
         //
         // ░ Event handlers
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
         private void OnSolutionLoaded(string solutionName) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionLoaded()");
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (solutionName == _lastLoadedSolutionName) {
                 return;
             }
             _lastLoadedSolutionName = solutionName;
 
-            this.UpdateProjectNodes();
+            this.BuildProjectNodes();
             this.AnalyzeDocuments();
-            //this.Analyze(AnalyzeType.Documents);
-            //this.StartAnalyzeRoutineInBackground();
+        }
+
+        private void OnSolutionClosed(string solutionName) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionClosed()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            _projectNodes.Clear();
+        }
+
+
+        private void OnProjectLoaded(EnvDTE.Project dteProject) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectLoaded()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_ignoreProjectEvents) {
+                return;
+            }
+
+            var hierarchy = Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject);
+            if (hierarchy != null) {
+                var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
+
+                if (_handleProjectEventsImmediatelly) {
+                    _projectNodes.Add(projectNode);
+
+                    projectNode.UpdateDocuments();
+                    _sourcesRepresentationsTable.AddRange(projectNode.Sources);
+                    _sharedItemsRepresentationsTable.AddRange(projectNode.SharedItems);
+
+                    _sourcesRepresentationsTable.BuildRepresentations();
+                    _sharedItemsRepresentationsTable.BuildRepresentations();
+                }
+                else {
+                    _pendingLoadedProjects.Add(projectNode);
+                }
+            }
+        }
+
+
+        private void OnProjectUnloaded(EnvDTE.Project dteProject) {
+            using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectUnloaded()");
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_ignoreProjectEvents) {
+                return;
+            }
+
+            var vsSolution = PackageServices.VsSolution;
+            vsSolution.GetGuidOfProject(Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject), out var projectGuid);
+
+            var toRemove = _projectNodes.FirstOrDefault(p => p.ProjectGuid == projectGuid);
+
+            if (_handleProjectEventsImmediatelly) {
+                if (_projectNodes.Remove(toRemove)) {
+                    this.AnalyzeDocuments();
+                }
+            }
+            else {
+                if (toRemove != null) {
+                    _pendingUnloadedProjects.Add(toRemove);
+                }
+            }
         }
 
 
@@ -239,7 +328,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         // ░ Internal logic
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        private void UpdateProjectNodes() {
+        private void BuildProjectNodes() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _projectNodes.Clear();
@@ -262,6 +351,31 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 }
             }
         }
+
+        private void HandlePedingProjects() {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_pendingUnloadedProjects.Count > 0) {
+                foreach (var projectNode in _pendingUnloadedProjects) {
+                    _projectNodes.Remove(projectNode);
+                }
+                _pendingUnloadedProjects.Clear();
+            }
+
+            if (_pendingLoadedProjects.Count > 0) {
+                foreach (var projectNode in _pendingLoadedProjects) {
+                    _projectNodes.Add(projectNode);
+
+                    projectNode.UpdateDocuments();
+                    _sourcesRepresentationsTable.AddRange(projectNode.Sources);
+                    _sharedItemsRepresentationsTable.AddRange(projectNode.SharedItems);
+                }
+                _pendingLoadedProjects.Clear();
+            }
+
+            this.AnalyzeDocuments();
+        }
+
         private void ProcessChangedFile(Helpers.DirectoryChangedEventArgs changedFile) {
             ThreadHelper.ThrowIfNotOnUIThread();
 

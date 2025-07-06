@@ -78,6 +78,44 @@ namespace TabsManagerExtension.VsShell.Utils {
         } // class Walker
 
 
+        //
+        // Api
+        //
+        public static void UnloadProject(Guid projectGuid) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vsSolution4 = (IVsSolution4)PackageServices.VsSolution;
+            vsSolution4.UnloadProject(ref projectGuid, (uint)_VSProjectUnloadStatus.UNLOADSTATUS_UnloadedByUser);
+
+            Helpers.Diagnostic.Logger.LogDebug($"[VsHierarchy] Unloaded project {projectGuid}");
+        }
+
+        public static void ReloadProject(Guid projectGuid) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vsSolution4 = (IVsSolution4)PackageServices.VsSolution;
+            vsSolution4.ReloadProject(ref projectGuid);
+
+            Helpers.Diagnostic.Logger.LogDebug($"[VsHierarchy] Reloaded project {projectGuid}");
+        }
+
+        
+        public static void UnloadProjects(IEnumerable<Guid> projectGuids) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (var guid in projectGuids) {
+                VsHierarchy.UnloadProject(guid);
+            }
+        }
+
+        public static void ReloadProjects(IEnumerable<Guid> projectGuids) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (var guid in projectGuids) {
+                VsHierarchy.ReloadProject(guid);
+            }
+        }
+
 
         public static List<HierarchyItem> CollectItemsRecursive(
             IVsHierarchy hierarchy,

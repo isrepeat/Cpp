@@ -14,6 +14,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisposableAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
