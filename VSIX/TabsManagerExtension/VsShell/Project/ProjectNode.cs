@@ -5,15 +5,12 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
     public sealed class ProjectNode : ShellProject {
-        public IVsHierarchy VsHierarchy { get; }
-
-        public Guid ProjectGuid { get; }
-
-
+        
         private readonly List<VsShell.Document.DocumentNode> _sources = new();
         public IReadOnlyList<VsShell.Document.DocumentNode> Sources => _sources;
 
@@ -24,6 +21,13 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private readonly List<VsShell.Document.ExternalInclude> _externalIncludes = new();
         public IReadOnlyList<VsShell.Document.ExternalInclude> ExternalIncludes => _externalIncludes;
+
+
+        public IVsHierarchy VsHierarchy { get; }
+        public Guid ProjectGuid { get; }
+        public bool IsLoaded { get; } = true;
+        public bool IsSharedProject { get; } = false;
+        public bool IsIncludeSharedItems => _sharedItems.Count > 0;
 
 
         public ProjectNode(EnvDTE.Project dteProject)
@@ -42,8 +46,11 @@ namespace TabsManagerExtension.VsShell.Project {
 
             PackageServices.VsSolution.GetGuidOfProject(this.VsHierarchy, out var projectGuid);
             this.ProjectGuid = projectGuid;
-        }
 
+            if (this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase)) {
+                this.IsSharedProject = true;
+            }
+        }
 
 
         // NODE: Musts be called after SolutionHierarchyAnalyzerService build all projectNodes.

@@ -144,11 +144,11 @@ namespace TabsManagerExtension.State.Document {
 
             var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
-
-            var allProjectNodes = externalIncludesProjectNodes;
-            //var allProjectNodes = externalIncludesProjectNodes
-            //    .Concat(sharedItemsProjectNodes)
-            //    .ToList();
+            
+            //var allProjectNodes = externalIncludesProjectNodes;
+            var allProjectNodes = externalIncludesProjectNodes
+                .Concat(sharedItemsProjectNodes)
+                .ToList();
 
             Helpers.Diagnostic.Logger.LogDebug($"[allProjectNodes]:");
             foreach (var projectNode in allProjectNodes) {

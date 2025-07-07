@@ -92,13 +92,26 @@
                         />
             </DataTemplate>
 
-
+            
+            <!-- TabItemControl context menu templates -->
+            <DataTemplate x:Key="Default_ContextMenuTemplate">
+                <localControls:MenuControl 
+                    MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    OpenCommand="{Binding OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    />
+            </DataTemplate>
+            
             
             <!-- Virtual menu templates -->
-            <DataTemplate x:Key="ProjRefCommandTemplate">
+            <DataTemplate x:Key="SharedProjectCommandTemplate">
                 <DataTemplate.Resources>
                     <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl.MenuItemCommandStyle}">
-                        <Setter Property="Foreground" Value="Green"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CommandParameterContext.ProjectNode.IsIncludeSharedItems}" Value="True">
+                                <Setter Property="Foreground" Value="LightBlue"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </DataTemplate.Resources>
                 <MenuItem Header="{Binding Header}"
@@ -109,18 +122,8 @@
 
             <localTemplateSelectors:VirtualMenuItemTemplateSelector 
                 x:Key="VirtualMenuItemTemplateSelector"
-                ProjRefCommandTemplate="{StaticResource ProjRefCommandTemplate}"
+                SharedProjectCommandTemplate="{StaticResource SharedProjectCommandTemplate}"
                 />
-
-            
-            <!-- TabItemControl context menu templates -->
-            <DataTemplate x:Key="Default_ContextMenuTemplate">
-                <localControls:MenuControl 
-                    MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
-                    OpenCommand="{Binding OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
-                    CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
-                    />
-            </DataTemplate>
 
         </ResourceDictionary>
     </UserControl.Resources>
