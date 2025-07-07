@@ -26,14 +26,24 @@ namespace TabsManagerExtension.VsShell.Project {
         public IReadOnlyList<VsShell.Document.ExternalInclude> ExternalIncludes => _externalIncludes;
 
 
+        public ProjectNode(EnvDTE.Project dteProject)
+            : this(dteProject, Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject)) {
+        }
+
         public ProjectNode(EnvDTE.Project dteProject, IVsHierarchy hierarchy) : base(dteProject) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (hierarchy == null) {
+                Helpers.Diagnostic.Logger.LogError($"[ProjectNode] hierarchy is null for project: {base.UniqueName}");
+                throw new ArgumentNullException(nameof(hierarchy), $"IVsHierarchy is null for project: {base.UniqueName}");
+            }
+
             this.VsHierarchy = hierarchy;
-            
-            PackageServices.VsSolution.GetGuidOfProject(hierarchy, out var projectGuid);
+
+            PackageServices.VsSolution.GetGuidOfProject(this.VsHierarchy, out var projectGuid);
             this.ProjectGuid = projectGuid;
         }
+
 
 
         // NODE: Musts be called after SolutionHierarchyAnalyzerService build all projectNodes.

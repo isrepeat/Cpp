@@ -69,33 +69,6 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    //public class TabItemProject : TabItemBase {
-    //    public VsShell.Project.ShellProject ShellProject { get; private set; }
-        
-    //    public TabItemProject(VsShell.Project.ShellProject shellProject) {
-    //        base.Caption = shellProject.Project.Name;
-    //        base.FullName = shellProject.Project.FullName;
-    //        this.ShellProject = shellProject;
-    //    }
-
-    //    public TabItemProject(EnvDTE.Project project)
-    //        : this(new VsShell.Project.ShellProject(project)) {
-    //    }
-
-    //    public override bool Equals(object? obj) {
-    //       return obj is TabItemProject other &&
-    //            StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
-    //    }
-
-    //    public override int GetHashCode() {
-    //        return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
-    //    }
-
-    //    public override string ToString() => base.FullName;
-    //}
-
-
-
 
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
         public TabItemDocument TabItemDocument { get; private set; }
@@ -172,10 +145,10 @@ namespace TabsManagerExtension.State.Document {
             var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
-            //var allProjectNodes = externalIncludesProjectNodes;
-            var allProjectNodes = externalIncludesProjectNodes
-                .Concat(sharedItemsProjectNodes)
-                .ToList();
+            var allProjectNodes = externalIncludesProjectNodes;
+            //var allProjectNodes = externalIncludesProjectNodes
+            //    .Concat(sharedItemsProjectNodes)
+            //    .ToList();
 
             Helpers.Diagnostic.Logger.LogDebug($"[allProjectNodes]:");
             foreach (var projectNode in allProjectNodes) {

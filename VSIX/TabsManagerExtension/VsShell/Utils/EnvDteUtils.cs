@@ -13,17 +13,8 @@ using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace TabsManagerExtension.VsShell.Utils {
     public static class EnvDteUtils {
-
         static EnvDteUtils() {
             ThreadHelper.ThrowIfNotOnUIThread();
-        }
-
-
-        public static bool IsDocumentOpen(string fullPath) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            return PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-                .Any(doc => string.Equals(doc.FullName, fullPath, StringComparison.OrdinalIgnoreCase));
         }
 
 
@@ -32,14 +23,6 @@ namespace TabsManagerExtension.VsShell.Utils {
         /// </summary>
         public static List<EnvDTE.Project> GetAllProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Это GUID для "Miscellaneous Files Project" — 
-            // специальный виртуальный проект в Solution Explorer,
-            // который появляется, если открыть файл напрямую в Visual Studio
-            // (например через File → Open → File), не добавляя его в решение.
-            // Такие проекты не имеют отношения к настоящим проектам решения,
-            // их нужно всегда игнорировать при обходе.
-            const string VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}";
 
             var result = new List<EnvDTE.Project>();
             var queue = new Queue<EnvDTE.Project>();
@@ -51,7 +34,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             while (queue.Count > 0) {
                 var project = queue.Dequeue();
 
-                if (string.Equals(project.Kind, VsProjectKindMisc, StringComparison.OrdinalIgnoreCase)) {
+                if (EnvDteUtils.IsMiscProject(project)) {
                     continue;
                 }
 
@@ -69,7 +52,6 @@ namespace TabsManagerExtension.VsShell.Utils {
 
             return result;
         }
-
 
 
         public static EnvDTE.Project? GetDteProjectFromHierarchy(IVsHierarchy hierarchy) {
@@ -95,14 +77,15 @@ namespace TabsManagerExtension.VsShell.Utils {
                 (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
                 out var projectGuid);
 
-            foreach (var project in GetAllProjects()) {
-                if (TryGetProjectGuid(project, out var guid) && guid == projectGuid) {
+            foreach (var project in EnvDteUtils.GetAllProjects()) {
+                if (EnvDteUtils.TryGetProjectGuid(project, out var guid) && guid == projectGuid) {
                     return project;
                 }
             }
 
             return null;
         }
+
 
         public static IVsHierarchy? GetVsHierarchyFromDteProject(EnvDTE.Project project) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -116,6 +99,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             return ErrorHandler.Succeeded(hr) ? hierarchy : null;
         }
 
+
         public static string GetDteProjectUniqueNameFromVsHierarchy(IVsHierarchy hierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -126,6 +110,56 @@ namespace TabsManagerExtension.VsShell.Utils {
 
             vsSolution.GetUniqueNameOfProject(hierarchy, out var uniqueName);
             return uniqueName ?? "<unknown>";
+        }
+
+
+
+
+        public static bool IsDocumentOpen(string fullPath) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
+                .Any(doc => string.Equals(doc.FullName, fullPath, StringComparison.OrdinalIgnoreCase));
+        }
+
+
+        public static bool IsFileInProject(string filePath, EnvDTE.Project dteProject) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return EnvDteUtils.IsFileInProjectItemsRecursive(filePath, dteProject.ProjectItems);
+        }
+
+
+        public static bool IsMiscProject(EnvDTE.Project project) {
+            // Это GUID для "Miscellaneous Files Project" — 
+            // специальный виртуальный проект в Solution Explorer,
+            // который появляется, если открыть файл напрямую в Visual Studio
+            // (например через File → Open → File), не добавляя его в решение.
+            // Такие проекты не имеют отношения к настоящим проектам решения,
+            // их нужно всегда игнорировать при обходе.
+            const string VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}";
+
+            if (string.Equals(project.Kind, VsProjectKindMisc, StringComparison.OrdinalIgnoreCase)) {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Проверяет, является ли проект C++ (VCProject), включая C++/CLI, C++/CX, C++/WinRT.
+        /// <br/> Все C++ проекты реализуют интерфейс VCProject.
+        /// <br/> Проверка `project.Object is VCProject` — надёжный способ отфильтровать C++.
+        /// <br/> Некоторые не-C++ проекты могут выбрасывать исключение при доступе к .Object — это игнорируется.
+        /// </summary>
+        public static bool IsCppProject(EnvDTE.Project project) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try {
+                return project?.Object is Microsoft.VisualStudio.VCProjectEngine.VCProject;
+            }
+            catch {
+                // Например SDK-проекты иногда выбрасывают при доступе к Object
+                return false;
+            }
         }
 
 
@@ -149,6 +183,28 @@ namespace TabsManagerExtension.VsShell.Utils {
                 // Проект может не содержать свойство ProjectGuid
             }
 
+            return false;
+        }
+
+        private static bool IsFileInProjectItemsRecursive(string filePath, EnvDTE.ProjectItems items) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (EnvDTE.ProjectItem item in items) {
+                try {
+                    for (short i = 1; i <= item.FileCount; i++) {
+                        if (StringComparer.OrdinalIgnoreCase.Equals(item.FileNames[i], filePath)) {
+                            return true;
+                        }
+                    }
+
+                    if (item.ProjectItems != null && EnvDteUtils.IsFileInProjectItemsRecursive(filePath, item.ProjectItems)) {
+                        return true;
+                    }
+                }
+                catch {
+                    // игнорируем странные COM-ошибки от DTE
+                }
+            }
             return false;
         }
     }

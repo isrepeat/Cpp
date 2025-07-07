@@ -78,9 +78,9 @@ namespace TabsManagerExtension {
                 return;
             }
 
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+            VsixThreadHelper.RunOnVsThread(() => {
                 VsixVisualTreeHelper.Instance.ToggleCustomTabs(true);
-            }), DispatcherPriority.Background);
+            });
         }
 
 
@@ -92,9 +92,9 @@ namespace TabsManagerExtension {
                 return;
             }
 
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+            VsixThreadHelper.RunOnVsThread(() => {
                 VsixVisualTreeHelper.Instance.ToggleCustomTabs(false);
-            }), DispatcherPriority.Background);
+            });
         }
     }
 
@@ -292,6 +292,65 @@ namespace TabsManagerExtension {
             return Package.GetGlobalService(type) as T;
         }
     }
+
+
+
+
+    public static class VsixThreadHelper {
+        /// <summary>
+        /// Выполняет action на STA COM UI потоке Visual Studio без ожидания завершения (fire-and-forget).
+        /// Можно безопасно использовать DTE, IVsSolution и т.д.
+        /// </summary>
+        public static void RunOnVsThread(Action action) {
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                try {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    action();
+                }
+                catch (Exception ex) {
+                    Helpers.Diagnostic.Logger.LogError($"[RunOnVsThread] action exception: {ex}");
+                    System.Diagnostics.Debugger.Break();
+                    throw;
+                }
+            });
+        }
+
+        public static void RunOnVsThread(Func<Task> asyncAction) {
+            ThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                try {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await asyncAction();
+                }
+                catch (Exception ex) {
+                    Helpers.Diagnostic.Logger.LogError($"[RunOnVsThread] asyncAction exception: {ex}");
+                    System.Diagnostics.Debugger.Break();
+                    throw;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Выполняет action на WPF UI Dispatcher потоке. Можно безопасно обновлять визуальные элементы.
+        /// </summary>
+        public static void RunOnUiThread(Action action, DispatcherPriority priority = DispatcherPriority.Background) {
+            Application.Current.Dispatcher.BeginInvoke(action, priority);
+        }
+
+        public static void RunOnUiThread(Func<Task> asyncAction, DispatcherPriority priority = DispatcherPriority.Background) {
+            Application.Current.Dispatcher.InvokeAsync(async () => {
+                try {
+                    await asyncAction();
+                }
+                catch (Exception ex) {
+                    Helpers.Diagnostic.Logger.LogError($"[RunOnUiThread] asyncAction exception: {ex}");
+                    System.Diagnostics.Debugger.Break();
+                    throw;
+                }
+            }, priority);
+        }
+    }
+
+
 
 
 

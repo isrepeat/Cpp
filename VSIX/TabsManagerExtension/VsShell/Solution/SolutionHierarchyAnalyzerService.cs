@@ -13,8 +13,6 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
 using Task = System.Threading.Tasks.Task;
-using TabsManagerExtension.VsShell.Project;
-using stdole;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -251,10 +249,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             if (_ignoreProjectEvents) {
                 return;
             }
-
-            var hierarchy = Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject);
-            if (hierarchy != null) {
-                var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
+            try {
+                var projectNode = new VsShell.Project.ProjectNode(dteProject);
 
                 if (_handleProjectEventsImmediatelly) {
                     _projectNodes.Add(projectNode);
@@ -270,6 +266,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                     _pendingLoadedProjects.Add(projectNode);
                 }
             }
+            catch (Exception ex) {
+                Helpers.Diagnostic.Logger.LogError($"[OnProjectLoaded] ex = {ex}");
+            }
         }
 
 
@@ -281,8 +280,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 return;
             }
 
-            var vsSolution = PackageServices.VsSolution;
-            vsSolution.GetGuidOfProject(Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject), out var projectGuid);
+            PackageServices.VsSolution.GetGuidOfProject(
+                Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject),
+                out var projectGuid);
 
             var toRemove = _projectNodes.FirstOrDefault(p => p.ProjectGuid == projectGuid);
 
@@ -345,12 +345,20 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 if (hierarchy is IVsProject) {
                     var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(hierarchy);
                     if (dteProject != null) {
-                        var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
-                        _projectNodes.Add(projectNode);
+                        if (!Utils.EnvDteUtils.IsMiscProject(dteProject)) {
+                            try {
+                                var projectNode = new VsShell.Project.ProjectNode(dteProject, hierarchy);
+                                _projectNodes.Add(projectNode);
+                            }
+                            catch (Exception ex) {
+                                Helpers.Diagnostic.Logger.LogError($"[BuildProjectNodes] ex = {ex}");
+                            }
+                        }
                     }
                 }
             }
         }
+
 
         private void HandlePedingProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -376,9 +384,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             this.AnalyzeDocuments();
         }
 
+
         private void ProcessChangedFile(Helpers.DirectoryChangedEventArgs changedFile) {
             ThreadHelper.ThrowIfNotOnUIThread();
-
 
             var ext = Path.GetExtension(changedFile.FullPath);
             switch (ext) {

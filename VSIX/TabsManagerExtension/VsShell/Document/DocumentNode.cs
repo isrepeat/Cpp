@@ -87,11 +87,9 @@ namespace TabsManagerExtension.VsShell.Document {
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
             // Это нужно для того, чтобы при открытии внешнего include файла
             // Visual Studio знала, что контекстом открытия является именно этот проект.
-#if DEBUG
             if (this.ProjectNode.Sources.Count == 0) {
                 System.Diagnostics.Debugger.Break();
             }
-#endif
             string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
 
             bool needCloseContextSwitchFile = false;
@@ -228,12 +226,23 @@ namespace TabsManagerExtension.VsShell.Document {
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
             // Это нужно для того, чтобы при открытии внешнего include файла
             // Visual Studio знала, что контекстом открытия является именно этот проект.
-#if DEBUG
-            if (this.ProjectNode.Sources.Count == 0) {
-                System.Diagnostics.Debugger.Break();
-            }
-#endif
-            string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
+
+            //if (this.ProjectNode.Sources.Count == 0) {
+            //    System.Diagnostics.Debugger.Break();
+            //}
+            //string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
+
+            var includeDependencyAnalyzer = VsShell.Solution.Services.IncludeDependencyAnalyzerService.Instance;
+            var allTransitiveIncludingFiles = includeDependencyAnalyzer
+                .GetTransitiveFilesIncludersByIncludePath(this.FilePath);
+
+            var currentProjectTransitiveIncludingFiles = allTransitiveIncludingFiles
+                .Where(sf => sf.ProjectNode.Equals(this.ProjectNode))
+                .ToList();
+
+            string contextSwitchFile = currentProjectTransitiveIncludingFiles
+                .FirstOrDefault(sf => System.IO.Path.GetExtension(sf.FilePath) == ".cpp")
+                ?.FilePath;
 
             bool needCloseContextSwitchFile = false;
             if (!string.IsNullOrEmpty(contextSwitchFile)) {
