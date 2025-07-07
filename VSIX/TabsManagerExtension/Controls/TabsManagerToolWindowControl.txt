@@ -95,30 +95,38 @@
 
             
             <!-- Virtual menu templates -->
-            <DataTemplate x:Key="ProjRefCommandTemplate">
-                <DataTemplate.Resources>
-                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl.MenuItemCommandStyle}">
-                        <Setter Property="Foreground" Value="Green"/>
-                    </Style>
-                </DataTemplate.Resources>
-                <MenuItem Header="{Binding Header}"
-                          Command="{Binding Command}"
-                          CommandParameter="{Binding CommandParameterContext}"
-                          />
+            <DataTemplate x:Key="HeaderTemplate">
+                <TextBlock Text="{Binding Header}" FontWeight="Bold" />
             </DataTemplate>
 
+            <DataTemplate x:Key="CommandTemplate">
+                <TextBlock Text="{Binding Header}" Foreground="LightBlue" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="ProjRefCommandTemplate">
+                <TextBlock Text="{Binding Header}" Foreground="Red" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="SeparatorTemplate">
+                <TextBlock Text="----------------" HorizontalAlignment="Stretch"/>
+            </DataTemplate>
+            
             <localTemplateSelectors:VirtualMenuItemTemplateSelector 
                 x:Key="VirtualMenuItemTemplateSelector"
+                HeaderTemplate="{StaticResource HeaderTemplate}"
+                CommandTemplate="{StaticResource CommandTemplate}"
                 ProjRefCommandTemplate="{StaticResource ProjRefCommandTemplate}"
+                SeparatorTemplate="{StaticResource SeparatorTemplate}"
                 />
 
-            
+
             <!-- TabItemControl context menu templates -->
             <DataTemplate x:Key="Default_ContextMenuTemplate">
                 <localControls:MenuControl 
                     MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                     OpenCommand="{Binding OnTabItemContextMenuOpenCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                     CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                    MenuItemTemplateSelector="{StaticResource VirtualMenuItemTemplateSelector}"
                     />
             </DataTemplate>
 
@@ -221,7 +229,7 @@
                                           VirtualMenuItems="{Binding VirtualMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                                           OnVirtualMenuOpenCommand="{Binding OnTabItemVirtualMenuOpenCommand,RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                                           OnVirtualMenuClosedCommand="{Binding OnTabItemVirtualMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
-                                          VirtualMenuItemTemplateSelector="{StaticResource VirtualMenuItemTemplateSelector}"
+                                          MyMenuItemTemplateSelector="{StaticResource VirtualMenuItemTemplateSelector}"
                                           />
         
         <!-- Перехватчик фокуса при клике на контрол -->

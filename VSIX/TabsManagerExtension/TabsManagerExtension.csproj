@@ -80,6 +80,7 @@
     </Compile>
     <Compile Include="Converters\OrBooleanToVisibilityMultiConverter.cs" />
     <Compile Include="ExtensionServices.cs" />
+    <Compile Include="TemlateSelectors\VirtualMenuItemTemplateSelector.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
     <Compile Include="VsShell\Document\DocumentNode.cs" />

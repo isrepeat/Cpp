@@ -11,7 +11,6 @@ namespace TabsManagerExtension.Controls {
             get => (ObservableCollection<Helpers.IMenuItem>)this.GetValue(MenuItemsProperty);
             set => this.SetValue(MenuItemsProperty, value);
         }
-
         public static readonly DependencyProperty MenuItemsProperty =
             DependencyProperty.Register(
                 nameof(MenuItems),
@@ -24,7 +23,6 @@ namespace TabsManagerExtension.Controls {
             get => (ICommand)this.GetValue(OpenCommandProperty);
             set => this.SetValue(OpenCommandProperty, value);
         }
-
         public static readonly DependencyProperty OpenCommandProperty =
             DependencyProperty.Register(
                 nameof(OpenCommand),
@@ -37,11 +35,22 @@ namespace TabsManagerExtension.Controls {
             get => (ICommand)this.GetValue(CloseCommandProperty);
             set => this.SetValue(CloseCommandProperty, value);
         }
-
         public static readonly DependencyProperty CloseCommandProperty =
             DependencyProperty.Register(
                 nameof(CloseCommand),
                 typeof(ICommand),
+                typeof(MenuControl),
+                new PropertyMetadata(null));
+
+
+        public DataTemplateSelector? MenuItemTemplateSelector {
+            get => (DataTemplateSelector?)this.GetValue(MenuItemTemplateSelectorProperty);
+            set => this.SetValue(MenuItemTemplateSelectorProperty, value);
+        }
+        public static readonly DependencyProperty MenuItemTemplateSelectorProperty =
+            DependencyProperty.Register(
+                nameof(MenuItemTemplateSelector),
+                typeof(DataTemplateSelector),
                 typeof(MenuControl),
                 new PropertyMetadata(null));
 
@@ -139,6 +148,27 @@ namespace TabsManagerExtension.Controls {
         }
         private void MenuPopup_OnMouseLeave(object sender, MouseEventArgs e) {
             this.MouseLeftPopup?.Invoke(this, EventArgs.Empty);
+        }
+
+
+        public class MenuItemTemplateSelectorBase : DataTemplateSelector {
+            public DataTemplate? HeaderTemplate { get; set; }
+            public DataTemplate? CommandTemplate { get; set; }
+            public DataTemplate? SeparatorTemplate { get; set; }
+
+            public override DataTemplate? SelectTemplate(object item, DependencyObject container) {
+                if (item is Helpers.MenuItemHeader) {
+                    return this.HeaderTemplate;
+                }
+                if (item is Helpers.MenuItemCommand) {
+                    return this.CommandTemplate;
+                }
+                if (item is Helpers.MenuItemSeparator) {
+                    return this.SeparatorTemplate;
+                }
+
+                return base.SelectTemplate(item, container);
+            }
         }
     }
 }
