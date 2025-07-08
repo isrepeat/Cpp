@@ -23,23 +23,23 @@
             <!-- Default Templates (used as fallback if MenuItemTemplateSelector not set) -->
             <DataTemplate DataType="{x:Type helpers:MenuItemHeader}">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource MenuControl.MenuItemHeaderStyle}"
+                    <TextBlock Style="{StaticResource MenuControl/MenuItemHeaderStyle}"
                                Text="{Binding Header}"
                                />
-                    <helpersControls:Separator Style="{StaticResource MenuControl.MenuItemSeparatorStyle}"
+                    <helpersControls:Separator Style="{StaticResource MenuControl/MenuItemSeparatorStyle}"
                                                Margin="0,2,0,5"
                                                />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate DataType="{x:Type helpers:MenuItemCommand}">
-                <MenuItem Style="{StaticResource MenuControl.MenuItemCommandStyle}"
+                <MenuItem Style="{StaticResource MenuControl/MenuItemCommandStyle}"
                           Header="{Binding Header}"
                           Command="{Binding Command}"
                           CommandParameter="{Binding CommandParameterContext}"
                           />
             </DataTemplate>
             <DataTemplate DataType="{x:Type helpers:MenuItemSeparator}">
-                <helpersControls:Separator Style="{StaticResource MenuControl.MenuItemSeparatorStyle}"
+                <helpersControls:Separator Style="{StaticResource MenuControl/MenuItemSeparatorStyle}"
                                            Margin="0,5,0,5"
                                            />
             </DataTemplate>

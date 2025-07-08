@@ -9,11 +9,10 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
-using static TabsManagerExtension.VsShell.Utils.VsHierarchy;
 
 
 namespace TabsManagerExtension.VsShell.Utils {
-    public static class VsHierarchy {
+    public static class VsHierarchyUtils {
         public sealed class HierarchyItem {
             public IVsHierarchy Hierarchy { get; }
             public uint ItemId { get; }
@@ -104,7 +103,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var guid in projectGuids) {
-                VsHierarchy.UnloadProject(guid);
+                VsHierarchyUtils.UnloadProject(guid);
             }
         }
 
@@ -112,7 +111,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var guid in projectGuids) {
-                VsHierarchy.ReloadProject(guid);
+                VsHierarchyUtils.ReloadProject(guid);
             }
         }
 
@@ -125,7 +124,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var result = new List<HierarchyItem>();
-            VsHierarchy.CollectItemsRecursiveInternal(hierarchy, itemId, predicate, result);
+            VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, itemId, predicate, result);
             return result;
         }
 
@@ -145,7 +144,7 @@ namespace TabsManagerExtension.VsShell.Utils {
                 string projectName = Utils.EnvDteUtils.GetDteProjectUniqueNameFromVsHierarchy(hierarchy);
                 Helpers.Diagnostic.Logger.LogDebug($"[Hierarchy] {projectName} (VSITEMID_ROOT)");
 
-                VsHierarchy.LogSolutionHierarchyRecursive(hierarchy, VSConstants.VSITEMID_ROOT, 0);
+                VsHierarchyUtils.LogSolutionHierarchyRecursive(hierarchy, VSConstants.VSITEMID_ROOT, 0);
             }
         }
 
@@ -172,7 +171,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             }
 
             foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {
-                VsHierarchy.CollectItemsRecursiveInternal(hierarchy, childId, predicate, result);
+                VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, childId, predicate, result);
             }
         }
 
@@ -202,7 +201,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             }
 
             foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {
-                VsHierarchy.LogSolutionHierarchyRecursive(hierarchy, childId, indent + 1);
+                VsHierarchyUtils.LogSolutionHierarchyRecursive(hierarchy, childId, indent + 1);
             }
         }
     }

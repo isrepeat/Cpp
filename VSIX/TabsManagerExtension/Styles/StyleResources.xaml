@@ -87,13 +87,13 @@
     
     
     <!-- MenuControl -->
-    <Style x:Key="MenuControl.MenuItemHeaderStyle" TargetType="TextBlock">
+    <Style x:Key="MenuControl/MenuItemHeaderStyle" TargetType="TextBlock">
         <Setter Property="Margin" Value="10,5" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Foreground" Value="#FF999999" />
     </Style>
 
-    <Style x:Key="MenuControl.MenuItemCommandStyle" TargetType="MenuItem">
+    <Style x:Key="MenuControl/MenuItemCommandStyle" TargetType="MenuItem">
         <Setter Property="Foreground" Value="#DDD"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="13"/>
@@ -123,7 +123,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="MenuControl.MenuItemSeparatorStyle" TargetType="helpersControls:Separator">
+    <Style x:Key="MenuControl/MenuItemSeparatorStyle" TargetType="helpersControls:Separator">
         <Setter Property="Padding" Value="5,0" />
         <Setter Property="LineColor" Value="#80666666" />
         <Setter Property="LineThickness" Value="1" />

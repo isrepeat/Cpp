@@ -261,7 +261,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectLoaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            PackageServices.VsSolution.GetGuidOfProject(e.RealHierarchy, out var projectGuid);
+            PackageServices.VsSolution.GetGuidOfProject(e.RealHierarchy.Hierarchy, out var projectGuid);
             var existingSolutionProject = _solutionProjects.FirstOrDefault(p => p.ProjectGuid == projectGuid);
             if (existingSolutionProject == null) {
                 return;

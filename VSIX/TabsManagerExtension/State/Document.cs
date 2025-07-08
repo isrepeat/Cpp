@@ -145,9 +145,13 @@ namespace TabsManagerExtension.State.Document {
             var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
+            var unloadedSolutionProjectNodes = solutionHierarchyAnalyzer.UnloadedProjects
+                .Select(p => p.SolutionProjectNode);
+
             //var allProjectNodes = externalIncludesSolutionProjectNodes;
             var allSolutionProjectNodes = externalIncludesSolutionProjectNodes
                 .Concat(sharedItemsSolutionProjectNodes)
+                .Concat(unloadedSolutionProjectNodes)
                 .ToList();
 
             Helpers.Diagnostic.Logger.LogDebug($"[allSolutionProjectNodes]:");

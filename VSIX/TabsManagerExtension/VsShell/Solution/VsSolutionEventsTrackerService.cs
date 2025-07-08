@@ -80,8 +80,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
             this.ProjectLoaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
-                pStubHierarchy,
-                pRealHierarchy,
+                new VsShell.Hierarchy.VsStubHierarchy(pStubHierarchy),
+                new VsShell.Hierarchy.VsRealHierarchy(pRealHierarchy),
                 dteProject
                 ));
 
@@ -98,8 +98,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
             this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
-                pStubHierarchy,
-                pRealHierarchy,
+                new VsShell.Hierarchy.VsStubHierarchy(pStubHierarchy),
+                new VsShell.Hierarchy.VsRealHierarchy(pRealHierarchy),
                 dteProject
                 ));
 

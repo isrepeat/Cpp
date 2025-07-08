@@ -104,13 +104,17 @@
             
             
             <!-- Virtual menu templates -->
-            <DataTemplate x:Key="SharedProjectCommandTemplate">
+            <DataTemplate x:Key="LoadedProjectsCommandTemplate">
                 <DataTemplate.Resources>
-                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl.MenuItemCommandStyle}">
+                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl/MenuItemCommandStyle}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CommandParameterContext.ProjectNode.IsIncludeSharedItems}" Value="True">
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.SolutionProjectNode.IsSharedProject}" Value="False" />
+                                    <Condition Binding="{Binding CommandParameterContext.SolutionProjectNode.LoadedProjectNode.IsIncludeSharedItems}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
                                 <Setter Property="Foreground" Value="LightBlue"/>
-                            </DataTrigger>
+                            </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </DataTemplate.Resources>
@@ -120,9 +124,24 @@
                           />
             </DataTemplate>
 
+
+            <DataTemplate x:Key="UnloadedProjectsCommandTemplate">
+                <DataTemplate.Resources>
+                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl/MenuItemCommandStyle}">
+                        <Setter Property="Foreground" Value="#80DDDDDD"/>
+                    </Style>
+                </DataTemplate.Resources>
+                <MenuItem Header="{Binding Header}"
+                          Command="{Binding Command}"
+                          CommandParameter="{Binding CommandParameterContext}"
+                          />
+            </DataTemplate>
+
+
             <localTemplateSelectors:VirtualMenuItemTemplateSelector 
                 x:Key="VirtualMenuItemTemplateSelector"
-                SharedProjectCommandTemplate="{StaticResource SharedProjectCommandTemplate}"
+                LoadedProjectsCommandTemplate="{StaticResource LoadedProjectsCommandTemplate}"
+                UnloadedProjectsCommandTemplate="{StaticResource UnloadedProjectsCommandTemplate}"
                 />
 
         </ResourceDictionary>

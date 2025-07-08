@@ -90,6 +90,7 @@
     <Compile Include="VsShell\EventArgs.cs" />
     <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
     <Compile Include="VsShell\Project\SolutionProjectNode.cs" />
+    <Compile Include="VsShell\Solution\IVsHierarchy.cs" />
     <Compile Include="VsShell\Solution\SolutionHierarchyAnalyzerService.cs" />
     <Compile Include="VsShell\VsCommandMapper.cs" />
     <Compile Include="VsShell\Project\LoadedProjectNode.cs" />
@@ -97,7 +98,7 @@
     <Compile Include="VsShell\Document\SourceFile.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorCommandFilter.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorFileNavigationCommandFilterService.cs" />
-    <Compile Include="VsShell\Utils\VsHierarchy.cs" />
+    <Compile Include="VsShell\Utils\VsHierarchyUtils.cs" />
     <Compile Include="VsShell\Utils\EnvDteUtils.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
     <Compile Include="VsShell\Solution\ExternalDependenciesAnalyzerService.cs" />

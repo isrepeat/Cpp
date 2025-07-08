@@ -23,13 +23,13 @@ namespace TabsManagerExtension.VsShell._EventArgs {
     }
 
     public sealed class ProjectLoadStateChangedEventArgs : EventArgs {
-        public IVsHierarchy? StubHierarchy { get; }
-        public IVsHierarchy? RealHierarchy { get; }
+        public VsShell.Hierarchy.IVsStubHierarchy? StubHierarchy { get; }
+        public VsShell.Hierarchy.IVsRealHierarchy? RealHierarchy { get; }
         public EnvDTE.Project? DteProject { get; }
 
         public ProjectLoadStateChangedEventArgs(
-            IVsHierarchy? stubHierarchy,
-            IVsHierarchy? realHierarchy,
+            VsShell.Hierarchy.IVsStubHierarchy? stubHierarchy,
+            VsShell.Hierarchy.IVsRealHierarchy? realHierarchy,
             EnvDTE.Project? dteProject
             ) {
             this.StubHierarchy = stubHierarchy;
