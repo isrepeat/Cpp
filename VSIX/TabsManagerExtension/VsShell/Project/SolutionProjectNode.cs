@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.Telemetry;
 
 namespace TabsManagerExtension.VsShell.Project {
     public sealed class SolutionProjectNode {
-        public VsShell.Hierarchy.IVsHierarchy VsHierarchy { get; private set; }
+        public VsShell.Hierarchy.IVsHierarchy ProjectHierarchy { get; private set; }
         public Guid ProjectGuid { get; }
         public string Name { get; } = "<unknown>";
         public string UniqueName { get; } = "<unknown>";
@@ -28,7 +28,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
         public SolutionProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this.VsHierarchy = projectHierarchy;
+            this.ProjectHierarchy = projectHierarchy;
 
             var vsSolution = PackageServices.VsSolution;
             var vsSolution2 = (IVsSolution2)PackageServices.VsSolution;
@@ -59,32 +59,22 @@ namespace TabsManagerExtension.VsShell.Project {
 
             this.IsSharedProject = this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase);
 
-            this.UpdateHierarchyState(projectHierarchy);
+            this.UpdateLoadedState();
         }
 
 
-        public void UpdateHierarchyState(VsShell.Hierarchy.IVsHierarchy associatedProjectHierarchy) {
+        public void UpdateHierarchy(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            PackageServices.VsSolution.GetGuidOfProject(associatedProjectHierarchy, out var guid);
-            if (guid != this.ProjectGuid) {
-                Helpers.Diagnostic.Logger.LogError($"[UpdateHierarchyState] guid != this.ProjectGuid");
-                return;
-            }
+            if (e.TryGetRealHierarchy(out var realHierarchy)) {
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var guid);
+                if (guid != this.ProjectGuid) {
+                    Helpers.Diagnostic.Logger.LogError($"[UpdateHierarchy] guid != this.ProjectGuid");
+                    return;
+                }
 
-            this.IsLoaded = associatedProjectHierarchy is IVsProject;
-
-            if (this.IsLoaded) {
-                // this.VsHierarchy still may be StubHierarchy, so use
-                // associatedProjectHierarchy to determine dteProject.
-                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(associatedProjectHierarchy);
-
-                _projectNodeVariant.Set(new LoadedProjectNode(this, dteProject));
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set LoadedProjectNode for {this.UniqueName}");
-            }
-            else {
-                _projectNodeVariant.Set(new UnloadedProjectNode(this));
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set UnloadedProjectNode for {this.UniqueName}");
+                this.ProjectHierarchy = e.NewHierarchy;
+                this.UpdateLoadedState();
             }
         }
 
@@ -103,6 +93,24 @@ namespace TabsManagerExtension.VsShell.Project {
 
         public override string ToString() {
             return $"SolutionProjectNode({this.UniqueName}, IsLoaded={this.IsLoaded})";
+        }
+
+
+        private void UpdateLoadedState() {
+            if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
+                this.IsLoaded = true;
+
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.Hierarchy);
+
+                _projectNodeVariant.Set(new LoadedProjectNode(this, dteProject));
+                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set LoadedProjectNode for {this.UniqueName}");
+            }
+            else {
+                this.IsLoaded = false;
+
+                _projectNodeVariant.Set(new UnloadedProjectNode(this));
+                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set UnloadedProjectNode for {this.UniqueName}");
+            }
         }
     }
 }

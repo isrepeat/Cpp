@@ -40,17 +40,17 @@ namespace TabsManagerExtension.VsShell.Project {
         public void UpdateDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchy = this.SolutionProjectNode.VsHierarchy;
+            var projectHierarchy = this.SolutionProjectNode.ProjectHierarchy;
             var hierarchyItems = new List<Utils.VsHierarchyUtils.HierarchyItem>();
 
-            foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy, VSConstants.VSITEMID_ROOT)) {
-                projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+            foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy.Hierarchy, VSConstants.VSITEMID_ROOT)) {
+                projectHierarchy.Hierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
                 // Игнорируем вложенные элементы для виртуальных GUID-папок (External Dependencies и проч.)
                 if (!this.IsGuidName(name)) {
                     var resultItems = Utils.VsHierarchyUtils.CollectItemsRecursive(
-                        projectHierarchy,
+                        projectHierarchy.Hierarchy,
                         childId,
                         hierarchyItem => this.IsHeaderOrCppFile(hierarchyItem.CanonicalName));
 
@@ -64,7 +64,7 @@ namespace TabsManagerExtension.VsShell.Project {
             foreach (var hierarchyItem in hierarchyItems) {
                 bool isSharedItem = false;
 
-                projectHierarchy.GetProperty(
+                projectHierarchy.Hierarchy.GetProperty(
                     hierarchyItem.ItemId,
                     (int)__VSHPROPID7.VSHPROPID_IsSharedItem,
                     out var isSharedItemObj);
@@ -80,7 +80,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 if (isSharedItem) {
                     IVsHierarchy? sharedProjectHierarchy = null;
 
-                    projectHierarchy.GetProperty(
+                    projectHierarchy.Hierarchy.GetProperty(
                         hierarchyItem.ItemId,
                         (int)__VSHPROPID7.VSHPROPID_SharedProjectHierarchy,
                         out var sharedProjectHierarchyObj);
@@ -91,7 +91,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
                     var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                     var sharedSolutionProjectNode = solutionHierarchyAnalyzer.SolutionProjects
-                        .FirstOrDefault(p => Equals(p.VsHierarchy, sharedProjectHierarchy));
+                        .FirstOrDefault(p => Equals(p.ProjectHierarchy.Hierarchy, sharedProjectHierarchy));
 
                     if (sharedSolutionProjectNode == null) {
                         System.Diagnostics.Debugger.Break();
@@ -116,17 +116,17 @@ namespace TabsManagerExtension.VsShell.Project {
         public void UpdateExternalIncludes() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchy = this.SolutionProjectNode.VsHierarchy;
+            var projectHierarchy = this.SolutionProjectNode.ProjectHierarchy;
             var hierarchyItems = new List<Utils.VsHierarchyUtils.HierarchyItem>();
 
-            foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy, VSConstants.VSITEMID_ROOT)) {
-                projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+            foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy.Hierarchy, VSConstants.VSITEMID_ROOT)) {
+                projectHierarchy.Hierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
                 // только для GUID-папок (External Dependencies) запускаем рекурсивную обработку
                 if (this.IsGuidName(name)) {
                     var resultItems = Utils.VsHierarchyUtils.CollectItemsRecursive(
-                        projectHierarchy,
+                        projectHierarchy.Hierarchy,
                         childId,
                         hierarchyItem => this.IsExternalIncludeFile(hierarchyItem.CanonicalName));
 
@@ -170,6 +170,5 @@ namespace TabsManagerExtension.VsShell.Project {
                 (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
                  name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase));
         }
-
     }
 }

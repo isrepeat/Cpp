@@ -22,19 +22,30 @@ namespace TabsManagerExtension.VsShell._EventArgs {
         }
     }
 
-    public sealed class ProjectLoadStateChangedEventArgs : EventArgs {
-        public VsShell.Hierarchy.IVsStubHierarchy? StubHierarchy { get; }
-        public VsShell.Hierarchy.IVsRealHierarchy? RealHierarchy { get; }
-        public EnvDTE.Project? DteProject { get; }
+    public sealed class ProjectHierarchyChangedEventArgs : EventArgs {
+        public VsShell.Hierarchy.IVsHierarchy OldHierarchy { get; }
+        public VsShell.Hierarchy.IVsHierarchy NewHierarchy { get; }
 
-        public ProjectLoadStateChangedEventArgs(
-            VsShell.Hierarchy.IVsStubHierarchy? stubHierarchy,
-            VsShell.Hierarchy.IVsRealHierarchy? realHierarchy,
-            EnvDTE.Project? dteProject
+        public ProjectHierarchyChangedEventArgs(
+            VsShell.Hierarchy.IVsHierarchy oldHierarchy,
+            VsShell.Hierarchy.IVsHierarchy newHierarchy
             ) {
-            this.StubHierarchy = stubHierarchy;
-            this.RealHierarchy = realHierarchy;
-            this.DteProject = dteProject;
+            this.OldHierarchy = oldHierarchy;
+            this.NewHierarchy = newHierarchy;
+        }
+
+        public bool TryGetRealHierarchy(out VsShell.Hierarchy.IVsRealHierarchy realHierarchy) {
+            if (this.NewHierarchy is VsShell.Hierarchy.IVsRealHierarchy realNewHierarchy) {
+                realHierarchy = realNewHierarchy;
+                return true;
+            }
+            else if (this.OldHierarchy is VsShell.Hierarchy.IVsRealHierarchy realOldHierarchy) {
+                realHierarchy = realOldHierarchy;
+                return true;
+            }
+
+            realHierarchy = null;
+            return false;
         }
     }
 }

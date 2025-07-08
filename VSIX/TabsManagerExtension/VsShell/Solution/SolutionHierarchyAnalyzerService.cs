@@ -257,36 +257,40 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void OnProjectLoaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
+        private void OnProjectLoaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectLoaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            PackageServices.VsSolution.GetGuidOfProject(e.RealHierarchy.Hierarchy, out var projectGuid);
-            var existingSolutionProject = _solutionProjects.FirstOrDefault(p => p.ProjectGuid == projectGuid);
-            if (existingSolutionProject == null) {
-                return;
-            }
+            if (e.TryGetRealHierarchy(out var realHierarchy)) {
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var projectGuid);
+                var existingSolutionProject = _solutionProjects.FirstOrDefault(p => p.ProjectGuid == projectGuid);
+                if (existingSolutionProject == null) {
+                    return;
+                }
 
-            //if (_handleProjectEventsImmediatelly) {
-            //}
-            //else {
-            //}
+                //if (_handleProjectEventsImmediatelly) {
+                //}
+                //else {
+                //}
 
-            existingSolutionProject.UpdateHierarchyState(e.RealHierarchy);
-            this.AnalyzeDocuments();
+                existingSolutionProject.UpdateHierarchy(e);
+                this.AnalyzeDocuments();
+            }               
         }
 
-        private void OnProjectUnloaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
+        private void OnProjectUnloaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            PackageServices.VsSolution.GetGuidOfProject(e.RealHierarchy, out var projectGuid);
-            var existingSolutionProject = _solutionProjects.FirstOrDefault(p => p.ProjectGuid == projectGuid);
-            if (existingSolutionProject == null) {
-                return;
-            }
+            if (e.TryGetRealHierarchy(out var realHierarchy)) {
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var projectGuid);
+                var existingSolutionProject = _solutionProjects.FirstOrDefault(p => p.ProjectGuid == projectGuid);
+                if (existingSolutionProject == null) {
+                    return;
+                }
 
-            existingSolutionProject.UpdateHierarchyState(e.StubHierarchy);
-            this.AnalyzeDocuments();
+                existingSolutionProject.UpdateHierarchy(e);
+                this.AnalyzeDocuments();
+            }
         }
 
 
@@ -335,7 +339,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 if (hierarchy == null) {
                     continue;
                 }
-                _solutionProjects.Add(new VsShell.Project.SolutionProjectNode(hierarchy));
+
+                var pHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(hierarchy);
+                _solutionProjects.Add(new VsShell.Project.SolutionProjectNode(pHierarchy));
             }
         }
 

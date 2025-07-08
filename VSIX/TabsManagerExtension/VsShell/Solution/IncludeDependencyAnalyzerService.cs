@@ -275,7 +275,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void OnProjectLoaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
+        private void OnProjectLoaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectLoaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -283,21 +283,21 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 return;
             }
 
-            PackageServices.VsSolution.GetGuidOfProject(
-                Utils.EnvDteUtils.GetVsHierarchyFromDteProject(e.DteProject),
-                out var projectGuid);
+            if (e.TryGetRealHierarchy(out var realHierarchy)) {
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var projectGuid);
 
-            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            var loadedProjectNode = solutionHierarchyAnalyzer.LoadedProjects
-                .FirstOrDefault(p => p.SolutionProjectNode.ProjectGuid == projectGuid);
+                var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+                var loadedProjectNode = solutionHierarchyAnalyzer.LoadedProjects
+                    .FirstOrDefault(p => p.SolutionProjectNode.ProjectGuid == projectGuid);
 
-            if (loadedProjectNode != null) {
-                this.UpdateProjectGraph(loadedProjectNode);
+                if (loadedProjectNode != null) {
+                    this.UpdateProjectGraph(loadedProjectNode);
+                }
             }
         }
 
 
-        private void OnProjectUnloaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
+        private void OnProjectUnloaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectUnloaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -305,12 +305,16 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 return;
             }
 
-            var filesToRemove = _solutionSourceFileGraph.AllSourceFiles
-                .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, e.DteProject.UniqueName))
-                .ToList();
+            if (e.TryGetRealHierarchy(out var realHierarchy)) {
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(realHierarchy.Hierarchy);
 
-            foreach (var sf in filesToRemove) {
-                _solutionSourceFileGraph.RemoveSourceFile(sf);
+                var filesToRemove = _solutionSourceFileGraph.AllSourceFiles
+                    .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, dteProject.UniqueName))
+                    .ToList();
+
+                foreach (var sf in filesToRemove) {
+                    _solutionSourceFileGraph.RemoveSourceFile(sf);
+                }
             }
         }
 

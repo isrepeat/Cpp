@@ -149,7 +149,7 @@
 //            var vsSolution = PackageServices.VsSolution;
 //            vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out var enumHierarchies);
 
-//            var hierarchies = new IVsHierarchy[1];
+//            var hierarchies = new VsShell.Hierarchy.IVsHierarchy[1];
 //            uint fetched;
 
 //            while (enumHierarchies.Next(1, hierarchies, out fetched) == VSConstants.S_OK && fetched == 1) {

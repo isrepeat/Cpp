@@ -14,29 +14,41 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
     }
 
 
-    public sealed class VsRealHierarchy : IVsRealHierarchy {
+    public sealed class VsHierarchy : IVsHierarchy {
         public Microsoft.VisualStudio.Shell.Interop.IVsHierarchy Hierarchy { get; }
 
-        public VsRealHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        //private VsHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
+        //    Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+        //    this.Hierarchy = hierarchy;
+        //}
 
-            if (hierarchy is not Microsoft.VisualStudio.Shell.Interop.IVsProject) {
-                throw new ArgumentException("Provided hierarchy is not a loaded IVsProject hierarchy.", nameof(hierarchy));
-            }
-            this.Hierarchy = hierarchy;
+        public static IVsHierarchy CreateHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            return VsHierarchy.IsRealHierarchy(hierarchy)
+                ? new VsHierarchy.VsRealHierarchy(hierarchy)
+                : new VsHierarchy.VsStubHierarchy(hierarchy);
         }
-    }
 
-    public sealed class VsStubHierarchy : IVsStubHierarchy {
-        public Microsoft.VisualStudio.Shell.Interop.IVsHierarchy Hierarchy { get; }
+        public static bool IsRealHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            return hierarchy is Microsoft.VisualStudio.Shell.Interop.IVsProject;
+        }
 
-        public VsStubHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
-            ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (hierarchy is Microsoft.VisualStudio.Shell.Interop.IVsProject) {
-                throw new ArgumentException("Provided hierarchy is a loaded IVsProject, expected stub hierarchy.", nameof(hierarchy));
+        private sealed class VsRealHierarchy : IVsRealHierarchy {
+            public Microsoft.VisualStudio.Shell.Interop.IVsHierarchy Hierarchy { get; }
+
+            public VsRealHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
+                this.Hierarchy = hierarchy;
             }
-            this.Hierarchy = hierarchy;
+        }
+
+        private sealed class VsStubHierarchy : IVsStubHierarchy {
+            public Microsoft.VisualStudio.Shell.Interop.IVsHierarchy Hierarchy { get; }
+
+            public VsStubHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) {
+                this.Hierarchy = hierarchy;
+            }
         }
     }
 }

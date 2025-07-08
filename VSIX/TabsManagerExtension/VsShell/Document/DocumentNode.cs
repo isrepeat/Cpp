@@ -6,7 +6,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using TabsManagerExtension.VsShell.Utils;
-using static TabsManagerExtension.VsShell.Utils.VsHierarchy;
 
 
 namespace TabsManagerExtension.VsShell.Document {
@@ -116,7 +115,7 @@ namespace TabsManagerExtension.VsShell.Document {
             // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
             // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
             // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.SolutionProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
+            if (this.SolutionProjectNode.ProjectHierarchy.Hierarchy is IVsUIHierarchy uiHierarchy) {
                 Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
                 const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
 
@@ -277,7 +276,7 @@ namespace TabsManagerExtension.VsShell.Document {
             // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
             // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
             // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.SolutionProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
+            if (this.SolutionProjectNode.ProjectHierarchy.Hierarchy is IVsUIHierarchy uiHierarchy) {
                 Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
                 const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
 

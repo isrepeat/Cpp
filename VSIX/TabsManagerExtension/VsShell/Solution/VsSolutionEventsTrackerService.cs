@@ -21,8 +21,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         TabsManagerExtension.Services.IExtensionService,
         IVsSolutionEvents {
 
-        public event Action<_EventArgs.ProjectLoadStateChangedEventArgs>? ProjectLoaded;
-        public event Action<_EventArgs.ProjectLoadStateChangedEventArgs>? ProjectUnloaded;
+        public event Action<_EventArgs.ProjectHierarchyChangedEventArgs>? ProjectLoaded;
+        public event Action<_EventArgs.ProjectHierarchyChangedEventArgs>? ProjectUnloaded;
 
         private IVsSolution? _vsSolution;
         private uint _cookie;
@@ -78,12 +78,18 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
-            this.ProjectLoaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
-                new VsShell.Hierarchy.VsStubHierarchy(pStubHierarchy),
-                new VsShell.Hierarchy.VsRealHierarchy(pRealHierarchy),
-                dteProject
+            var pOldHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
+                ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
+
+            var pNewHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
+                ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
+
+            this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
+                pOldHierarchy,
+                pNewHierarchy
                 ));
+
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
 
             Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project loaded: {dteProject?.UniqueName}");
             return VSConstants.S_OK;
@@ -96,12 +102,18 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
-            this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
-                new VsShell.Hierarchy.VsStubHierarchy(pStubHierarchy),
-                new VsShell.Hierarchy.VsRealHierarchy(pRealHierarchy),
-                dteProject
+            var pOldHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
+                ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
+
+            var pNewHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
+                ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
+
+            this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
+                pOldHierarchy,
+                pNewHierarchy
                 ));
+
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
 
             Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project unloaded: {dteProject?.UniqueName}");
             return VSConstants.S_OK;
