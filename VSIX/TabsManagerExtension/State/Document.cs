@@ -72,21 +72,21 @@ namespace TabsManagerExtension.State.Document {
 
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
         public TabItemDocument TabItemDocument { get; private set; }
-        public VsShell.Project.ProjectNode ProjectNode { get; private set; }
+        public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; private set; }
 
         public DocumentProjectReferenceInfo(
             TabItemDocument tabItemDocument,
-            VsShell.Project.ProjectNode projectNode
+            VsShell.Project.SolutionProjectNode solutionProjectNode
             ) {
             this.TabItemDocument = tabItemDocument;
-            this.ProjectNode = projectNode;
+            this.SolutionProjectNode = solutionProjectNode;
         }
     }
 
 
     public class TabItemDocument : TabItemBase, IActivatableTab {
         public VsShell.Document.ShellDocument ShellDocument { get; private set; }
-        public VsShell.Project.ProjectNode ProjectNodeContext { get; set; }
+        public VsShell.Project.SolutionProjectNode SolutionProjectNodeContext { get; set; }
 
 
         private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
@@ -139,37 +139,34 @@ namespace TabsManagerExtension.State.Document {
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
             
-            var externalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+            var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
-            var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+            var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
-            
-            //var allProjectNodes = externalIncludesProjectNodes;
-            var allProjectNodes = externalIncludesProjectNodes
-                .Concat(sharedItemsProjectNodes)
+
+            //var allProjectNodes = externalIncludesSolutionProjectNodes;
+            var allSolutionProjectNodes = externalIncludesSolutionProjectNodes
+                .Concat(sharedItemsSolutionProjectNodes)
                 .ToList();
 
-            Helpers.Diagnostic.Logger.LogDebug($"[allProjectNodes]:");
-            foreach (var projectNode in allProjectNodes) {
-                Helpers.Diagnostic.Logger.LogDebug($"- {projectNode}");
+            Helpers.Diagnostic.Logger.LogDebug($"[allSolutionProjectNodes]:");
+            foreach (var solutionProjectNod in allSolutionProjectNodes) {
+                Helpers.Diagnostic.Logger.LogDebug($"- {solutionProjectNod}");
             }
 
-            if (allProjectNodes.Count < 2) {
+            if (allSolutionProjectNodes.Count < 2) {
                 return; // Игнорируем только лишь ссылки на собсвтенные проекты.
             }
 
-            var documentProjectReferences = allProjectNodes
-                .Select(projectNode => new DocumentProjectReferenceInfo(this, projectNode));
-
-            foreach (var documentProjectReference in documentProjectReferences) {
-                this.ProjectReferenceList.Add(documentProjectReference);
+            foreach (var solutionProjectNode in allSolutionProjectNodes) {
+                this.ProjectReferenceList.Add(new DocumentProjectReferenceInfo(this, solutionProjectNode));
             }
         }
 
 
         public override string ToString() {
-            return $"TabItemDocument(FullName='{this.FullName}', ProjectCtx='{this.ProjectNodeContext}')";
+            return $"TabItemDocument(FullName='{this.FullName}', ProjectCtx='{this.SolutionProjectNodeContext}')";
         }
     }
 

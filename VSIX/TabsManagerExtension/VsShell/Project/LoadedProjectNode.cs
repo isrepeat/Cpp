@@ -9,8 +9,10 @@ using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class ProjectNode : ShellProject {
-        
+    public sealed class LoadedProjectNode : ShellProject {
+        public SolutionProjectNode SolutionProjectNode { get; }
+
+
         private readonly List<VsShell.Document.DocumentNode> _sources = new();
         public IReadOnlyList<VsShell.Document.DocumentNode> Sources => _sources;
 
@@ -22,34 +24,15 @@ namespace TabsManagerExtension.VsShell.Project {
         private readonly List<VsShell.Document.ExternalInclude> _externalIncludes = new();
         public IReadOnlyList<VsShell.Document.ExternalInclude> ExternalIncludes => _externalIncludes;
 
-
-        public IVsHierarchy VsHierarchy { get; }
-        public Guid ProjectGuid { get; }
-        public bool IsLoaded { get; } = true;
-        public bool IsSharedProject { get; } = false;
         public bool IsIncludeSharedItems => _sharedItems.Count > 0;
 
 
-        public ProjectNode(EnvDTE.Project dteProject)
-            : this(dteProject, Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject)) {
-        }
+        public LoadedProjectNode(SolutionProjectNode solutionProjectNode)
+            : base(Utils.EnvDteUtils.GetDteProjectFromHierarchy(solutionProjectNode.VsHierarchy)) {
 
-        public ProjectNode(EnvDTE.Project dteProject, IVsHierarchy hierarchy) : base(dteProject) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (hierarchy == null) {
-                Helpers.Diagnostic.Logger.LogError($"[ProjectNode] hierarchy is null for project: {base.UniqueName}");
-                throw new ArgumentNullException(nameof(hierarchy), $"IVsHierarchy is null for project: {base.UniqueName}");
-            }
-
-            this.VsHierarchy = hierarchy;
-
-            PackageServices.VsSolution.GetGuidOfProject(this.VsHierarchy, out var projectGuid);
-            this.ProjectGuid = projectGuid;
-
-            if (this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase)) {
-                this.IsSharedProject = true;
-            }
+            this.SolutionProjectNode = solutionProjectNode;
         }
 
 
@@ -57,16 +40,17 @@ namespace TabsManagerExtension.VsShell.Project {
         public void UpdateDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            var projectHierarchy = this.SolutionProjectNode.VsHierarchy;
             var hierarchyItems = new List<Utils.VsHierarchy.HierarchyItem>();
 
-            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(this.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
-                this.VsHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(projectHierarchy, VSConstants.VSITEMID_ROOT)) {
+                projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
                 // Игнорируем вложенные элементы для виртуальных GUID-папок (External Dependencies и проч.)
                 if (!this.IsGuidName(name)) {
                     var resultItems = Utils.VsHierarchy.CollectItemsRecursive(
-                        this.VsHierarchy,
+                        projectHierarchy,
                         childId,
                         hierarchyItem => this.IsHeaderOrCppFile(hierarchyItem.CanonicalName));
 
@@ -80,7 +64,7 @@ namespace TabsManagerExtension.VsShell.Project {
             foreach (var hierarchyItem in hierarchyItems) {
                 bool isSharedItem = false;
 
-                this.VsHierarchy.GetProperty(
+                projectHierarchy.GetProperty(
                     hierarchyItem.ItemId,
                     (int)__VSHPROPID7.VSHPROPID_IsSharedItem,
                     out var isSharedItemObj);
@@ -96,7 +80,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 if (isSharedItem) {
                     IVsHierarchy? sharedProjectHierarchy = null;
 
-                    this.VsHierarchy.GetProperty(
+                    projectHierarchy.GetProperty(
                         hierarchyItem.ItemId,
                         (int)__VSHPROPID7.VSHPROPID_SharedProjectHierarchy,
                         out var sharedProjectHierarchyObj);
@@ -106,17 +90,24 @@ namespace TabsManagerExtension.VsShell.Project {
                     }
 
                     var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-                    var sharedProjectNode = solutionHierarchyAnalyzer.ProjectNodes
+                    var sharedSolutionProjectNode = solutionHierarchyAnalyzer.SolutionProjects
                         .FirstOrDefault(p => Equals(p.VsHierarchy, sharedProjectHierarchy));
 
-                    if (sharedProjectNode == null) {
+                    if (sharedSolutionProjectNode == null) {
                         System.Diagnostics.Debugger.Break();
                     }
 
-                    _sharedItems.Add(new VsShell.Document.SharedItemNode(hierarchyItem.ItemId, normalizedPath, this, sharedProjectNode));
+                    _sharedItems.Add(new VsShell.Document.SharedItemNode(
+                        hierarchyItem.ItemId,
+                        normalizedPath,
+                        this.SolutionProjectNode,
+                        sharedSolutionProjectNode));
                 }
                 else {
-                    _sources.Add(new VsShell.Document.DocumentNode(hierarchyItem.ItemId, normalizedPath, this));
+                    _sources.Add(new VsShell.Document.DocumentNode(
+                        hierarchyItem.ItemId,
+                        normalizedPath,
+                        this.SolutionProjectNode));
                 }
             }
         }
@@ -125,16 +116,17 @@ namespace TabsManagerExtension.VsShell.Project {
         public void UpdateExternalIncludes() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            var projectHierarchy = this.SolutionProjectNode.VsHierarchy;
             var hierarchyItems = new List<Utils.VsHierarchy.HierarchyItem>();
 
-            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(this.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
-                this.VsHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+            foreach (var childId in Utils.VsHierarchy.Walker.GetChildren(projectHierarchy, VSConstants.VSITEMID_ROOT)) {
+                projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
                 // только для GUID-папок (External Dependencies) запускаем рекурсивную обработку
                 if (this.IsGuidName(name)) {
                     var resultItems = Utils.VsHierarchy.CollectItemsRecursive(
-                        this.VsHierarchy,
+                        projectHierarchy,
                         childId,
                         hierarchyItem => this.IsExternalIncludeFile(hierarchyItem.CanonicalName));
 
@@ -149,8 +141,16 @@ namespace TabsManagerExtension.VsShell.Project {
                 var normalizedPath = Path.GetFullPath(hierarchyItemName)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                _externalIncludes.Add(new VsShell.Document.ExternalInclude(hierarchyItem.ItemId, normalizedPath, this));
+                _externalIncludes.Add(new VsShell.Document.ExternalInclude(
+                    hierarchyItem.ItemId,
+                    normalizedPath,
+                    this.SolutionProjectNode
+                    ));
             }
+        }
+
+        public override string ToString() {
+            return $"ProjectNode({this.SolutionProjectNode.UniqueName})";
         }
 
 
@@ -171,22 +171,5 @@ namespace TabsManagerExtension.VsShell.Project {
                  name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase));
         }
 
-
-
-        public override bool Equals(object? obj) {
-            if (obj is not ProjectNode other) {
-                return false;
-            }
-
-            return this.ProjectGuid == other.ProjectGuid;
-        }
-
-        public override int GetHashCode() {
-            return this.ProjectGuid.GetHashCode();
-        }
-
-        public override string ToString() {
-            return $"ProjectNode({this.UniqueName})";
-        }
     }
 }

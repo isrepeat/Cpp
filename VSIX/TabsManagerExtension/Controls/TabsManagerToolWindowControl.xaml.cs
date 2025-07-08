@@ -514,7 +514,7 @@ namespace TabsManagerExtension.Controls {
         //
         // ░ VsShellTrackers 
         //
-        private void OnDocumentActivatedExternally(_EventArgs.DocumentNavigationEventArgs e) {
+        private void OnDocumentActivatedExternally(VsShell._EventArgs.DocumentNavigationEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnDocumentActivatedExternally()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -563,7 +563,7 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        private void OnTextEditorNavigatedToDocument(_EventArgs.DocumentNavigationEventArgs e) {
+        private void OnTextEditorNavigatedToDocument(VsShell._EventArgs.DocumentNavigationEventArgs e) {
             if (e.PreviousDocumentFullName != null) {
                 var ext = System.IO.Path.GetExtension(e.PreviousDocumentFullName);
                 switch (ext) {
@@ -587,7 +587,7 @@ namespace TabsManagerExtension.Controls {
                 }
 
 
-                this.MoveDocumentToProjectGroup(toTabItemDocument, fromTabItemDocument.ProjectNodeContext);
+                this.MoveDocumentToProjectGroup(toTabItemDocument, fromTabItemDocument.SolutionProjectNodeContext);
 
                 //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                 //var fromSourcesProjectNodes = solutionHierarchyAnalyzer.SourcesRepresentationsTable
@@ -857,7 +857,7 @@ namespace TabsManagerExtension.Controls {
             if (parameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
                 this.MoveDocumentToProjectGroup(
                     documentProjectReferenceInfo.TabItemDocument,
-                    documentProjectReferenceInfo.ProjectNode
+                    documentProjectReferenceInfo.SolutionProjectNode
                     );
             }
         }
@@ -996,7 +996,7 @@ namespace TabsManagerExtension.Controls {
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
                                     this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
-                                        Header = projRefEntry.ProjectNode.Name,
+                                        Header = projRefEntry.SolutionProjectNode.Name,
                                         Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
                                         CommandParameterContext = projRefEntry,
                                     });
@@ -1140,11 +1140,11 @@ namespace TabsManagerExtension.Controls {
             if (tabItem is TabItemDocument tabItemDocument) {
                 tabItemDocument.IsPreviewTab = tabItemGroup is TabItemsPreviewGroup;
 
-                var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-                var targetProjectNode = solutionHierarchyAnalyzer.ProjectNodes
-                    .FirstOrDefault(p => String.Equals(p.Name, tabItemGroup.GroupName, StringComparison.OrdinalIgnoreCase));
+                //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+                //var targetProjectNode = solutionHierarchyAnalyzer.ProjectNodes
+                //    .FirstOrDefault(p => String.Equals(p.Name, tabItemGroup.GroupName, StringComparison.OrdinalIgnoreCase));
 
-                tabItemDocument.ProjectNodeContext = targetProjectNode;
+                //tabItemDocument.ProjectNodeContext = targetProjectNode;
             }
 
             Helpers.Diagnostic.Logger.LogDebug($"Added tab \"{tabItem.Caption}\" to group \"{tabItemGroup.GroupName}\": {tabItem}");
@@ -1177,26 +1177,26 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.ProjectNode projectNode) {
+        private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Log params:
             Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
-            Helpers.Diagnostic.Logger.LogParam($"projectNode.Name = {projectNode?.Name}");
+            Helpers.Diagnostic.Logger.LogParam($"solutionProjectNode.Name = {solutionProjectNode?.Name}");
 
-            if (projectNode == null) {
+            if (solutionProjectNode == null) {
                 return;
             }
 
-            this.OpenTabItemWithProjectContext(tabItemDocument, projectNode);
+            this.OpenTabItemWithProjectContext(tabItemDocument, solutionProjectNode);
 
             this.RemoveTabItemFromGroups(tabItemDocument);
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(projectNode.Name));
+            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(solutionProjectNode.Name));
         }
 
 
-        private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.ProjectNode projectNode) {
+        private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
             // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
             // если solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable не была обновлена в течении
             // этого времени (например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
@@ -1205,7 +1205,7 @@ namespace TabsManagerExtension.Controls {
 
             // Ищем соответствующий externalInclude для этого проекта по tabItemDocument.FullName.
             var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-                .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
+                .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
 
             if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
                 externalInclude.OpenWithProjectContext();
@@ -1215,7 +1215,7 @@ namespace TabsManagerExtension.Controls {
 
             // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
             documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-                .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
+                .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
 
             if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
                 sharedItemNode.OpenWithProjectContext();

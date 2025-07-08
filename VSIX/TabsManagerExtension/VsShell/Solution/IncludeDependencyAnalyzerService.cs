@@ -12,8 +12,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.VCProjectEngine;
-using TabsManagerExtension.VsShell.Project;
-using TabsManagerExtension.VsShell.Utils;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -83,27 +81,31 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        public IReadOnlyCollection<VsShell.Project.ShellProject> GetTransitiveProjectsIncludersByIncludeString(string includeString) {
+        public IReadOnlyCollection<VsShell.Project.LoadedProjectNode> GetTransitiveProjectsIncludersByIncludeString(string includeString) {
             var transitiveIncluders = this.GetTransitiveFilesIncludersByIncludeString(includeString);
-            if (transitiveIncluders != null) {
-                return transitiveIncluders
-                    .Select(sf => sf.ProjectNode)
-                    .Distinct()
-                    .ToList();
+            if (transitiveIncluders == null) {
+                return null;
             }
-            return null;
+
+            return transitiveIncluders
+                .Select(sf => sf.SolutionProjectNode.ProjectNodeObj)
+                .OfType<VsShell.Project.LoadedProjectNode>()
+                .Distinct()
+                .ToList();
         }
 
 
-        public IReadOnlyCollection<VsShell.Project.ShellProject> GetTransitiveProjectsIncludersByIncludePath(string includePath) {
+        public IReadOnlyCollection<VsShell.Project.LoadedProjectNode> GetTransitiveProjectsIncludersByIncludePath(string includePath) {
             var transitiveIncluders = this.GetTransitiveFilesIncludersByIncludePath(includePath);
-            if (transitiveIncluders != null) {
-                return transitiveIncluders
-                .Select(sf => sf.ProjectNode)
+            if (transitiveIncluders == null) {
+                return null;
+            }
+
+            return transitiveIncluders
+                .Select(sf => sf.SolutionProjectNode.ProjectNodeObj)
+                .OfType<VsShell.Project.LoadedProjectNode>()
                 .Distinct()
                 .ToList();
-            }
-            return null;
         }
 
 
@@ -273,7 +275,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void OnProjectLoaded(EnvDTE.Project dteProject) {
+        private void OnProjectLoaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectLoaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -282,20 +284,20 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             PackageServices.VsSolution.GetGuidOfProject(
-                Utils.EnvDteUtils.GetVsHierarchyFromDteProject(dteProject),
+                Utils.EnvDteUtils.GetVsHierarchyFromDteProject(e.DteProject),
                 out var projectGuid);
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            var projectNode = solutionHierarchyAnalyzer.ProjectNodes
-                .FirstOrDefault(pn => pn.ProjectGuid == projectGuid);
+            var loadedProjectNode = solutionHierarchyAnalyzer.LoadedProjects
+                .FirstOrDefault(p => p.SolutionProjectNode.ProjectGuid == projectGuid);
 
-            if (projectNode != null) {
-                this.UpdateProjectGraph(projectNode);
+            if (loadedProjectNode != null) {
+                this.UpdateProjectGraph(loadedProjectNode);
             }
         }
 
 
-        private void OnProjectUnloaded(EnvDTE.Project dteProject) {
+        private void OnProjectUnloaded(_EventArgs.ProjectLoadStateChangedEventArgs e) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnProjectUnloaded()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -304,7 +306,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             var filesToRemove = _solutionSourceFileGraph.AllSourceFiles
-                .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, dteProject.UniqueName))
+                .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, e.DteProject.UniqueName))
                 .ToList();
 
             foreach (var sf in filesToRemove) {
@@ -344,6 +346,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         // ░ Internal logic
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
+        /// <summary>
+        /// Depends on SolutionHierarchyAnalyzerService.
+        /// </summary>
         private void BuildSolutionGraph() {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("BuildSolutionGraph()");
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -357,19 +362,19 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
 
                 var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-                var projectNodes = solutionHierarchyAnalyzer.ProjectNodes;
+                var loadedProjectNodes = solutionHierarchyAnalyzer.LoadedProjects;
                 //.Where(pn => EnvDteUtils.IsCppProject(pn.dteProject))
                 //.ToList();
 
-                var dteProjects = projectNodes
+                var dteProjects = loadedProjectNodes
                     .Select(pn => pn.dteProject)
                     .ToList();
 
                 _msBuildSolutionWatcher = new MsBuildSolutionWatcher(dteProjects);
                 _solutionSourceFileGraph = new SolutionSourceFileGraph(_msBuildSolutionWatcher);
 
-                foreach (var projectNode in projectNodes) {
-                    this.UpdateProjectGraph(projectNode);
+                foreach (var loadedProjectNode in loadedProjectNodes) {
+                    this.UpdateProjectGraph(loadedProjectNode);
                 }
 
                 string? solutionDir = Path.GetDirectoryName(PackageServices.Dte2.Solution.FullName);
@@ -391,11 +396,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void UpdateProjectGraph(VsShell.Project.ProjectNode projectNode) {
+        private void UpdateProjectGraph(VsShell.Project.LoadedProjectNode loadedProjectNode) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("UpdateProjectGraph()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Helpers.Diagnostic.Logger.LogDebug($"project name = [{projectNode.UniqueName}]");
+            Helpers.Diagnostic.Logger.LogDebug($"project name = [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
 
             if (_solutionSourceFileGraph == null) {
                 return;
@@ -405,7 +410,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             var stack = new Stack<EnvDTE.ProjectItem>();
 
-            foreach (EnvDTE.ProjectItem item in projectNode.dteProject.ProjectItems) {
+            foreach (EnvDTE.ProjectItem item in loadedProjectNode.dteProject.ProjectItems) {
                 stack.Push(item);
             }
 
@@ -422,22 +427,22 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
 
                     if (isCppProjectFile) {
-                        var newSourceFile = new Document.SourceFile(filePath, projectNode);
+                        var newSourceFile = new Document.SourceFile(filePath, loadedProjectNode.SolutionProjectNode);
                         var newIncludeEntries = this.ExtractRawIncludes(filePath);
 
                         if (_solutionSourceFileGraph.TryGetSourceFileRepresentations(filePath, out var candidates) &&
-                            candidates.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, newSourceFile.ProjectNode.UniqueName))) {
+                            candidates.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, newSourceFile.SolutionProjectNode.UniqueName))) {
 
                             _solutionSourceFileGraph.UpdateSourceFileWithIncludes(newSourceFile, newIncludeEntries);
-                            Helpers.Diagnostic.Logger.LogDebug($"updated sourceFile: {filePath} [{projectNode.UniqueName}]");
+                            Helpers.Diagnostic.Logger.LogDebug($"updated sourceFile: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
                         }
                         else {
                             _solutionSourceFileGraph.AddSourceFileWithIncludes(newSourceFile, newIncludeEntries);
-                            Helpers.Diagnostic.Logger.LogDebug($"added sourceFile: {filePath} [{projectNode.UniqueName}]");
+                            Helpers.Diagnostic.Logger.LogDebug($"added sourceFile: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
                         }
                     }
                     else {
-                        Helpers.Diagnostic.Logger.LogDebug($"non cpp file: {filePath} [{projectNode.UniqueName}]");
+                        Helpers.Diagnostic.Logger.LogDebug($"non cpp file: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
                     }
                 }
 
@@ -532,10 +537,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            foreach (var projectNode in solutionHierarchyAnalyzer.ProjectNodes) {
+            foreach (var loadedProjectNode in solutionHierarchyAnalyzer.LoadedProjects) {
                 foreach (var changedProjectName in changedUniqueVcxProjectNames) {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(changedProjectName, projectNode.Name)) {
-                        this.UpdateProjectGraph(projectNode);
+                    if (StringComparer.OrdinalIgnoreCase.Equals(changedProjectName, loadedProjectNode.SolutionProjectNode.Name)) {
+                        this.UpdateProjectGraph(loadedProjectNode);
                     }
                 }
             }
@@ -581,13 +586,13 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                         // ⛔ Файл не найден в графе — ищем в проектах, возможно git checkout вернул файл
                         var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-                        foreach (var projectNode in solutionHierarchyAnalyzer.ProjectNodes) {
-                            if (Utils.EnvDteUtils.IsFileInProject(changedFile.FullPath, projectNode.dteProject)) {
+                        foreach (var loadedProjectNode in solutionHierarchyAnalyzer.LoadedProjects) {
+                            if (Utils.EnvDteUtils.IsFileInProject(changedFile.FullPath, loadedProjectNode.dteProject)) {
                                 var newIncludes = this.ExtractRawIncludes(changedFile.FullPath);
-                                var newSourceFile = new Document.SourceFile(changedFile.FullPath, projectNode);
+                                var newSourceFile = new Document.SourceFile(changedFile.FullPath, loadedProjectNode.SolutionProjectNode);
 
                                 _solutionSourceFileGraph.AddSourceFileWithIncludes(newSourceFile, newIncludes);
-                                Helpers.Diagnostic.Logger.LogDebug($"[auto re-added] {changedFile.FullPath} → found in {projectNode.UniqueName}, graph updated by fswatcher");
+                                Helpers.Diagnostic.Logger.LogDebug($"[auto re-added] {changedFile.FullPath} → found in {loadedProjectNode.SolutionProjectNode.UniqueName}, graph updated by fswatcher");
                                 break;
                             }
                         }
@@ -601,7 +606,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                         foreach (var sourceFile in candidates) {
                             _solutionSourceFileGraph.RemoveSourceFile(sourceFile);
-                            Helpers.Diagnostic.Logger.LogDebug($"[deleted] {changedFile.FullPath} [{sourceFile.ProjectNode.UniqueName}] → removed from graph");
+                            Helpers.Diagnostic.Logger.LogDebug($"[deleted] {changedFile.FullPath} [{sourceFile.SolutionProjectNode.UniqueName}] → removed from graph");
                         }
                     }
                     break;
@@ -627,9 +632,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             foreach (var (oldFile, newIncludeEntries) in updated) {
-                var updatedFile = new Document.SourceFile(filePath, oldFile.ProjectNode);
+                var updatedFile = new Document.SourceFile(filePath, oldFile.SolutionProjectNode);
                 _solutionSourceFileGraph.UpdateSourceFileWithIncludes(updatedFile, newIncludeEntries);
-                Helpers.Diagnostic.Logger.LogDebug($"[include changed] {filePath} [{oldFile.ProjectNode.UniqueName}] → includes updated");
+                Helpers.Diagnostic.Logger.LogDebug($"[include changed] {filePath} [{oldFile.SolutionProjectNode.UniqueName}] → includes updated");
             }
         }
     }

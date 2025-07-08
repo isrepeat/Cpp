@@ -13,12 +13,12 @@ namespace TabsManagerExtension.VsShell.Document {
     public class DocumentNode {
         public uint ItemId { get; }
         public string FilePath { get; }
-        public VsShell.Project.ProjectNode ProjectNode { get; }
+        public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; }
 
-        public DocumentNode(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode) {
+        public DocumentNode(uint itemId, string filePath, VsShell.Project.SolutionProjectNode solutionProjectNode) {
             this.ItemId = itemId;
             this.FilePath = filePath;
-            this.ProjectNode = projectNode;
+            this.SolutionProjectNode = solutionProjectNode;
         }
 
         public override bool Equals(object? obj) {
@@ -27,7 +27,7 @@ namespace TabsManagerExtension.VsShell.Document {
             }
 
             return
-                this.ProjectNode.ProjectGuid == other.ProjectNode.ProjectGuid &&
+                this.SolutionProjectNode.ProjectGuid == other.SolutionProjectNode.ProjectGuid &&
                 StringComparer.OrdinalIgnoreCase.Equals(this.FilePath, other.FilePath);
         }
 
@@ -35,7 +35,7 @@ namespace TabsManagerExtension.VsShell.Document {
             unchecked {
                 int hash = 17;
 
-                hash = hash * 31 + this.ProjectNode.ProjectGuid.GetHashCode();
+                hash = hash * 31 + this.SolutionProjectNode.ProjectGuid.GetHashCode();
                 hash = hash * 31 + (this.FilePath != null
                     ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.FilePath)
                     : 0);
@@ -46,7 +46,7 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
         protected string ToStringCore() {
-            return $"FilePath='{this.FilePath}', Project='{this.ProjectNode.UniqueName}', ItemId={this.ItemId}";
+            return $"FilePath='{this.FilePath}', Project='{this.SolutionProjectNode.UniqueName}', ItemId={this.ItemId}";
         }
 
         public override string ToString() {
@@ -57,22 +57,34 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
     public sealed class SharedItemNode : DocumentNode {
-        public VsShell.Project.ProjectNode SharedProjectNode { get; private set; }
+        public VsShell.Project.SolutionProjectNode SharedSolutionProjectNode { get; private set; }
         
-        private IVsHierarchy? _sharedAssetsProjectHierarchy;
         public SharedItemNode(
             uint itemId,
             string filePath,
-            VsShell.Project.ProjectNode projectNode,
-            VsShell.Project.ProjectNode sharedProjectNode)
-            : base(itemId, filePath, projectNode) {
+            VsShell.Project.SolutionProjectNode solutionProjectNode,
+            VsShell.Project.SolutionProjectNode sharedSolutionProjectNode)
+            : base(itemId, filePath, solutionProjectNode) {
 
-            this.SharedProjectNode = sharedProjectNode;
+            this.SharedSolutionProjectNode = sharedSolutionProjectNode;
         }
 
 
         public void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var loadedProjectNode = this.SolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
+            if (loadedProjectNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+
+            var loadedSharedProjectNode = this.SharedSolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
+            if (loadedSharedProjectNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+
 
             // Сохраняем активный документ до всех действий
             var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
@@ -87,10 +99,10 @@ namespace TabsManagerExtension.VsShell.Document {
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
             // Это нужно для того, чтобы при открытии внешнего include файла
             // Visual Studio знала, что контекстом открытия является именно этот проект.
-            if (this.ProjectNode.Sources.Count == 0) {
+            if (loadedProjectNode.Sources.Count == 0) {
                 System.Diagnostics.Debugger.Break();
             }
-            string contextSwitchFile = this.ProjectNode.Sources.FirstOrDefault()?.FilePath;
+            string contextSwitchFile = loadedProjectNode.Sources.FirstOrDefault()?.FilePath;
 
             bool needCloseContextSwitchFile = false;
             if (!string.IsNullOrEmpty(contextSwitchFile)) {
@@ -104,7 +116,7 @@ namespace TabsManagerExtension.VsShell.Document {
             // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
             // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
             // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.ProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
+            if (this.SolutionProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
                 Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
                 const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
 
@@ -117,10 +129,10 @@ namespace TabsManagerExtension.VsShell.Document {
                     IntPtr.Zero);
 
                 if (ErrorHandler.Succeeded(hr)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[IncludeGraph] Opened '{this.FilePath}' in project '{this.ProjectNode.UniqueName}'");
+                    Helpers.Diagnostic.Logger.LogDebug($"[SharedItemNode] Opened '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}'");
                 }
                 else {
-                    Helpers.Diagnostic.Logger.LogError($"[IncludeGraph] Failed to open '{this.FilePath}' in project '{this.ProjectNode.UniqueName}', hr=0x{hr:X8}");
+                    Helpers.Diagnostic.Logger.LogError($"[SharedItemNode] Failed to open '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}', hr=0x{hr:X8}");
                     ErrorHandler.ThrowOnFailure(hr);
                 }
             }
@@ -206,12 +218,21 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
     public sealed class ExternalInclude : DocumentNode {
-        public ExternalInclude(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode)
-            : base(itemId, filePath, projectNode) {
+        public ExternalInclude(
+            uint itemId,
+            string filePath,
+            VsShell.Project.SolutionProjectNode solutionProjectNode)
+            : base(itemId, filePath, solutionProjectNode) {
         }
 
         public void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var loadedProjectNode = this.SolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
+            if (loadedProjectNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
 
             // Сохраняем активный документ до всех действий
             var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
@@ -237,7 +258,7 @@ namespace TabsManagerExtension.VsShell.Document {
                 .GetTransitiveFilesIncludersByIncludePath(this.FilePath);
 
             var currentProjectTransitiveIncludingFiles = allTransitiveIncludingFiles
-                .Where(sf => sf.ProjectNode.Equals(this.ProjectNode))
+                .Where(sf => sf.SolutionProjectNode.Equals(this.SolutionProjectNode))
                 .ToList();
 
             string contextSwitchFile = currentProjectTransitiveIncludingFiles
@@ -256,7 +277,7 @@ namespace TabsManagerExtension.VsShell.Document {
             // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
             // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
             // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.ProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
+            if (this.SolutionProjectNode.VsHierarchy is IVsUIHierarchy uiHierarchy) {
                 Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
                 const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
 
@@ -269,10 +290,10 @@ namespace TabsManagerExtension.VsShell.Document {
                     IntPtr.Zero);
 
                 if (ErrorHandler.Succeeded(hr)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[IncludeGraph] Opened '{this.FilePath}' in project '{this.ProjectNode.UniqueName}'");
+                    Helpers.Diagnostic.Logger.LogDebug($"[ExternalInclude] Opened '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}'");
                 }
                 else {
-                    Helpers.Diagnostic.Logger.LogError($"[IncludeGraph] Failed to open '{this.FilePath}' in project '{this.ProjectNode.UniqueName}', hr=0x{hr:X8}");
+                    Helpers.Diagnostic.Logger.LogError($"[ExternalInclude] Failed to open '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}', hr=0x{hr:X8}");
                     ErrorHandler.ThrowOnFailure(hr);
                 }
             }

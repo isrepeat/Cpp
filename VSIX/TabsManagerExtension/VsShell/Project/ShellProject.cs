@@ -12,38 +12,38 @@ namespace TabsManagerExtension.VsShell.Project {
     public class ShellProject {
         public EnvDTE.Project dteProject { get; private set; }
 
-        public string Name {
-            get {
-                try {
-                    return this.dteProject?.Name ?? "<unknown>";
-                }
-                catch (COMException) {
-                    return "<unloaded>";
-                }
-            }
-        }
+        //public string Name {
+        //    get {
+        //        try {
+        //            return this.dteProject?.Name ?? "<unknown>";
+        //        }
+        //        catch (COMException) {
+        //            return "<unloaded>";
+        //        }
+        //    }
+        //}
 
-        public string FullName {
-            get {
-                try {
-                    return this.dteProject?.FullName ?? "<unknown>";
-                }
-                catch (COMException) {
-                    return "<unloaded>";
-                }
-            }
-        }
+        //public string FullName {
+        //    get {
+        //        try {
+        //            return this.dteProject?.FullName ?? "<unknown>";
+        //        }
+        //        catch (COMException) {
+        //            return "<unloaded>";
+        //        }
+        //    }
+        //}
 
-        public string UniqueName {
-            get {
-                try {
-                    return this.dteProject?.UniqueName ?? "<unknown>";
-                }
-                catch (COMException) {
-                    return "<unloaded>";
-                }
-            }
-        }
+        //public string UniqueName {
+        //    get {
+        //        try {
+        //            return this.dteProject?.UniqueName ?? "<unknown>";
+        //        }
+        //        catch (COMException) {
+        //            return "<unloaded>";
+        //        }
+        //    }
+        //}
 
         public ShellProject(EnvDTE.Project project) {
             ThreadHelper.ThrowIfNotOnUIThread();

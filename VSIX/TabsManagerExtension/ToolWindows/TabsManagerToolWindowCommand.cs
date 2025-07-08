@@ -77,27 +77,27 @@ namespace TabsManagerExtension.ToolWindows {
 
 
         private void TestIncludeDependencyAnalyzer() {
-            var analyzer = VsShell.Solution.Services.IncludeDependencyAnalyzerService.Instance;
-            if (!analyzer.IsReady()) {
-                return;
-            }
+            //var analyzer = VsShell.Solution.Services.IncludeDependencyAnalyzerService.Instance;
+            //if (!analyzer.IsReady()) {
+            //    return;
+            //}
 
-            ////analyzer.Build();
+            //////analyzer.Build();
 
-            //string includeTaget = "Logger.h";
-            ////string includeTaget = "RenderPipeline.h";
+            ////string includeTaget = "Logger.h";
+            //////string includeTaget = "RenderPipeline.h";
 
-            //var transitiveIncludingFiles = analyzer.GetTransitiveFilesIncludersByIncludeString(includeTaget);
-            //var transitiveIncludingProjects = analyzer.GetTransitiveProjectsIncludersByIncludeString(includeTaget);
+            ////var transitiveIncludingFiles = analyzer.GetTransitiveFilesIncludersByIncludeString(includeTaget);
+            ////var transitiveIncludingProjects = analyzer.GetTransitiveProjectsIncludersByIncludeString(includeTaget);
 
-            string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
-            var transitiveIncludingFiles2 = analyzer.GetTransitiveFilesIncludersByIncludePath(includeTagetFullName);
-            var transitiveIncludingProjects2 = analyzer.GetTransitiveProjectsIncludersByIncludePath(includeTagetFullName);
+            //string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
+            //var transitiveIncludingFiles2 = analyzer.GetTransitiveFilesIncludersByIncludePath(includeTagetFullName);
+            //var transitiveIncludingProjects2 = analyzer.GetTransitiveProjectsIncludersByIncludePath(includeTagetFullName);
 
-            Helpers.Diagnostic.Logger.LogDebug($"Projects that transitive include '{includeTagetFullName}':");
-            foreach (var projectIncluder in transitiveIncludingProjects2) {
-                Helpers.Diagnostic.Logger.LogDebug($"- {projectIncluder.UniqueName}");
-            };
+            //Helpers.Diagnostic.Logger.LogDebug($"Projects that transitive include '{includeTagetFullName}':");
+            //foreach (var projectIncluder in transitiveIncludingProjects2) {
+            //    Helpers.Diagnostic.Logger.LogDebug($"- {projectIncluder.UniqueName}");
+            //};
 
             int xx = 9;
         }

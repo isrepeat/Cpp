@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio;
@@ -9,8 +10,6 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
-using System.Windows.Threading;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -22,8 +21,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         TabsManagerExtension.Services.IExtensionService,
         IVsSolutionEvents {
 
-        public event Action<EnvDTE.Project>? ProjectLoaded;
-        public event Action<EnvDTE.Project>? ProjectUnloaded;
+        public event Action<_EventArgs.ProjectLoadStateChangedEventArgs>? ProjectLoaded;
+        public event Action<_EventArgs.ProjectLoadStateChangedEventArgs>? ProjectUnloaded;
 
         private IVsSolution? _vsSolution;
         private uint _cookie;
@@ -79,12 +78,14 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dteProject = this.TryGetDteProjectFromHierarchy(pRealHierarchy);
-            if (dteProject != null) {
-                this.ProjectLoaded?.Invoke(dteProject);
-                Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project loaded: {dteProject.UniqueName}");
-            }
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
+            this.ProjectLoaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
+                pStubHierarchy,
+                pRealHierarchy,
+                dteProject
+                ));
 
+            Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project loaded: {dteProject?.UniqueName}");
             return VSConstants.S_OK;
         }
 
@@ -95,12 +96,14 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dteProject = this.TryGetDteProjectFromHierarchy(pRealHierarchy);
-            if (dteProject != null) {
-                this.ProjectUnloaded?.Invoke(dteProject);
-                Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project unloaded: {dteProject.UniqueName}");
-            }
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
+            this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectLoadStateChangedEventArgs(
+                pStubHierarchy,
+                pRealHierarchy,
+                dteProject
+                ));
 
+            Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project unloaded: {dteProject?.UniqueName}");
             return VSConstants.S_OK;
         }
 
@@ -118,20 +121,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
         public int OnAfterCloseSolution(object pUnkReserved) {
             return VSConstants.S_OK;
-        }
-
-        //
-        // Internal
-        //
-        private EnvDTE.Project? TryGetDteProjectFromHierarchy(IVsHierarchy hierarchy) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            hierarchy.GetProperty(
-                VSConstants.VSITEMID_ROOT,
-                (int)__VSHPROPID.VSHPROPID_ExtObject,
-                out object value);
-
-            return value as EnvDTE.Project;
         }
     }
 }

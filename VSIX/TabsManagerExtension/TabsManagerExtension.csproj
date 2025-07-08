@@ -87,9 +87,12 @@
     <Compile Include="VsShell\Document\IncludeEntry.cs" />
     <Compile Include="VsShell\Document\ShellWindow.cs" />
     <Compile Include="VsShell\Document\ShellDocument.cs" />
+    <Compile Include="VsShell\EventArgs.cs" />
+    <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
+    <Compile Include="VsShell\Project\SolutionProjectNode.cs" />
     <Compile Include="VsShell\Solution\SolutionHierarchyAnalyzerService.cs" />
     <Compile Include="VsShell\VsCommandMapper.cs" />
-    <Compile Include="VsShell\Project\ProjectNode.cs" />
+    <Compile Include="VsShell\Project\LoadedProjectNode.cs" />
     <Compile Include="VsShell\Project\ShellProject.cs" />
     <Compile Include="VsShell\Document\SourceFile.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorCommandFilter.cs" />
