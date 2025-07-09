@@ -34,18 +34,18 @@ namespace TabsManagerExtension.VsShell.Project {
             var vsSolution2 = (IVsSolution2)PackageServices.VsSolution;
 
             // Guid
-            vsSolution.GetGuidOfProject(projectHierarchy.Hierarchy, out var guid);
+            vsSolution.GetGuidOfProject(projectHierarchy.VsHierarchy, out var guid);
             this.ProjectGuid = guid;
 
             // Name
-            projectHierarchy.Hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+            projectHierarchy.VsHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
             if (nameObj is string nameStr) {
                 this.Name = nameStr;
             }
 
             // UniqueName, FullName
             string projRef = "";
-            vsSolution2?.GetProjrefOfProject(projectHierarchy.Hierarchy, out projRef);
+            vsSolution2?.GetProjrefOfProject(projectHierarchy.VsHierarchy, out projRef);
 
             if (!string.IsNullOrEmpty(projRef)) {
                 var parts = projRef.Split('|');
@@ -67,7 +67,7 @@ namespace TabsManagerExtension.VsShell.Project {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (e.TryGetRealHierarchy(out var realHierarchy)) {
-                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var guid);
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.VsHierarchy, out var guid);
                 if (guid != this.ProjectGuid) {
                     Helpers.Diagnostic.Logger.LogError($"[UpdateHierarchy] guid != this.ProjectGuid");
                     return;
@@ -100,7 +100,7 @@ namespace TabsManagerExtension.VsShell.Project {
             if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
                 this.IsLoaded = true;
 
-                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.Hierarchy);
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
 
                 _projectNodeVariant.Set(new LoadedProjectNode(this, dteProject));
                 Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set LoadedProjectNode for {this.UniqueName}");

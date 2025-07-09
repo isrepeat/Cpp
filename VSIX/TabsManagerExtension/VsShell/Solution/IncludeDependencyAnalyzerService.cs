@@ -284,7 +284,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             if (e.TryGetRealHierarchy(out var realHierarchy)) {
-                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.Hierarchy, out var projectGuid);
+                PackageServices.VsSolution.GetGuidOfProject(realHierarchy.VsHierarchy, out var projectGuid);
 
                 var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                 var loadedProjectNode = solutionHierarchyAnalyzer.LoadedProjects
@@ -306,7 +306,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             if (e.TryGetRealHierarchy(out var realHierarchy)) {
-                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(realHierarchy.Hierarchy);
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(realHierarchy.VsHierarchy);
 
                 var filesToRemove = _solutionSourceFileGraph.AllSourceFiles
                     .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, dteProject.UniqueName))

@@ -78,10 +78,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var pOldHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
+            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
                 ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
 
-            var pNewHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
+            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
                 ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
 
             this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
@@ -102,10 +102,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var pOldHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
+            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
                 ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
 
-            var pNewHierarchy = VsShell.Hierarchy.VsHierarchy.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
+            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
                 ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
 
             this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
