@@ -268,11 +268,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                     return;
                 }
 
-                //if (_handleProjectEventsImmediatelly) {
-                //}
-                //else {
-                //}
-
                 existingSolutionProject.UpdateHierarchy(e);
                 this.AnalyzeDocuments();
             }               

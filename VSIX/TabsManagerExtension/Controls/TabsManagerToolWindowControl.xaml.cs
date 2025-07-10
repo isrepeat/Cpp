@@ -564,59 +564,59 @@ namespace TabsManagerExtension.Controls {
 
 
         private void OnTextEditorNavigatedToDocument(VsShell._EventArgs.DocumentNavigationEventArgs e) {
-            if (e.PreviousDocumentFullName != null) {
-                var ext = System.IO.Path.GetExtension(e.PreviousDocumentFullName);
-                switch (ext) {
-                    case ".h":
-                    case ".hpp":
-                    //case ".cpp":
-                        break;
+            //if (e.PreviousDocumentFullName != null) {
+            //    var ext = System.IO.Path.GetExtension(e.PreviousDocumentFullName);
+            //    switch (ext) {
+            //        case ".h":
+            //        case ".hpp":
+            //        //case ".cpp":
+            //            break;
 
-                    default:
-                        return;
-                }
+            //        default:
+            //            return;
+            //    }
 
-                var fromTabItemDocument = this.FindTabItem(e.PreviousDocumentFullName);
-                if (fromTabItemDocument == null) {
-                    return;
-                }                
+            //    var fromTabItemDocument = this.FindTabItem(e.PreviousDocumentFullName);
+            //    if (fromTabItemDocument == null) {
+            //        return;
+            //    }                
 
-                var toTabItemDocument = this.FindTabItem(e.CurrentDocumentFullName);
-                if (toTabItemDocument == null) {
-                    return;
-                }
+            //    var toTabItemDocument = this.FindTabItem(e.CurrentDocumentFullName);
+            //    if (toTabItemDocument == null) {
+            //        return;
+            //    }
 
 
-                this.MoveDocumentToProjectGroup(toTabItemDocument, fromTabItemDocument.SolutionProjectNodeContext);
+            //    this.MoveDocumentToProjectGroup(toTabItemDocument, fromTabItemDocument.SolutionProjectNodeContext);
 
-                //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-                //var fromSourcesProjectNodes = solutionHierarchyAnalyzer.SourcesRepresentationsTable
-                //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
+            //    //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            //    //var fromSourcesProjectNodes = solutionHierarchyAnalyzer.SourcesRepresentationsTable
+            //    //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
 
-                //if (fromSourcesProjectNodes.Count > 0) {
-                //    // NOTE: fromSourcesProjectNodes.Count usually == 1.
-                //    //this.MoveDocumentToProjectGroup(toTabItemDocument, fromSourcesProjectNodes[0]);
-                //    return;
-                //}
+            //    //if (fromSourcesProjectNodes.Count > 0) {
+            //    //    // NOTE: fromSourcesProjectNodes.Count usually == 1.
+            //    //    //this.MoveDocumentToProjectGroup(toTabItemDocument, fromSourcesProjectNodes[0]);
+            //    //    return;
+            //    //}
 
-                //var fromSharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-                //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
+            //    //var fromSharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+            //    //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
 
-                //if (fromSharedItemsProjectNodes.Count > 0) {
-                //    // TODO: add support .h (where fromProjectNodes.Count > 0).
-                //    this.MoveDocumentToProjectGroup(toTabItemDocument, new TabItemProject(fromSharedItemsProjectNodes[0]));
-                //    return;
-                //}
+            //    //if (fromSharedItemsProjectNodes.Count > 0) {
+            //    //    // TODO: add support .h (where fromProjectNodes.Count > 0).
+            //    //    this.MoveDocumentToProjectGroup(toTabItemDocument, new TabItemProject(fromSharedItemsProjectNodes[0]));
+            //    //    return;
+            //    //}
 
-                //var fromExternalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-                //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
+            //    //var fromExternalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+            //    //    .GetProjectsByDocumentPath(fromTabItemDocument.FullName);
 
-                //if (fromExternalIncludesProjectNodes.Count > 0) {
-                //    // TODO: add support .h (where fromProjectNodes.Count > 0).
-                //    this.MoveDocumentToProjectGroup(toTabItemDocument, fromExternalIncludesProjectNodes));
-                //    return;
-                //}
-            }
+            //    //if (fromExternalIncludesProjectNodes.Count > 0) {
+            //    //    // TODO: add support .h (where fromProjectNodes.Count > 0).
+            //    //    this.MoveDocumentToProjectGroup(toTabItemDocument, fromExternalIncludesProjectNodes));
+            //    //    return;
+            //    //}
+            //}
         }
 
 
@@ -855,10 +855,12 @@ namespace TabsManagerExtension.Controls {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
-                this.MoveDocumentToProjectGroup(
-                    documentProjectReferenceInfo.TabItemDocument,
-                    documentProjectReferenceInfo.SolutionProjectNode
-                    );
+                //this.MoveDocumentToProjectGroup(
+                //    documentProjectReferenceInfo.TabItemDocument,
+                //    documentProjectReferenceInfo.SolutionProjectNode
+                //    );
+
+                this.MoveDocumentToProjectGroup(documentProjectReferenceInfo.DocumentNode);
             }
         }
 
@@ -996,7 +998,8 @@ namespace TabsManagerExtension.Controls {
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
                                     this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
-                                        Header = projRefEntry.SolutionProjectNode.Name,
+                                        //Header = projRefEntry.SolutionProjectNode.Name,
+                                        Header = projRefEntry.DocumentNode.SolutionProjectNode.Name,
                                         Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
                                         CommandParameterContext = projRefEntry,
                                     });
@@ -1177,56 +1180,80 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+        private void MoveDocumentToProjectGroup(VsShell.Document.DocumentNode documentNode) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Log params:
-            Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
-            Helpers.Diagnostic.Logger.LogParam($"solutionProjectNode.Name = {solutionProjectNode?.Name}");
+            this.OpenTabItemWithProjectContext(documentNode);
 
-            if (solutionProjectNode == null) {
-                return;
+            var tabItemDocument = this.FindTabItem(documentNode.FilePath);
+            if (tabItemDocument != null) {
+                this.RemoveTabItemFromGroups(tabItemDocument);
+                this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(documentNode.SolutionProjectNode.Name));
             }
-
-            this.OpenTabItemWithProjectContext(tabItemDocument, solutionProjectNode);
-
-            this.RemoveTabItemFromGroups(tabItemDocument);
-            this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(solutionProjectNode.Name));
         }
 
 
-        private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
-            // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
-            // если solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable не была обновлена в течении
-            // этого времени (например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
-            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            solutionHierarchyAnalyzer.AnalyzeExternalIncludes(); // Поэтому анализируем снова.
-
-            // Ищем соответствующий externalInclude для этого проекта по tabItemDocument.FullName.
-            var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-                .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
-
+        private void OpenTabItemWithProjectContext(VsShell.Document.DocumentNode documentNode) {
             if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
                 externalInclude.OpenWithProjectContext();
                 Console.Beep(frequency: 1000, duration: 300);
                 return;
             }
-
-            // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
-            documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-                .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
-            
-            if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
-                //VsixThreadHelper.RunOnUiThread(async () => {
-                    sharedItemNode.ReloadProjects();
-                    //sharedItemNode.OpenWithProjectContext();
-                    //await Task.Delay(1000);
-                    Console.Beep(frequency: 2000, duration: 150);
-                    Console.Beep(frequency: 2000, duration: 150);
-                //});
+            else if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
+                sharedItemNode.OpenWithProjectContext();
+                Console.Beep(frequency: 2000, duration: 150);
+                Console.Beep(frequency: 2000, duration: 150);
             }
         }
+
+
+        //private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+        //    using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
+        //    ThreadHelper.ThrowIfNotOnUIThread();
+
+        //    // Log params:
+        //    Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
+        //    Helpers.Diagnostic.Logger.LogParam($"solutionProjectNode.Name = {solutionProjectNode?.Name}");
+
+        //    if (solutionProjectNode == null) {
+        //        return;
+        //    }
+
+        //    this.OpenTabItemWithProjectContext(tabItemDocument, solutionProjectNode);
+
+        //    this.RemoveTabItemFromGroups(tabItemDocument);
+        //    this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(solutionProjectNode.Name));
+        //}
+
+
+        //private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+        //    // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
+        //    // если solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable не была обновлена в течении
+        //    // этого времени (например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
+        //    var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+        //    solutionHierarchyAnalyzer.AnalyzeExternalIncludes(); // Поэтому анализируем снова.
+
+        //    // Ищем соответствующий externalInclude для этого проекта по tabItemDocument.FullName.
+        //    var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+        //        .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
+
+        //    if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
+        //        externalInclude.OpenWithProjectContext();
+        //        Console.Beep(frequency: 1000, duration: 300);
+        //        return;
+        //    }
+
+        //    // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
+        //    documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+        //        .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
+
+        //    if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
+        //        sharedItemNode.OpenWithProjectContext();
+        //        Console.Beep(frequency: 2000, duration: 150);
+        //        Console.Beep(frequency: 2000, duration: 150);
+        //    }
+        //}
 
 
         private void RemoveTabItemFromGroups(TabItemBase tabItem) {

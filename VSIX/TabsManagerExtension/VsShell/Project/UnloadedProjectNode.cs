@@ -9,15 +9,17 @@ using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class UnloadedProjectNode {
-        public SolutionProjectNode SolutionProjectNode { get; }
+    //public sealed partial class SolutionProjectNode {
+        public sealed class UnloadedProjectNode {
+            public SolutionProjectNode SolutionProjectNode { get; }
 
-        public UnloadedProjectNode(SolutionProjectNode solutionProjectNode) {
-            this.SolutionProjectNode = solutionProjectNode;
-        }
+            public UnloadedProjectNode(SolutionProjectNode solutionProjectNode) {
+                this.SolutionProjectNode = solutionProjectNode;
+            }
 
-        public override string ToString() {
-            return $"UnloadedProjectNode({this.SolutionProjectNode.UniqueName})";
+            public override string ToString() {
+                return $"UnloadedProjectNode({this.SolutionProjectNode.UniqueName})";
+            }
         }
-    }
+    //}
 }

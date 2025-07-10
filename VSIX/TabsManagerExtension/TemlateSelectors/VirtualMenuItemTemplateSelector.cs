@@ -16,40 +16,22 @@ namespace TabsManagerExtension.TemlateSelectors {
     }
 
     public class VirtualMenuItemTemplateSelector : Controls.MenuControl.MenuItemTemplateSelectorBase {
-        public DataTemplate? LoadedProjectsCommandTemplate { get; set; }
-        public DataTemplate? UnloadedProjectsCommandTemplate { get; set; }
+        //public DataTemplate? LoadedProjectsCommandTemplate { get; set; }
+        //public DataTemplate? UnloadedProjectsCommandTemplate { get; set; }
+        public DataTemplate? ProjectReferenceCommandTemplate { get; set; }
 
         public override DataTemplate? SelectTemplate(object item, DependencyObject container) {
             if (item is Helpers.MenuItemCommand menuItemCommand) {
                 if (menuItemCommand.CommandParameterContext is State.Document.DocumentProjectReferenceInfo projRefEntry) {
+                    return this.ProjectReferenceCommandTemplate;
 
-                    if (projRefEntry.SolutionProjectNode.IsLoaded) {
-                        return this.LoadedProjectsCommandTemplate;
-                    }
-                    else {
-                        return this.UnloadedProjectsCommandTemplate;
-                    }
-
-                        //if (!projRefEntry.SolutionProjectNode.IsSharedProject) {
-                        //    if (projRefEntry.SolutionProjectNode.ProjectNodeObj is VsShell.Project.LoadedProjectNode loadedProjectNode) {
-                        //        if (loadedProjectNode.IsIncludeSharedItems) {
-                        //            ////if (container is FrameworkElement fe) {
-                        //            ////    var compositeContext = new AdditionalContextWrapper<Helpers.MenuItemCommand, VsShell.Project.LoadedProjectNode>(
-                        //            ////        menuItemCommand,
-                        //            ////        loadedProjectNode);
-
-                        //            ////    fe.DataContext = compositeContext;
-                        //            ////}
-
-                        //            //if (container is FrameworkElement fe) {
-                        //            //    fe.Tag = loadedProjectNode;
-                        //            //}
-
-                        //            return this.ProjectThatInlcludeSharedItemsCommandTemplate;
-                        //        }
-                        //    }
-                        //}
-                    }
+                    //if (projRefEntry.SolutionProjectNode.IsLoaded) {
+                    //    return this.LoadedProjectsCommandTemplate;
+                    //}
+                    //else {
+                    //    return this.UnloadedProjectsCommandTemplate;
+                    //}
+                }
             }
 
             return base.SelectTemplate(item, container);

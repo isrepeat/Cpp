@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class SolutionProjectNode {
+    public sealed class SolutionProjectNode : Helpers.ObservableObject {
         public VsShell.Hierarchy.IVsHierarchy ProjectHierarchy { get; private set; }
         public Guid ProjectGuid { get; }
         public string Name { get; } = "<unknown>";
@@ -17,14 +17,26 @@ namespace TabsManagerExtension.VsShell.Project {
         public string FullName { get; } = "<unknown>";
         public bool IsSharedProject { get; }
 
-        public bool IsLoaded = false;
 
+        private bool _isLoaded = false;
+        public bool IsLoaded {
+            get => _isLoaded;
+            private set {
+                if (_isLoaded != value) {
+                    _isLoaded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private readonly Helpers.Variant<LoadedProjectNode, UnloadedProjectNode> _projectNodeVariant = new();
         public object? ProjectNodeObj => _projectNodeVariant.CurrentValue;
         public LoadedProjectNode LoadedProjectNode => _projectNodeVariant.Get<LoadedProjectNode>();
         public UnloadedProjectNode UnloadedProjectNode => _projectNodeVariant.Get<UnloadedProjectNode>();
 
+        private LoadedProjectNode _cachedLoadedProjectNode;
+        private UnloadedProjectNode _cachedUnloadedProjectNode;
 
-        private readonly Helpers.Variant<LoadedProjectNode, UnloadedProjectNode> _projectNodeVariant = new();
 
         public SolutionProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -58,7 +70,7 @@ namespace TabsManagerExtension.VsShell.Project {
             }
 
             this.IsSharedProject = this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase);
-
+ 
             this.UpdateLoadedState();
         }
 
@@ -98,17 +110,34 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private void UpdateLoadedState() {
             if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
-                this.IsLoaded = true;
-
                 var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
 
-                _projectNodeVariant.Set(new LoadedProjectNode(this, dteProject));
+                if (_cachedLoadedProjectNode == null) {
+                    _cachedLoadedProjectNode = new LoadedProjectNode(this, dteProject);
+                }
+                else {
+                    var allProjectDocumentNodes = _cachedLoadedProjectNode.Sources
+                        .Concat(_cachedLoadedProjectNode.SharedItems)
+                        .Concat(_cachedLoadedProjectNode.ExternalIncludes);
+
+                    foreach (var documentNode in allProjectDocumentNodes) {
+                        documentNode.TryRefreshItemId();
+                    }
+                }
+
+                _projectNodeVariant.Set(_cachedLoadedProjectNode);
+
+                this.IsLoaded = true;
                 Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set LoadedProjectNode for {this.UniqueName}");
             }
             else { // (this.ProjectHierarchy is VsShell.Hierarchy.IVsStubHierarchy)
-                this.IsLoaded = false;
+                if (_cachedUnloadedProjectNode == null) {
+                    _cachedUnloadedProjectNode = new UnloadedProjectNode(this);
+                }
 
-                _projectNodeVariant.Set(new UnloadedProjectNode(this));
+                _projectNodeVariant.Set(_cachedUnloadedProjectNode);
+                
+                this.IsLoaded = false;
                 Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set UnloadedProjectNode for {this.UniqueName}");
             }
         }

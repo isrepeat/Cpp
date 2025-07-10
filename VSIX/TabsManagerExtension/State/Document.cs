@@ -70,16 +70,26 @@ namespace TabsManagerExtension.State.Document {
 
 
 
+    //public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
+    //    public TabItemDocument TabItemDocument { get; private set; }
+    //    public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; private set; }
+
+    //    public DocumentProjectReferenceInfo(
+    //        TabItemDocument tabItemDocument,
+    //        VsShell.Project.SolutionProjectNode solutionProjectNode
+    //        ) {
+    //        this.TabItemDocument = tabItemDocument;
+    //        this.SolutionProjectNode = solutionProjectNode;
+    //    }
+    //}
+
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
-        public TabItemDocument TabItemDocument { get; private set; }
-        public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; private set; }
+        public VsShell.Document.DocumentNode DocumentNode { get; private set; }
 
         public DocumentProjectReferenceInfo(
-            TabItemDocument tabItemDocument,
-            VsShell.Project.SolutionProjectNode solutionProjectNode
+            VsShell.Document.DocumentNode documentNode
             ) {
-            this.TabItemDocument = tabItemDocument;
-            this.SolutionProjectNode = solutionProjectNode;
+            this.DocumentNode = documentNode;
         }
     }
 
@@ -146,27 +156,53 @@ namespace TabsManagerExtension.State.Document {
             var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
-            // TODO: ты должен включить только те unloaded проекты которые знают про this.FullName
-            var unloadedSolutionProjectNodes = solutionHierarchyAnalyzer.UnloadedProjects
-                .Select(p => p.SolutionProjectNode);
+            //// TODO: ты должен включить только те unloaded проекты которые знают про this.FullName
+            //var unloadedSolutionProjectNodes = solutionHierarchyAnalyzer.UnloadedProjects
+            //    .Select(p => p.SolutionProjectNode);
 
             //var allProjectNodes = externalIncludesSolutionProjectNodes;
             var allSolutionProjectNodes = externalIncludesSolutionProjectNodes
                 .Concat(sharedItemsSolutionProjectNodes)
-                .Concat(unloadedSolutionProjectNodes)
+                //.Concat(unloadedSolutionProjectNodes)
                 .ToList();
 
-            Helpers.Diagnostic.Logger.LogDebug($"[allSolutionProjectNodes]:");
-            foreach (var solutionProjectNod in allSolutionProjectNodes) {
-                Helpers.Diagnostic.Logger.LogDebug($"- {solutionProjectNod}");
-            }
+            //Helpers.Diagnostic.Logger.LogDebug($"[allSolutionProjectNodes]:");
+            //foreach (var solutionProjectNod in allSolutionProjectNodes) {
+            //    Helpers.Diagnostic.Logger.LogDebug($"- {solutionProjectNod}");
+            //}
 
             if (allSolutionProjectNodes.Count < 2) {
                 return; // Игнорируем только лишь ссылки на собсвтенные проекты.
             }
 
+            //foreach (var solutionProjectNode in allSolutionProjectNodes) {
+            //    this.ProjectReferenceList.Add(new DocumentProjectReferenceInfo(this, solutionProjectNode));
+            //}
+
+
+            var documentNodes = new List<VsShell.Document.DocumentNode>();
+
             foreach (var solutionProjectNode in allSolutionProjectNodes) {
-                this.ProjectReferenceList.Add(new DocumentProjectReferenceInfo(this, solutionProjectNode));
+                var externalInclude = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(solutionProjectNode, this.FullName);
+                
+                if (externalInclude != null) {
+                    documentNodes.Add(externalInclude);
+                }
+            }
+
+
+            foreach (var solutionProjectNode in allSolutionProjectNodes) {
+                var sharedItemNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(solutionProjectNode, this.FullName);
+
+                if (sharedItemNode != null) {
+                    documentNodes.Add(sharedItemNode);
+                }
+            }
+
+            foreach (var documentNode in documentNodes) {
+                this.ProjectReferenceList.Add(new DocumentProjectReferenceInfo(documentNode));
             }
         }
 

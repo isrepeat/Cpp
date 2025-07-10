@@ -104,7 +104,7 @@
             
             
             <!-- Virtual menu templates -->
-            <DataTemplate x:Key="LoadedProjectsCommandTemplate">
+            <!--<DataTemplate x:Key="LoadedProjectsCommandTemplate">
                 <DataTemplate.Resources>
                     <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl/MenuItemCommandStyle}">
                         <Style.Triggers>
@@ -135,14 +135,34 @@
                           Command="{Binding Command}"
                           CommandParameter="{Binding CommandParameterContext}"
                           />
+            </DataTemplate>-->
+
+            <DataTemplate x:Key="ProjectReferenceCommandTemplate">
+                <DataTemplate.Resources>
+                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl/MenuItemCommandStyle}">
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.SolutionProjectNode.IsLoaded}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Foreground" Value="#80DDDDDD"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataTemplate.Resources>
+                <MenuItem Header="{Binding Header}"
+                          Command="{Binding Command}"
+                          CommandParameter="{Binding CommandParameterContext}"
+                          />
             </DataTemplate>
 
 
             <localTemplateSelectors:VirtualMenuItemTemplateSelector 
                 x:Key="VirtualMenuItemTemplateSelector"
-                LoadedProjectsCommandTemplate="{StaticResource LoadedProjectsCommandTemplate}"
-                UnloadedProjectsCommandTemplate="{StaticResource UnloadedProjectsCommandTemplate}"
+                ProjectReferenceCommandTemplate="{StaticResource ProjectReferenceCommandTemplate}"
                 />
+                <!--LoadedProjectsCommandTemplate="{StaticResource LoadedProjectsCommandTemplate}"-->
+                <!--UnloadedProjectsCommandTemplate="{StaticResource UnloadedProjectsCommandTemplate}"-->
 
         </ResourceDictionary>
     </UserControl.Resources>
