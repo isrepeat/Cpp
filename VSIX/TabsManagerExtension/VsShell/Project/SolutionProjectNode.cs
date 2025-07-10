@@ -34,9 +34,9 @@ namespace TabsManagerExtension.VsShell.Project {
         public LoadedProjectNode LoadedProjectNode => _projectNodeVariant.Get<LoadedProjectNode>();
         public UnloadedProjectNode UnloadedProjectNode => _projectNodeVariant.Get<UnloadedProjectNode>();
 
+
         private LoadedProjectNode _cachedLoadedProjectNode;
         private UnloadedProjectNode _cachedUnloadedProjectNode;
-
 
         public SolutionProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -110,20 +110,12 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private void UpdateLoadedState() {
             if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
-                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
-
                 if (_cachedLoadedProjectNode == null) {
-                    _cachedLoadedProjectNode = new LoadedProjectNode(this, dteProject);
+                    _cachedLoadedProjectNode = new LoadedProjectNode(this);
                 }
-                else {
-                    var allProjectDocumentNodes = _cachedLoadedProjectNode.Sources
-                        .Concat(_cachedLoadedProjectNode.SharedItems)
-                        .Concat(_cachedLoadedProjectNode.ExternalIncludes);
 
-                    foreach (var documentNode in allProjectDocumentNodes) {
-                        documentNode.TryRefreshItemId();
-                    }
-                }
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
+                _cachedLoadedProjectNode.SetDteProject(dteProject);
 
                 _projectNodeVariant.Set(_cachedLoadedProjectNode);
 
@@ -133,6 +125,11 @@ namespace TabsManagerExtension.VsShell.Project {
             else { // (this.ProjectHierarchy is VsShell.Hierarchy.IVsStubHierarchy)
                 if (_cachedUnloadedProjectNode == null) {
                     _cachedUnloadedProjectNode = new UnloadedProjectNode(this);
+                }
+
+                if (_cachedLoadedProjectNode != null) {
+                    _cachedLoadedProjectNode.SetDteProject(null);
+                    _cachedUnloadedProjectNode.UpdateLastInfoFromLoadedProjectNode(_cachedLoadedProjectNode);
                 }
 
                 _projectNodeVariant.Set(_cachedUnloadedProjectNode);

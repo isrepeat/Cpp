@@ -371,7 +371,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 //.ToList();
 
                 var dteProjects = loadedProjectNodes
-                    .Select(pn => pn.dteProject)
+                    .Select(pn => pn.ShellProject.dteProject)
                     .ToList();
 
                 _msBuildSolutionWatcher = new MsBuildSolutionWatcher(dteProjects);
@@ -414,7 +414,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             var stack = new Stack<EnvDTE.ProjectItem>();
 
-            foreach (EnvDTE.ProjectItem item in loadedProjectNode.dteProject.ProjectItems) {
+            foreach (EnvDTE.ProjectItem item in loadedProjectNode.ShellProject.dteProject.ProjectItems) {
                 stack.Push(item);
             }
 
@@ -591,7 +591,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         // ⛔ Файл не найден в графе — ищем в проектах, возможно git checkout вернул файл
                         var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                         foreach (var loadedProjectNode in solutionHierarchyAnalyzer.LoadedProjects) {
-                            if (Utils.EnvDteUtils.IsFileInProject(changedFile.FullPath, loadedProjectNode.dteProject)) {
+                            if (Utils.EnvDteUtils.IsFileInProject(changedFile.FullPath, loadedProjectNode.ShellProject.dteProject)) {
                                 var newIncludes = this.ExtractRawIncludes(changedFile.FullPath);
                                 var newSourceFile = new Document.SourceFile(changedFile.FullPath, loadedProjectNode.SolutionProjectNode);
 

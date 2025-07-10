@@ -147,6 +147,13 @@
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Foreground" Value="#80DDDDDD"/>
                             </MultiDataTrigger>
+
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsInvalidated}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Foreground" Value="Red"/>
+                            </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </DataTemplate.Resources>

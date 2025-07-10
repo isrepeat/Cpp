@@ -163,7 +163,8 @@ namespace TabsManagerExtension.VsShell.Solution {
                         .Replace("$(MSBuildThisFileDirectory)", baseDir)
                         .Replace("$(ProjectDir)", baseDir);
 
-                    result.Add(Path.GetFullPath(resolved));
+                    string fullPath = Path.GetFullPath(Path.Combine(baseDir, resolved.Replace('/', '\\')));
+                    result.Add(fullPath);
                 }
             }
 

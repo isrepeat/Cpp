@@ -189,6 +189,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                     _sourcesRepresentationsTable.AddRange(loadedProjectNode.Sources);
                     _sharedItemsRepresentationsTable.AddRange(loadedProjectNode.SharedItems);
                 }
+                else if (solutionProjectNode.ProjectNodeObj is VsShell.Project.UnloadedProjectNode unloadedProjectNode) {
+                    _sourcesRepresentationsTable.AddRange(unloadedProjectNode.LastSources);
+                    _sharedItemsRepresentationsTable.AddRange(unloadedProjectNode.LastSharedItems);
+                }
             }
 
             _sourcesRepresentationsTable.BuildRepresentations();
@@ -210,6 +214,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 if (solutionProjectNode.ProjectNodeObj is VsShell.Project.LoadedProjectNode loadedProjectNode) {
                     loadedProjectNode.UpdateExternalIncludes();
                     _externalIncludeRepresentationsTable.AddRange(loadedProjectNode.ExternalIncludes);
+                }
+                else if (solutionProjectNode.ProjectNodeObj is VsShell.Project.UnloadedProjectNode unloadedProjectNode) {
+                    _externalIncludeRepresentationsTable.AddRange(unloadedProjectNode.LastExternalIncludes);
                 }
             }
 
@@ -247,6 +254,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             this.AnalyzeSolutionProjects();
             this.AnalyzeDocuments();
+            this.AnalyzeExternalIncludes();
         }
 
         private void OnSolutionClosed(string solutionName) {
@@ -270,6 +278,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                 existingSolutionProject.UpdateHierarchy(e);
                 this.AnalyzeDocuments();
+                this.AnalyzeExternalIncludes();
             }               
         }
 
@@ -285,6 +294,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                 existingSolutionProject.UpdateHierarchy(e);
                 this.AnalyzeDocuments();
+                this.AnalyzeExternalIncludes();
             }
         }
 

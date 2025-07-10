@@ -10,15 +10,28 @@ using EnvDTE;
 
 
 namespace TabsManagerExtension.VsShell.Document {
-    public class DocumentNode {
+    public class DocumentNode : Helpers.ObservableObject {
         public uint ItemId { get; private set; }
         public string FilePath { get; }
         public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; }
+        
+        
+        private bool _isInvalidated = false;
+        public bool IsInvalidated => _isInvalidated;
 
         public DocumentNode(uint itemId, string filePath, VsShell.Project.SolutionProjectNode solutionProjectNode) {
             this.ItemId = itemId;
             this.FilePath = filePath;
             this.SolutionProjectNode = solutionProjectNode;
+        }
+
+        ~DocumentNode() {
+            //Helpers.Diagnostic.Logger.LogDebug($"DocumentNode Disposed: {this}");
+            //System.Diagnostics.Debugger.Break();
+        }
+
+        public void Invalidated() {
+            _isInvalidated = true;
         }
 
 
@@ -44,6 +57,7 @@ namespace TabsManagerExtension.VsShell.Document {
             }
 
             return
+                this.ItemId == other.ItemId &&
                 this.SolutionProjectNode.ProjectGuid == other.SolutionProjectNode.ProjectGuid &&
                 StringComparer.OrdinalIgnoreCase.Equals(this.FilePath, other.FilePath);
         }
@@ -52,6 +66,7 @@ namespace TabsManagerExtension.VsShell.Document {
             unchecked {
                 int hash = 17;
 
+                hash = hash * 31 + this.ItemId.GetHashCode();
                 hash = hash * 31 + this.SolutionProjectNode.ProjectGuid.GetHashCode();
                 hash = hash * 31 + (this.FilePath != null
                     ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.FilePath)
@@ -66,8 +81,7 @@ namespace TabsManagerExtension.VsShell.Document {
         protected void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var loadedProjectNode = this.SolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
-            if (loadedProjectNode == null) {
+            if (!this.SolutionProjectNode.IsLoaded) {
                 System.Diagnostics.Debugger.Break();
                 return;
             }
@@ -89,9 +103,13 @@ namespace TabsManagerExtension.VsShell.Document {
 
             // Нужно открывать именно .cpp файл который реально включает наш include,
             // чтоб сработала смена контекста.
-            string contextSwitchFile = currentProjectTransitiveIncludingFiles
+            var contextSwitchFile = currentProjectTransitiveIncludingFiles
                 .FirstOrDefault(sf => System.IO.Path.GetExtension(sf.FilePath) == ".cpp")
                 ?.FilePath;
+
+            if (contextSwitchFile == null) {
+                return;
+            }
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             var contextSwitchDocumentNode = solutionHierarchyAnalyzer.SourcesRepresentationsTable
@@ -116,6 +134,9 @@ namespace TabsManagerExtension.VsShell.Document {
             // Переключаемся на файл который включает наш файл (для смены activeDocumentFrame)
             // иначе IntelliSense не подхватит контекст.
             if (contextSwitchDocumentNode != null) {
+
+                Utils.VsHierarchyUtils.LogSolutionHierarchy();
+
                 hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
                     contextSwitchDocumentNode.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
                     contextSwitchDocumentNode.ItemId);
@@ -164,21 +185,50 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
         public new void OpenWithProjectContext() {
-            base.OpenWithProjectContext();
+            if (!this.SolutionProjectNode.IsLoaded) {
+                Utils.VsHierarchyUtils.ReloadProject(this.SolutionProjectNode.ProjectGuid);
+            }
 
-            // Выгрузка связанных проектов.
             // Получаем все sharedItems проекты, которые знают про этот файл.
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FilePath);
 
-            var projectGuidsToUnload = sharedItemsSolutionProjectNodes
+            var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                .GetProjectsByDocumentPath(this.FilePath);
+
+            // Собираем все проекты на выгрузку, кроме текущего 'this.SolutionProjectNode'
+            // и оригинального 'IsSharedProject'.
+            var sharedItemsProjectGuidsToUnload = sharedItemsSolutionProjectNodes
                 .Where(spn => !spn.IsSharedProject && !spn.Equals(this.SolutionProjectNode))
                 .Select(spn => spn.ProjectGuid)
                 .ToList();
 
-            foreach (var projectGuid in projectGuidsToUnload) {
+            var externalIncludesProjectGuidsToUnload = externalIncludesSolutionProjectNodes
+                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.SolutionProjectNode))
+                .Select(spn => spn.ProjectGuid)
+                .ToList();
+
+
+            foreach (var projectGuid in sharedItemsProjectGuidsToUnload) {
                 Utils.VsHierarchyUtils.UnloadProject(projectGuid);
+            }
+
+            // Выгружаем все остальные связанные проекты только лишь когда имеются 
+            // другие невыгруженные sharedItems проекты. Это нужно чтобы контекст
+            // целевого проекта установился наверняка.
+            if (sharedItemsProjectGuidsToUnload.Count > 0) {
+                foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
+                    Utils.VsHierarchyUtils.UnloadProject(projectGuid);
+                }
+            }
+
+            base.OpenWithProjectContext();
+
+            if (sharedItemsProjectGuidsToUnload.Count > 0) {
+                foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
+                    Utils.VsHierarchyUtils.ReloadProject(projectGuid);
+                }
             }
         }
 
