@@ -6,6 +6,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using EnvDTE;
 
 
 namespace TabsManagerExtension.VsShell.Document {
@@ -69,133 +70,17 @@ namespace TabsManagerExtension.VsShell.Document {
         }
 
 
-        //public void OpenWithProjectContext() {
-        //    ThreadHelper.ThrowIfNotOnUIThread();
-
-        //    var loadedProjectNode = this.SolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
-        //    if (loadedProjectNode == null) {
-        //        System.Diagnostics.Debugger.Break();
-        //        return;
-        //    }
-
-        //    var loadedSharedProjectNode = this.SharedSolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
-        //    if (loadedSharedProjectNode == null) {
-        //        System.Diagnostics.Debugger.Break();
-        //        return;
-        //    }
-
-
-        //    // Сохраняем активный документ до всех действий
-        //    var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
-
-        //    // Проверяем, совпадает ли уже активный документ с нашим файлом
-        //    bool wasAlreadyActive =
-        //        activeDocumentBefore != null &&
-        //        string.Equals(activeDocumentBefore.FullName, this.FilePath, StringComparison.OrdinalIgnoreCase);
-
-        //    // Попытка найти первый cpp/h файл проекта,
-        //    // чтобы открыть его и "переключить" контекст редактора на нужный проект.
-        //    // Это нужно для того, чтобы при открытии внешнего include файла
-        //    // Visual Studio знала, что контекстом открытия является именно этот проект.
-        //    if (loadedProjectNode.Sources.Count == 0) {
-        //        System.Diagnostics.Debugger.Break();
-        //    }
-        //    string contextSwitchFile = loadedProjectNode.Sources.FirstOrDefault()?.FilePath;
-
-        //    bool needCloseContextSwitchFile = false;
-        //    if (!string.IsNullOrEmpty(contextSwitchFile)) {
-        //        bool alreadyOpen = Utils.EnvDteUtils.IsDocumentOpen(contextSwitchFile);
-        //        if (!alreadyOpen) {
-        //            PackageServices.Dte2.ItemOperations.OpenFile(contextSwitchFile);
-        //            needCloseContextSwitchFile = true;
-        //        }
-        //    }
-
-
-        //    // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
-        //    // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
-        //    // по нему именно в контексте этого проекта в папке External Dependencies.
-        //    if (this.SolutionProjectNode.ProjectHierarchy.VsHierarchy is IVsUIHierarchy uiHierarchy) {
-        //        Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
-        //        const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
-
-        //        int hr = uiHierarchy.ExecCommand(
-        //            this.ItemId,
-        //            ref cmdGroup,
-        //            cmdId,
-        //            0,
-        //            IntPtr.Zero,
-        //            IntPtr.Zero);
-
-        //        if (ErrorHandler.Succeeded(hr)) {
-        //            Helpers.Diagnostic.Logger.LogDebug($"[SharedItemNode] Opened '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}'");
-        //        }
-        //        else {
-        //            Helpers.Diagnostic.Logger.LogError($"[SharedItemNode] Failed to open '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}', hr=0x{hr:X8}");
-        //            ErrorHandler.ThrowOnFailure(hr);
-        //        }
-        //    }
-
-        //    // Закрываем временный файл переключения контекста
-        //    if (needCloseContextSwitchFile) {
-        //        var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-        //            .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchFile, StringComparison.OrdinalIgnoreCase));
-
-        //        doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
-        //    }
-
-        //    // Если наш файл изначально НЕ был активным, возвращаем активным предыдущий документ
-        //    if (!wasAlreadyActive && activeDocumentBefore != null) {
-        //        activeDocumentBefore.Activate();
-        //    }
-        //}
-
         public void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            var loadedProjectNode = this.SolutionProjectNode.ProjectNodeObj as VsShell.Project.LoadedProjectNode;
+            if (loadedProjectNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
 
-            //// Получаем все проекты которые знают про этот файл
-            ////var externalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-            ////    .GetProjectsByDocumentPath(this.FilePath);
-
-            //var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-            //    .GetProjectsByDocumentPath(this.FilePath);
-
-            //var allProjectNodes = sharedItemsProjectNodes;
-            ////var allProjectNodes = externalIncludesProjectNodes
-            ////    .Concat(sharedItemsProjectNodes)
-            ////    .ToList();
-
-            //var projectGuidsToUnload = new List<Guid>();
-
-            //foreach (var projectNode in allProjectNodes) {
-            //    // Игнорируем из выгрузки:
-            //    // - оригинальный Shared.vcxitems проект, которому принадлежит путь this.FilePath.
-            //    // - целевой проект this.ProjectNode, в контексте которого и лежит этот SharedItemNode.
-            //    bool exlcludedFromUnload = 
-            //        projectNode.Equals(this.SharedSolutionProjectNode) ||
-            //        projectNode.Equals(this.SolutionProjectNode);
-
-            //    if (!exlcludedFromUnload) {
-            //        projectGuidsToUnload.Add(projectNode.ProjectGuid);
-            //    }
-            //}
-
-            ////using (solutionHierarchyAnalyzer.AccumulateProjectEventsScoped()) {
-            //foreach (var projectGuid in projectGuidsToUnload) {
-            //    Utils.VsHierarchyUtils.UnloadProject(projectGuid);
-            //}
-            ////}
-
-
-            // Сохраняем активный документ до всех действий
+            // Сохраняем активный документ до всех действий.
             var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
-
-            // Проверяем, совпадает ли уже активный документ с нашим файлом
-            bool activeDocumentBeforeIsNotSame =
-                activeDocumentBefore != null &&
-                !string.Equals(activeDocumentBefore.FullName, this.FilePath, StringComparison.OrdinalIgnoreCase);
 
             // Попытка найти первый cpp/h файл проекта,
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
@@ -209,86 +94,69 @@ namespace TabsManagerExtension.VsShell.Document {
                 .Where(sf => sf.SolutionProjectNode.Equals(this.SolutionProjectNode))
                 .ToList();
 
+            // Нужно открывать именно .cpp файл который реально включает наш include,
+            // чтоб сработала смена контекста.
             string contextSwitchFile = currentProjectTransitiveIncludingFiles
                 .FirstOrDefault(sf => System.IO.Path.GetExtension(sf.FilePath) == ".cpp")
                 ?.FilePath;
 
-            bool needCloseContextSwitchFile = false;
-            bool needAwaitContextSwitchDocumentActivation = false;
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            var contextSwitchDocumentNode = solutionHierarchyAnalyzer.SourcesRepresentationsTable
+                .GetDocumentByProjectAndDocumentPath(this.SolutionProjectNode, contextSwitchFile);
 
-            if (!string.IsNullOrEmpty(contextSwitchFile)) {
-                bool alreadyOpen = Utils.EnvDteUtils.IsDocumentOpen(contextSwitchFile);
-                if (alreadyOpen) {
-                    var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-                        .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchFile, StringComparison.OrdinalIgnoreCase));
-
-                    if (doc.Saved) {
-                        doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
-                        PackageServices.Dte2.ItemOperations.OpenFile(contextSwitchFile);
-                    }
-                    else {
-                        doc?.Activate();
-                        needAwaitContextSwitchDocumentActivation = true;
-                    }
-                }
-                else {
-                    PackageServices.Dte2.ItemOperations.OpenFile(contextSwitchFile);
-                    needCloseContextSwitchFile = true;
-                }
+            if (contextSwitchDocumentNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
             }
 
+            bool needCloseContextSwitchDocumentNode =
+                !Utils.EnvDteUtils.IsDocumentOpen(contextSwitchDocumentNode.FilePath);
 
+            int hr = VSConstants.S_OK;
 
-            // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
-            // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
-            // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.SolutionProjectNode.ProjectHierarchy.VsHierarchy is IVsUIHierarchy uiHierarchy) {
-                Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
-                const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
+            // Открываем файл в контексте проекта.
+            hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
+                this.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                this.ItemId);
+            ErrorHandler.ThrowOnFailure(hr);
 
-                int hr = uiHierarchy.ExecCommand(
-                    this.ItemId,
-                    ref cmdGroup,
-                    cmdId,
-                    0,
-                    IntPtr.Zero,
-                    IntPtr.Zero);
-
-                if (ErrorHandler.Succeeded(hr)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[ExternalInclude] Opened '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}'");
-                }
-                else {
-                    Helpers.Diagnostic.Logger.LogError($"[ExternalInclude] Failed to open '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}', hr=0x{hr:X8}");
-                    ErrorHandler.ThrowOnFailure(hr);
-                }
+            // Переключаемся на файл который включает наш файл (для смены activeDocumentFrame)
+            // иначе IntelliSense не подхватит контекст.
+            if (contextSwitchDocumentNode != null) {
+                hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
+                    contextSwitchDocumentNode.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                    contextSwitchDocumentNode.ItemId);
+                ErrorHandler.ThrowOnFailure(hr);
             }
 
-            // Закрываем временный файл переключения контекста
-            if (needCloseContextSwitchFile) {
+            // Закрываем временный файл переключения контекста.
+            if (needCloseContextSwitchDocumentNode) {
                 var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchFile, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchDocumentNode.FilePath, StringComparison.OrdinalIgnoreCase));
 
                 doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
             }
 
-            if (activeDocumentBeforeIsNotSame) {
-                activeDocumentBefore?.Activate();
-            }
-            //activeDocumentBefore.Activate();
-
-
+            // Возвращаем активным предыдущий документ.
             VsixThreadHelper.RunOnUiThread(async () => {
-                //if (needAwaitContextSwitchDocumentActivation) {
-                //    await Task.Delay(100);
-                //}
-
-                //// Загружаем обратно выгруженные проекты
-                //using (solutionHierarchyAnalyzer.AccumulateProjectEventsScoped()) {
-                //    foreach (var projectGuid in projectGuidsToUnload) {
-                //        VsHierarchy.ReloadProject(projectGuid);
-                //    }
-                //}
+                await Task.Delay(20);
+                activeDocumentBefore?.Activate();
             });
+
+
+            // Выгрузка связанных проектов.
+            // Получаем все sharedItems проекты, которые знают про этот файл.
+            var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetProjectsByDocumentPath(this.FilePath);
+
+            var projectGuidsToUnload = sharedItemsSolutionProjectNodes
+                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.SolutionProjectNode))
+                .Select(spn => spn.ProjectGuid)
+                .ToList();
+
+            foreach (var projectGuid in projectGuidsToUnload) {
+                Utils.VsHierarchyUtils.UnloadProject(projectGuid);
+            }
         }
 
 
@@ -307,6 +175,7 @@ namespace TabsManagerExtension.VsShell.Document {
             : base(itemId, filePath, solutionProjectNode) {
         }
 
+
         public void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -316,14 +185,8 @@ namespace TabsManagerExtension.VsShell.Document {
                 return;
             }
 
-            // Сохраняем активный документ до всех действий
+            // Сохраняем активный документ до всех действий.
             var activeDocumentBefore = PackageServices.Dte2.ActiveDocument;
-
-            // Проверяем, совпадает ли уже активный документ с нашим файлом
-            bool wasAlreadyActive =
-                activeDocumentBefore != null &&
-                string.Equals(activeDocumentBefore.FullName, this.FilePath, StringComparison.OrdinalIgnoreCase);
-
 
             // Попытка найти первый cpp/h файл проекта,
             // чтобы открыть его и "переключить" контекст редактора на нужный проект.
@@ -337,56 +200,56 @@ namespace TabsManagerExtension.VsShell.Document {
                 .Where(sf => sf.SolutionProjectNode.Equals(this.SolutionProjectNode))
                 .ToList();
 
+            // Нужно открывать именно .cpp файл который реально включает наш include,
+            // чтоб сработала смена контекста.
             string contextSwitchFile = currentProjectTransitiveIncludingFiles
                 .FirstOrDefault(sf => System.IO.Path.GetExtension(sf.FilePath) == ".cpp")
                 ?.FilePath;
 
-            bool needCloseContextSwitchFile = false;
-            if (!string.IsNullOrEmpty(contextSwitchFile)) {
-                bool alreadyOpen = Utils.EnvDteUtils.IsDocumentOpen(contextSwitchFile);
-                if (!alreadyOpen) {
-                    PackageServices.Dte2.ItemOperations.OpenFile(contextSwitchFile);
-                    needCloseContextSwitchFile = true;
-                }
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            var contextSwitchDocumentNode = solutionHierarchyAnalyzer.SourcesRepresentationsTable
+                .GetDocumentByProjectAndDocumentPath(this.SolutionProjectNode, contextSwitchFile);
+
+            if (contextSwitchDocumentNode == null) {
+                System.Diagnostics.Debugger.Break();
+                return;
             }
 
-            // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
-            // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
-            // по нему именно в контексте этого проекта в папке External Dependencies.
-            if (this.SolutionProjectNode.ProjectHierarchy.VsHierarchy is IVsUIHierarchy uiHierarchy) {
-                Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
-                const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
+            bool needCloseContextSwitchDocumentNode = 
+                !Utils.EnvDteUtils.IsDocumentOpen(contextSwitchDocumentNode.FilePath);
 
-                int hr = uiHierarchy.ExecCommand(
-                    this.ItemId,
-                    ref cmdGroup,
-                    cmdId,
-                    0,
-                    IntPtr.Zero,
-                    IntPtr.Zero);
+            int hr = VSConstants.S_OK;
 
-                if (ErrorHandler.Succeeded(hr)) {
-                    Helpers.Diagnostic.Logger.LogDebug($"[ExternalInclude] Opened '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}'");
-                }
-                else {
-                    Helpers.Diagnostic.Logger.LogError($"[ExternalInclude] Failed to open '{this.FilePath}' in project '{this.SolutionProjectNode.UniqueName}', hr=0x{hr:X8}");
-                    ErrorHandler.ThrowOnFailure(hr);
-                }
+            // Открываем файл в контексте проекта.
+            hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
+                this.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                this.ItemId);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            // Переключаемся на файл который включает наш файл (для смены activeDocumentFrame)
+            // иначе IntelliSense не подхватит контекст.
+            if (contextSwitchDocumentNode != null) {
+                hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
+                    contextSwitchDocumentNode.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                    contextSwitchDocumentNode.ItemId);
+                ErrorHandler.ThrowOnFailure(hr);
             }
 
-            // Закрываем временный файл переключения контекста
-            if (needCloseContextSwitchFile) {
+            // Закрываем временный файл переключения контекста.
+            if (needCloseContextSwitchDocumentNode) {
                 var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchFile, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchDocumentNode.FilePath, StringComparison.OrdinalIgnoreCase));
 
                 doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
             }
 
-            // Если наш файл изначально НЕ был активным, возвращаем активным предыдущий документ
-            if (!wasAlreadyActive && activeDocumentBefore != null) {
-                activeDocumentBefore.Activate();
-            }
+            // Возвращаем активным предыдущий документ.
+            VsixThreadHelper.RunOnUiThread(async () => {
+                await Task.Delay(20);
+                activeDocumentBefore?.Activate();
+            });
         }
+
 
         public override string ToString() {
             return $"ExternalInclude({base.ToStringCore()})";

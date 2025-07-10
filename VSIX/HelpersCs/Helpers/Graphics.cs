@@ -16,10 +16,14 @@ namespace Helpers {
     namespace Ex {
         public static class DpiExtensions {
             public static Point ex_ToDpiAwareScreen(this FrameworkElement element, Point localOffset) {
-                var screenPoint = element.PointToScreen(localOffset);
-
                 var source = PresentationSource.FromVisual(element);
-                var dpiMatrix = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+                if (source == null) {
+                    Helpers.Diagnostic.Logger.LogError("Element is not connected to a PresentationSource.");
+                    return new Point();
+                }
+
+                var screenPoint = element.PointToScreen(localOffset);
+                var dpiMatrix = source.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
 
                 return new Point(
                     screenPoint.X / dpiMatrix.M11,

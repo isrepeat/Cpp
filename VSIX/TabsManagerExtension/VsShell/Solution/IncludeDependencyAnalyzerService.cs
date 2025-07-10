@@ -404,7 +404,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("UpdateProjectGraph()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Helpers.Diagnostic.Logger.LogDebug($"project name = [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
+            Helpers.Diagnostic.Logger.LogParam($"project name = [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
 
             if (_solutionSourceFileGraph == null) {
                 return;

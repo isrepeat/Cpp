@@ -103,13 +103,13 @@ namespace TabsManagerExtension.VsShell.Project {
                 var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
 
                 _projectNodeVariant.Set(new LoadedProjectNode(this, dteProject));
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set LoadedProjectNode for {this.UniqueName}");
+                Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set LoadedProjectNode for {this.UniqueName}");
             }
-            else {
+            else { // (this.ProjectHierarchy is VsShell.Hierarchy.IVsStubHierarchy)
                 this.IsLoaded = false;
 
                 _projectNodeVariant.Set(new UnloadedProjectNode(this));
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateHierarchyState] Set UnloadedProjectNode for {this.UniqueName}");
+                Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set UnloadedProjectNode for {this.UniqueName}");
             }
         }
     }

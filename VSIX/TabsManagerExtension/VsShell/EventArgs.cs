@@ -23,11 +23,11 @@ namespace TabsManagerExtension.VsShell._EventArgs {
     }
 
     public sealed class ProjectHierarchyChangedEventArgs : EventArgs {
-        public VsShell.Hierarchy.IVsHierarchy OldHierarchy { get; }
+        public VsShell.Hierarchy.IVsHierarchy? OldHierarchy { get; }
         public VsShell.Hierarchy.IVsHierarchy NewHierarchy { get; }
 
         public ProjectHierarchyChangedEventArgs(
-            VsShell.Hierarchy.IVsHierarchy oldHierarchy,
+            VsShell.Hierarchy.IVsHierarchy? oldHierarchy,
             VsShell.Hierarchy.IVsHierarchy newHierarchy
             ) {
             this.OldHierarchy = oldHierarchy;

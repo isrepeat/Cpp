@@ -32,120 +32,201 @@ namespace Helpers {
         }
     }
 
+
     public class Logger {
-        private string logParamPrefix = "    * ";
-        private string logErrorPrefix = "ERROR: ";
-        private string logWarningPrefix = "WARNING: ";
+        private const string LogParamPrefix = "  * ";
+        private const string LogErrorPrefix = "ERROR: ";
+        private const string LogWarningPrefix = "WARNING: ";
+
+        private const int MemberNameWidth = 64;
 
         public void LogDebug(
             string logMessage,
             string caller = "",
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0
-            ) {
+            [CallerLineNumber] int lineNumber = 0) {
+
+            // Определяем имя класса через StackTrace
+            var stackFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+            var method = stackFrame.GetMethod();
+            var callerTypeName = method?.DeclaringType?.Name ?? "";
+
+            // Заменяем memberName на полное имя <TypeName>.<MemberName>
+            memberName = !string.IsNullOrEmpty(callerTypeName)
+                ? $"{callerTypeName}.{memberName}"
+                : memberName;
+
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
-            if (!String.IsNullOrEmpty(caller)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {logMessage} [{callerInfo.CallerName}]");
+            string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
+
+            string logLine;
+            if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {logMessage} [{callerInfo.CallerName}]";
                 //CppFeatures.Cx.Logger.LogDebug($"{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {logMessage}");
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {logMessage}";
                 //CppFeatures.Cx.Logger.LogDebug($"{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
+
+            System.Diagnostics.Debug.WriteLine(logLine);
         }
+
 
         public void LogWarning(
             string logMessage,
             string caller = "",
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0
-            ) {
+            [CallerLineNumber] int lineNumber = 0) {
+
+            // Определяем имя класса через StackTrace
+            var stackFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+            var method = stackFrame.GetMethod();
+            var callerTypeName = method?.DeclaringType?.Name ?? "";
+
+            // Заменяем memberName на полное имя <TypeName>.<MemberName>
+            memberName = !string.IsNullOrEmpty(callerTypeName)
+                ? $"{callerTypeName}.{memberName}"
+                : memberName;
+
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
-            if (!String.IsNullOrEmpty(caller)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logWarningPrefix}{logMessage} [{callerInfo.CallerName}]");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logWarningPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
+
+            string logLine;
+            if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {Logger.LogWarningPrefix}{logMessage} [{callerInfo.CallerName}]";
+                //CppFeatures.Cx.Logger.LogDebug($"{logWarningPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logWarningPrefix}{logMessage}");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logWarningPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {Logger.LogWarningPrefix}{logMessage}";
+                //CppFeatures.Cx.Logger.LogDebug($"{logWarningPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
+
+            System.Diagnostics.Debug.WriteLine(logLine);
         }
+
 
         public void LogError(
             string logMessage,
             string caller = "",
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0
-            ) {
+            [CallerLineNumber] int lineNumber = 0) {
+
+            // Определяем имя класса через StackTrace
+            var stackFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+            var method = stackFrame.GetMethod();
+            var callerTypeName = method?.DeclaringType?.Name ?? "";
+
+            // Заменяем memberName на полное имя <TypeName>.<MemberName>
+            memberName = !string.IsNullOrEmpty(callerTypeName)
+                ? $"{callerTypeName}.{memberName}"
+                : memberName;
+
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
-            if (!String.IsNullOrEmpty(caller)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logErrorPrefix}{logMessage} [{callerInfo.CallerName}]");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logErrorPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
+
+            string logLine;
+            if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {Logger.LogErrorPrefix}{logMessage} [{callerInfo.CallerName}]";
+                //CppFeatures.Cx.Logger.LogDebug($"{logErrorPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logErrorPrefix}{logMessage}");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logErrorPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {Logger.LogErrorPrefix}{logMessage}";
+                //CppFeatures.Cx.Logger.LogDebug($"{logErrorPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
+
+            System.Diagnostics.Debug.WriteLine(logLine);
         }
+
+
 
         public void LogParam(
             string logMessage,
             string caller = "",
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0
-            ) {
+            [CallerLineNumber] int lineNumber = 0) {
+
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
-            if (!String.IsNullOrEmpty(caller)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logParamPrefix}{logMessage} [{callerInfo.CallerName}]");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logParamPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+            string memberFormatted = $"".PadRight(Logger.MemberNameWidth);
+
+            string logLine;
+            if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}  {Logger.LogParamPrefix}{logMessage} [{callerInfo.CallerName}]";
+                //CppFeatures.Cx.Logger.LogDebug($"{logParamPrefix}{logMessage} [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logParamPrefix}{logMessage}");
-                //CppFeatures.Cx.Logger.LogDebug($"{this.logParamPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}  {Logger.LogParamPrefix}{logMessage}";
+                //CppFeatures.Cx.Logger.LogDebug($"{logParamPrefix}{logMessage}", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
+
+            System.Diagnostics.Debug.WriteLine(logLine);
         }
+
 
         public Releaser LogFunctionScope(
             string logMessage,
             string caller = "",
             [CallerFilePath] string filePath = "",
             [CallerMemberName] string memberName = "",
-            [CallerLineNumber] int lineNumber = 0
-            ) {
+            [CallerLineNumber] int lineNumber = 0) {
+
+            // Определяем имя класса через StackTrace
+            var stackFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+            var method = stackFrame.GetMethod();
+            var callerTypeName = method?.DeclaringType?.Name ?? "";
+
+            // Заменяем memberName на полное имя <TypeName>.<MemberName>
+            memberName = !string.IsNullOrEmpty(callerTypeName)
+                ? $"{callerTypeName}.{memberName}"
+                : memberName;
+
             var callerInfo = new CallerInfo(filePath, caller, memberName, lineNumber);
-            if (!String.IsNullOrEmpty(callerInfo.CallerName)) {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {logMessage} enter [{callerInfo.CallerName}]");
+            string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
+
+            string logLine;
+            if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {logMessage} enter [{callerInfo.CallerName}]";
                 //CppFeatures.Cx.Logger.LogDebug($"{logMessage} enter [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {logMessage} enter");
+                logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {logMessage} enter";
                 //CppFeatures.Cx.Logger.LogDebug($"{logMessage} enter", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
             }
+
+            System.Diagnostics.Debug.WriteLine(logLine);
+
             return new Releaser(logMessage, callerInfo);
         }
 
         public class Releaser : IDisposable {
             public string logMessage = "";
             public CallerInfo callerInfo;
+
             public Releaser(string logMessage, CallerInfo callerInfo) {
                 this.logMessage = logMessage;
                 this.callerInfo = callerInfo;
             }
 
             public void Dispose() {
-                if (!String.IsNullOrEmpty(this.callerInfo.CallerName)) {
-                    System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logMessage} exit [{callerInfo.CallerName}]");
-                    //CppFeatures.Cx.Logger.LogDebug($"{this.logMessage} exit [{this.callerInfo.CallerName}]", this.callerInfo.FilePath, this.callerInfo.MemberName, this.callerInfo.LineNumber);
+                string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
+
+                string logLine;
+                if (!string.IsNullOrEmpty(callerInfo.CallerName)) {
+                    logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {this.logMessage} exit [{this.callerInfo.CallerName}]";
+                    //CppFeatures.Cx.Logger.LogDebug($"{logMessage} exit [{callerInfo.CallerName}]", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
                 }
                 else {
-                    System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss:fff}] {this.logMessage} exit");
-                    //CppFeatures.Cx.Logger.LogDebug($"{this.logMessage} exit", this.callerInfo.FilePath, this.callerInfo.MemberName, this.callerInfo.LineNumber);
+                    logLine = $"[{DateTime.Now:HH:mm:ss:fff}] {memberFormatted}: {this.logMessage} exit";
+                    //CppFeatures.Cx.Logger.LogDebug($"{logMessage} exit", callerInfo.FilePath, callerInfo.MemberName, callerInfo.LineNumber);
                 }
+
+                System.Diagnostics.Debug.WriteLine(logLine);
             }
         }
     }
+
 }

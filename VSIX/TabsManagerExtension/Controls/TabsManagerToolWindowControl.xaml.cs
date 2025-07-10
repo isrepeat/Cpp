@@ -1216,11 +1216,15 @@ namespace TabsManagerExtension.Controls {
             // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
             documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
-
+            
             if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
-                sharedItemNode.OpenWithProjectContext();
-                Console.Beep(frequency: 2000, duration: 150);
-                Console.Beep(frequency: 2000, duration: 150);
+                //VsixThreadHelper.RunOnUiThread(async () => {
+                    sharedItemNode.ReloadProjects();
+                    //sharedItemNode.OpenWithProjectContext();
+                    //await Task.Delay(1000);
+                    Console.Beep(frequency: 2000, duration: 150);
+                    Console.Beep(frequency: 2000, duration: 150);
+                //});
             }
         }
 

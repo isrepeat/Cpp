@@ -129,6 +129,44 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
+        public static int ClickOnSolutionHierarchyItem(IVsHierarchy hierarchy, uint itemId) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Используем ExecCommand для эмуляции DoubleClick в Solution Explorer,
+            // чтобы Visual Studio открыла файл так, как если бы пользователь дважды кликнул
+            // по нему именно в контексте этого проекта в папке External Dependencies.
+            if (hierarchy is IVsUIHierarchy uiHierarchy) {
+                Guid cmdGroup = VSConstants.CMDSETID.UIHierarchyWindowCommandSet_guid;
+                const uint cmdId = (uint)VSConstants.VsUIHierarchyWindowCmdIds.UIHWCMDID_DoubleClick;
+
+                hierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
+                var name = nameObj as string ?? "(null)";
+                
+                hierarchy.GetCanonicalName(itemId, out var canonicalName);
+                Helpers.Diagnostic.Logger.LogDebug($"[ClickOnSolutionHierarchyItem] Try open ItemId={itemId}, Name='{name}' ({canonicalName})");
+
+                int hr = uiHierarchy.ExecCommand(
+                    itemId,
+                    ref cmdGroup,
+                    cmdId,
+                    0,
+                    IntPtr.Zero,
+                    IntPtr.Zero);
+
+                if (ErrorHandler.Succeeded(hr)) {
+                }
+                else {
+                    Helpers.Diagnostic.Logger.LogError($"[ClickOnSolutionHierarchyItem] Failed uiHierarchy.ExecCommand for itemId =  '{itemId}', hr=0x{hr:X8}");
+                }
+
+                return hr;
+            }
+
+            Helpers.Diagnostic.Logger.LogError($"[ClickOnSolutionHierarchyItem] Provided hierarchy does not implement IVsUIHierarchy.");
+            return VSConstants.E_FAIL;
+        }
+
+
         public static void LogSolutionHierarchy() {
             ThreadHelper.ThrowIfNotOnUIThread();
 

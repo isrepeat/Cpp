@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
+using EnvDTE;
 
 
 namespace TabsManagerExtension.VsShell.Solution.Services {
@@ -63,7 +64,38 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         //
         // IVsSolutionEvents
         //
+        /// <summary>
+        /// Этот метод вызывается Visual Studio после открытия (добавления) проекта в Solution.
+        /// <para>
+        /// В отличие от OnAfterLoadProject, который вызывается только когда проект
+        /// "переходит" из IVsStubHierarchy в IVsRealHierarchy (deferred load),
+        /// OnAfterOpenProject вызывается в любых случаях:
+        /// - при первом открытии проекта,
+        /// - при загрузке ранее выгруженного проекта (если не было stub),
+        /// - при открытии решения, содержащего этот проект,
+        /// - при LoadProject из кода.
+        /// </para>
+        /// </summary>
         public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (fAdded != 0) {
+                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pHierarchy);
+                Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnAfterOpenProject(): {dteProject?.UniqueName}");
+
+                var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pHierarchy) as VsShell.Hierarchy.IVsRealHierarchy;
+                if (pNewHierarchy != null) {
+                    this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
+                        null, // oldHierarchy отсутствует, т.к. проект не переходил из stubHierarchy, а сразу загружен в Solution.
+                        pNewHierarchy
+                    ));
+                }
+                else {
+                    // Это крайний случай: если Factory не смогла создать IVsRealHierarchy,
+                    // возможно передан неподдерживаемый IVsHierarchy (например Misc Files).
+                    Helpers.Diagnostic.Logger.LogWarning($"[VsSolutionEventsTrackerService] Could not cast hierarchy to IVsRealHierarchy.");
+                }
+            }
             return VSConstants.S_OK;
         }
 
@@ -76,22 +108,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
-                ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
-
-            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
-                ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
-
-            this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
-                pOldHierarchy,
-                pNewHierarchy
-                ));
-
-            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
-
-            Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project loaded: {dteProject?.UniqueName}");
+            // Used OnAfterOpenProject instead.
             return VSConstants.S_OK;
         }
 
@@ -101,6 +118,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
         public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
+            Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnBeforeUnloadProject(): {dteProject?.UniqueName}");
 
             var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
                 ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
@@ -113,9 +133,6 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 pNewHierarchy
                 ));
 
-            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
-
-            Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] Project unloaded: {dteProject?.UniqueName}");
             return VSConstants.S_OK;
         }
 

@@ -138,13 +138,15 @@ namespace TabsManagerExtension.State.Document {
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
-            
+
+            // Получаем все проекты, которые знают про этот файл.
             var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
             var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
                 .GetProjectsByDocumentPath(this.FullName);
 
+            // TODO: ты должен включить только те unloaded проекты которые знают про this.FullName
             var unloadedSolutionProjectNodes = solutionHierarchyAnalyzer.UnloadedProjects
                 .Select(p => p.SolutionProjectNode);
 
