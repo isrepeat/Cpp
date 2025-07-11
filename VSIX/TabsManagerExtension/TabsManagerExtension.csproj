@@ -101,7 +101,7 @@
     <Compile Include="VsShell\Utils\VsHierarchyUtils.cs" />
     <Compile Include="VsShell\Utils\EnvDteUtils.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
-    <Compile Include="VsShell\Solution\ExternalDependenciesAnalyzerService.cs" />
+    <Compile Include="VsShell\Solution\ExternalDependenciesMonitorService.cs" />
     <Compile Include="VsShell\VsIDEStateFlagsTrackerService.cs" />
     <Compile Include="VsShell\VsSelectionEventsServiceBase.cs" />
     <Compile Include="VsShell\Solution\VsSolutionExplorerSelectionTrackerService.cs" />

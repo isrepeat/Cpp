@@ -14,10 +14,29 @@ namespace TabsManagerExtension.VsShell.Document {
         public uint ItemId { get; private set; }
         public string FilePath { get; }
         public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; }
-        
-        
+
+
         private bool _isInvalidated = false;
-        public bool IsInvalidated => _isInvalidated;
+        public bool IsInvalidated {
+            get => _isInvalidated;
+            private set {
+                if (_isInvalidated != value) {
+                    _isInvalidated = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isEnabled = false;
+        public bool IsEnabled {
+            get => _isEnabled;
+            private set {
+                if (_isEnabled != value) {
+                    _isEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public DocumentNode(uint itemId, string filePath, VsShell.Project.SolutionProjectNode solutionProjectNode) {
             this.ItemId = itemId;
@@ -31,18 +50,28 @@ namespace TabsManagerExtension.VsShell.Document {
         }
 
         public void Invalidated() {
-            _isInvalidated = true;
+            this.IsInvalidated = true;
         }
 
 
         public void TryRefreshItemId() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (this.IsInvalidated) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+
+            Helpers.Diagnostic.Logger.LogDebug($"TryRefreshItemId for '{this.FilePath}'");
+
             var hierarchy = this.SolutionProjectNode.ProjectHierarchy.VsHierarchy;
             if (hierarchy != null) {
                 var hr = hierarchy.ParseCanonicalName(this.FilePath, out var newItemId);
                 if (ErrorHandler.Succeeded(hr) && newItemId != VSConstants.VSITEMID_NIL) {
-                    this.ItemId = newItemId;
+                    if (newItemId != this.ItemId) {
+                        Helpers.Diagnostic.Logger.LogDebug($"ItemId changed from {this.ItemId} to {newItemId}'");
+                        this.ItemId = newItemId;
+                    }
                 }
                 else {
                     // можно добавить дополнительный поиск через Walk, если ParseCanonicalName не нашел
@@ -80,6 +109,11 @@ namespace TabsManagerExtension.VsShell.Document {
 
         protected void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (this.IsInvalidated) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
 
             if (!this.SolutionProjectNode.IsLoaded) {
                 System.Diagnostics.Debugger.Break();
