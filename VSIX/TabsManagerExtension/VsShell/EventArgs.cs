@@ -48,4 +48,21 @@ namespace TabsManagerExtension.VsShell._EventArgs {
             return false;
         }
     }
+
+
+    public sealed class ProjectExternalDependenciesChangedEventArgs : EventArgs {
+        public IVsHierarchy ProjectHierarchy { get; }
+        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Added { get; }
+        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Removed { get; }
+
+        public ProjectExternalDependenciesChangedEventArgs(
+            IVsHierarchy projectHierarchy,
+            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> added,
+            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> removed
+            ) {
+            this.ProjectHierarchy = projectHierarchy;
+            this.Added = added;
+            this.Removed = removed;
+        }
+    }
 }

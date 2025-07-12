@@ -26,6 +26,16 @@ namespace TabsManagerExtension.VsShell.Utils {
                 this.CanonicalName = canonicalName;
             }
 
+            public override bool Equals(object? obj) {
+                return obj is HierarchyItem other &&
+                       StringComparer.OrdinalIgnoreCase.Equals(this.CanonicalName, other.CanonicalName);
+            }
+
+            public override int GetHashCode() {
+                return this.CanonicalName != null
+                    ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.CanonicalName)
+                    : 0;
+            }
             public override string ToString() {
                 return $"HierarchyItem(ItemId={this.ItemId}, Name='{this.Name}', CanonicalName='{this.CanonicalName}')";
             }

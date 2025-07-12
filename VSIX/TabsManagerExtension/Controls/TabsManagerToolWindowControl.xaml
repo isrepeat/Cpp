@@ -110,8 +110,8 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding CommandParameterContext.SolutionProjectNode.IsSharedProject}" Value="False" />
-                                    <Condition Binding="{Binding CommandParameterContext.SolutionProjectNode.LoadedProjectNode.IsIncludeSharedItems}" Value="True"/>
+                                    <Condition Binding="{Binding CommandParameterContext.ProjectNode.IsSharedProject}" Value="False" />
+                                    <Condition Binding="{Binding CommandParameterContext.ProjectNode.LoadedProjectNode.IsIncludeSharedItems}" Value="True"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Foreground" Value="LightBlue"/>
                             </MultiDataTrigger>
@@ -143,7 +143,7 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.SolutionProjectNode.IsLoaded}" Value="False" />
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="False" />
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Foreground" Value="#80DDDDDD"/>
                             </MultiDataTrigger>

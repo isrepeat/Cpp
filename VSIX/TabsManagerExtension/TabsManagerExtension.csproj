@@ -80,6 +80,10 @@
     </Compile>
     <Compile Include="Converters\OrBooleanToVisibilityMultiConverter.cs" />
     <Compile Include="ExtensionServices.cs" />
+    <Compile Include="Package\TimeManagerService.cs" />
+    <Compile Include="Package\VsixVisualTreeHelper.cs" />
+    <Compile Include="Package\VsixThreadHelper.cs" />
+    <Compile Include="Package\PackageServices.cs" />
     <Compile Include="TemlateSelectors\VirtualMenuItemTemplateSelector.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
@@ -88,8 +92,9 @@
     <Compile Include="VsShell\Document\ShellWindow.cs" />
     <Compile Include="VsShell\Document\ShellDocument.cs" />
     <Compile Include="VsShell\EventArgs.cs" />
+    <Compile Include="VsShell\Project\ProjectExternalDependenciesTracker.cs" />
     <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
-    <Compile Include="VsShell\Project\SolutionProjectNode.cs" />
+    <Compile Include="VsShell\Project\ProjectNode.cs" />
     <Compile Include="VsShell\Solution\IVsHierarchy.cs" />
     <Compile Include="VsShell\Solution\SolutionHierarchyAnalyzerService.cs" />
     <Compile Include="VsShell\VsCommandMapper.cs" />
@@ -101,7 +106,7 @@
     <Compile Include="VsShell\Utils\VsHierarchyUtils.cs" />
     <Compile Include="VsShell\Utils\EnvDteUtils.cs" />
     <Compile Include="VsShell\OleCommandFilterBase.cs" />
-    <Compile Include="VsShell\Solution\ExternalDependenciesAnalyzerService.cs" />
+    <Compile Include="VsShell\Solution\SolutionExternalDependenciesMonitorService.cs" />
     <Compile Include="VsShell\VsIDEStateFlagsTrackerService.cs" />
     <Compile Include="VsShell\VsSelectionEventsServiceBase.cs" />
     <Compile Include="VsShell\Solution\VsSolutionExplorerSelectionTrackerService.cs" />

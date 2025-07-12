@@ -97,7 +97,7 @@ namespace TabsManagerExtension.ToolWindows {
 
             Helpers.Diagnostic.Logger.LogDebug($"Projects that transitive include '{includeTagetFullName}':");
             foreach (var projectIncluder in transitiveIncludingProjects2) {
-                Helpers.Diagnostic.Logger.LogDebug($"- {projectIncluder.SolutionProjectNode.UniqueName}");
+                Helpers.Diagnostic.Logger.LogDebug($"- {projectIncluder.ProjectNode.UniqueName}");
             };
 
             int xx = 9;

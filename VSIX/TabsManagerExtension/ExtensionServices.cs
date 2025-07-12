@@ -19,7 +19,9 @@ namespace TabsManagerExtension.Services {
     /// Потокобезопасная реализация singleton-сервиса с управляемым созданием экземпляра.
     /// Используется как базовый класс для IExtensionService-сервисов.
     /// </summary>
-    public abstract class SingletonServiceBase<T> where T : SingletonServiceBase<T>, IExtensionService, new() {
+    public abstract class SingletonServiceBase<T> 
+        where T : SingletonServiceBase<T>, IExtensionService, new() {
+
         private static readonly object _syncRoot = new();
         private static T? _instance;
 
@@ -78,6 +80,8 @@ namespace TabsManagerExtension.Services {
                 Helpers.Diagnostic.Logger.LogDebug($"ExtensionServices already initialized, ignore.");
                 return;
             }
+
+            ExtensionServices.Register(Services.TimeManagerService.Create());
 
             ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
                 VsShell.Services.VsIDEStateFlagsTrackerService

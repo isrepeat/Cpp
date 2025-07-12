@@ -9,7 +9,17 @@ using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class SolutionProjectNode : Helpers.ObservableObject {
+    interface IProject {
+        void OnProjectLoaded(_EventArgs.ProjectHierarchyChangedEventArgs e);
+        void OnProjectUnloaded(_EventArgs.ProjectHierarchyChangedEventArgs e);
+    }
+
+
+    public sealed class ProjectNode :
+        Helpers.ObservableObject,
+        IProject,
+        IDisposable {
+
         public VsShell.Hierarchy.IVsHierarchy ProjectHierarchy { get; private set; }
         public Guid ProjectGuid { get; }
         public string Name { get; } = "<unknown>";
@@ -29,16 +39,15 @@ namespace TabsManagerExtension.VsShell.Project {
             }
         }
 
-        private readonly Helpers.Variant<LoadedProjectNode, UnloadedProjectNode> _projectNodeVariant = new();
-        public object? ProjectNodeObj => _projectNodeVariant.CurrentValue;
-        public LoadedProjectNode LoadedProjectNode => _projectNodeVariant.Get<LoadedProjectNode>();
-        public UnloadedProjectNode UnloadedProjectNode => _projectNodeVariant.Get<UnloadedProjectNode>();
+        private readonly Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> _projectNodeState;
+        private Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> ProjectNodeState => _projectNodeState;
+        
+        public object? CurrentProjectNodeStateObj => _projectNodeState.Current;
+        //public LoadedProjectNode LoadedProjectNode => _projectNodeVariant.Get<LoadedProjectNode>();
+        //public UnloadedProjectNode UnloadedProjectNode => _projectNodeVariant.Get<UnloadedProjectNode>();
 
 
-        private LoadedProjectNode _cachedLoadedProjectNode;
-        private UnloadedProjectNode _cachedUnloadedProjectNode;
-
-        public SolutionProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
+        public ProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.ProjectHierarchy = projectHierarchy;
 
@@ -70,11 +79,66 @@ namespace TabsManagerExtension.VsShell.Project {
             }
 
             this.IsSharedProject = this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase);
- 
+
+            _projectNodeState = new Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode>(
+                  new LoadedProjectNode(this),
+                  new UnloadedProjectNode(this)
+                );
+
             this.UpdateLoadedState();
         }
 
 
+        //
+        // IDisposable
+        //
+        public void Dispose() {
+            if (_projectNodeState.Current is IDisposable disposable) { 
+                disposable.Dispose();
+            }
+            _projectNodeState.ForEachOther((Helpers.Collections.IMultiStateElement element) => {
+                if (element is IDisposable disposable) {
+                    disposable.Dispose();
+                }
+            });
+        }
+
+
+        //
+        // IProject
+        //
+        public void OnProjectLoaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
+            this.UpdateHierarchy(e);
+        }
+
+        public void OnProjectUnloaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {
+            this.UpdateHierarchy(e);
+        }
+
+
+        //
+        // Api
+        //
+        public override bool Equals(object? obj) {
+            if (obj is not ProjectNode other) {
+                return false;
+            }
+
+            return this.ProjectGuid == other.ProjectGuid;
+        }
+
+        public override int GetHashCode() {
+            return this.ProjectGuid.GetHashCode();
+        }
+
+        public override string ToString() {
+            return $"ProjectNode({this.UniqueName}, IsLoaded={this.IsLoaded})";
+        }
+
+
+        //
+        // Internal logic
+        //
         public void UpdateHierarchy(_EventArgs.ProjectHierarchyChangedEventArgs e) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -91,49 +155,16 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
 
-        public override bool Equals(object? obj) {
-            if (obj is not SolutionProjectNode other) {
-                return false;
-            }
-
-            return this.ProjectGuid == other.ProjectGuid;
-        }
-
-        public override int GetHashCode() {
-            return this.ProjectGuid.GetHashCode();
-        }
-
-        public override string ToString() {
-            return $"SolutionProjectNode({this.UniqueName}, IsLoaded={this.IsLoaded})";
-        }
-
-
         private void UpdateLoadedState() {
             if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
-                if (_cachedLoadedProjectNode == null) {
-                    _cachedLoadedProjectNode = new LoadedProjectNode(this);
-                }
-
-                var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectHierarchy.VsHierarchy);
-                _cachedLoadedProjectNode.SetDteProject(dteProject);
-
-                _projectNodeVariant.Set(_cachedLoadedProjectNode);
+                _projectNodeState.SwitchTo<LoadedProjectNode>();
 
                 this.IsLoaded = true;
                 Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set LoadedProjectNode for {this.UniqueName}");
             }
             else { // (this.ProjectHierarchy is VsShell.Hierarchy.IVsStubHierarchy)
-                if (_cachedUnloadedProjectNode == null) {
-                    _cachedUnloadedProjectNode = new UnloadedProjectNode(this);
-                }
+                _projectNodeState.SwitchTo<UnloadedProjectNode>();
 
-                if (_cachedLoadedProjectNode != null) {
-                    _cachedLoadedProjectNode.SetDteProject(null);
-                    _cachedUnloadedProjectNode.UpdateLastInfoFromLoadedProjectNode(_cachedLoadedProjectNode);
-                }
-
-                _projectNodeVariant.Set(_cachedUnloadedProjectNode);
-                
                 this.IsLoaded = false;
                 Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set UnloadedProjectNode for {this.UniqueName}");
             }

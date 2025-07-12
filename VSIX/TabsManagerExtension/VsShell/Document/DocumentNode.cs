@@ -13,16 +13,35 @@ namespace TabsManagerExtension.VsShell.Document {
     public class DocumentNode : Helpers.ObservableObject {
         public uint ItemId { get; private set; }
         public string FilePath { get; }
-        public VsShell.Project.SolutionProjectNode SolutionProjectNode { get; }
-        
-        
-        private bool _isInvalidated = false;
-        public bool IsInvalidated => _isInvalidated;
+        public VsShell.Project.ProjectNode ProjectNode { get; }
 
-        public DocumentNode(uint itemId, string filePath, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+
+        private bool _isInvalidated = false;
+        public bool IsInvalidated {
+            get => _isInvalidated;
+            private set {
+                if (_isInvalidated != value) {
+                    _isInvalidated = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isEnabled = false;
+        public bool IsEnabled {
+            get => _isEnabled;
+            private set {
+                if (_isEnabled != value) {
+                    _isEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public DocumentNode(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode) {
             this.ItemId = itemId;
             this.FilePath = filePath;
-            this.SolutionProjectNode = solutionProjectNode;
+            this.ProjectNode = projectNode;
         }
 
         ~DocumentNode() {
@@ -31,18 +50,28 @@ namespace TabsManagerExtension.VsShell.Document {
         }
 
         public void Invalidated() {
-            _isInvalidated = true;
+            this.IsInvalidated = true;
         }
 
 
         public void TryRefreshItemId() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var hierarchy = this.SolutionProjectNode.ProjectHierarchy.VsHierarchy;
+            if (this.IsInvalidated) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+
+            Helpers.Diagnostic.Logger.LogDebug($"TryRefreshItemId for '{this.FilePath}'");
+
+            var hierarchy = this.ProjectNode.ProjectHierarchy.VsHierarchy;
             if (hierarchy != null) {
                 var hr = hierarchy.ParseCanonicalName(this.FilePath, out var newItemId);
                 if (ErrorHandler.Succeeded(hr) && newItemId != VSConstants.VSITEMID_NIL) {
-                    this.ItemId = newItemId;
+                    if (newItemId != this.ItemId) {
+                        Helpers.Diagnostic.Logger.LogDebug($"ItemId changed from {this.ItemId} to {newItemId}'");
+                        this.ItemId = newItemId;
+                    }
                 }
                 else {
                     // можно добавить дополнительный поиск через Walk, если ParseCanonicalName не нашел
@@ -58,7 +87,7 @@ namespace TabsManagerExtension.VsShell.Document {
 
             return
                 this.ItemId == other.ItemId &&
-                this.SolutionProjectNode.ProjectGuid == other.SolutionProjectNode.ProjectGuid &&
+                this.ProjectNode.ProjectGuid == other.ProjectNode.ProjectGuid &&
                 StringComparer.OrdinalIgnoreCase.Equals(this.FilePath, other.FilePath);
         }
 
@@ -67,7 +96,7 @@ namespace TabsManagerExtension.VsShell.Document {
                 int hash = 17;
 
                 hash = hash * 31 + this.ItemId.GetHashCode();
-                hash = hash * 31 + this.SolutionProjectNode.ProjectGuid.GetHashCode();
+                hash = hash * 31 + this.ProjectNode.ProjectGuid.GetHashCode();
                 hash = hash * 31 + (this.FilePath != null
                     ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.FilePath)
                     : 0);
@@ -81,7 +110,12 @@ namespace TabsManagerExtension.VsShell.Document {
         protected void OpenWithProjectContext() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!this.SolutionProjectNode.IsLoaded) {
+            if (this.IsInvalidated) {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+
+            if (!this.ProjectNode.IsLoaded) {
                 System.Diagnostics.Debugger.Break();
                 return;
             }
@@ -98,7 +132,7 @@ namespace TabsManagerExtension.VsShell.Document {
                 .GetTransitiveFilesIncludersByIncludePath(this.FilePath);
 
             var currentProjectTransitiveIncludingFiles = allTransitiveIncludingFiles
-                .Where(sf => sf.SolutionProjectNode.Equals(this.SolutionProjectNode))
+                .Where(sf => sf.ProjectNode.Equals(this.ProjectNode))
                 .ToList();
 
             // Нужно открывать именно .cpp файл который реально включает наш include,
@@ -113,7 +147,7 @@ namespace TabsManagerExtension.VsShell.Document {
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             var contextSwitchDocumentNode = solutionHierarchyAnalyzer.SourcesRepresentationsTable
-                .GetDocumentByProjectAndDocumentPath(this.SolutionProjectNode, contextSwitchFile);
+                .GetDocumentByProjectAndDocumentPath(this.ProjectNode, contextSwitchFile);
 
             if (contextSwitchDocumentNode == null) {
                 System.Diagnostics.Debugger.Break();
@@ -127,7 +161,7 @@ namespace TabsManagerExtension.VsShell.Document {
 
             // Открываем файл в контексте проекта.
             hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
-                this.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                this.ProjectNode.ProjectHierarchy.VsHierarchy,
                 this.ItemId);
             ErrorHandler.ThrowOnFailure(hr);
 
@@ -138,7 +172,7 @@ namespace TabsManagerExtension.VsShell.Document {
                 Utils.VsHierarchyUtils.LogSolutionHierarchy();
 
                 hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
-                    contextSwitchDocumentNode.SolutionProjectNode.ProjectHierarchy.VsHierarchy,
+                    contextSwitchDocumentNode.ProjectNode.ProjectHierarchy.VsHierarchy,
                     contextSwitchDocumentNode.ItemId);
                 ErrorHandler.ThrowOnFailure(hr);
             }
@@ -160,7 +194,7 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
         protected string ToStringCore() {
-            return $"FilePath='{this.FilePath}', Project='{this.SolutionProjectNode.UniqueName}', ItemId={this.ItemId}";
+            return $"FilePath='{this.FilePath}', Project='{this.ProjectNode.UniqueName}', ItemId={this.ItemId}";
         }
 
         public override string ToString() {
@@ -171,22 +205,22 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
     public sealed class SharedItemNode : DocumentNode {
-        public VsShell.Project.SolutionProjectNode SharedSolutionProjectNode { get; private set; }
+        public VsShell.Project.ProjectNode SharedSolutionProjectNode { get; private set; }
         
         public SharedItemNode(
             uint itemId,
             string filePath,
-            VsShell.Project.SolutionProjectNode solutionProjectNode,
-            VsShell.Project.SolutionProjectNode sharedSolutionProjectNode)
-            : base(itemId, filePath, solutionProjectNode) {
+            VsShell.Project.ProjectNode projectNode,
+            VsShell.Project.ProjectNode sharedSolutionProjectNode)
+            : base(itemId, filePath, projectNode) {
 
             this.SharedSolutionProjectNode = sharedSolutionProjectNode;
         }
 
 
         public new void OpenWithProjectContext() {
-            if (!this.SolutionProjectNode.IsLoaded) {
-                Utils.VsHierarchyUtils.ReloadProject(this.SolutionProjectNode.ProjectGuid);
+            if (!this.ProjectNode.IsLoaded) {
+                Utils.VsHierarchyUtils.ReloadProject(this.ProjectNode.ProjectGuid);
             }
 
             // Получаем все sharedItems проекты, которые знают про этот файл.
@@ -197,15 +231,15 @@ namespace TabsManagerExtension.VsShell.Document {
             var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
                 .GetProjectsByDocumentPath(this.FilePath);
 
-            // Собираем все проекты на выгрузку, кроме текущего 'this.SolutionProjectNode'
+            // Собираем все проекты на выгрузку, кроме текущего 'this.ProjectNode'
             // и оригинального 'IsSharedProject'.
             var sharedItemsProjectGuidsToUnload = sharedItemsSolutionProjectNodes
-                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.SolutionProjectNode))
+                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.ProjectNode))
                 .Select(spn => spn.ProjectGuid)
                 .ToList();
 
             var externalIncludesProjectGuidsToUnload = externalIncludesSolutionProjectNodes
-                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.SolutionProjectNode))
+                .Where(spn => !spn.IsSharedProject && !spn.Equals(this.ProjectNode))
                 .Select(spn => spn.ProjectGuid)
                 .ToList();
 
@@ -244,8 +278,8 @@ namespace TabsManagerExtension.VsShell.Document {
         public ExternalInclude(
             uint itemId,
             string filePath,
-            VsShell.Project.SolutionProjectNode solutionProjectNode)
-            : base(itemId, filePath, solutionProjectNode) {
+            VsShell.Project.ProjectNode projectNode)
+            : base(itemId, filePath, projectNode) {
         }
 
 

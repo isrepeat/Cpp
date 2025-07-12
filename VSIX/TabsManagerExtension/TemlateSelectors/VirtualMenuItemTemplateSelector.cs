@@ -25,7 +25,7 @@ namespace TabsManagerExtension.TemlateSelectors {
                 if (menuItemCommand.CommandParameterContext is State.Document.DocumentProjectReferenceInfo projRefEntry) {
                     return this.ProjectReferenceCommandTemplate;
 
-                    //if (projRefEntry.SolutionProjectNode.IsLoaded) {
+                    //if (projRefEntry.ProjectNode.IsLoaded) {
                     //    return this.LoadedProjectsCommandTemplate;
                     //}
                     //else {

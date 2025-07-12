@@ -9,23 +9,50 @@ using Microsoft.VisualStudio.Telemetry;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class UnloadedProjectNode {
-        public SolutionProjectNode SolutionProjectNode { get; }
+    public sealed class UnloadedProjectNode :
+        Helpers.ObservableObject,
+        Helpers.Collections.IMultiStateElement,
+        IDisposable {
+
+        public ProjectNode ProjectNode { get; }
         public bool HasLoadedProjectNodeInfo { get; private set; }
         public IReadOnlyList<VsShell.Document.DocumentNode> LastSources { get; private set; }
         public IReadOnlyList<VsShell.Document.SharedItemNode> LastSharedItems { get; private set; }
         public IReadOnlyList<VsShell.Document.ExternalInclude> LastExternalIncludes { get; private set; }
 
-        public UnloadedProjectNode(SolutionProjectNode solutionProjectNode) {
-            this.SolutionProjectNode = solutionProjectNode;
+        public UnloadedProjectNode(ProjectNode projectNode) {
+            this.ProjectNode = projectNode;
             this.HasLoadedProjectNodeInfo = false;
             this.LastSources = new List<VsShell.Document.DocumentNode>();
             this.LastSharedItems = new List<VsShell.Document.SharedItemNode>();
             this.LastExternalIncludes = new List<VsShell.Document.ExternalInclude>();
         }
 
-        public void UpdateLastInfoFromLoadedProjectNode(LoadedProjectNode associatedLoadedProjectNode) {
-            if (associatedLoadedProjectNode.SolutionProjectNode != this.SolutionProjectNode) {
+        //
+        // IDisposable
+        //
+        public void Dispose() {
+        }
+
+
+        //
+        // IMultiStateElement
+        //
+        public void OnStateEnabled(Helpers.Collections.IMultiStateElement previousState) {
+            if (previousState is LoadedProjectNode loadedProjectNode) {
+                this.UpdateLastInfoFromLoadedProjectNode(loadedProjectNode);
+            }
+        }
+
+        public void OnStateDisabled(Helpers.Collections.IMultiStateElement nextState) {
+            this.LastSources = new List<VsShell.Document.DocumentNode>();
+            this.LastSharedItems = new List<VsShell.Document.SharedItemNode>();
+            this.LastExternalIncludes = new List<VsShell.Document.ExternalInclude>();
+        }
+
+
+        private void UpdateLastInfoFromLoadedProjectNode(LoadedProjectNode associatedLoadedProjectNode) {
+            if (associatedLoadedProjectNode.ProjectNode != this.ProjectNode) {
                 return;
             }
             this.LastSources = associatedLoadedProjectNode.Sources;
@@ -35,7 +62,7 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
         public override string ToString() {
-            return $"UnloadedProjectNode({this.SolutionProjectNode.UniqueName})";
+            return $"UnloadedProjectNode({this.ProjectNode.UniqueName})";
         }
     }
 }

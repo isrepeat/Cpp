@@ -30,8 +30,8 @@ namespace TabsManagerExtension.Controls {
     public partial class TabsManagerToolWindowControl : Helpers.BaseUserControl {
 
         // Properties:
-        private Helpers.SortedObservableCollection<TabItemsGroupBase> _sortedTabItemsGroups;
-        public Helpers.SortedObservableCollection<TabItemsGroupBase> SortedTabItemsGroups {
+        private Helpers.Collections.SortedObservableCollection<TabItemsGroupBase> _sortedTabItemsGroups;
+        public Helpers.Collections.SortedObservableCollection<TabItemsGroupBase> SortedTabItemsGroups {
             get => _sortedTabItemsGroups;
             private set {
                 if (_sortedTabItemsGroups != value) {
@@ -96,7 +96,7 @@ namespace TabsManagerExtension.Controls {
         private DispatcherTimer _tabsManagerStateTimer;
         private FileSystemWatcher _fileWatcher;
 
-        private Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase> _tabItemsSelectionCoordinator;
+        private Helpers.Collections.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase> _tabItemsSelectionCoordinator;
         private VsShell.TextEditor.Overlay.TextEditorOverlayController _textEditorOverlayController;
 
 
@@ -295,42 +295,42 @@ namespace TabsManagerExtension.Controls {
         //
         private void InitializeTabItemsSelectionCoordinator() {
             var defaultTabItemsGroupComparer = Comparer<TabItemsGroupBase>.Create((a, b) => string.Compare(a.GroupName, b.GroupName, StringComparison.OrdinalIgnoreCase));
-            var priorityGroups = new List<Helpers.PriorityGroup<TabItemsGroupBase>> {
-                new Helpers.PriorityGroup<TabItemsGroupBase> {
-                    Position = Helpers.ItemPosition.Top,
-                    InsertMode = Helpers.ItemInsertMode.SingleWithReplaceExisting,
+            var priorityGroups = new List<Helpers.Collections.PriorityGroup<TabItemsGroupBase>> {
+                new Helpers.Collections.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.Collections.ItemPosition.Top,
+                    InsertMode = Helpers.Collections.ItemInsertMode.SingleWithReplaceExisting,
                     Predicate = g => g is TabItemsPreviewGroup,
                     Comparer = defaultTabItemsGroupComparer
                 },
-                new Helpers.PriorityGroup<TabItemsGroupBase> {
-                    Position = Helpers.ItemPosition.Top + 1,
-                    InsertMode = Helpers.ItemInsertMode.Single,
+                new Helpers.Collections.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.Collections.ItemPosition.Top + 1,
+                    InsertMode = Helpers.Collections.ItemInsertMode.Single,
                     Predicate = g => g is SeparatorTabItemsGroup separator && separator.Key == "Preview-Pinned",
                     Comparer = defaultTabItemsGroupComparer
                 },
-                new Helpers.PriorityGroup<TabItemsGroupBase> {
-                    Position = Helpers.ItemPosition.Top + 2,
+                new Helpers.Collections.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.Collections.ItemPosition.Top + 2,
                     Predicate = g => g is TabItemsPinnedGroup,
                     Comparer = defaultTabItemsGroupComparer
                 },
-                new Helpers.PriorityGroup<TabItemsGroupBase> {
-                    Position = Helpers.ItemPosition.Top + 3,
-                    InsertMode = Helpers.ItemInsertMode.Single,
+                new Helpers.Collections.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.Collections.ItemPosition.Top + 3,
+                    InsertMode = Helpers.Collections.ItemInsertMode.Single,
                     Predicate = g => g is SeparatorTabItemsGroup separator && separator.Key == "Pinned-Default",
                     Comparer = defaultTabItemsGroupComparer
                 },
-                new Helpers.PriorityGroup<TabItemsGroupBase> {
-                    Position = Helpers.ItemPosition.Middle,
+                new Helpers.Collections.PriorityGroup<TabItemsGroupBase> {
+                    Position = Helpers.Collections.ItemPosition.Middle,
                     Predicate = g => g is TabItemsDefaultGroup,
                     Comparer = defaultTabItemsGroupComparer
                 }
             };
-            this.SortedTabItemsGroups = new Helpers.SortedObservableCollection<TabItemsGroupBase>(
+            this.SortedTabItemsGroups = new Helpers.Collections.SortedObservableCollection<TabItemsGroupBase>(
                 defaultTabItemsGroupComparer,
                 priorityGroups
                 );
 
-            _tabItemsSelectionCoordinator = new Helpers.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase>(this.SortedTabItemsGroups);
+            _tabItemsSelectionCoordinator = new Helpers.Collections.GroupsSelectionCoordinator<TabItemsGroupBase, TabItemBase>(this.SortedTabItemsGroups);
             _tabItemsSelectionCoordinator.OnItemSelectionChanged = this.OnTabItemSelectionChanged;
             _tabItemsSelectionCoordinator.OnSelectionStateChanged = this.OnSelectionStateChanged;
 
@@ -857,7 +857,7 @@ namespace TabsManagerExtension.Controls {
             if (parameter is DocumentProjectReferenceInfo documentProjectReferenceInfo) {
                 //this.MoveDocumentToProjectGroup(
                 //    documentProjectReferenceInfo.TabItemDocument,
-                //    documentProjectReferenceInfo.SolutionProjectNode
+                //    documentProjectReferenceInfo.ProjectNode
                 //    );
 
                 this.MoveDocumentToProjectGroup(documentProjectReferenceInfo.DocumentNode);
@@ -998,8 +998,8 @@ namespace TabsManagerExtension.Controls {
 
                                 foreach (var projRefEntry in tabItemDocument.ProjectReferenceList) {
                                     this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
-                                        //Header = projRefEntry.SolutionProjectNode.Name,
-                                        Header = projRefEntry.DocumentNode.SolutionProjectNode.Name,
+                                        //Header = projRefEntry.ProjectNode.Name,
+                                        Header = projRefEntry.DocumentNode.ProjectNode.Name,
                                         Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
                                         CommandParameterContext = projRefEntry,
                                     });
@@ -1189,7 +1189,7 @@ namespace TabsManagerExtension.Controls {
             var tabItemDocument = this.FindTabItem(documentNode.FilePath);
             if (tabItemDocument != null) {
                 this.RemoveTabItemFromGroups(tabItemDocument);
-                this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(documentNode.SolutionProjectNode.Name));
+                this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(documentNode.ProjectNode.Name));
             }
         }
 
@@ -1208,26 +1208,26 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        //private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+        //private void MoveDocumentToProjectGroup(TabItemDocument tabItemDocument, VsShell.Project.ProjectNode projectNode) {
         //    using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
         //    ThreadHelper.ThrowIfNotOnUIThread();
 
         //    // Log params:
         //    Helpers.Diagnostic.Logger.LogParam($"tabItemDocument.FullName = {tabItemDocument?.FullName}");
-        //    Helpers.Diagnostic.Logger.LogParam($"solutionProjectNode.Name = {solutionProjectNode?.Name}");
+        //    Helpers.Diagnostic.Logger.LogParam($"projectNode.Name = {projectNode?.Name}");
 
-        //    if (solutionProjectNode == null) {
+        //    if (projectNode == null) {
         //        return;
         //    }
 
-        //    this.OpenTabItemWithProjectContext(tabItemDocument, solutionProjectNode);
+        //    this.OpenTabItemWithProjectContext(tabItemDocument, projectNode);
 
         //    this.RemoveTabItemFromGroups(tabItemDocument);
-        //    this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(solutionProjectNode.Name));
+        //    this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(projectNode.Name));
         //}
 
 
-        //private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.SolutionProjectNode solutionProjectNode) {
+        //private void OpenTabItemWithProjectContext(TabItemDocument tabItemDocument, VsShell.Project.ProjectNode projectNode) {
         //    // TODO: Есть потенциальная проблема что когда вызывается этот метод то externalInclude может не найтись
         //    // если solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable не была обновлена в течении
         //    // этого времени (например если во время того как VirtualMenu показан пользователь нажмет CTRL+Z).
@@ -1236,7 +1236,7 @@ namespace TabsManagerExtension.Controls {
 
         //    // Ищем соответствующий externalInclude для этого проекта по tabItemDocument.FullName.
         //    var documentNode = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-        //        .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
+        //        .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
 
         //    if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
         //        externalInclude.OpenWithProjectContext();
@@ -1246,7 +1246,7 @@ namespace TabsManagerExtension.Controls {
 
         //    // Ищем соответствующий sharedItem для этого проекта по tabItemDocument.FullName.
         //    documentNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-        //        .GetDocumentByProjectAndDocumentPath(solutionProjectNode, tabItemDocument.FullName);
+        //        .GetDocumentByProjectAndDocumentPath(projectNode, tabItemDocument.FullName);
 
         //    if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
         //        sharedItemNode.OpenWithProjectContext();

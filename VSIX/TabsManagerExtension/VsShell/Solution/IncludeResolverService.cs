@@ -26,7 +26,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public static string? TryResolveInclude(
             string includeRaw,
             string includingFilePath,
-            VsShell.Project.SolutionProjectNode ownerProject,
+            VsShell.Project.ProjectNode ownerProject,
             MsBuildSolutionWatcher msBuildSolutionWatcher) {
             try {
                 // ① Пробуем как относительный путь от файла

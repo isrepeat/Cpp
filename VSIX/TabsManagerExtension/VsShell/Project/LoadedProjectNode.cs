@@ -7,11 +7,16 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Telemetry;
 using System.Security.RightsManagement;
+using Newtonsoft.Json.Linq;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class LoadedProjectNode {
-        public SolutionProjectNode SolutionProjectNode { get; }
+    public sealed class LoadedProjectNode :
+        Helpers.ObservableObject,
+        Helpers.Collections.IMultiStateElement,
+        IDisposable {
+
+        public ProjectNode ProjectNode { get; }
 
 
         private ShellProject? _shellProject = null;
@@ -43,23 +48,52 @@ namespace TabsManagerExtension.VsShell.Project {
 
         public bool IsIncludeSharedItems => _sharedItems.Count > 0;
 
+        private ProjectExternalDependenciesTracker _projectExternalDependenciesTracker;
 
-        public LoadedProjectNode(SolutionProjectNode solutionProjectNode) {
+        public LoadedProjectNode(ProjectNode projectNode) {
             ThreadHelper.ThrowIfNotOnUIThread();
-            this.SolutionProjectNode = solutionProjectNode;
+            this.ProjectNode = projectNode;
+        }
+
+        //
+        // IDisposable
+        //
+        public void Dispose() {
+            this.OnStateDisabled(null);
         }
 
 
-        public void SetDteProject(EnvDTE.Project dteProject) {
+        //
+        // IMultiStateElement
+        //
+        public void OnStateEnabled(Helpers.Collections.IMultiStateElement previousState) {
+            var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectNode.ProjectHierarchy.VsHierarchy);
             this.ShellProject = new ShellProject(dteProject);
+
+            _projectExternalDependenciesTracker = new ProjectExternalDependenciesTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
+            _projectExternalDependenciesTracker.ExternalDependenciesChanged += this.OnExternalDependenciesChanged;
+
+            TabsManagerExtension.Services.TimeManagerService.Instance.Subscribe(Enums.TimerType._1s, this.OnRefreshExternalDependencies);
+        }
+
+        public void OnStateDisabled(Helpers.Collections.IMultiStateElement nextState) {
+            TabsManagerExtension.Services.TimeManagerService.Instance.Unsubscribe(Enums.TimerType._1s, this.OnRefreshExternalDependencies);
+
+            _projectExternalDependenciesTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
+            _projectExternalDependenciesTracker = null;
+            this.ShellProject = null;
         }
 
 
+        //
+        // ░ API
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
         // NODE: Musts be called after SolutionHierarchyAnalyzerService build all projectNodes.
         public void UpdateDocuments() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectHierarchy = this.SolutionProjectNode.ProjectHierarchy;
+            var projectHierarchy = this.ProjectNode.ProjectHierarchy;
             var hierarchyItems = new List<Utils.VsHierarchyUtils.HierarchyItem>();
 
             foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
@@ -118,7 +152,7 @@ namespace TabsManagerExtension.VsShell.Project {
                     var newDocumentNodeCandidate = new VsShell.Document.SharedItemNode(
                             hierarchyItem.ItemId,
                             normalizedPath,
-                            this.SolutionProjectNode,
+                            this.ProjectNode,
                             sharedSolutionProjectNode);
 
                     newSharedItems.Add(newDocumentNodeCandidate);
@@ -127,7 +161,7 @@ namespace TabsManagerExtension.VsShell.Project {
                     var newDocumentNodeCandidate = new VsShell.Document.DocumentNode(
                             hierarchyItem.ItemId,
                             normalizedPath,
-                            this.SolutionProjectNode);
+                            this.ProjectNode);
 
                     newSources.Add(newDocumentNodeCandidate);
                 }
@@ -177,30 +211,24 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
 
-        public void UpdateExternalIncludes() {
-            ThreadHelper.ThrowIfNotOnUIThread();
+        public override string ToString() {
+            return $"LoadedProjectNode({this.ProjectNode.UniqueName})";
+        }
 
-            var projectHierarchy = this.SolutionProjectNode.ProjectHierarchy;
-            var hierarchyItems = new List<Utils.VsHierarchyUtils.HierarchyItem>();
 
-            foreach (var childId in Utils.VsHierarchyUtils.Walker.GetChildren(projectHierarchy.VsHierarchy, VSConstants.VSITEMID_ROOT)) {
-                projectHierarchy.VsHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
-                var name = nameObj as string;
+        //
+        // ░ Event handlers
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
+        private void OnRefreshExternalDependencies() {
+            _projectExternalDependenciesTracker.Refresh();
+        }
 
-                // только для GUID-папок (External Dependencies) запускаем рекурсивную обработку
-                if (this.IsGuidName(name)) {
-                    var resultItems = Utils.VsHierarchyUtils.CollectItemsRecursive(
-                        projectHierarchy.VsHierarchy,
-                        childId,
-                        hierarchyItem => this.IsExternalIncludeFile(hierarchyItem.CanonicalName));
 
-                    hierarchyItems.AddRange(resultItems);
-                }
-            }
+        private void OnExternalDependenciesChanged(_EventArgs.ProjectExternalDependenciesChangedEventArgs e) {
+            var externalIncludesToAdd = new List<VsShell.Document.ExternalInclude>();
 
-            var newExternalIncludes = new List<VsShell.Document.ExternalInclude>();
-
-            foreach (var hierarchyItem in hierarchyItems) {
+            foreach (var hierarchyItem in e.Added) {
                 var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
                 var normalizedPath = Path.GetFullPath(hierarchyItemName)
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -208,42 +236,44 @@ namespace TabsManagerExtension.VsShell.Project {
                 var newDocumentNodeCandidate = new VsShell.Document.ExternalInclude(
                     hierarchyItem.ItemId,
                     normalizedPath,
-                    this.SolutionProjectNode
+                    this.ProjectNode
                     );
 
-                newExternalIncludes.Add(newDocumentNodeCandidate);
+                externalIncludesToAdd.Add(newDocumentNodeCandidate);
             }
 
-            //
-            // === Diff strategy ===
-            //
-            // Обновляем старый ItemId (который мог измениться после перезагрузки проекта),
-            // чтобы корректно сравнивать с newDocumentNodeCandidate.
-            foreach (var externalInclude in _externalIncludes) {
-                externalInclude.TryRefreshItemId();
+
+            var externalIncludesToRemove = new List<VsShell.Document.ExternalInclude>();
+
+            foreach (var hierarchyItem in e.Removed) {
+                var hierarchyItemName = hierarchyItem.CanonicalName ?? hierarchyItem.Name ?? string.Empty;
+                var normalizedPath = Path.GetFullPath(hierarchyItemName)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                var existExternalInclude = _externalIncludes
+                    .FirstOrDefault(item => string.Equals(item.FilePath, normalizedPath, StringComparison.OrdinalIgnoreCase));
+
+                externalIncludesToRemove.Add(existExternalInclude);
             }
 
-            var externalIncludesToRemove = _externalIncludes.Except(newExternalIncludes).ToList();
-            var externalIncludesToAdd = newExternalIncludes.Except(_externalIncludes).ToList();
 
             foreach (var item in externalIncludesToRemove) {
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateExternalIncludes] Remove externalInclude: {item}");
+                Helpers.Diagnostic.Logger.LogDebug($"[OnExternalDependenciesChanged] Remove externalInclude: {item}");
                 item.Invalidated();
                 _externalIncludes.Remove(item);
             }
 
             foreach (var item in externalIncludesToAdd) {
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateExternalIncludes] Add externalInclude: {item}");
+                Helpers.Diagnostic.Logger.LogDebug($"[OnExternalDependenciesChanged] Add externalInclude: {item}");
                 _externalIncludes.Add(item);
             }
         }
 
 
-        public override string ToString() {
-            return $"LoadedProjectNode({this.SolutionProjectNode.UniqueName})";
-        }
-
-
+        //
+        // ░ Internal logic
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
         private bool IsGuidName(string? name) {
             return !string.IsNullOrEmpty(name) && name.StartsWith("{") && name.EndsWith("}");
         }
@@ -253,12 +283,6 @@ namespace TabsManagerExtension.VsShell.Project {
                 (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
                  name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase) ||
                  name.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase));
-        }
-
-        private bool IsExternalIncludeFile(string? name) {
-            return !string.IsNullOrEmpty(name) &&
-                (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

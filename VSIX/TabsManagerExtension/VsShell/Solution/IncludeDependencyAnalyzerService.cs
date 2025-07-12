@@ -88,7 +88,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             return transitiveIncluders
-                .Select(sf => sf.SolutionProjectNode.ProjectNodeObj)
+                .Select(sf => sf.ProjectNode.CurrentProjectNodeStateObj)
                 .OfType<VsShell.Project.LoadedProjectNode>()
                 .Distinct()
                 .ToList();
@@ -102,7 +102,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             return transitiveIncluders
-                .Select(sf => sf.SolutionProjectNode.ProjectNodeObj)
+                .Select(sf => sf.ProjectNode.CurrentProjectNodeStateObj)
                 .OfType<VsShell.Project.LoadedProjectNode>()
                 .Distinct()
                 .ToList();
@@ -288,7 +288,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                 var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
                 var loadedProjectNode = solutionHierarchyAnalyzer.LoadedProjects
-                    .FirstOrDefault(p => p.SolutionProjectNode.ProjectGuid == projectGuid);
+                    .FirstOrDefault(p => p.ProjectNode.ProjectGuid == projectGuid);
 
                 if (loadedProjectNode != null) {
                     this.UpdateProjectGraph(loadedProjectNode);
@@ -309,7 +309,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(realHierarchy.VsHierarchy);
 
                 var filesToRemove = _solutionSourceFileGraph.AllSourceFiles
-                    .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, dteProject.UniqueName))
+                    .Where(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, dteProject.UniqueName))
                     .ToList();
 
                 foreach (var sf in filesToRemove) {
@@ -404,7 +404,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("UpdateProjectGraph()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Helpers.Diagnostic.Logger.LogParam($"project name = [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
+            Helpers.Diagnostic.Logger.LogParam($"project name = [{loadedProjectNode.ProjectNode.UniqueName}]");
 
             if (_solutionSourceFileGraph == null) {
                 return;
@@ -431,22 +431,22 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         string.Equals(ext, ".cpp", StringComparison.OrdinalIgnoreCase);
 
                     if (isCppProjectFile) {
-                        var newSourceFile = new Document.SourceFile(filePath, loadedProjectNode.SolutionProjectNode);
+                        var newSourceFile = new Document.SourceFile(filePath, loadedProjectNode.ProjectNode);
                         var newIncludeEntries = this.ExtractRawIncludes(filePath);
 
                         if (_solutionSourceFileGraph.TryGetSourceFileRepresentations(filePath, out var candidates) &&
-                            candidates.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.SolutionProjectNode.UniqueName, newSourceFile.SolutionProjectNode.UniqueName))) {
+                            candidates.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, newSourceFile.ProjectNode.UniqueName))) {
 
                             _solutionSourceFileGraph.UpdateSourceFileWithIncludes(newSourceFile, newIncludeEntries);
-                            Helpers.Diagnostic.Logger.LogDebug($"updated sourceFile: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
+                            Helpers.Diagnostic.Logger.LogDebug($"updated sourceFile: {filePath} [{loadedProjectNode.ProjectNode.UniqueName}]");
                         }
                         else {
                             _solutionSourceFileGraph.AddSourceFileWithIncludes(newSourceFile, newIncludeEntries);
-                            Helpers.Diagnostic.Logger.LogDebug($"added sourceFile: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
+                            Helpers.Diagnostic.Logger.LogDebug($"added sourceFile: {filePath} [{loadedProjectNode.ProjectNode.UniqueName}]");
                         }
                     }
                     else {
-                        Helpers.Diagnostic.Logger.LogDebug($"non cpp file: {filePath} [{loadedProjectNode.SolutionProjectNode.UniqueName}]");
+                        Helpers.Diagnostic.Logger.LogDebug($"non cpp file: {filePath} [{loadedProjectNode.ProjectNode.UniqueName}]");
                     }
                 }
 
@@ -543,7 +543,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             foreach (var loadedProjectNode in solutionHierarchyAnalyzer.LoadedProjects) {
                 foreach (var changedProjectName in changedUniqueVcxProjectNames) {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(changedProjectName, loadedProjectNode.SolutionProjectNode.Name)) {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(changedProjectName, loadedProjectNode.ProjectNode.Name)) {
                         this.UpdateProjectGraph(loadedProjectNode);
                     }
                 }
@@ -593,10 +593,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                         foreach (var loadedProjectNode in solutionHierarchyAnalyzer.LoadedProjects) {
                             if (Utils.EnvDteUtils.IsFileInProject(changedFile.FullPath, loadedProjectNode.ShellProject.dteProject)) {
                                 var newIncludes = this.ExtractRawIncludes(changedFile.FullPath);
-                                var newSourceFile = new Document.SourceFile(changedFile.FullPath, loadedProjectNode.SolutionProjectNode);
+                                var newSourceFile = new Document.SourceFile(changedFile.FullPath, loadedProjectNode.ProjectNode);
 
                                 _solutionSourceFileGraph.AddSourceFileWithIncludes(newSourceFile, newIncludes);
-                                Helpers.Diagnostic.Logger.LogDebug($"[auto re-added] {changedFile.FullPath} → found in {loadedProjectNode.SolutionProjectNode.UniqueName}, graph updated by fswatcher");
+                                Helpers.Diagnostic.Logger.LogDebug($"[auto re-added] {changedFile.FullPath} → found in {loadedProjectNode.ProjectNode.UniqueName}, graph updated by fswatcher");
                                 break;
                             }
                         }
@@ -610,7 +610,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
                         foreach (var sourceFile in candidates) {
                             _solutionSourceFileGraph.RemoveSourceFile(sourceFile);
-                            Helpers.Diagnostic.Logger.LogDebug($"[deleted] {changedFile.FullPath} [{sourceFile.SolutionProjectNode.UniqueName}] → removed from graph");
+                            Helpers.Diagnostic.Logger.LogDebug($"[deleted] {changedFile.FullPath} [{sourceFile.ProjectNode.UniqueName}] → removed from graph");
                         }
                     }
                     break;
@@ -636,9 +636,9 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             }
 
             foreach (var (oldFile, newIncludeEntries) in updated) {
-                var updatedFile = new Document.SourceFile(filePath, oldFile.SolutionProjectNode);
+                var updatedFile = new Document.SourceFile(filePath, oldFile.ProjectNode);
                 _solutionSourceFileGraph.UpdateSourceFileWithIncludes(updatedFile, newIncludeEntries);
-                Helpers.Diagnostic.Logger.LogDebug($"[include changed] {filePath} [{oldFile.SolutionProjectNode.UniqueName}] → includes updated");
+                Helpers.Diagnostic.Logger.LogDebug($"[include changed] {filePath} [{oldFile.ProjectNode.UniqueName}] → includes updated");
             }
         }
     }
