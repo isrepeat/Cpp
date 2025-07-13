@@ -12,7 +12,6 @@ namespace TabsManagerExtension.Controls {
             get { return (ObservableCollection<Helpers.IMenuItem>)this.GetValue(VirtualMenuItemsProperty); }
             set { this.SetValue(VirtualMenuItemsProperty, value); }
         }
-
         public static readonly DependencyProperty VirtualMenuItemsProperty =
             DependencyProperty.Register(
                 nameof(VirtualMenuItems),
@@ -25,7 +24,6 @@ namespace TabsManagerExtension.Controls {
             get => (ICommand)this.GetValue(OnVirtualMenuOpenCommandProperty);
             set => this.SetValue(OnVirtualMenuOpenCommandProperty, value);
         }
-
         public static readonly DependencyProperty OnVirtualMenuOpenCommandProperty =
             DependencyProperty.Register(
                 nameof(OnVirtualMenuOpenCommand),
@@ -38,11 +36,22 @@ namespace TabsManagerExtension.Controls {
             get => (ICommand)this.GetValue(OnVirtualMenuClosedCommandProperty);
             set => this.SetValue(OnVirtualMenuClosedCommandProperty, value);
         }
-
         public static readonly DependencyProperty OnVirtualMenuClosedCommandProperty =
             DependencyProperty.Register(
                 nameof(OnVirtualMenuClosedCommand),
                 typeof(ICommand),
+                typeof(VirtualMenuControl),
+                new PropertyMetadata(null));
+
+
+        public DataTemplateSelector? VirtualMenuItemTemplateSelector {
+            get => (DataTemplateSelector?)this.GetValue(VirtualMenuItemTemplateSelectorProperty);
+            set => this.SetValue(VirtualMenuItemTemplateSelectorProperty, value);
+        }
+        public static readonly DependencyProperty VirtualMenuItemTemplateSelectorProperty =
+            DependencyProperty.Register(
+                nameof(VirtualMenuItemTemplateSelector),
+                typeof(DataTemplateSelector),
                 typeof(VirtualMenuControl),
                 new PropertyMetadata(null));
 

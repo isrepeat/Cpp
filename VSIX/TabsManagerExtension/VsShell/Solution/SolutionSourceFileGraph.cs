@@ -50,6 +50,7 @@ namespace TabsManagerExtension.VsShell.Solution {
             this.RemoveSourceFileInternal(sourceFile);
             this.ApplyIncludes(sourceFile, includeEntries);
         }
+
         public void RemoveSourceFile(Document.SourceFile sourceFile) {
             this.RemoveSourceFileInternal(sourceFile);
         }
@@ -123,7 +124,7 @@ namespace TabsManagerExtension.VsShell.Solution {
 
         private void ApplyIncludes(Document.SourceFile sourceFile, List<Document.IncludeEntry> includeEntries) {
             if (_sourceFileToIncludeEntriesMap.TryGetValue(sourceFile, out var sourcesIncludesList)) {
-                Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.ApplyIncludes] sourceFile already added: {sourceFile.FilePath} [{sourceFile.ProjectId}]");
+                Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.ApplyIncludes] sourceFile already added: {sourceFile}");
                 return;
             }
 
@@ -138,7 +139,7 @@ namespace TabsManagerExtension.VsShell.Solution {
                 string? resolvedPath = Services.IncludeResolverService.TryResolveInclude(
                     includeEntry.RawInclude,
                     sourceFile.FilePath,
-                    sourceFile.Project,
+                    sourceFile.ProjectNode,
                     _msBuildSolutionWatcher
                 );
 
@@ -190,7 +191,7 @@ namespace TabsManagerExtension.VsShell.Solution {
                 sourceFilePathsRepresentationList = new List<Document.SourceFile>();
                 _sourceFileRepresentationsMap[sourceFile.FilePath] = sourceFilePathsRepresentationList;
             }
-            if (!sourceFilePathsRepresentationList.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectId, sourceFile.ProjectId))) {
+            if (!sourceFilePathsRepresentationList.Any(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, sourceFile.ProjectNode.UniqueName))) {
                 sourceFilePathsRepresentationList.Add(sourceFile);
             }
         }
@@ -198,7 +199,7 @@ namespace TabsManagerExtension.VsShell.Solution {
 
         private void RemoveSourceFileInternal(Document.SourceFile sourceFile) {
             if (!_sourceFileToResolvedIncludeEntriesMap.TryGetValue(sourceFile, out var oldResolvedIncludes)) {
-                Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.RemoveSourceFileInternal] sourceFile already removed: {sourceFile.FilePath} [{sourceFile.ProjectId}]");
+                Helpers.Diagnostic.Logger.LogDebug($"[SolutionSourceFileGraph.RemoveSourceFileInternal] sourceFile already removed: {sourceFile}");
                 return;
             }
 
@@ -232,7 +233,7 @@ namespace TabsManagerExtension.VsShell.Solution {
             _sourceFileToIncludeEntriesMap.Remove(sourceFile);
 
             if (_sourceFileRepresentationsMap.TryGetValue(sourceFile.FilePath, out var sourceFilePathsRepresentationList)) {
-                sourceFilePathsRepresentationList.RemoveAll(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectId, sourceFile.ProjectId));
+                sourceFilePathsRepresentationList.RemoveAll(sf => StringComparer.OrdinalIgnoreCase.Equals(sf.ProjectNode.UniqueName, sourceFile.ProjectNode.UniqueName));
                 if (sourceFilePathsRepresentationList.Count == 0) {
                     _sourceFileRepresentationsMap.Remove(sourceFile.FilePath);
                 }

@@ -137,10 +137,6 @@
                         </MultiDataTrigger.Conditions>
                         <Setter Property="Visibility" Value="Hidden" />
                     </MultiDataTrigger>
-
-                    <!--<DataTrigger Binding="{Binding IsSelected}" Value="True">
-                        <Setter Property="Visibility" Value="Visible"/>
-                    </DataTrigger>-->
                 </Style.Triggers>
             </Style>
 

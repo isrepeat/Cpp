@@ -26,7 +26,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         public static string? TryResolveInclude(
             string includeRaw,
             string includingFilePath,
-            State.Document.TabItemProject ownerProject,
+            VsShell.Project.ProjectNode ownerProject,
             MsBuildSolutionWatcher msBuildSolutionWatcher) {
             try {
                 // ① Пробуем как относительный путь от файла
@@ -52,23 +52,22 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             return null;
         }
 
-        /// <summary>
-        /// Проверяет, разрешается ли includeRaw из includingFilePath в конкретный файл candidateFilePath.
-        /// </summary>
-        public static bool IncludeResolvesToFile(
-            string includeRaw,
-            string includingFilePath,
-            string candidateFilePath,
-            State.Document.TabItemProject ownerProject,
-            MsBuildSolutionWatcher msBuildSolutionWatcher) {
+        ///// <summary>
+        ///// Проверяет, разрешается ли includeRaw из includingFilePath в конкретный файл candidateFilePath.
+        ///// </summary>
+        //public static bool IncludeResolvesToFile(
+        //    string includeRaw,
+        //    string includingFilePath,
+        //    string candidateFilePath,
+        //    VsShell.Project.ShellProject ownerProject,
+        //    MsBuildSolutionWatcher msBuildSolutionWatcher) {
 
-            var resolved = TryResolveInclude(includeRaw, includingFilePath, ownerProject, msBuildSolutionWatcher);
-            if (resolved == null) {
-                return false;
-            }
+        //    var resolved = TryResolveInclude(includeRaw, includingFilePath, ownerProject, msBuildSolutionWatcher);
+        //    if (resolved == null) {
+        //        return false;
+        //    }
 
-            return string.Equals(Path.GetFullPath(candidateFilePath), resolved, StringComparison.OrdinalIgnoreCase);
-        }
+        //    return string.Equals(Path.GetFullPath(candidateFilePath), resolved, StringComparison.OrdinalIgnoreCase);
+        //}
     }
-
 }

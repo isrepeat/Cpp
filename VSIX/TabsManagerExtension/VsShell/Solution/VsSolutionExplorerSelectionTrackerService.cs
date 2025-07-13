@@ -10,8 +10,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 
-namespace TabsManagerExtension.VsShell.Solution.Services {
 
+namespace TabsManagerExtension.VsShell.Solution.Services {
     public sealed class VsSolutionExplorerSelectionTrackerService :
         VsShell.Services.VsSelectionEventsServiceBase<VsSolutionExplorerSelectionTrackerService>,
         TabsManagerExtension.Services.IExtensionService {

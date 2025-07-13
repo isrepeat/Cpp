@@ -25,8 +25,10 @@ namespace Helpers {
             Unselect
         }
     }
+}
 
 
+namespace Helpers.Collections {
     public enum ItemPosition {
         Top = 0,
         Middle = 100,

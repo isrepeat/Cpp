@@ -1,9 +1,13 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-                    xmlns:helpers="clr-namespace:Helpers"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:TabsManagerExtension"
                     xmlns:localControls="clr-namespace:TabsManagerExtension.Controls"
                     xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
+                    xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
+                    xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                    xmlns:helpers="clr-namespace:Helpers"
+                    xmlns:helpersControls="clr-namespace:Helpers.Controls"
                     >
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="BrushResources.xaml" />
@@ -78,5 +82,50 @@
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    
+    
+    
+    <!-- MenuControl -->
+    <Style x:Key="MenuControl/MenuItemHeaderStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="10,5" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="#FF999999" />
+    </Style>
+
+    <Style x:Key="MenuControl/MenuItemCommandStyle" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="#DDD"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Cursor" Value="Arrow"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="_Border"
+                                  Padding="{TemplateBinding Padding}"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="Transparent"
+                                  BorderThickness="0"
+                                  >
+                        <ContentPresenter ContentSource="Header"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="_Border" Property="Background" Value="#2D2D2D"/>
+                            <Setter TargetName="_Border" Property="BorderBrush" Value="#888FA0"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MenuControl/MenuItemSeparatorStyle" TargetType="helpersControls:Separator">
+        <Setter Property="Padding" Value="5,0" />
+        <Setter Property="LineColor" Value="#80666666" />
+        <Setter Property="LineThickness" Value="1" />
     </Style>
 </ResourceDictionary>

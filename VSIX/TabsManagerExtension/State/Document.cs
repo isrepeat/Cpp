@@ -3,8 +3,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -12,7 +14,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TabsManagerExtension.State.Document {
 
-    public abstract class TabItemBase : Helpers.SelectableItemBase {
+    public abstract class TabItemBase : Helpers.Collections.SelectableItemBase {
 
         private string _caption;
         public string Caption {
@@ -57,6 +59,10 @@ namespace TabsManagerExtension.State.Document {
                 }
             }
         }
+
+        public override string ToString() {
+            return $"TabItemBase(FullName='{this.FullName}')";
+        }
     }
 
     public interface IActivatableTab {
@@ -65,60 +71,79 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    public class TabItemProject : TabItemBase {
-        public VsShell.Project.ShellProject ShellProject { get; private set; }
-        
-        public TabItemProject(VsShell.Project.ShellProject shellProject) {
-            base.Caption = shellProject.Project.Name;
-            base.FullName = shellProject.Project.FullName;
-            this.ShellProject = shellProject;
+    public class DocumentProjectReferencesInfo : Helpers.ObservableObject {
+        private ObservableCollection<RefEntry> _references = new();
+        public ObservableCollection<RefEntry> References => _references;
+
+
+        public bool _hasUnloadedProjects = false;
+        public bool HasUnloadedProjects {
+            get => _hasUnloadedProjects;
+            private set {
+                if (_hasUnloadedProjects != value) {
+                    _hasUnloadedProjects = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        public TabItemProject(EnvDTE.Project project)
-            : this(new VsShell.Project.ShellProject(project)) {
+
+        public DocumentProjectReferencesInfo() {
+            _references.CollectionChanged += this.OnCollectionChanged;
         }
 
-        public override bool Equals(object? obj) {
-           return obj is TabItemProject other &&
-                StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
+
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+            if (e.Action == NotifyCollectionChangedAction.Reset) {
+                foreach (var oldItem in _references) {
+                    oldItem.DocumentNode.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null) {
+                foreach (RefEntry oldItem in e.OldItems) {
+                    oldItem.DocumentNode.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
+                }
+            }
+            if (e.NewItems != null) {
+                foreach (RefEntry newItem in e.NewItems) {
+                    newItem.DocumentNode.ProjectNode.PropertyChanged += this.OnProjectNodePropertyChanged;
+                }
+            }
+
+            this.UpdateHasUnloadedProjectsProperty();
         }
 
-        public override int GetHashCode() {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
+
+        private void OnProjectNodePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName == nameof(VsShell.Project.ProjectNode.IsLoaded)) {
+                this.UpdateHasUnloadedProjectsProperty();
+            }
         }
 
-        public override string ToString() => base.FullName;
+        private void UpdateHasUnloadedProjectsProperty() {
+            bool hasUnloadedProjects = _references.Any(refEntry => !refEntry.DocumentNode.ProjectNode.IsLoaded);
+            this.HasUnloadedProjects = hasUnloadedProjects;
+            Helpers.Diagnostic.Logger.LogDebug($"[UpdateHasUnloadedProjectsProperty] this.HasUnloadedProjects = {this.HasUnloadedProjects}");
+        }
+
+
+        public class RefEntry : Helpers.ObservableObject {
+            public VsShell.Document.DocumentNode DocumentNode { get; private set; }
+
+            public RefEntry(VsShell.Document.DocumentNode documentNode) {
+                this.DocumentNode = documentNode;
+            }
+        }
     }
 
-
-
-
-    public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
-        public TabItemProject TabItemProject { get; private set; }
-        public TabItemDocument TabItemDocument { get; private set; }
-
-        public DocumentProjectReferenceInfo(
-            TabItemProject tabItemProject,
-            TabItemDocument tabItemDocument
-            ) {
-            this.TabItemProject = tabItemProject;
-            this.TabItemDocument = tabItemDocument;
-        }
-    }
 
 
     public class TabItemDocument : TabItemBase, IActivatableTab {
         public VsShell.Document.ShellDocument ShellDocument { get; private set; }
+        public DocumentProjectReferencesInfo DocumentProjectReferencesInfo { get; } = new();
+        public VsShell.Project.ProjectNode ProjectNodeContext { get; set; }
 
-
-        private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
-        public ObservableCollection<DocumentProjectReferenceInfo> ProjectReferenceList {
-            get => _projectReferenceList;
-            set {
-                _projectReferenceList = value;
-                OnPropertyChanged();
-            }
-        }
 
         public TabItemDocument(VsShell.Document.ShellDocument shellDocument) {
             base.Caption = shellDocument.Document.Name;
@@ -146,7 +171,7 @@ namespace TabsManagerExtension.State.Document {
 
 
         public void UpdateProjectReferenceList() {
-            this.ProjectReferenceList.Clear();
+            this.DocumentProjectReferencesInfo.References.Clear();
 
             var ext = System.IO.Path.GetExtension(this.FullName);
             switch (ext) {
@@ -158,24 +183,59 @@ namespace TabsManagerExtension.State.Document {
                     return;
             }
 
-            var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-            externalDependenciesAnalyzer.Analyze();
-            //if (!externalDependenciesAnalyzer.IsReady()) {
-            //    return;
-            //}
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
 
-            var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
-                .GetProjectsByExternalIncludePath(this.FullName);
+            // Получаем все проекты, которые знают про этот файл.
+            var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
 
-            var documentProjectReferences = projectNodes
-                .Select(projectNode => new DocumentProjectReferenceInfo(
-                    new TabItemProject(projectNode),
-                    this)
-                );
+            var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
 
-            foreach (var documentProjectReference in documentProjectReferences) {
-                this.ProjectReferenceList.Add(documentProjectReference);
+            var allSolutionProjectNodes = externalIncludesSolutionProjectNodes
+                .Concat(sharedItemsSolutionProjectNodes)
+                .ToList();
+
+
+            if (allSolutionProjectNodes.Count < 2) {
+                return; // Игнорируем только лишь ссылки на собсвтенные проекты.
             }
+
+            var documentNodes = new List<VsShell.Document.DocumentNode>();
+
+            foreach (var projectNode in allSolutionProjectNodes) {
+                var externalInclude = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
+                
+                if (externalInclude != null) {
+                    documentNodes.Add(externalInclude);
+                }
+            }
+
+
+            foreach (var projectNode in allSolutionProjectNodes) {
+                var sharedItemNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
+
+                if (sharedItemNode != null) {
+                    documentNodes.Add(sharedItemNode);
+                }
+            }
+
+            documentNodes = documentNodes
+                .OrderBy(d => d.ProjectNode.UniqueName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var documentNode in documentNodes) {
+                this.DocumentProjectReferencesInfo.References
+                    .Add(new DocumentProjectReferencesInfo.RefEntry(documentNode));
+            }
+        }
+
+
+        public override string ToString() {
+            return $"TabItemDocument(FullName='{this.FullName}', ProjectCtx='{this.ProjectNodeContext}')";
         }
     }
 
@@ -215,10 +275,10 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.Collections.ISelectableGroup<TabItemBase> {
         public string GroupName { get; }
 
-        public Helpers.SortedObservableCollection<TabItemBase> Items { get; }
+        public Helpers.Collections.SortedObservableCollection<TabItemBase> Items { get; }
 
         public Helpers.IMetadata Metadata { get; } = new Helpers.FlaggableMetadata();
 
@@ -228,7 +288,7 @@ namespace TabsManagerExtension.State.Document {
             var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) =>
                 string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
 
-            this.Items = new Helpers.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
+            this.Items = new Helpers.Collections.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
             this.Items.CollectionChanged += (s, e) => {
                 OnPropertyChanged(nameof(this.GroupName));
             };

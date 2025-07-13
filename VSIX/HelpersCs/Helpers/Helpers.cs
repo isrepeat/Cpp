@@ -104,17 +104,4 @@ namespace Helpers {
             }
         }
     }
-
-
-
-    public static class Time {
-        public static void RunWithDelay(TimeSpan delay, Action action) {
-            var timer = new DispatcherTimer { Interval = delay };
-            timer.Tick += (s, e) => {
-                timer.Stop();
-                action();
-            };
-            timer.Start();
-        }
-    }
 }
