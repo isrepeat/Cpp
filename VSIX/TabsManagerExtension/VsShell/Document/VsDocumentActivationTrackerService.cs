@@ -13,19 +13,6 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.ComponentModelHost;
 
 
-namespace TabsManagerExtension._EventArgs {
-    public sealed class DocumentNavigationEventArgs : EventArgs {
-        public string? PreviousDocumentFullName { get; }
-        public string CurrentDocumentFullName { get; }
-
-        public DocumentNavigationEventArgs(string? previousDocumentFullName, string currentDocumentFullName) {
-            this.PreviousDocumentFullName = previousDocumentFullName;
-            this.CurrentDocumentFullName = currentDocumentFullName;
-        }
-    }
-}
-
-
 namespace TabsManagerExtension.VsShell.Document.Services {
     /// <summary>
     /// Отслеживает событие что конкретный документ (файл) был активирован (показан в окне редактора) 
@@ -88,6 +75,10 @@ namespace TabsManagerExtension.VsShell.Document.Services {
                 out _,
                 out _,
                 out _);
+            
+            if (string.IsNullOrEmpty(_lastActivatedDocumentFullname)) {
+                _lastActivatedDocumentFullname = PackageServices.Dte2.ActiveDocument?.FullName;
+            }
 
             if (!string.IsNullOrEmpty(documentFullName) &&
                 !string.Equals(documentFullName, _lastActivatedDocumentFullname, StringComparison.OrdinalIgnoreCase)
