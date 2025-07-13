@@ -19,7 +19,9 @@ namespace TabsManagerExtension.Services {
     /// Потокобезопасная реализация singleton-сервиса с управляемым созданием экземпляра.
     /// Используется как базовый класс для IExtensionService-сервисов.
     /// </summary>
-    public abstract class SingletonServiceBase<T> where T : SingletonServiceBase<T>, IExtensionService, new() {
+    public abstract class SingletonServiceBase<T> 
+        where T : SingletonServiceBase<T>, IExtensionService, new() {
+
         private static readonly object _syncRoot = new();
         private static T? _instance;
 
@@ -79,6 +81,8 @@ namespace TabsManagerExtension.Services {
                 return;
             }
 
+            ExtensionServices.Register(Services.TimeManagerService.Create());
+
             ExtensionServices.Register(VsShell.Services.VsSelectionEventsServiceBase<
                 VsShell.Services.VsIDEStateFlagsTrackerService
                 >.Create());
@@ -95,7 +99,7 @@ namespace TabsManagerExtension.Services {
             ExtensionServices.Register(VsShell.Document.Services.VsDocumentActivationTrackerService.Create());
             ExtensionServices.Register(VsShell.Solution.Services.VsSolutionEventsTrackerService.Create());
             ExtensionServices.Register(VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Create());
-            ExtensionServices.Register(VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Create());
+            ExtensionServices.Register(VsShell.Solution.Services.IncludeDependencyAnalyzerService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.TextEditorInputCommandFilterService.Create());
             ExtensionServices.Register(VsShell.TextEditor.Services.TextEditorFileNavigationCommandFilterService.Create());
 
