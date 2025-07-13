@@ -70,8 +70,8 @@ namespace TabsManagerExtension.ToolWindows {
 
         private async void Execute(object sender, EventArgs e) {
             //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
-            //this.TestIncludeDependencyAnalyzer();
-
+            this.TestIncludeDependencyAnalyzer();
+            //VsShell.Utils.VsHierarchy.LogSolutionHierarchy();
             int xx = 9;
         }
 
@@ -82,17 +82,23 @@ namespace TabsManagerExtension.ToolWindows {
                 return;
             }
 
-            //analyzer.Build();
+            ////analyzer.Build();
 
-            string includeTaget = "Logger.h";
-            //string includeTaget = "RenderPipeline.h";
+            //string includeTaget = "Logger.h";
+            ////string includeTaget = "RenderPipeline.h";
 
-            var transitiveIncludingFiles = analyzer.GetTransitiveFilesIncludersByIncludeString(includeTaget);
-            var transitiveIncludingProjects = analyzer.GetTransitiveProjectsIncludersByIncludeString(includeTaget);
+            //var transitiveIncludingFiles = analyzer.GetTransitiveFilesIncludersByIncludeString(includeTaget);
+            //var transitiveIncludingProjects = analyzer.GetTransitiveProjectsIncludersByIncludeString(includeTaget);
 
-            string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
+            //string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\Logger.h";
+            string includeTagetFullName = "d:\\WORK\\TEST\\Extensions\\TestIncludeSolution\\Helpers.Shared\\SharedUtils.h";
             var transitiveIncludingFiles2 = analyzer.GetTransitiveFilesIncludersByIncludePath(includeTagetFullName);
             var transitiveIncludingProjects2 = analyzer.GetTransitiveProjectsIncludersByIncludePath(includeTagetFullName);
+
+            Helpers.Diagnostic.Logger.LogDebug($"Projects that transitive include '{includeTagetFullName}':");
+            foreach (var projectIncluder in transitiveIncludingProjects2) {
+                Helpers.Diagnostic.Logger.LogDebug($"- {projectIncluder.ProjectNode.UniqueName}");
+            };
 
             int xx = 9;
         }
