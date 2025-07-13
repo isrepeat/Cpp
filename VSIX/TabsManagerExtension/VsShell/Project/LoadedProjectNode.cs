@@ -92,14 +92,20 @@ namespace TabsManagerExtension.VsShell.Project {
 
             TabsManagerExtension.Services.TimeManagerService.Instance.Unsubscribe(Enums.TimerType._3s, this.OnRefreshExternalDependencies);
 
-            _projectExternalDependenciesTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
-            _projectExternalDependenciesTracker = null;
+            if (_projectExternalDependenciesTracker != null) {
+                _projectExternalDependenciesTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
+                _projectExternalDependenciesTracker = null;
+            }
 
-            _projectSharedItemsTracker.SharedItemsChanged -= this.OnSharedItemsChanged;
-            _projectSharedItemsTracker = null;
+            if (_projectSharedItemsTracker != null) {
+                _projectSharedItemsTracker.SharedItemsChanged -= this.OnSharedItemsChanged;
+                _projectSharedItemsTracker = null;
+            }
 
-            _projectSourcesTracker.SourcesChanged -= this.OnSourcesChanged;
-            _projectSourcesTracker = null;
+            if (_projectSourcesTracker != null) {
+                _projectSourcesTracker.SourcesChanged -= this.OnSourcesChanged;
+                _projectSourcesTracker = null;
+            }
 
             foreach (var item in _externalIncludes) {
                 item.IsEnabled = false;
