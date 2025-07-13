@@ -16,5 +16,6 @@
         MenuItems="{Binding VirtualMenuItems, ElementName=__VirtualMenuControl}"
         OpenCommand="{Binding OnVirtualMenuOpenCommand, ElementName=__VirtualMenuControl}"
         CloseCommand="{Binding OnVirtualMenuClosedCommand, ElementName=__VirtualMenuControl}"
+        MenuItemTemplateSelector="{Binding VirtualMenuItemTemplateSelector, ElementName=__VirtualMenuControl}"
         />
 </helpers:BaseUserControl>
