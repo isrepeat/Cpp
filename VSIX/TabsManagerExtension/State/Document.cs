@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace TabsManagerExtension.State.Document {
 
-    public abstract class TabItemBase : Helpers.SelectableItemBase {
+    public abstract class TabItemBase : Helpers.Collections.SelectableItemBase {
 
         private string _caption;
         public string Caption {
@@ -57,6 +57,10 @@ namespace TabsManagerExtension.State.Document {
                 }
             }
         }
+
+        public override string ToString() {
+            return $"TabItemBase(FullName='{this.FullName}')";
+        }
     }
 
     public interface IActivatableTab {
@@ -65,50 +69,20 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    public class TabItemProject : TabItemBase {
-        public VsShell.Project.ShellProject ShellProject { get; private set; }
-        
-        public TabItemProject(VsShell.Project.ShellProject shellProject) {
-            base.Caption = shellProject.Project.Name;
-            base.FullName = shellProject.Project.FullName;
-            this.ShellProject = shellProject;
-        }
-
-        public TabItemProject(EnvDTE.Project project)
-            : this(new VsShell.Project.ShellProject(project)) {
-        }
-
-        public override bool Equals(object? obj) {
-           return obj is TabItemProject other &&
-                StringComparer.OrdinalIgnoreCase.Equals(this.ShellProject.Project?.UniqueName, other.ShellProject.Project?.UniqueName);
-        }
-
-        public override int GetHashCode() {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(this.ShellProject.Project?.UniqueName ?? string.Empty);
-        }
-
-        public override string ToString() => base.FullName;
-    }
-
-
-
-
     public class DocumentProjectReferenceInfo : Helpers.ObservableObject {
-        public TabItemProject TabItemProject { get; private set; }
-        public TabItemDocument TabItemDocument { get; private set; }
+        public VsShell.Document.DocumentNode DocumentNode { get; private set; }
 
         public DocumentProjectReferenceInfo(
-            TabItemProject tabItemProject,
-            TabItemDocument tabItemDocument
+            VsShell.Document.DocumentNode documentNode
             ) {
-            this.TabItemProject = tabItemProject;
-            this.TabItemDocument = tabItemDocument;
+            this.DocumentNode = documentNode;
         }
     }
 
 
     public class TabItemDocument : TabItemBase, IActivatableTab {
         public VsShell.Document.ShellDocument ShellDocument { get; private set; }
+        public VsShell.Project.ProjectNode ProjectNodeContext { get; set; }
 
 
         private ObservableCollection<DocumentProjectReferenceInfo> _projectReferenceList = new ObservableCollection<DocumentProjectReferenceInfo>();
@@ -158,24 +132,58 @@ namespace TabsManagerExtension.State.Document {
                     return;
             }
 
-            var externalDependenciesAnalyzer = VsShell.Solution.Services.ExternalDependenciesAnalyzerService.Instance;
-            externalDependenciesAnalyzer.Analyze();
-            //if (!externalDependenciesAnalyzer.IsReady()) {
-            //    return;
-            //}
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+            solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
 
-            var projectNodes = externalDependenciesAnalyzer.ExternalIncludeRepresentationsTable
-                .GetProjectsByExternalIncludePath(this.FullName);
+            // Получаем все проекты, которые знают про этот файл.
+            var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
 
-            var documentProjectReferences = projectNodes
-                .Select(projectNode => new DocumentProjectReferenceInfo(
-                    new TabItemProject(projectNode),
-                    this)
-                );
+            var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetProjectsByDocumentPath(this.FullName);
 
-            foreach (var documentProjectReference in documentProjectReferences) {
-                this.ProjectReferenceList.Add(documentProjectReference);
+            var allSolutionProjectNodes = externalIncludesSolutionProjectNodes
+                .Concat(sharedItemsSolutionProjectNodes)
+                .ToList();
+
+
+            if (allSolutionProjectNodes.Count < 2) {
+                return; // Игнорируем только лишь ссылки на собсвтенные проекты.
             }
+
+            var documentNodes = new List<VsShell.Document.DocumentNode>();
+
+            foreach (var projectNode in allSolutionProjectNodes) {
+                var externalInclude = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
+                
+                if (externalInclude != null) {
+                    documentNodes.Add(externalInclude);
+                }
+            }
+
+
+            foreach (var projectNode in allSolutionProjectNodes) {
+                var sharedItemNode = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                    .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
+
+                if (sharedItemNode != null) {
+                    documentNodes.Add(sharedItemNode);
+                }
+            }
+
+            documentNodes = documentNodes
+                .OrderBy(d => d.ProjectNode.UniqueName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var documentNode in documentNodes) {
+                this.ProjectReferenceList.Add(new DocumentProjectReferenceInfo(documentNode));
+            }
+        }
+
+
+        public override string ToString() {
+            return $"TabItemDocument(FullName='{this.FullName}', ProjectCtx='{this.ProjectNodeContext}')";
         }
     }
 
@@ -215,10 +223,10 @@ namespace TabsManagerExtension.State.Document {
 
 
 
-    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.ISelectableGroup<TabItemBase> {
+    public abstract class TabItemsGroupBase : Helpers.ObservableObject, Helpers.Collections.ISelectableGroup<TabItemBase> {
         public string GroupName { get; }
 
-        public Helpers.SortedObservableCollection<TabItemBase> Items { get; }
+        public Helpers.Collections.SortedObservableCollection<TabItemBase> Items { get; }
 
         public Helpers.IMetadata Metadata { get; } = new Helpers.FlaggableMetadata();
 
@@ -228,7 +236,7 @@ namespace TabsManagerExtension.State.Document {
             var defaultTabItemBaseComparer = Comparer<TabItemBase>.Create((a, b) =>
                 string.Compare(a.Caption, b.Caption, StringComparison.OrdinalIgnoreCase));
 
-            this.Items = new Helpers.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
+            this.Items = new Helpers.Collections.SortedObservableCollection<TabItemBase>(defaultTabItemBaseComparer);
             this.Items.CollectionChanged += (s, e) => {
                 OnPropertyChanged(nameof(this.GroupName));
             };
