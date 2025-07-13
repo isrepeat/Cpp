@@ -7,6 +7,7 @@
                          xmlns:localConverters="clr-namespace:TabsManagerExtension.Converters"
                          xmlns:localBehaviours="clr-namespace:TabsManagerExtension.Behaviours"
                          xmlns:localStateDocument="clr-namespace:TabsManagerExtension.State.Document"
+                         xmlns:localTemplateSelectors="clr-namespace:TabsManagerExtension.TemlateSelectors"
                          xmlns:helpers="clr-namespace:Helpers"
                          xmlns:helpersControls="clr-namespace:Helpers.Controls"
                          x:Name="__TabsManagerToolWindowControl"
@@ -54,7 +55,8 @@
 
 
 
-            <!-- Шаблоны кнопок -->
+            <!-- Temlates -->
+            <!-- TabItemControl button templates -->
             <DataTemplate x:Key="CloseButton_PrimarySlotTemplate">
                 <Button Style="{StaticResource TabItemControlPanelButtonStyle}"
                         Content="✖"
@@ -90,6 +92,8 @@
                         />
             </DataTemplate>
 
+            
+            <!-- TabItemControl context menu templates -->
             <DataTemplate x:Key="Default_ContextMenuTemplate">
                 <localControls:MenuControl 
                     MenuItems="{Binding ContextMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
@@ -97,6 +101,123 @@
                     CloseCommand="{Binding OnTabItemContextMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                     />
             </DataTemplate>
+            
+            
+            <!-- Virtual menu templates -->
+            <DataTemplate x:Key="DocumentProjectReferenceCommandTemplate">
+                <DataTemplate.Resources>
+                    <Style TargetType="MenuItem" BasedOn="{StaticResource MenuControl/MenuItemCommandStyle}">
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Foreground" Value="#80DDDDDD"/>
+                            </MultiDataTrigger>
+
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="True" />
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsEnabled}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Foreground" Value="Yellow"/>
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </MultiDataTrigger>
+
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsDisposed}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Foreground" Value="Red"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataTemplate.Resources>
+
+                <MenuItem Header="{Binding}"
+                          Command="{Binding Command}"
+                          CommandParameter="{Binding CommandParameterContext}"
+                          >
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Header}"
+                                           />
+
+                                <TextBlock x:Name="_UnloadedSuffix"
+                                           Grid.Column="1"
+                                           Text=" (unloaded)"
+                                           Visibility="Collapsed"
+                                           />
+
+                                <TextBlock x:Name="_DisabledSuffix"
+                                           Grid.Column="1"
+                                           Text=" ..."
+                                           Visibility="Collapsed"
+                                           />
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter TargetName="_UnloadedSuffix" Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="True"/>
+                                        <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsEnabled}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter TargetName="_DisabledSuffix" Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
+                </MenuItem>
+            </DataTemplate>
+
+
+
+            <DataTemplate x:Key="ReloadDocumentReferencesProjectsCommandTemplate">
+                <DataTemplate.Resources>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding CommandParameterContext.HasUnloadedProjects}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataTemplate.Resources>
+                
+                <StackPanel>
+                    <helpersControls:Separator Style="{StaticResource MenuControl/MenuItemSeparatorStyle}"
+                                               Margin="0,5,0,5"
+                                               />
+                    <MenuItem Style="{StaticResource MenuControl/MenuItemCommandStyle}"
+                              Header="{Binding Header}"
+                              Command="{Binding Command}"
+                              CommandParameter="{Binding CommandParameterContext}"
+                              />
+                </StackPanel>
+            </DataTemplate>
+
+
+            <localTemplateSelectors:VirtualMenuItemTemplateSelector 
+                x:Key="VirtualMenuItemTemplateSelector"
+                DocumentProjectReferenceCommandTemplate="{StaticResource DocumentProjectReferenceCommandTemplate}"
+                ReloadDocumentReferencesProjectsCommandTemplate="{StaticResource ReloadDocumentReferencesProjectsCommandTemplate}"
+                />
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -197,6 +318,7 @@
                                           VirtualMenuItems="{Binding VirtualMenuItems, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                                           OnVirtualMenuOpenCommand="{Binding OnTabItemVirtualMenuOpenCommand,RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
                                           OnVirtualMenuClosedCommand="{Binding OnTabItemVirtualMenuClosedCommand, RelativeSource={RelativeSource AncestorType=localControls:TabsManagerToolWindowControl}}"
+                                          VirtualMenuItemTemplateSelector="{StaticResource VirtualMenuItemTemplateSelector}"
                                           />
         
         <!-- Перехватчик фокуса при клике на контрол -->
