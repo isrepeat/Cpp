@@ -13,7 +13,12 @@
       <DependentUpon>Separator.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisposableAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\TimerManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Variant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
@@ -29,7 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RelayCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\DisposableList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />

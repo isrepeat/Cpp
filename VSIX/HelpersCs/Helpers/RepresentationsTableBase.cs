@@ -19,10 +19,18 @@ namespace Helpers {
         protected IReadOnlyList<TRecord> Records => _records;
 
         public void Add(TRecord record) {
+            if (record == null) {
+                Helpers.Diagnostic.Logger.LogWarning($"'record == null'");
+                return;
+            }
             _records.Add(record);
         }
 
         public void AddRange(IEnumerable<TRecord> records) {
+            if (records == null) {
+                Helpers.Diagnostic.Logger.LogWarning($"'records == null'");
+                return;
+            }
             _records.AddRange(records);
         }
 
