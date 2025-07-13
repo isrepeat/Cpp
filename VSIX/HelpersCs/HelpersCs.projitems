@@ -15,7 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisposableAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\TimerManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Variant.cs" />
