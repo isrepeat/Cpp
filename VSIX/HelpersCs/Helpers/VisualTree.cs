@@ -96,7 +96,7 @@ namespace Helpers {
 
 
 
-        public static void LogDescendantsRecursive(DependencyObject element, int depth, Action<FrameworkElement, int>? extraLogger) {
+        public static void LogDescendantsRecursive(DependencyObject element, int depth, System.Action<FrameworkElement, int>? extraLogger) {
             if (element is FrameworkElement fe) {
                 string indent = new string(' ', depth * 2);
                 string typeName = fe.GetType().Name;

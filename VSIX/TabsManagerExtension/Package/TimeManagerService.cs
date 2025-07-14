@@ -26,8 +26,10 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TabsManagerExtension {
     namespace Enums {
-        public enum TimerType {
+        public enum TimeSlot {
             _100ms,
+            _300ms,
+            _500ms,
             _1s,
             _3s,
             _5s
@@ -41,8 +43,8 @@ namespace TabsManagerExtension.Services {
         SingletonServiceBase<TimeManagerService>,
         IExtensionService {
 
-        private Helpers.Time.TimerManager<TimerTypeConfig, Enums.TimerType> _timerManager;
-
+        private Helpers.Time.TimerManager<TimerTypeConfig, Enums.TimeSlot> _timerManager;
+        
         public TimeManagerService() { }
 
         //
@@ -56,7 +58,7 @@ namespace TabsManagerExtension.Services {
         public void Initialize() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _timerManager = new Helpers.Time.TimerManager<TimerTypeConfig, Enums.TimerType>();
+            _timerManager = new Helpers.Time.TimerManager<TimerTypeConfig, Enums.TimeSlot>();
             Helpers.Diagnostic.Logger.LogDebug("[TimeManagerService] Initialized.");
         }
 
@@ -73,27 +75,29 @@ namespace TabsManagerExtension.Services {
         // ░ API
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        public void Subscribe(Enums.TimerType type, Action handler) {
-            _timerManager.Subscribe(type, handler);
+        public void Subscribe(Enums.TimeSlot timeSlot, Action handler) {
+            _timerManager.Subscribe(timeSlot, handler);
         }
 
-        public void Unsubscribe(Enums.TimerType type, Action handler) {
-            _timerManager.Unsubscribe(type, handler);
+        public void Unsubscribe(Enums.TimeSlot timeSlot, Action handler) {
+            _timerManager.Unsubscribe(timeSlot, handler);
         }
 
 
         //
         // ░ Config
         //
-        public class TimerTypeConfig : Helpers.Time.ITimerConfig<Enums.TimerType> {
+        public class TimerTypeConfig : Helpers.Time.ITimerConfig<Enums.TimeSlot> {
             public TimeSpan BaseInterval => TimeSpan.FromMilliseconds(100);
 
-            public Dictionary<Enums.TimerType, int> GetMultipliers() {
-                return new Dictionary<Enums.TimerType, int> {
-                    { Enums.TimerType._100ms, 1 },
-                    { Enums.TimerType._1s, 10 },
-                    { Enums.TimerType._3s, 30 },
-                    { Enums.TimerType._5s, 50 }
+            public Dictionary<Enums.TimeSlot, int> GetMultipliers() {
+                return new Dictionary<Enums.TimeSlot, int> {
+                    { Enums.TimeSlot._100ms, 1 },
+                    { Enums.TimeSlot._300ms, 3 },
+                    { Enums.TimeSlot._500ms, 5 },
+                    { Enums.TimeSlot._1s, 10 },
+                    { Enums.TimeSlot._3s, 30 },
+                    { Enums.TimeSlot._5s, 50 }
                 };
             }
         }

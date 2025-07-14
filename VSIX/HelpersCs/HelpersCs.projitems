@@ -16,9 +16,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Text\Text.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\DelayedEventsHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\TimerManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Variant.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\TriggeredAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />

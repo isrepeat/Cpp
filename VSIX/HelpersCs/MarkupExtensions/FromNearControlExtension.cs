@@ -53,7 +53,7 @@ namespace Helpers {
             //BindingOperations.SetBinding(targetObject, targetProperty, binding);
             //}
             //else {
-            _ = targetObject.Dispatcher.BeginInvoke(new Action(() => {
+            _ = targetObject.Dispatcher.BeginInvoke(new System.Action(() => {
                 _isLoaded = true;
                 var binding = new Binding {
                     Path = new PropertyPath(this.Path),

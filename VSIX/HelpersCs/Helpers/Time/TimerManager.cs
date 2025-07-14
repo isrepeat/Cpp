@@ -27,7 +27,7 @@ namespace Helpers.Time {
         where TEnum : struct, Enum {
 
         private readonly DispatcherTimer _dispatcherTimer;
-        private readonly Dictionary<TEnum, Action?> _tickEvents = new();
+        private readonly Dictionary<TEnum, System.Action?> _tickEvents = new();
         private readonly Dictionary<TEnum, int> _counters = new();
         private readonly Dictionary<TEnum, int> _multipliers;
 
@@ -52,12 +52,12 @@ namespace Helpers.Time {
         //
         // API
         //
-        public void Subscribe(TEnum type, Action handler) {
-            _tickEvents[type] += handler;
+        public void Subscribe(TEnum timeSlot, System.Action handler) {
+            _tickEvents[timeSlot] += handler;
         }
 
-        public void Unsubscribe(TEnum type, Action handler) {
-            _tickEvents[type] -= handler;
+        public void Unsubscribe(TEnum timeSlot, System.Action handler) {
+            _tickEvents[timeSlot] -= handler;
         }
 
 

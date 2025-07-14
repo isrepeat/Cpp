@@ -66,7 +66,10 @@ namespace TabsManagerExtension {
 
         private void InitializeEvents() {
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded.InvokeForLastHandlerIfTriggered();
+
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed += this.OnSolutionClosed;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed.InvokeForLastHandlerIfTriggered();
         }
 
 

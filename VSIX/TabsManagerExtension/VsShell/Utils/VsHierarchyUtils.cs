@@ -204,6 +204,58 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
+        public static void LogAllHierarchyProperties<TPropId>(
+            IVsHierarchy hierarchy,
+            uint itemid,
+            string logPrefix = ""
+            )
+            where TPropId : Enum {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (typeof(TPropId) != typeof(__VSHPROPID) &&
+                typeof(TPropId) != typeof(__VSHPROPID2) &&
+                typeof(TPropId) != typeof(__VSHPROPID3) &&
+                typeof(TPropId) != typeof(__VSHPROPID4) &&
+                typeof(TPropId) != typeof(__VSHPROPID5) &&
+                typeof(TPropId) != typeof(__VSHPROPID6) &&
+                typeof(TPropId) != typeof(__VSHPROPID7) &&
+                typeof(TPropId) != typeof(__VSHPROPID8) &&
+                typeof(TPropId) != typeof(__VSHPROPID9) &&
+                typeof(TPropId) != typeof(__VSHPROPID10) &&
+                typeof(TPropId) != typeof(__VSHPROPID11)) {
+                Helpers.Diagnostic.Logger.LogDebug($"Тип {typeof(TPropId).Name} не поддерживается для логирования.");
+                return;
+            }
+
+            // __VSHPROPID содержит много повторяющихся значений (VSHPROPID_Name == VSHPROPID_ProjectName)
+            // поэтому можно пропустить дубликаты через HashSet если нужно.
+
+            foreach (TPropId prop in Enum.GetValues(typeof(TPropId))) {
+                try {
+                    int propId = Convert.ToInt32(prop);
+                    hierarchy.GetProperty(itemid, propId, out object value);
+
+                    string display = value switch {
+                        null => "null",
+                        string s => $"\"{s}\"",
+                        bool b => b.ToString(),
+                        Guid g => g.ToString(),
+                        int i => i.ToString(),
+                        _ => value.ToString()
+                    };
+
+                    Helpers.Diagnostic.Logger.LogDebug($"{logPrefix}[{itemid}] {typeof(TPropId).Name}.{prop} = {display}");
+                }
+                catch (NotImplementedException) {
+                    Helpers.Diagnostic.Logger.LogDebug($"{logPrefix}[{itemid}] {typeof(TPropId).Name}.{prop} = Not implemented");
+                }
+                catch (Exception ex) {
+                    Helpers.Diagnostic.Logger.LogDebug($"{logPrefix}[{itemid}] {typeof(TPropId).Name}.{prop} = Error: {ex.Message}");
+                }
+            }
+        }
+
+
         //
         // Internal logic
         //

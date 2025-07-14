@@ -35,7 +35,7 @@ namespace Helpers {
         protected void SetPropertyWithNotification<T>(
             ref T refProperty,
             T newValue,
-            Action<T>? onChanged = null,
+            System.Action<T>? onChanged = null,
             [CallerMemberName] string? propertyName = null) {
 
             if (propertyName == null) {

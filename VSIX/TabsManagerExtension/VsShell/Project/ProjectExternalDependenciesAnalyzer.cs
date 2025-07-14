@@ -6,10 +6,11 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Telemetry;
+using Helpers.Text.Ex;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class ProjectExternalDependenciesTracker {
+    public sealed class ProjectExternalDependenciesAnalyzer {
         public event Action<_EventArgs.ProjectHierarchyItemsChangedEventArgs>? ExternalDependenciesChanged;
 
         private IVsHierarchy _projectHierarchy;
@@ -17,7 +18,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentExternalDependenciesItems = new();
 
-        public ProjectExternalDependenciesTracker(IVsHierarchy projectHierarchy) {
+        public ProjectExternalDependenciesAnalyzer(IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _projectHierarchy = projectHierarchy;
@@ -77,7 +78,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 _projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
                 var name = nameObj as string;
 
-                if (this.IsGuidName(name)) {
+                if (name.ex_IsGuidName()) {
                     _projectHierarchy.GetProperty(childId, (int)__VSHPROPID.VSHPROPID_Caption, out var captionObj);
                     var caption = captionObj as string ?? "";
 
@@ -90,10 +91,6 @@ namespace TabsManagerExtension.VsShell.Project {
             return VSConstants.VSITEMID_NIL;
         }
 
-
-        private bool IsGuidName(string? name) {
-            return Guid.TryParse(name, out _);
-        }
 
         private bool IsExternalIncludeFile(string? name) {
             return !string.IsNullOrEmpty(name) &&

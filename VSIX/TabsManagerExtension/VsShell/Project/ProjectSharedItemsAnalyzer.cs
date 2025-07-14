@@ -8,13 +8,13 @@ using Microsoft.VisualStudio;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class ProjectSharedItemsTracker {
+    public sealed class ProjectSharedItemsAnalyzer {
         public event Action<_EventArgs.ProjectHierarchyItemsChangedEventArgs>? SharedItemsChanged;
 
         private readonly IVsHierarchy _projectHierarchy;
         private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentSharedItems = new();
 
-        public ProjectSharedItemsTracker(IVsHierarchy projectHierarchy) {
+        public ProjectSharedItemsAnalyzer(IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
             _projectHierarchy = projectHierarchy;
         }

@@ -75,7 +75,6 @@ namespace TabsManagerExtension.VsShell.Solution {
 
 
         private List<string> _publicIncludeDirsFromReferences = new();
-
         public IReadOnlyList<string> PublicIncludeDirectoriesFromReferences {
             get {
                 lock (this) {
@@ -88,6 +87,8 @@ namespace TabsManagerExtension.VsShell.Solution {
         private readonly string _projectFilePath;
         private readonly FileSystemWatcher _watcher;
         private Microsoft.Build.Evaluation.Project? _loadedProject;
+
+        private bool _disposed = false;
 
         public MsBuildProjectAnalyzer(string projectFilePath) {
             MsBuildEnvironment.EnsureInitialized();
@@ -108,9 +109,16 @@ namespace TabsManagerExtension.VsShell.Solution {
         }
 
         public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
             _watcher.Dispose();
             _loadedProject?.ProjectCollection?.UnloadAllProjects();
+
+            _disposed = true;
         }
+
 
         private void ReloadProject() {
             try {
@@ -216,6 +224,8 @@ namespace TabsManagerExtension.VsShell.Solution {
 
         private readonly Dictionary<string, MsBuildProjectAnalyzer> _analyzers = new(StringComparer.OrdinalIgnoreCase);
 
+        private bool _disposed = false;
+
         public MsBuildSolutionWatcher(IEnumerable<EnvDTE.Project> projects) {
             ThreadHelper.ThrowIfNotOnUIThread();
             MsBuildEnvironment.EnsureInitialized();
@@ -230,6 +240,20 @@ namespace TabsManagerExtension.VsShell.Solution {
             }
         }
 
+        public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
+            foreach (var a in _analyzers.Values) {
+                a.Dispose();
+            }
+            _analyzers.Clear();
+
+            _disposed = true;
+        }
+
+
         public IReadOnlyList<string> GetIncludeDirectoriesFor(string projectPath) {
             string fullPath = Path.GetFullPath(projectPath);
             if (_analyzers.TryGetValue(fullPath, out var analyzer)) {
@@ -242,16 +266,9 @@ namespace TabsManagerExtension.VsShell.Solution {
             return new List<string>();
         }
 
+
         public IReadOnlyList<string> GetAllProjectPaths() {
             return _analyzers.Keys.ToList();
-        }
-
-        public void Dispose() {
-            foreach (var a in _analyzers.Values) {
-                a.Dispose();
-            }
-
-            _analyzers.Clear();
         }
     }
 }

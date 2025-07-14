@@ -16,10 +16,13 @@ using TabsManagerExtension.VsShell.Solution.Services;
 namespace TabsManagerExtension.VsShell.Services {
     public abstract class VsSelectionEventsServiceBase<TService> :
         TabsManagerExtension.Services.SingletonServiceBase<TService>,
-        IVsSelectionEvents
+        IVsSelectionEvents,
+        IDisposable
         where TService : VsSelectionEventsServiceBase<TService>, IExtensionService, new() {
 
         private uint _selectionEventsCookie;
+        
+        private bool _disposed = false;
 
         protected VsSelectionEventsServiceBase() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -33,10 +36,16 @@ namespace TabsManagerExtension.VsShell.Services {
         public void Dispose() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (_disposed) {
+                return;
+            }
+
             if (_selectionEventsCookie != 0) {
                 PackageServices.VsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
                 _selectionEventsCookie = 0;
             }
+
+            _disposed = true;
         }
 
         /// <summary>
