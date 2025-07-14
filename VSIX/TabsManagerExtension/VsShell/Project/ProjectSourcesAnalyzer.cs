@@ -8,14 +8,14 @@ using Microsoft.VisualStudio;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public sealed class ProjectSourcesTracker {
+    public sealed class ProjectSourcesAnalyzer {
         public event Action<_EventArgs.ProjectHierarchyItemsChangedEventArgs>? SourcesChanged;
 
         private readonly IVsHierarchy _projectHierarchy;
 
         private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentSources = new();
 
-        public ProjectSourcesTracker(IVsHierarchy projectHierarchy) {
+        public ProjectSourcesAnalyzer(IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
             _projectHierarchy = projectHierarchy;
         }
