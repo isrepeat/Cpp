@@ -192,7 +192,7 @@ namespace Helpers.Collections {
     //}
 
     //public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeModifiableCollection {
-    //    public event Action<object, IList<T>, IList<T>, bool>? CollectionChangedExtended;
+    //    public event System.Action<object, IList<T>, IList<T>, bool>? CollectionChangedExtended;
     //    public IComparer<T>? Comparer { get; set; } = null;
 
     //    private bool _suppressNotification = false;
@@ -335,8 +335,8 @@ namespace Helpers.Collections {
        where TItem : ISelectableItem, INotifyPropertyChanged {
 
         // Events:
-        public event Action? OnGroupStructureChanged;
-        public event Action<TGroup, TItem, PropertyChangedEventArgs>? OnGroupItemChanged;
+        public event System.Action? OnGroupStructureChanged;
+        public event System.Action<TGroup, TItem, PropertyChangedEventArgs>? OnGroupItemChanged;
 
         // Properties:
         private readonly ObservableCollection<TGroup> _groups;
@@ -440,8 +440,8 @@ namespace Helpers.Collections {
         where TItem : ISelectableItem, INotifyPropertyChanged {
 
         // Events:
-        public Action<TGroup, TItem, bool>? OnItemSelectionChanged;
-        public Action<Enums.SelectionState>? OnSelectionStateChanged;
+        public System.Action<TGroup, TItem, bool>? OnItemSelectionChanged;
+        public System.Action<Enums.SelectionState>? OnSelectionStateChanged;
 
         // Properties:
         private Enums.SelectionState _selectionState = Enums.SelectionState.None;
@@ -708,7 +708,7 @@ namespace Helpers.Collections {
             var pendingSelectionNotificationsCopy = _pendingSelectionNotifications.ToList();
             _pendingSelectionNotifications.Clear();
 
-            _ = Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => {
+            _ = Dispatcher.CurrentDispatcher.BeginInvoke(new System.Action(() => {
                 foreach (var state in pendingSelectionStateNotificationValuesCopy) {
                     this.OnSelectionStateChanged?.Invoke(state);
                 }

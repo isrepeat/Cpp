@@ -53,7 +53,7 @@ namespace Helpers.Collections {
                 : null;
         }
 
-        public void ForEachOther(Action<IMultiStateElement> action) {
+        public void ForEachOther(System.Action<IMultiStateElement> action) {
             foreach (var state in _states.Values) {
                 if (!object.ReferenceEquals(state, _current)) {
                     action(state);
@@ -123,7 +123,7 @@ namespace Helpers.Collections {
     //    }
         
         
-    //    public void ForEachOther(Action<IMultiStateElement> action) {
+    //    public void ForEachOther(System.Action<IMultiStateElement> action) {
     //        foreach (var state in _states) {
     //            if (!ReferenceEquals(state, _current)) {
     //                action(state);

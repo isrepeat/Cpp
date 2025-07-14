@@ -10,9 +10,9 @@ namespace Helpers {
         // Internal:
         private class HandlerEntry {
             public WeakReference<object> Owner;
-            public Action Callback;
+            public System.Action Callback;
 
-            public HandlerEntry(object owner, Action callback) {
+            public HandlerEntry(object owner, System.Action callback) {
                 this.Owner = new WeakReference<object>(owner);
                 this.Callback = callback;
             }
@@ -23,11 +23,11 @@ namespace Helpers {
         private static readonly Dictionary<string, bool> _focusStates = new();
 
 
-        public static void RegisterFocusGot(string key, object owner, Action callback) {
+        public static void RegisterFocusGot(string key, object owner, System.Action callback) {
             AddHandler(_gotHandlers, key, owner, callback);
         }
 
-        public static void RegisterFocusLost(string key, object owner, Action callback) {
+        public static void RegisterFocusLost(string key, object owner, System.Action callback) {
             AddHandler(_lostHandlers, key, owner, callback);
         }
 
@@ -64,7 +64,7 @@ namespace Helpers {
         }
 
 
-        private static void AddHandler(Dictionary<string, List<HandlerEntry>> dict, string key, object owner, Action callback) {
+        private static void AddHandler(Dictionary<string, List<HandlerEntry>> dict, string key, object owner, System.Action callback) {
             if (!dict.TryGetValue(key, out var list)) {
                 list = new List<HandlerEntry>();
                 dict[key] = list;

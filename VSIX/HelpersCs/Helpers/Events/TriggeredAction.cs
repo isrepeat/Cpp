@@ -14,10 +14,10 @@ namespace Helpers {
     namespace Events {
         public class TriggeredAction {
             private bool _isTriggered = false;
-            private Action? _eventHandler;
-            private Action? _lastAddedHandler;
+            private System.Action? _eventHandler;
+            private System.Action? _lastAddedHandler;
 
-            public void Add(Action handler) {
+            public void Add(System.Action handler) {
                 _eventHandler += handler;
                 _lastAddedHandler = handler;
 
@@ -26,7 +26,7 @@ namespace Helpers {
                 }
             }
 
-            public void Remove(Action handler) {
+            public void Remove(System.Action handler) {
                 _eventHandler -= handler;
                 if (_lastAddedHandler == handler) {
                     _lastAddedHandler = null;
@@ -38,12 +38,12 @@ namespace Helpers {
                 _eventHandler?.Invoke();
             }
 
-            public static TriggeredAction operator +(TriggeredAction handlerContainer, Action handler) {
+            public static TriggeredAction operator +(TriggeredAction handlerContainer, System.Action handler) {
                 handlerContainer.Add(handler);
                 return handlerContainer;
             }
 
-            public static TriggeredAction operator -(TriggeredAction handlerContainer, Action handler) {
+            public static TriggeredAction operator -(TriggeredAction handlerContainer, System.Action handler) {
                 handlerContainer.Remove(handler);
                 return handlerContainer;
             }
@@ -61,10 +61,10 @@ namespace Helpers {
             private bool _isTriggered = false;
             private T1? _lastArg;
 
-            private Action<T1>? _eventHandler;
-            private Action<T1>? _lastAddedHandler;
+            private System.Action<T1>? _eventHandler;
+            private System.Action<T1>? _lastAddedHandler;
 
-            public void Add(Action<T1> handler) {
+            public void Add(System.Action<T1> handler) {
                 _eventHandler += handler;
                 _lastAddedHandler = handler;
 
@@ -73,7 +73,7 @@ namespace Helpers {
                 }
             }
 
-            public void Remove(Action<T1> handler) {
+            public void Remove(System.Action<T1> handler) {
                 _eventHandler -= handler;
                 if (_lastAddedHandler == handler) {
                     _lastAddedHandler = null;
@@ -86,12 +86,12 @@ namespace Helpers {
                 _eventHandler?.Invoke(arg1);
             }
 
-            public static TriggeredAction<T1> operator +(TriggeredAction<T1> handlerContainer, Action<T1> handler) {
+            public static TriggeredAction<T1> operator +(TriggeredAction<T1> handlerContainer, System.Action<T1> handler) {
                 handlerContainer.Add(handler);
                 return handlerContainer;
             }
 
-            public static TriggeredAction<T1> operator -(TriggeredAction<T1> handlerContainer, Action<T1> handler) {
+            public static TriggeredAction<T1> operator -(TriggeredAction<T1> handlerContainer, System.Action<T1> handler) {
                 handlerContainer.Remove(handler);
                 return handlerContainer;
             }
@@ -104,10 +104,10 @@ namespace Helpers {
             private bool _isTriggered = false;
             private (T1, T2)? _lastArgs;
 
-            private Action<T1, T2>? _eventHandler;
-            private Action<T1, T2>? _lastAddedHandler;
+            private System.Action<T1, T2>? _eventHandler;
+            private System.Action<T1, T2>? _lastAddedHandler;
 
-            public void Add(Action<T1, T2> handler) {
+            public void Add(System.Action<T1, T2> handler) {
                 _eventHandler += handler;
                 _lastAddedHandler = handler;
 
@@ -116,7 +116,7 @@ namespace Helpers {
                 }
             }
 
-            public void Remove(Action<T1, T2> handler) {
+            public void Remove(System.Action<T1, T2> handler) {
                 _eventHandler -= handler;
                 if (_lastAddedHandler == handler) {
                     _lastAddedHandler = null;
@@ -129,12 +129,12 @@ namespace Helpers {
                 _eventHandler?.Invoke(arg1, arg2);
             }
 
-            public static TriggeredAction<T1, T2> operator +(TriggeredAction<T1, T2> handlerContainer, Action<T1, T2> handler) {
+            public static TriggeredAction<T1, T2> operator +(TriggeredAction<T1, T2> handlerContainer, System.Action<T1, T2> handler) {
                 handlerContainer.Add(handler);
                 return handlerContainer;
             }
 
-            public static TriggeredAction<T1, T2> operator -(TriggeredAction<T1, T2> handlerContainer, Action<T1, T2> handler) {
+            public static TriggeredAction<T1, T2> operator -(TriggeredAction<T1, T2> handlerContainer, System.Action<T1, T2> handler) {
                 handlerContainer.Remove(handler);
                 return handlerContainer;
             }
@@ -146,10 +146,10 @@ namespace Helpers {
             private bool _isTriggered = false;
             private (T1, T2, T3)? _lastArgs;
 
-            private Action<T1, T2, T3>? _eventHandler;
-            private Action<T1, T2, T3>? _lastAddedHandler;
+            private System.Action<T1, T2, T3>? _eventHandler;
+            private System.Action<T1, T2, T3>? _lastAddedHandler;
 
-            public void Add(Action<T1, T2, T3> handler) {
+            public void Add(System.Action<T1, T2, T3> handler) {
                 _eventHandler += handler;
                 _lastAddedHandler = handler;
 
@@ -158,7 +158,7 @@ namespace Helpers {
                 }
             }
 
-            public void Remove(Action<T1, T2, T3> handler) {
+            public void Remove(System.Action<T1, T2, T3> handler) {
                 _eventHandler -= handler;
                 if (_lastAddedHandler == handler) {
                     _lastAddedHandler = null;
@@ -171,12 +171,12 @@ namespace Helpers {
                 _eventHandler?.Invoke(arg1, arg2, arg3);
             }
 
-            public static TriggeredAction<T1, T2, T3> operator +(TriggeredAction<T1, T2, T3> handlerContainer, Action<T1, T2, T3> handler) {
+            public static TriggeredAction<T1, T2, T3> operator +(TriggeredAction<T1, T2, T3> handlerContainer, System.Action<T1, T2, T3> handler) {
                 handlerContainer.Add(handler);
                 return handlerContainer;
             }
 
-            public static TriggeredAction<T1, T2, T3> operator -(TriggeredAction<T1, T2, T3> handlerContainer, Action<T1, T2, T3> handler) {
+            public static TriggeredAction<T1, T2, T3> operator -(TriggeredAction<T1, T2, T3> handlerContainer, System.Action<T1, T2, T3> handler) {
                 handlerContainer.Remove(handler);
                 return handlerContainer;
             }

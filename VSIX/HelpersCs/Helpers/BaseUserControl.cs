@@ -45,7 +45,7 @@ namespace Helpers {
         /// <summary>
         /// Выполняет колбэк сразу или при Loaded, если элемент ещё не загружен.
         /// </summary>
-        public void Observe(FrameworkElement owner, Action callback) {
+        public void Observe(FrameworkElement owner, System.Action callback) {
             if (owner.IsLoaded) {
                 callback();
                 return;
@@ -95,7 +95,7 @@ namespace Helpers {
                 typeof(BaseUserControl),
                 new PropertyMetadata(null));
 
-        private readonly List<Action> _onLoadedCallbacks = new();
+        private readonly List<System.Action> _onLoadedCallbacks = new();
         private bool _loadedHandled = false;
 
         public BaseUserControl() {

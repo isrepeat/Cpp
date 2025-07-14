@@ -206,12 +206,18 @@ namespace Helpers {
             public string logMessage = "";
             public CallerInfo callerInfo;
 
+            private bool _disposed = false;
+
             public Releaser(string logMessage, CallerInfo callerInfo) {
                 this.logMessage = logMessage;
                 this.callerInfo = callerInfo;
             }
 
             public void Dispose() {
+                if (_disposed) {
+                    return;
+                }
+                
                 string memberFormatted = $"{callerInfo.MemberName}()".PadRight(Logger.MemberNameWidth);
 
                 string logLine;
@@ -225,6 +231,8 @@ namespace Helpers {
                 }
 
                 System.Diagnostics.Debug.WriteLine(logLine);
+                
+                _disposed = true;
             }
         }
     }

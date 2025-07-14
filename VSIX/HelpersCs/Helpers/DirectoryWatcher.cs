@@ -48,7 +48,8 @@ namespace Helpers {
     public class DirectoryWatcher : IDisposable {
         private readonly FileSystemWatcher _fileSystemWatcher;
 
-        public event Action<DirectoryChangedEventArgs>? DirectoryChanged;
+        public event System.Action<DirectoryChangedEventArgs>? DirectoryChanged;
+        private bool _disposed = false;
 
         public DirectoryWatcher(string directoryPath, string filter = "*.*", bool includeSubdirectories = true) {
             if (!Directory.Exists(directoryPath)) {
@@ -68,6 +69,20 @@ namespace Helpers {
             _fileSystemWatcher.EnableRaisingEvents = true;
         }
 
+        public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
+            _fileSystemWatcher.Deleted -= this.OnFileDeleted;
+            _fileSystemWatcher.Renamed -= this.OnFileRenamed;
+            _fileSystemWatcher.Changed -= this.OnFileChanged;
+            _fileSystemWatcher.Created -= this.OnFileCreated;
+            _fileSystemWatcher.Dispose();
+
+            _disposed = true;
+        }
+
 
         private void OnFileCreated(object sender, FileSystemEventArgs e) {
             this.DirectoryChanged?.Invoke(new DirectoryChangedEventArgs(DirectoryChangeType.Created, e.FullPath));
@@ -80,14 +95,6 @@ namespace Helpers {
         }
         private void OnFileDeleted(object sender, FileSystemEventArgs e) {
             this.DirectoryChanged?.Invoke(new DirectoryChangedEventArgs(DirectoryChangeType.Deleted, e.FullPath));
-        }
-
-        public void Dispose() {
-            _fileSystemWatcher.Deleted -= this.OnFileDeleted;
-            _fileSystemWatcher.Renamed -= this.OnFileRenamed;
-            _fileSystemWatcher.Changed -= this.OnFileChanged;
-            _fileSystemWatcher.Created -= this.OnFileCreated;
-            _fileSystemWatcher.Dispose();
         }
     }
 }
