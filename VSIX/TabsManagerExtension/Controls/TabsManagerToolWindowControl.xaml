@@ -120,7 +120,7 @@
                                     <Condition Binding="{Binding CommandParameterContext.DocumentNode.ProjectNode.IsLoaded}" Value="True" />
                                     <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsEnabled}" Value="False" />
                                 </MultiDataTrigger.Conditions>
-                                <Setter Property="Foreground" Value="Yellow"/>
+                                <Setter Property="Foreground" Value="#80DDDDDD"/>
                                 <Setter Property="IsEnabled" Value="False"/>
                             </MultiDataTrigger>
 
@@ -129,6 +129,7 @@
                                     <Condition Binding="{Binding CommandParameterContext.DocumentNode.IsDisposed}" Value="True" />
                                 </MultiDataTrigger.Conditions>
                                 <Setter Property="Foreground" Value="Red"/>
+                                <Setter Property="IsEnabled" Value="False"/>
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>

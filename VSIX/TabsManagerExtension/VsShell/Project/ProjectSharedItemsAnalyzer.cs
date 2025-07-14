@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
-using EnvDTE;
 
 
 namespace TabsManagerExtension.VsShell.Project {

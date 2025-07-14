@@ -32,6 +32,7 @@ namespace TabsManagerExtension.VsShell.Project {
             }
         }
 
+
         private readonly Helpers.Collections.DisposableList<VsShell.Document.ExternalInclude> _externalIncludes = new();
         public IReadOnlyList<VsShell.Document.ExternalInclude> ExternalIncludes => _externalIncludes;
 
@@ -43,12 +44,10 @@ namespace TabsManagerExtension.VsShell.Project {
         private readonly Helpers.Collections.DisposableList<VsShell.Document.DocumentNode> _sources = new();
         public IReadOnlyList<VsShell.Document.DocumentNode> Sources => _sources;
 
-        //public bool IsIncludeSharedItems => _sharedItems.Count > 0;
 
+        private ProjectHierarchyTracker _projectHierarchyTracker;
 
-        private ProjectExternalDependenciesTracker _projectExternalDependenciesTracker;
-        private ProjectSharedItemsTracker _projectSharedItemsTracker;
-        private ProjectSourcesTracker _projectSourcesTracker;
+        private bool _disposed = false;
 
         public LoadedProjectNode(ProjectNode projectNode) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -59,7 +58,13 @@ namespace TabsManagerExtension.VsShell.Project {
         // IDisposable
         //
         public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
             this.OnStateDisabled(null);
+            
+            _disposed = true;
         }
 
 
@@ -72,39 +77,23 @@ namespace TabsManagerExtension.VsShell.Project {
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectNode.ProjectHierarchy.VsHierarchy);
             this.ShellProject = new ShellProject(dteProject);
 
-            _projectExternalDependenciesTracker = new ProjectExternalDependenciesTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
-            _projectExternalDependenciesTracker.ExternalDependenciesChanged += this.OnExternalDependenciesChanged;
+            _projectHierarchyTracker = new ProjectHierarchyTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
+            _projectHierarchyTracker.ExternalDependenciesChanged += this.OnExternalDependenciesChanged;
+            _projectHierarchyTracker.SharedItemsChanged += this.OnSharedItemsChanged;
+            _projectHierarchyTracker.SourcesChanged += this.OnSourcesChanged;
 
-            _projectSharedItemsTracker = new ProjectSharedItemsTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
-            _projectSharedItemsTracker.SharedItemsChanged += this.OnSharedItemsChanged;
-
-            _projectSourcesTracker = new ProjectSourcesTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
-            _projectSourcesTracker.SourcesChanged += this.OnSourcesChanged;
-
-            TabsManagerExtension.Services.TimeManagerService.Instance.Subscribe(Enums.TimerType._3s, this.OnRefreshExternalDependencies);
-            
-            _projectSharedItemsTracker.Refresh(); // TODO: call also when project add / remove references.
-            _projectSourcesTracker.Refresh(); // TODO: call also when project add / remove items.
+            _projectHierarchyTracker.ExternalDependenciesChanged.InvokeForLastHandlerIfTriggered();
+            _projectHierarchyTracker.SharedItemsChanged.InvokeForLastHandlerIfTriggered();
+            _projectHierarchyTracker.SourcesChanged.InvokeForLastHandlerIfTriggered();
         }
 
         public void OnStateDisabled(Helpers.Collections.IMultiStateElement nextState) {
             // When project unloaded
 
-            TabsManagerExtension.Services.TimeManagerService.Instance.Unsubscribe(Enums.TimerType._3s, this.OnRefreshExternalDependencies);
-
-            if (_projectExternalDependenciesTracker != null) {
-                _projectExternalDependenciesTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
-                _projectExternalDependenciesTracker = null;
-            }
-
-            if (_projectSharedItemsTracker != null) {
-                _projectSharedItemsTracker.SharedItemsChanged -= this.OnSharedItemsChanged;
-                _projectSharedItemsTracker = null;
-            }
-
-            if (_projectSourcesTracker != null) {
-                _projectSourcesTracker.SourcesChanged -= this.OnSourcesChanged;
-                _projectSourcesTracker = null;
+            if (_projectHierarchyTracker != null) {
+                _projectHierarchyTracker.SourcesChanged -= this.OnSourcesChanged;
+                _projectHierarchyTracker.SharedItemsChanged -= this.OnSharedItemsChanged;
+                _projectHierarchyTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
             }
 
             foreach (var item in _externalIncludes) {
@@ -134,10 +123,6 @@ namespace TabsManagerExtension.VsShell.Project {
         // ░ Event handlers
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        private void OnRefreshExternalDependencies() {
-            _projectExternalDependenciesTracker.Refresh();
-        }
-
         private void OnExternalDependenciesChanged(_EventArgs.ProjectHierarchyItemsChangedEventArgs e) {
             this.UpdateProjectHierarchyItems(_externalIncludes, e, this.CreateExternalInclude);
         }
@@ -239,15 +224,5 @@ namespace TabsManagerExtension.VsShell.Project {
         // ░ Internal logic
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        private bool IsGuidName(string? name) {
-            return !string.IsNullOrEmpty(name) && name.StartsWith("{") && name.EndsWith("}");
-        }
-
-        private bool IsHeaderOrCppFile(string? name) {
-            return !string.IsNullOrEmpty(name) &&
-                (name.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase) ||
-                 name.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase));
-        }
     }
 }

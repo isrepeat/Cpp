@@ -92,9 +92,10 @@
     <Compile Include="VsShell\Document\ShellWindow.cs" />
     <Compile Include="VsShell\Document\ShellDocument.cs" />
     <Compile Include="VsShell\EventArgs.cs" />
-    <Compile Include="VsShell\Project\ProjectExternalDependenciesTracker.cs" />
-    <Compile Include="VsShell\Project\ProjectSharedItemsTracker.cs" />
-    <Compile Include="VsShell\Project\ProjectSourcesTracker.cs" />
+    <Compile Include="VsShell\Project\ProjectExternalDependenciesAnalyzer.cs" />
+    <Compile Include="VsShell\Project\ProjectHierarchyTracker.cs" />
+    <Compile Include="VsShell\Project\ProjectSharedItemsAnalyzer.cs" />
+    <Compile Include="VsShell\Project\ProjectSourcesAnalyzer.cs" />
     <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
     <Compile Include="VsShell\Project\ProjectNode.cs" />
     <Compile Include="VsShell\Solution\IVsHierarchy.cs" />

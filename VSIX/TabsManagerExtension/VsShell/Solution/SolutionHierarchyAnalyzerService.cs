@@ -134,7 +134,11 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded.InvokeForLastHandlerIfTriggered();
+
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed += this.OnSolutionClosed;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed.InvokeForLastHandlerIfTriggered();
+
             VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectLoaded += this.OnProjectLoaded;
             VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectUnloaded += this.OnProjectUnloaded;
 
@@ -161,7 +165,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectUnloaded -= this.OnProjectUnloaded;
             VsShell.Solution.Services.VsSolutionEventsTrackerService.Instance.ProjectLoaded -= this.OnProjectLoaded;
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed -= this.OnSolutionClosed;
-            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded -= this.OnSolutionLoaded;
 
             ClearInstance();
             Helpers.Diagnostic.Logger.LogDebug("[ExternalDependenciesGraphService] Disposed.");
@@ -295,7 +299,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
 
         //private void OnDelayedFileChangeTimerTick() {
-        //    //_delayedFileChangeTimer.Stop();
+        //    _delayedFileChangeTimer.Stop();
 
         //    List<Helpers.DirectoryChangedEventArgs> changedFiles;
         //    lock (_pendingChangedFiles) {

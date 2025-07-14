@@ -40,9 +40,10 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private readonly Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> _projectNodeState;
         private Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> ProjectNodeState => _projectNodeState;
-        
         public object? CurrentProjectNodeStateObj => _projectNodeState.Current;
+        
 
+        private bool _disposed = false;
 
         public ProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -90,6 +91,10 @@ namespace TabsManagerExtension.VsShell.Project {
         // IDisposable
         //
         public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
             if (_projectNodeState.Current is IDisposable disposable) { 
                 disposable.Dispose();
             }
@@ -98,6 +103,8 @@ namespace TabsManagerExtension.VsShell.Project {
                     disposable.Dispose();
                 }
             });
+
+            _disposed = true;
         }
 
 

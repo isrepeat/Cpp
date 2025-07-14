@@ -9,10 +9,14 @@ using Task = System.Threading.Tasks.Task;
 
 
 namespace TabsManagerExtension.VsShell.Document {
-    public class DocumentNode : Helpers.ObservableObject, IDisposable {
+    public class DocumentNode :
+        Helpers.ObservableObject,
+        IDisposable {
+
         public uint ItemId { get; private set; }
         public string FilePath { get; }
         public VsShell.Project.ProjectNode ProjectNode { get; }
+
 
         private bool _isEnabled = true;
         public bool IsEnabled {
@@ -25,9 +29,10 @@ namespace TabsManagerExtension.VsShell.Document {
             }
         }
 
-        private bool _isDisposed = false;
+
+        private bool _disposed = false;
         public bool IsDisposed {
-            get => _isDisposed;
+            get => _disposed;
         }
 
 
@@ -39,11 +44,15 @@ namespace TabsManagerExtension.VsShell.Document {
 
 
         public void Dispose() {
-            _isDisposed = true;
-            OnPropertyChanged(nameof(this.IsDisposed));
+            if (_disposed) {
+                return;
+            }
 
             this.ItemId = VSConstants.VSITEMID_NIL;
             this.IsEnabled = false;
+
+            OnPropertyChanged(nameof(this.IsDisposed));
+            _disposed = true;
         }
 
         public void Update(Utils.VsHierarchyUtils.HierarchyItem hierarchyItem) {
@@ -252,19 +261,19 @@ namespace TabsManagerExtension.VsShell.Document {
             // Выгружаем все остальные связанные проекты только лишь когда имеются 
             // другие невыгруженные sharedItems проекты. Это нужно чтобы контекст
             // целевого проекта установился наверняка.
-            if (sharedItemsProjectGuidsToUnload.Count > 0) {
+            //if (sharedItemsProjectGuidsToUnload.Count > 0) {
                 foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
                     Utils.VsHierarchyUtils.UnloadProject(projectGuid);
                 }
-            }
+            //}
 
             base.OpenWithProjectContext();
 
-            if (sharedItemsProjectGuidsToUnload.Count > 0) {
+            //if (sharedItemsProjectGuidsToUnload.Count > 0) {
                 foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
                     Utils.VsHierarchyUtils.ReloadProject(projectGuid);
                 }
-            }
+            //}
         }
 
 

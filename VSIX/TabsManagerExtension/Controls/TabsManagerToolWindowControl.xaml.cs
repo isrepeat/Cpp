@@ -1216,8 +1216,7 @@ namespace TabsManagerExtension.Controls {
             }
             else if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
                 sharedItemNode.OpenWithProjectContext();
-                Console.Beep(frequency: 2000, duration: 150);
-                Console.Beep(frequency: 2000, duration: 150);
+                Console.Beep(frequency: 1000, duration: 300);
             }
         }
 

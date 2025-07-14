@@ -19,6 +19,8 @@ namespace TabsManagerExtension.VsShell.Project {
         public IReadOnlyList<VsShell.Document.DocumentNode> LastSources { get; private set; }
         public IReadOnlyList<VsShell.Document.SharedItemNode> LastSharedItems { get; private set; }
         public IReadOnlyList<VsShell.Document.ExternalInclude> LastExternalIncludes { get; private set; }
+        
+        private bool _disposed = false;
 
         public UnloadedProjectNode(ProjectNode projectNode) {
             this.ProjectNode = projectNode;
@@ -32,6 +34,10 @@ namespace TabsManagerExtension.VsShell.Project {
         // IDisposable
         //
         public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+            _disposed = true;
         }
 
 
