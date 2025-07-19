@@ -20,8 +20,8 @@ namespace WpfTestApp.Controls {
                 new PropertyMetadata(null));
 
 
-        private Helpers.VisibilityProperty _isControlPanelVisible = new();
-        public Helpers.VisibilityProperty IsControlPanelVisible {
+        private Helpers.Properties.VisibilityProperty _isControlPanelVisible = new();
+        public Helpers.Properties.VisibilityProperty IsControlPanelVisible {
             get { return _isControlPanelVisible; }
             set {
                 if (_isControlPanelVisible != value) {
