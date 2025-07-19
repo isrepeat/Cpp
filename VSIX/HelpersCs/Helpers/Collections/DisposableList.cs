@@ -15,14 +15,24 @@ using System.ComponentModel;
 
 namespace Helpers.Collections {
     public sealed class DisposableList<T> : List<T> where T : IDisposable {
+        [Obsolete("Use ClearAndDispose instead.")]
         public new void Clear() {
+            base.Clear();
+        }
+
+        [Obsolete("Use RemoveAndDispose instead.")]
+        public new bool Remove(T item) {
+            return base.Remove(item);
+        }
+
+        public void ClearAndDispose() {
             foreach (var item in this) {
                 item.Dispose();
             }
             base.Clear();
         }
 
-        public new bool Remove(T item) {
+        public bool RemoveAndDispose(T item) {
             if (base.Remove(item)) {
                 item.Dispose();
                 return true;

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Helpers {
+namespace Helpers.Properties {
     /// <summary>
     /// Обёртка для логического значения, автоматически возвращающая true (или Visible),
     /// пока связанный контрол не пройдёт стадию Loaded.
@@ -17,7 +17,7 @@ namespace Helpers {
     /// и его привязки <b>не сработают корректно</b>.Эта обёртка всегда возвращает Visible до Loaded, 
     /// чтобы гарантировать, что элемент хотя бы один раз попадёт в дерево и успеет создать свои привязки.
     /// </summary>
-    public class VisibilityProperty: Helpers.ObservableObject, IAutoLoadNotifiable {
+    public class VisibilityProperty : Helpers.ObservableObject, IAutoLoadNotifiable {
         private bool _actualValue = false;
 
         /// <summary>

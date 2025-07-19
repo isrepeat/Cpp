@@ -17,6 +17,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TypeMarker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IAttachable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IInvalidatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Text\Text.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\DelayedEventsHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\TimerManager.cs" />
@@ -37,11 +40,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\DisposableList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\InvalidatableProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\ObservableProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Win32\WindowWin32Controller.cs" />
   </ItemGroup>
   <ItemGroup>
