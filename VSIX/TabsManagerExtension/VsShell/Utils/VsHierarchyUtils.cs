@@ -9,46 +9,11 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
+using Helpers.Attributes;
 
 
 namespace TabsManagerExtension.VsShell.Utils {
     public static class VsHierarchyUtils {
-        public sealed class HierarchyItem {
-            public IVsHierarchy Hierarchy { get; }
-            public uint ItemId { get; }
-            public string? Name { get; }
-            public string? CanonicalName { get; }
-            public string? NormalizedPath { get; private set; }
-
-            public HierarchyItem(IVsHierarchy hierarchy, uint itemId, string? name, string? canonicalName) {
-                this.Hierarchy = hierarchy;
-                this.ItemId = itemId;
-                this.Name = name;
-                this.CanonicalName = canonicalName;
-            }
-
-            public void CalculateNormilizedPath() {
-                var hierarchyItemName = this.CanonicalName ?? this.Name ?? string.Empty;
-                this.NormalizedPath = System.IO.Path.GetFullPath(hierarchyItemName)
-                    .TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-            }
-
-            public override bool Equals(object? obj) {
-                return obj is HierarchyItem other &&
-                       StringComparer.OrdinalIgnoreCase.Equals(this.CanonicalName, other.CanonicalName);
-            }
-
-            public override int GetHashCode() {
-                return this.CanonicalName != null
-                    ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.CanonicalName)
-                    : 0;
-            }
-            public override string ToString() {
-                return $"HierarchyItem(ItemId={this.ItemId}, Name='{this.Name}', CanonicalName='{this.CanonicalName}')";
-            }
-        }
-
-
         /// <summary>
         /// Walker
         /// </summary>
@@ -133,15 +98,21 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
-        public static List<HierarchyItem> CollectItemsRecursive(
+        public static List<Hierarchy.HierarchyItem> CollectItemsRecursive(
             IVsHierarchy hierarchy,
             uint itemId,
-            Func<HierarchyItem, bool> predicate
+            Func<Hierarchy.HierarchyItem, bool> predicate,
+            Func<Hierarchy.HierarchyItem, bool>? shouldVisitChildren = null
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var result = new List<HierarchyItem>();
-            VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, itemId, predicate, result);
+            var result = new List<Hierarchy.HierarchyItem>();
+            VsHierarchyUtils.CollectItemsRecursiveInternal(
+                hierarchy,
+                itemId,
+                predicate,
+                shouldVisitChildren ?? (_ => true), result);
+
             return result;
         }
 
@@ -262,23 +233,22 @@ namespace TabsManagerExtension.VsShell.Utils {
         private static void CollectItemsRecursiveInternal(
             IVsHierarchy hierarchy,
             uint itemId,
-            Func<HierarchyItem, bool> predicate,
-            List<HierarchyItem> result
+            Func<Hierarchy.HierarchyItem, bool> predicate,
+            Func<Hierarchy.HierarchyItem, bool> shouldVisitChildren,
+            List<Hierarchy.HierarchyItem> result
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            hierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out var nameObj);
-            var name = nameObj as string;
-
-            hierarchy.GetCanonicalName(itemId, out var canonicalName);
-            var hierarchyItem = new HierarchyItem(hierarchy, itemId, name, canonicalName);
+            var hierarchyItem = new Hierarchy.HierarchyItem(hierarchy, itemId);
 
             if (predicate(hierarchyItem)) {
                 result.Add(hierarchyItem);
             }
 
-            foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {
-                VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, childId, predicate, result);
+            if (shouldVisitChildren(hierarchyItem)) {
+                foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {
+                    VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, childId, predicate, shouldVisitChildren, result);
+                }
             }
         }
 

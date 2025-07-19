@@ -23,23 +23,23 @@ namespace TabsManagerExtension.VsShell._EventArgs {
     }
 
     public sealed class ProjectHierarchyChangedEventArgs : EventArgs {
-        public VsShell.Hierarchy.IVsHierarchy? OldHierarchy { get; }
-        public VsShell.Hierarchy.IVsHierarchy NewHierarchy { get; }
+        public VsShell.Hierarchy.IHierarchy? OldHierarchy { get; }
+        public VsShell.Hierarchy.IHierarchy NewHierarchy { get; }
 
         public ProjectHierarchyChangedEventArgs(
-            VsShell.Hierarchy.IVsHierarchy? oldHierarchy,
-            VsShell.Hierarchy.IVsHierarchy newHierarchy
+            VsShell.Hierarchy.IHierarchy? oldHierarchy,
+            VsShell.Hierarchy.IHierarchy newHierarchy
             ) {
             this.OldHierarchy = oldHierarchy;
             this.NewHierarchy = newHierarchy;
         }
 
-        public bool TryGetRealHierarchy(out VsShell.Hierarchy.IVsRealHierarchy realHierarchy) {
-            if (this.NewHierarchy is VsShell.Hierarchy.IVsRealHierarchy realNewHierarchy) {
+        public bool TryGetRealHierarchy(out VsShell.Hierarchy.IRealHierarchy realHierarchy) {
+            if (this.NewHierarchy is VsShell.Hierarchy.IRealHierarchy realNewHierarchy) {
                 realHierarchy = realNewHierarchy;
                 return true;
             }
-            else if (this.OldHierarchy is VsShell.Hierarchy.IVsRealHierarchy realOldHierarchy) {
+            else if (this.OldHierarchy is VsShell.Hierarchy.IRealHierarchy realOldHierarchy) {
                 realHierarchy = realOldHierarchy;
                 return true;
             }
@@ -52,13 +52,13 @@ namespace TabsManagerExtension.VsShell._EventArgs {
 
     public sealed class ProjectHierarchyItemsChangedEventArgs : EventArgs {
         public IVsHierarchy ProjectHierarchy { get; }
-        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Added { get; }
-        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Removed { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItem> Added { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItem> Removed { get; }
 
         public ProjectHierarchyItemsChangedEventArgs(
             IVsHierarchy projectHierarchy,
-            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> added,
-            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> removed
+            IReadOnlyList<Hierarchy.HierarchyItem> added,
+            IReadOnlyList<Hierarchy.HierarchyItem> removed
             ) {
             this.ProjectHierarchy = projectHierarchy;
             this.Added = added;

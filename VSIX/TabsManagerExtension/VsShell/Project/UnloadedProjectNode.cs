@@ -45,12 +45,16 @@ namespace TabsManagerExtension.VsShell.Project {
         // IMultiStateElement
         //
         public void OnStateEnabled(Helpers.Collections.IMultiStateElement previousState) {
+            Helpers.Diagnostic.Logger.LogDebug($"OnStateEnabled(): {this}");
+
             if (previousState is LoadedProjectNode loadedProjectNode) {
                 this.UpdateLastInfoFromLoadedProjectNode(loadedProjectNode);
             }
         }
 
         public void OnStateDisabled(Helpers.Collections.IMultiStateElement nextState) {
+            Helpers.Diagnostic.Logger.LogDebug($"OnStateDisabled(): {this}");
+
             this.LastSources = new List<VsShell.Document.DocumentNode>();
             this.LastSharedItems = new List<VsShell.Document.SharedItemNode>();
             this.LastExternalIncludes = new List<VsShell.Document.ExternalInclude>();

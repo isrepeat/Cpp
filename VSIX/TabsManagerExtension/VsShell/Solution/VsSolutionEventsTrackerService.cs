@@ -83,7 +83,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pHierarchy);
                 Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnAfterOpenProject(): {dteProject?.UniqueName}");
 
-                var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pHierarchy) as VsShell.Hierarchy.IVsRealHierarchy;
+                var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pHierarchy) as VsShell.Hierarchy.IRealHierarchy;
                 if (pNewHierarchy != null) {
                     this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
                         null, // oldHierarchy отсутствует, т.к. проект не переходил из stubHierarchy, а сразу загружен в Solution.
@@ -122,10 +122,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
             Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnBeforeUnloadProject(): {dteProject?.UniqueName}");
 
-            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
+            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IRealHierarchy
                 ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
 
-            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
+            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IStubHierarchy
                 ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
 
             this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(

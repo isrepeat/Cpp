@@ -31,7 +31,12 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private bool _disposed = false;
 
-        public ProjectHierarchyTracker(IVsHierarchy projectHierarchy) {
+        public ProjectHierarchyTracker(
+            IVsHierarchy projectHierarchy,
+            HashSet<Hierarchy.HierarchyItem> currentExternalDependenciesItems,
+            HashSet<Hierarchy.HierarchyItem> currentSharedItems,
+            HashSet<Hierarchy.HierarchyItem> currentSources
+            ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _projectHierarchy = projectHierarchy;
@@ -40,13 +45,13 @@ namespace TabsManagerExtension.VsShell.Project {
             _delayedEventsHandler = new Helpers.Time.DelayedEventsHandler(TimeSpan.FromMilliseconds(500));
             _delayedEventsHandler.OnReady += this.OnRefreshAnalyzers;
 
-            _projectExternalDependenciesAnalyzer = new ProjectExternalDependenciesAnalyzer(_projectHierarchy);
+            _projectExternalDependenciesAnalyzer = new ProjectExternalDependenciesAnalyzer(_projectHierarchy, currentExternalDependenciesItems);
             _projectExternalDependenciesAnalyzer.ExternalDependenciesChanged += this.OnExternalDependenciesChanged;
 
-            _projectSharedItemsAnalyzer = new ProjectSharedItemsAnalyzer(_projectHierarchy);
+            _projectSharedItemsAnalyzer = new ProjectSharedItemsAnalyzer(_projectHierarchy, currentSharedItems);
             _projectSharedItemsAnalyzer.SharedItemsChanged += this.OnSharedItemsChanged;
 
-            _projectSourcesAnalyzer = new ProjectSourcesAnalyzer(_projectHierarchy);
+            _projectSourcesAnalyzer = new ProjectSourcesAnalyzer(_projectHierarchy, currentSources);
             _projectSourcesAnalyzer.SourcesChanged += this.OnSourcesChanged;
 
             // Анализируем sources и sahredITems сейчас, т.к. к ним уже есть доступ.
@@ -123,6 +128,23 @@ namespace TabsManagerExtension.VsShell.Project {
         public int OnInvalidateIcon(IntPtr hicon) {
             //Helpers.Diagnostic.Logger.LogDebug($"[Watcher] OnInvalidateIcon");
             return VSConstants.S_OK;
+        }
+
+
+        //
+        // ░ API
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
+        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentExternalDependenciesItems() {
+            return _projectExternalDependenciesAnalyzer.GetCurrentExternalDependenciesItems();
+        }
+
+        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentSharedItems() {
+            return _projectSharedItemsAnalyzer.GetCurrentSharedItems();
+        }
+
+        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentSources() {
+            return _projectSourcesAnalyzer.GetCurrentSources();
         }
 
 

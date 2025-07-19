@@ -1200,7 +1200,7 @@ namespace TabsManagerExtension.Controls {
 
             this.OpenTabItemWithProjectContext(documentNode);
 
-            var tabItemDocument = this.FindTabItem(documentNode.FilePath);
+            var tabItemDocument = this.FindTabItem(documentNode.HierarchyItem.FilePath);
             if (tabItemDocument != null) {
                 this.RemoveTabItemFromGroups(tabItemDocument);
                 this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(documentNode.ProjectNode.Name));

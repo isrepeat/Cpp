@@ -15,12 +15,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.Shell;
 using TabsManagerExtension.State.TextEditor;
+using Helpers.Properties;
 
 
 namespace TabsManagerExtension.Controls {
     public partial class TextEditorOverlayControl : Helpers.BaseUserControl {
-        private Helpers.VisibilityProperty _isAnchorToggleButtonVisible = new();
-        public Helpers.VisibilityProperty IsAnchorToggleButtonVisible {
+        private VisibilityProperty _isAnchorToggleButtonVisible = new();
+        public VisibilityProperty IsAnchorToggleButtonVisible {
             get => _isAnchorToggleButtonVisible;
             set {
                 if (_isAnchorToggleButtonVisible != value) {
@@ -30,8 +31,8 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
-        private Helpers.VisibilityProperty _isAnchorListVisible = new();
-        public Helpers.VisibilityProperty IsAnchorListVisible {
+        private VisibilityProperty _isAnchorListVisible = new();
+        public VisibilityProperty IsAnchorListVisible {
             get => _isAnchorListVisible;
             set {
                 if (_isAnchorListVisible != value) {

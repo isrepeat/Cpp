@@ -124,7 +124,6 @@ namespace TabsManagerExtension.State.Document {
         private void UpdateHasUnloadedProjectsProperty() {
             bool hasUnloadedProjects = _references.Any(refEntry => !refEntry.DocumentNode.ProjectNode.IsLoaded);
             this.HasUnloadedProjects = hasUnloadedProjects;
-            Helpers.Diagnostic.Logger.LogDebug($"[UpdateHasUnloadedProjectsProperty] this.HasUnloadedProjects = {this.HasUnloadedProjects}");
         }
 
 
@@ -185,6 +184,7 @@ namespace TabsManagerExtension.State.Document {
 
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
             solutionHierarchyAnalyzer.AnalyzeExternalIncludes();
+            solutionHierarchyAnalyzer.AnalyzeDocuments();
 
             // Получаем все проекты, которые знают про этот файл.
             var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
@@ -203,6 +203,8 @@ namespace TabsManagerExtension.State.Document {
             }
 
             var documentNodes = new List<VsShell.Document.DocumentNode>();
+
+            //VsShell.Utils.VsHierarchyUtils.LogSolutionHierarchy();
 
             foreach (var projectNode in allSolutionProjectNodes) {
                 var externalInclude = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable

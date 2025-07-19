@@ -6,83 +6,96 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Helpers.Attributes;
 
 
 namespace TabsManagerExtension.VsShell.Document {
-    public class DocumentNode :
+    public partial class DocumentNode :
         Helpers.ObservableObject,
+        Helpers.IAttachable<VsShell.Hierarchy.HierarchyItem>,
         IDisposable {
 
-        public uint ItemId { get; private set; }
-        public string FilePath { get; }
         public VsShell.Project.ProjectNode ProjectNode { get; }
 
+        [InvalidatableProperty(AccessMarker.Get, AccessMarker.PrivateSet)]
+        private VsShell.Hierarchy.HierarchyItem _hierarchyItem;
 
-        private bool _isEnabled = true;
-        public bool IsEnabled {
-            get => _isEnabled;
-            set {
-                if (_isEnabled != value) {
-                    _isEnabled = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        [ObservableProperty(AccessMarker.Get, AccessMarker.PrivateSet)]
+        private bool _isAttachedHierarchyItem = false;
+
+        [ObservableProperty(AccessMarker.Get, AccessMarker.PrivateSet)]
+        private bool _isOppenedWithProjectContext = false;
 
 
-        private bool _disposed = false;
-        public bool IsDisposed {
-            get => _disposed;
-        }
+        private bool _isInvalidated = false;
+        private bool _isDisposed = false;
+        public bool IsDisposed => _isDisposed;
 
-
-        public DocumentNode(uint itemId, string filePath, VsShell.Project.ProjectNode projectNode) {
-            this.ItemId = itemId;
-            this.FilePath = filePath;
+        public DocumentNode(
+            VsShell.Project.ProjectNode projectNode,
+            VsShell.Hierarchy.HierarchyItem hierarchyItem
+            ) {
             this.ProjectNode = projectNode;
+            this.Attach(hierarchyItem);
+        }
+
+
+        public void Invalidate() {
+            if (_isDisposed) {
+                return;
+            }
+            if (_isInvalidated) {
+                return;
+            }
+
+            this.InvalidateProperties();
+
+            _isInvalidated = true;
         }
 
 
         public void Dispose() {
-            if (_disposed) {
+            if (_isDisposed) {
                 return;
             }
 
-            this.ItemId = VSConstants.VSITEMID_NIL;
-            this.IsEnabled = false;
+            this.Invalidate();
 
-            OnPropertyChanged(nameof(this.IsDisposed));
-            _disposed = true;
+            foreach (var disposable in Helpers.Reflection.GetPropertiesOf<IDisposable>(this)) {
+                disposable.Dispose();
+            }
+
+            _isDisposed = true;
+            base.OnPropertyChanged(nameof(this.IsDisposed));
         }
 
-        public void Update(Utils.VsHierarchyUtils.HierarchyItem hierarchyItem) {
-            this.ItemId = hierarchyItem.ItemId;
-        }
 
-        public void TryRefreshItemId() {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (this.IsDisposed) {
-                System.Diagnostics.Debugger.Break();
+        public void Attach(VsShell.Hierarchy.HierarchyItem newHierarchyItem) {
+            if (this.IsAttachedHierarchyItem) {
                 return;
             }
 
-            //Helpers.Diagnostic.Logger.LogDebug($"TryRefreshItemId for '{this.FilePath}'");
-
-            var hierarchy = this.ProjectNode.ProjectHierarchy.VsHierarchy;
-            if (hierarchy != null) {
-                var hr = hierarchy.ParseCanonicalName(this.FilePath, out var newItemId);
-
-                if (ErrorHandler.Succeeded(hr) && newItemId != VSConstants.VSITEMID_NIL) {
-                    if (newItemId != this.ItemId) {
-                        Helpers.Diagnostic.Logger.LogDebug($"ItemId changed from {this.ItemId} to {newItemId}'");
-                        this.ItemId = newItemId;
-                    }
-                }
-                else {
-                    // можно добавить дополнительный поиск через Walk, если ParseCanonicalName не нашел
-                }
+            if (this.HierarchyItem is IDisposable disposable) {
+                disposable.Dispose();
             }
+
+            this.HierarchyItem = newHierarchyItem;
+            this.IsAttachedHierarchyItem = true;
+        }
+
+
+        public void Detach(Helpers.TypeMarker<VsShell.Hierarchy.HierarchyItem> _) {
+            if (!this.IsAttachedHierarchyItem) {
+                return;
+            }
+
+            if (this.HierarchyItem is Helpers.IInvalidatable invalidatable) {
+                invalidatable.Invalidate();
+            }
+
+            this.IsOppenedWithProjectContext = false;
+            this.IsAttachedHierarchyItem = false;
         }
 
 
@@ -92,25 +105,35 @@ namespace TabsManagerExtension.VsShell.Document {
             }
 
             return
-                this.ItemId == other.ItemId &&
                 this.ProjectNode.ProjectGuid == other.ProjectNode.ProjectGuid &&
-                StringComparer.OrdinalIgnoreCase.Equals(this.FilePath, other.FilePath);
+                this.HierarchyItemCached.ItemIdCached == other.HierarchyItemCached.ItemIdCached &&
+                StringComparer.OrdinalIgnoreCase.Equals(
+                    this.HierarchyItemCached.FilePathCached,
+                    other.HierarchyItemCached.FilePathCached);
         }
+
 
         public override int GetHashCode() {
             unchecked {
                 int hash = 17;
 
-                hash = hash * 31 + this.ItemId.GetHashCode();
                 hash = hash * 31 + this.ProjectNode.ProjectGuid.GetHashCode();
-                hash = hash * 31 + (this.FilePath != null
-                    ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.FilePath)
+                hash = hash * 31 + this.HierarchyItemCached.ItemIdCached.GetHashCode();
+                hash = hash * 31 + (this.HierarchyItemCached.FilePathCached != null
+                    ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.HierarchyItemCached.FilePathCached)
                     : 0);
 
                 return hash;
             }
         }
 
+        public override string ToString() {
+            return $"DocumentNode({this.ToStringCore()})";
+        }
+
+        protected string ToStringCore() {
+            return $"FilePath='{this.HierarchyItem.FilePath}', Project='{this.ProjectNode.UniqueName}', ItemId={this.HierarchyItem.ItemId}";
+        }
 
 
         protected void OpenWithProjectContext() {
@@ -135,7 +158,7 @@ namespace TabsManagerExtension.VsShell.Document {
             // Visual Studio знала, что контекстом открытия является именно этот проект.
             var includeDependencyAnalyzer = VsShell.Solution.Services.IncludeDependencyAnalyzerService.Instance;
             var allTransitiveIncludingFiles = includeDependencyAnalyzer
-                .GetTransitiveFilesIncludersByIncludePath(this.FilePath);
+                .GetTransitiveFilesIncludersByIncludePath(this.HierarchyItem.FilePath);
 
             var currentProjectTransitiveIncludingFiles = allTransitiveIncludingFiles
                 .Where(sf => sf.ProjectNode.Equals(this.ProjectNode))
@@ -161,35 +184,34 @@ namespace TabsManagerExtension.VsShell.Document {
             }
 
             bool needCloseContextSwitchDocumentNode =
-                !Utils.EnvDteUtils.IsDocumentOpen(contextSwitchDocumentNode.FilePath);
+                !Utils.EnvDteUtils.IsDocumentOpen(contextSwitchDocumentNode.HierarchyItem.FilePath);
 
             int hr = VSConstants.S_OK;
 
             // Открываем файл в контексте проекта.
             hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
                 this.ProjectNode.ProjectHierarchy.VsHierarchy,
-                this.ItemId);
+                this.HierarchyItem.ItemId);
             ErrorHandler.ThrowOnFailure(hr);
 
             // Переключаемся на файл который включает наш файл (для смены activeDocumentFrame)
             // иначе IntelliSense не подхватит контекст.
             if (contextSwitchDocumentNode != null) {
-
-                Utils.VsHierarchyUtils.LogSolutionHierarchy();
-
                 hr = Utils.VsHierarchyUtils.ClickOnSolutionHierarchyItem(
                     contextSwitchDocumentNode.ProjectNode.ProjectHierarchy.VsHierarchy,
-                    contextSwitchDocumentNode.ItemId);
+                    contextSwitchDocumentNode.HierarchyItem.ItemId);
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
             // Закрываем временный файл переключения контекста.
             if (needCloseContextSwitchDocumentNode) {
                 var doc = PackageServices.Dte2.Documents.Cast<EnvDTE.Document>()
-                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchDocumentNode.FilePath, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(d => string.Equals(d.FullName, contextSwitchDocumentNode.HierarchyItem.FilePath, StringComparison.OrdinalIgnoreCase));
 
                 doc?.Close(EnvDTE.vsSaveChanges.vsSaveChangesNo);
             }
+
+            this.IsOppenedWithProjectContext = true;
 
             // Возвращаем активным предыдущий документ.
             VsixThreadHelper.RunOnUiThread(async () => {
@@ -197,34 +219,32 @@ namespace TabsManagerExtension.VsShell.Document {
                 activeDocumentBefore?.Activate();
             });
         }
-
-
-        protected string ToStringCore() {
-            return $"FilePath='{this.FilePath}', Project='{this.ProjectNode.UniqueName}', ItemId={this.ItemId}";
-        }
-
-        public override string ToString() {
-            return $"DocumentNode({this.ToStringCore()})";
-        }
     }
 
 
-
+    //
+    // SharedItemNode
+    //
     public sealed class SharedItemNode : DocumentNode {
         private IVsHierarchy? _sharedProjectHierarchy;
 
         public SharedItemNode(
-            uint itemId,
-            string filePath,
             VsShell.Project.ProjectNode projectNode,
-            IVsHierarchy? sharedProjectHierarchy)
-            : base(itemId, filePath, projectNode) {
+            VsShell.Hierarchy.HierarchyItem hierarchyItem
+            ) : base(projectNode, hierarchyItem) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IVsHierarchy? sharedProjectHierarchy = null;
+            this.ProjectNode.ProjectHierarchy.VsHierarchy.GetProperty(
+                hierarchyItem.ItemId,
+                (int)__VSHPROPID7.VSHPROPID_SharedProjectHierarchy,
+                out var sharedProjectHierarchyObj);
+
+            if (sharedProjectHierarchyObj is IVsHierarchy hierarchy) {
+                sharedProjectHierarchy = hierarchy;
+            }
 
             _sharedProjectHierarchy = sharedProjectHierarchy;
-
-            //var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            //var sharedProjectNode = solutionHierarchyAnalyzer.SolutionProjects
-            //    .FirstOrDefault(p => Equals(p.ProjectHierarchy.VsHierarchy, sharedProjectHierarchy));
         }
 
 
@@ -235,45 +255,49 @@ namespace TabsManagerExtension.VsShell.Document {
 
             // Получаем все sharedItems проекты, которые знают про этот файл.
             var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
-            var sharedItemsSolutionProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
-                .GetProjectsByDocumentPath(this.FilePath);
+            var sharedItemsProjectNodes = solutionHierarchyAnalyzer.SharedItemsRepresentationsTable
+                .GetProjectsByDocumentPath(this.HierarchyItem.FilePath);
 
-            var externalIncludesSolutionProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
-                .GetProjectsByDocumentPath(this.FilePath);
+            var externalIncludesProjectNodes = solutionHierarchyAnalyzer.ExternalIncludeRepresentationsTable
+                .GetProjectsByDocumentPath(this.HierarchyItem.FilePath);
 
             // Собираем все проекты на выгрузку, кроме текущего 'this.ProjectNode'
             // и оригинального 'IsSharedProject'.
-            var sharedItemsProjectGuidsToUnload = sharedItemsSolutionProjectNodes
+            var sharedItemsProjectGuidsToUnload = sharedItemsProjectNodes
                 .Where(p => p.IsLoaded && !p.Equals(this.ProjectNode) && !p.IsSharedProject)
                 .Select(p => p.ProjectGuid)
                 .ToList();
 
-            var externalIncludesProjectGuidsToUnload = externalIncludesSolutionProjectNodes
+            var externalIncludesProjectGuidsToUnload = externalIncludesProjectNodes
                 .Where(p => p.IsLoaded && !p.Equals(this.ProjectNode))
                 .Select(p => p.ProjectGuid)
                 .ToList();
-
 
             foreach (var projectGuid in sharedItemsProjectGuidsToUnload) {
                 Utils.VsHierarchyUtils.UnloadProject(projectGuid);
             }
 
-            // Выгружаем все остальные связанные проекты только лишь когда имеются 
-            // другие невыгруженные sharedItems проекты. Это нужно чтобы контекст
-            // целевого проекта установился наверняка.
-            //if (sharedItemsProjectGuidsToUnload.Count > 0) {
+            // Выгружаем все остальные связанные проекты (т.е. те которые содержат данный файл как External Dependencies)
+            // только лишь когда на целевой проект ещще не было переключений контекста или когда
+            // имеются другие sharedItems проект которые еще не выгружены. Это нужно чтобы
+            // контекст целевого проекта установился наверняка.
+            bool shouldReloadExternalIncludesProjects =
+                sharedItemsProjectGuidsToUnload.Count > 0 ||
+                base.IsOppenedWithProjectContext == false;
+
+            if (shouldReloadExternalIncludesProjects) {
                 foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
                     Utils.VsHierarchyUtils.UnloadProject(projectGuid);
                 }
-            //}
+            }
 
             base.OpenWithProjectContext();
 
-            //if (sharedItemsProjectGuidsToUnload.Count > 0) {
+            if (shouldReloadExternalIncludesProjects) {
                 foreach (var projectGuid in externalIncludesProjectGuidsToUnload) {
                     Utils.VsHierarchyUtils.ReloadProject(projectGuid);
                 }
-            //}
+            }
         }
 
 
@@ -283,13 +307,14 @@ namespace TabsManagerExtension.VsShell.Document {
     }
 
 
-
+    //
+    // ExternalInclude
+    //
     public sealed class ExternalInclude : DocumentNode {
         public ExternalInclude(
-            uint itemId,
-            string filePath,
-            VsShell.Project.ProjectNode projectNode)
-            : base(itemId, filePath, projectNode) {
+            VsShell.Project.ProjectNode projectNode,
+            VsShell.Hierarchy.HierarchyItem hierarchyItem
+            ) : base(projectNode, hierarchyItem) {
         }
 
 

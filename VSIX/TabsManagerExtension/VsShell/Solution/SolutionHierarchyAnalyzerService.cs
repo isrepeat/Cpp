@@ -30,7 +30,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             _mapProjectToDictFilePathToDocument.Clear();
 
             _mapFilePathToListProject = base.Records
-                .GroupBy(r => r.FilePath, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(r => r.HierarchyItem.FilePath, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     g => g.Key,
                     g => g.Select(r => r.ProjectNode).Distinct().ToList(),
@@ -38,7 +38,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
 
             foreach (var record in base.Records) {
                 var projectNode = record.ProjectNode;
-                var documenPath = record.FilePath;
+                var documenPath = record.HierarchyItem.FilePath;
 
                 if (!_mapProjectToDictFilePathToDocument.TryGetValue(projectNode, out var dictFilePathToDocument)) {
                     dictFilePathToDocument = new Dictionary<string, VsShell.Document.DocumentNode>(StringComparer.OrdinalIgnoreCase);
@@ -250,7 +250,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("OnSolutionClosed()");
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _solutionProjects.Clear();
+            _solutionProjects.ClearAndDispose();
         }
 
 
@@ -320,7 +320,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private void AnalyzeSolutionProjects() {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _solutionProjects.Clear();
+            _solutionProjects.ClearAndDispose();
 
             var vsSolution = PackageServices.VsSolution;
             vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_ALLINSOLUTION, Guid.Empty, out var enumHierarchies);

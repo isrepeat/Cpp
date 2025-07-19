@@ -63,7 +63,11 @@ namespace TabsManagerExtension.VsShell.Project {
             }
 
             this.OnStateDisabled(null);
-            
+
+            _externalIncludes.ClearAndDispose();
+            _sharedItems.ClearAndDispose();
+            _sources.ClearAndDispose();
+
             _disposed = true;
         }
 
@@ -72,12 +76,19 @@ namespace TabsManagerExtension.VsShell.Project {
         // IMultiStateElement
         //
         public void OnStateEnabled(Helpers.Collections.IMultiStateElement previousState) {
+            Helpers.Diagnostic.Logger.LogDebug($"OnStateEnabled(): {this}");
             // When project loaded
 
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(this.ProjectNode.ProjectHierarchy.VsHierarchy);
             this.ShellProject = new ShellProject(dteProject);
 
-            _projectHierarchyTracker = new ProjectHierarchyTracker(this.ProjectNode.ProjectHierarchy.VsHierarchy);
+            _projectHierarchyTracker = new ProjectHierarchyTracker(
+                this.ProjectNode.ProjectHierarchy.VsHierarchy,
+                _externalIncludes.Select(d => d.HierarchyItem).ToHashSet(),
+                _sharedItems.Select(d => d.HierarchyItem).ToHashSet(),
+                _sources.Select(d => d.HierarchyItem).ToHashSet()
+                );
+
             _projectHierarchyTracker.ExternalDependenciesChanged += this.OnExternalDependenciesChanged;
             _projectHierarchyTracker.SharedItemsChanged += this.OnSharedItemsChanged;
             _projectHierarchyTracker.SourcesChanged += this.OnSourcesChanged;
@@ -88,6 +99,7 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
         public void OnStateDisabled(Helpers.Collections.IMultiStateElement nextState) {
+            Helpers.Diagnostic.Logger.LogDebug($"OnStateDisabled(): {this}");
             // When project unloaded
 
             if (_projectHierarchyTracker != null) {
@@ -96,14 +108,14 @@ namespace TabsManagerExtension.VsShell.Project {
                 _projectHierarchyTracker.ExternalDependenciesChanged -= this.OnExternalDependenciesChanged;
             }
 
-            foreach (var item in _externalIncludes) {
-                item.IsEnabled = false;
+            foreach (var documentNode in _externalIncludes) {
+                documentNode.Detach(Helpers.TypeMarker<Hierarchy.HierarchyItem>.Instance);
             }
-            foreach (var item in _sharedItems) {
-                item.IsEnabled = false;
+            foreach (var documentNode in _sharedItems) {
+                documentNode.Detach(Helpers.TypeMarker<Hierarchy.HierarchyItem>.Instance);
             }
-            foreach (var item in _sources) {
-                item.IsEnabled = false;
+            foreach (var documentNode in _sources) {
+                documentNode.Detach(Helpers.TypeMarker<Hierarchy.HierarchyItem>.Instance);
             }
 
             this.ShellProject = null;
@@ -137,84 +149,65 @@ namespace TabsManagerExtension.VsShell.Project {
 
 
         private void UpdateProjectHierarchyItems<TDocumentNode>(
-            List<TDocumentNode> list,
+            Helpers.Collections.DisposableList<TDocumentNode> currentDocumentNodes,
             _EventArgs.ProjectHierarchyItemsChangedEventArgs e,
-            Func<Utils.VsHierarchyUtils.HierarchyItem, TDocumentNode> createNewNodeFactory)
+            Func<Hierarchy.HierarchyItem, TDocumentNode> createNewNodeFactory)
             where TDocumentNode : VsShell.Document.DocumentNode {
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (var hierarchyItem in e.Added) {
-                hierarchyItem.CalculateNormilizedPath();
-
-                var existNode = list
-                    .FirstOrDefault(item => string.Equals(item.FilePath, hierarchyItem.NormalizedPath, StringComparison.OrdinalIgnoreCase));
+                var existNode = currentDocumentNodes
+                    .FirstOrDefault(d => string.Equals(d.HierarchyItem.FilePath, hierarchyItem.FilePath, StringComparison.OrdinalIgnoreCase));
 
                 if (existNode != null) {
-                    existNode.IsEnabled = true;
-                    existNode.Update(hierarchyItem);
+                    existNode.Attach(hierarchyItem);
                     Helpers.Diagnostic.Logger.LogDebug($"[UpdateProjectHierarchyItems] Refresh: {existNode} [{this.ProjectNode.UniqueName}]");
                 }
                 else {
                     var newNode = createNewNodeFactory(hierarchyItem);
-                    list.Add(newNode);
+                    currentDocumentNodes.Add(newNode);
                     Helpers.Diagnostic.Logger.LogDebug($"[UpdateProjectHierarchyItems] Add: {newNode} [{this.ProjectNode.UniqueName}]");
                 }
             }
 
             foreach (var hierarchyItem in e.Removed) {
-                hierarchyItem.CalculateNormilizedPath();
+                var existNode = currentDocumentNodes
+                    .FirstOrDefault(d => string.Equals(d.HierarchyItem.FilePath, hierarchyItem.FilePath, StringComparison.OrdinalIgnoreCase));
 
-                var existNode = list
-                    .FirstOrDefault(item => string.Equals(item.FilePath, hierarchyItem.NormalizedPath, StringComparison.OrdinalIgnoreCase));
-
-                list.Remove(existNode);
+                currentDocumentNodes.RemoveAndDispose(existNode);
             }
         }
 
 
-        private VsShell.Document.ExternalInclude CreateExternalInclude(Utils.VsHierarchyUtils.HierarchyItem hierarchyItem) {
+        private VsShell.Document.ExternalInclude CreateExternalInclude(Hierarchy.HierarchyItem hierarchyItem) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var newExternalInclude = new VsShell.Document.ExternalInclude(
-                hierarchyItem.ItemId,
-                hierarchyItem.NormalizedPath,
-                this.ProjectNode
+                this.ProjectNode,
+                hierarchyItem
             );
             return newExternalInclude;
         }
 
 
-        private VsShell.Document.SharedItemNode CreateSharedItem(Utils.VsHierarchyUtils.HierarchyItem hierarchyItem) {
+        private VsShell.Document.SharedItemNode CreateSharedItem(Hierarchy.HierarchyItem hierarchyItem) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IVsHierarchy? sharedProjectHierarchy = null;
-            this.ProjectNode.ProjectHierarchy.VsHierarchy.GetProperty(
-                hierarchyItem.ItemId,
-                (int)__VSHPROPID7.VSHPROPID_SharedProjectHierarchy,
-                out var sharedProjectHierarchyObj);
-
-            if (sharedProjectHierarchyObj is IVsHierarchy hierarchy) {
-                sharedProjectHierarchy = hierarchy;
-            }
-
             var newSharedItem = new VsShell.Document.SharedItemNode(
-                hierarchyItem.ItemId,
-                hierarchyItem.NormalizedPath,
                 this.ProjectNode,
-                sharedProjectHierarchy
+                hierarchyItem
             );
             return newSharedItem;
         }
 
 
-        private VsShell.Document.DocumentNode CreateSource(Utils.VsHierarchyUtils.HierarchyItem hierarchyItem) {
+        private VsShell.Document.DocumentNode CreateSource(Hierarchy.HierarchyItem hierarchyItem) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var newSource = new VsShell.Document.DocumentNode(
-                hierarchyItem.ItemId,
-                hierarchyItem.NormalizedPath,
-                this.ProjectNode
+                this.ProjectNode,
+                hierarchyItem
             );
             return newSource;
         }

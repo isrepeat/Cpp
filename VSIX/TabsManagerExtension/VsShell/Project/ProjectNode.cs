@@ -19,7 +19,7 @@ namespace TabsManagerExtension.VsShell.Project {
         IProject,
         IDisposable {
 
-        public VsShell.Hierarchy.IVsHierarchy ProjectHierarchy { get; private set; }
+        public VsShell.Hierarchy.IHierarchy ProjectHierarchy { get; private set; }
         public Guid ProjectGuid { get; }
         public string Name { get; } = "<unknown>";
         public string UniqueName { get; } = "<unknown>";
@@ -45,7 +45,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private bool _disposed = false;
 
-        public ProjectNode(VsShell.Hierarchy.IVsHierarchy projectHierarchy) {
+        public ProjectNode(VsShell.Hierarchy.IHierarchy projectHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.ProjectHierarchy = projectHierarchy;
 
@@ -160,7 +160,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
 
         private void UpdateLoadedState() {
-            if (this.ProjectHierarchy is VsShell.Hierarchy.IVsRealHierarchy) {
+            if (this.ProjectHierarchy is VsShell.Hierarchy.IRealHierarchy) {
                 _projectNodeState.SwitchTo<LoadedProjectNode>();
 
                 this.IsLoaded = true;

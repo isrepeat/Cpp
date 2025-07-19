@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
+using Helpers.Text.Ex;
 
 
 namespace TabsManagerExtension.VsShell.Project {
@@ -13,11 +14,26 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private readonly IVsHierarchy _projectHierarchy;
 
-        private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentSources = new();
+        private readonly HashSet<Hierarchy.HierarchyItem> _currentSources = new();
 
-        public ProjectSourcesAnalyzer(IVsHierarchy projectHierarchy) {
+        public ProjectSourcesAnalyzer(
+            IVsHierarchy projectHierarchy
+            ) : this(projectHierarchy, new HashSet<Hierarchy.HierarchyItem>()) {
+        }
+
+        public ProjectSourcesAnalyzer(
+            IVsHierarchy projectHierarchy,
+            HashSet<Hierarchy.HierarchyItem> currentSources
+            ) {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             _projectHierarchy = projectHierarchy;
+            _currentSources = currentSources;
+        }
+
+
+        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentSources() {
+            return _currentSources.ToList();
         }
 
 
@@ -27,14 +43,15 @@ namespace TabsManagerExtension.VsShell.Project {
             var sourceItems = Utils.VsHierarchyUtils.CollectItemsRecursive(
                 _projectHierarchy,
                 VSConstants.VSITEMID_ROOT,
-                item => this.IsHeaderOrCppFile(item.CanonicalName));
+                predicate: item => !this.IsSharedItem(item) && this.IsHeaderOrCppFile(item.CanonicalName),
+                shouldVisitChildren: item => !item.Name.ex_IsGuidName());
 
-            var newSourceItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(sourceItems);
+            var newSourceItems = new HashSet<Hierarchy.HierarchyItem>(sourceItems);
 
-            var removedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(_currentSources);
+            var removedItems = new HashSet<Hierarchy.HierarchyItem>(_currentSources);
             removedItems.ExceptWith(newSourceItems);
 
-            var addedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(newSourceItems);
+            var addedItems = new HashSet<Hierarchy.HierarchyItem>(newSourceItems);
             addedItems.ExceptWith(_currentSources);
 
             if (addedItems.Count > 0 || removedItems.Count > 0) {
@@ -49,6 +66,17 @@ namespace TabsManagerExtension.VsShell.Project {
             _currentSources.UnionWith(newSourceItems);
         }
 
+
+        private bool IsSharedItem(Hierarchy.HierarchyItem item) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            _projectHierarchy.GetProperty(
+                item.ItemId,
+                (int)__VSHPROPID7.VSHPROPID_IsSharedItem,
+                out var isSharedItemObj);
+
+            return isSharedItemObj is bool boolVal && boolVal;
+        }
 
         private bool IsHeaderOrCppFile(string? name) {
             return !string.IsNullOrEmpty(name) &&

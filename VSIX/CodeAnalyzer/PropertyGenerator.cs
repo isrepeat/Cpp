@@ -452,7 +452,7 @@ namespace CodeAnalyzer {
 
                 foreach (var f in invalidatableFields) {
                     code += $"{newLine}    public {f.TypeName}? {f.PropName}Cached {{ get; set; }}";
-                    code += $"{newLine}    public bool Is{f.PropName}Valid {{ get; private set; }}";
+                    code += $"{newLine}    public bool Is{f.PropName}Valid {{ get; private set; }} = true;";
                 }
 
                 //code += $"{newLine}";

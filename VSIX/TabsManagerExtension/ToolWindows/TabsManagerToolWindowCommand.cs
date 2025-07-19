@@ -18,6 +18,7 @@ using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using TabsManagerExtension.VsShell.Project;
 
 
 namespace TabsManagerExtension.ToolWindows {
@@ -70,8 +71,18 @@ namespace TabsManagerExtension.ToolWindows {
 
         private async void Execute(object sender, EventArgs e) {
             //VsixVisualTreeHelper.Instance.ToggleCustomTabs();
-            this.TestIncludeDependencyAnalyzer();
-            //VsShell.Utils.VsHierarchy.LogSolutionHierarchy();
+            //this.TestIncludeDependencyAnalyzer();
+            Helpers.Diagnostic.Logger.LogDebug($"Solution hierarchy:");
+            VsShell.Utils.VsHierarchyUtils.LogSolutionHierarchy();
+            Helpers.Diagnostic.Logger.LogDebug($"");
+
+            var solutionHierarchyAnalyzer = VsShell.Solution.Services.SolutionHierarchyAnalyzerService.Instance;
+
+            var projectNode = solutionHierarchyAnalyzer.SolutionProjects[4];
+
+            var projectSourcesAnalyer = new ProjectSourcesAnalyzer(projectNode.ProjectHierarchy.VsHierarchy);
+            projectSourcesAnalyer.Refresh();
+
             int xx = 9;
         }
 

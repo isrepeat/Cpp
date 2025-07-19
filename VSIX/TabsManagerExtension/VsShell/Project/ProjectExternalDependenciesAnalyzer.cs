@@ -14,15 +14,28 @@ namespace TabsManagerExtension.VsShell.Project {
         public event Action<_EventArgs.ProjectHierarchyItemsChangedEventArgs>? ExternalDependenciesChanged;
 
         private IVsHierarchy _projectHierarchy;
+        private HashSet<Hierarchy.HierarchyItem> _currentExternalDependenciesItems;
         private uint _externalDependenciesItemId;
 
-        private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentExternalDependenciesItems = new();
+        public ProjectExternalDependenciesAnalyzer(
+            IVsHierarchy projectHierarchy
+            ) : this(projectHierarchy, new HashSet<Hierarchy.HierarchyItem>()) {
+        }
 
-        public ProjectExternalDependenciesAnalyzer(IVsHierarchy projectHierarchy) {
+        public ProjectExternalDependenciesAnalyzer(
+            IVsHierarchy projectHierarchy,
+            HashSet<Hierarchy.HierarchyItem> currentExternalDependenciesItems
+            ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _projectHierarchy = projectHierarchy;
+            _currentExternalDependenciesItems = currentExternalDependenciesItems;            
             _externalDependenciesItemId = this.FindExternalDependenciesItemId();
+        }
+
+
+        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentExternalDependenciesItems() {
+            return _currentExternalDependenciesItems.ToList();
         }
 
 
@@ -38,7 +51,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 _externalDependenciesItemId,
                 item => this.IsExternalIncludeFile(item.CanonicalName));
 
-            var newExternalDependenciesItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>();
+            var newExternalDependenciesItems = new HashSet<Hierarchy.HierarchyItem>();
 
             foreach (var item in externalDependenciesItems) {
                 newExternalDependenciesItems.Add(item);
@@ -47,13 +60,13 @@ namespace TabsManagerExtension.VsShell.Project {
             // Определяем удалённые элементы
             // ExceptWith удалит из removedIncludes все элементы, которые присутствуют в newExternalDependenciesItems,
             // оставив только те, которые были в _currentExternalDependenciesItems, но больше не встречаются
-            var removedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(_currentExternalDependenciesItems);
+            var removedItems = new HashSet<Hierarchy.HierarchyItem>(_currentExternalDependenciesItems);
             removedItems.ExceptWith(newExternalDependenciesItems);
 
             // Определяем добавленные элементы
             // ExceptWith удалит из addedIncludes все элементы, которые уже были в _currentExternalDependenciesItems,
             // оставив только новые, появившиеся в newExternalDependenciesItems
-            var addedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(newExternalDependenciesItems);
+            var addedItems = new HashSet<Hierarchy.HierarchyItem>(newExternalDependenciesItems);
             addedItems.ExceptWith(_currentExternalDependenciesItems);
 
             if (addedItems.Count > 0 || removedItems.Count > 0) {
