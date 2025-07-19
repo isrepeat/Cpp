@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>11.0</LangVersion>
+    <IsPackable>false</IsPackable>
+    
+    <!-- Avoid ID conflicts with the package project. -->
+    <PackageId>*$(MSBuildProjectFile)*</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
+    <EmbeddedResource Update="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
+  </ItemGroup>
+
+  <Import Project="..\HelpersCs.Attributes\HelpersCs.Attributes.projitems" Label="Shared" />
+
+  <Import Project="..\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems" Label="Shared" />
+
+</Project>
