@@ -1,0 +1,11 @@
+﻿<helpers:BaseUserControl x:Class="Helpers.Controls.FormattedTextBlock"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:helpers="clr-namespace:Helpers"
+                         x:Name="__FormattedTextBlock"
+                         >
+    <UserControl.Resources>
+    </UserControl.Resources>
+
+    <TextBlock Text="{Binding FormattedText, ElementName=__FormattedTextBlock}" />
+</helpers:BaseUserControl>

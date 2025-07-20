@@ -6,7 +6,8 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:local="clr-namespace:WpfTestApp"
         xmlns:localControls="clr-namespace:WpfTestApp.Controls"
-        xmlns:Hhlpers="clr-namespace:Helpers"
+        xmlns:helpers="clr-namespace:Helpers"
+        xmlns:helpersControls="clr-namespace:Helpers.Controls"
         mc:Ignorable="d"
         x:Name="__MainWindow_3_MarkupExtensions"
         Title="MainWindow"
@@ -44,6 +45,7 @@
             <Style x:Key="DarkTextBlockStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{StaticResource AppTextColor}" />
             </Style>
+
         </ResourceDictionary>
     </Window.Resources>
 
@@ -60,25 +62,79 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0"
-                        Orientation="Vertical"
-                        >
-                <TextBlock Text="ProjectObj:" 
-                           Foreground="#80DDDDDD"
+                    Orientation="Vertical"
+                    >
+                <TextBlock Text="{Binding ProjectObj, StringFormat='ProjectObj ({0}):'}" Foreground="#80DDDDDD" />
+                <TextBlock Text="{Binding ProjectObj.Name, StringFormat=' - Name = {0}'}"/>
+                <TextBlock Text="{Binding ProjectObj.ProjId, StringFormat=' - ProjId = {0}'}"/>
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding ProjectObj.DocumentObj}"
+                    Value1="{Binding ProjectObj.DocumentObjHash}"
+                    Format=" - DocumentObj = {0} [{1}]"
+                    />
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding ProjectObj.DocumentObj.HierarchyItemObj}"
+                    Value1="{Binding ProjectObj.DocumentObj.HierarchyItemObjHash}"
+                    Format="    - HierarchyItemObj = {0} [{1}]"
+                    />
+                <TextBlock Text="{Binding ProjectObj.DocumentObj.HierarchyItemObj.VsHierarchyData,
+                                  StringFormat='       - VsHierarchyData = {0}'}"
                            />
-                <TextBlock Text="{Binding ProjectObj}"/>
-                <TextBlock Text="{Binding ProjectObj.Name}"/>
-                <TextBlock Text="{Binding ProjectObj.ProjId}"/>
-                <TextBlock Text="{Binding ProjectObj.DocumentObj}"/>
-                
-                <Separator Margin="0,10"/>
+                <Separator Margin="0, 10"/>
 
-                <TextBlock Text="LastLoadedProject:" 
-                           Foreground="#80DDDDDD"
+                
+                
+                <TextBlock Text="{Binding LastLoadedProject, StringFormat='LastLoadedProject ({0}):'}" Foreground="#80DDDDDD" />
+                <TextBlock Text="{Binding LastLoadedProject.Name, StringFormat=' - Name = {0}'}"/>
+                <TextBlock Text="{Binding LastLoadedProject.ProjId, StringFormat=' - ProjId = {0}'}"/>
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding LastLoadedProject.DocumentObj}"
+                    Value1="{Binding LastLoadedProject.DocumentObjHash}"
+                    Format=" - DocumentObj = {0} [{1}]"
+                    />
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding LastLoadedProject.DocumentObj.HierarchyItemObj}"
+                    Value1="{Binding LastLoadedProject.DocumentObj.HierarchyItemObjHash}"
+                    Format="    - HierarchyItemObj = {0} [{1}]"
+                    />
+                <TextBlock Text="{Binding LastLoadedProject.DocumentObj.HierarchyItemObj.VsHierarchyData,
+                                  StringFormat='       - VsHierarchyData = {0}'}"
                            />
-                <TextBlock Text="{Binding LastLoadedProject}"/>
-                <TextBlock Text="{Binding LastLoadedProject.Name}"/>
-                <TextBlock Text="{Binding LastLoadedProject.ProjId}"/>
-                <TextBlock Text="{Binding LastLoadedProject.DocumentObj}"/>
+                <Separator Margin="0, 10"/>
+
+                
+                
+                <TextBlock Text="{Binding LastUnloadedProject, StringFormat='LastUnloadedProject ({0}):'}" Foreground="#80DDDDDD" />
+                <TextBlock Text="{Binding LastUnloadedProject.Name, StringFormat=' - Name = {0}'}"/>
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding LastUnloadedProject.DocumentObj}"
+                    Value1="{Binding LastUnloadedProject.DocumentObjHash}"
+                    Format=" - DocumentObj = {0} [{1}]"
+                    />
+                <helpersControls:FormattedTextBlock
+                    Value0="{Binding LastUnloadedProject.DocumentObj.HierarchyItemObj}"
+                    Value1="{Binding LastUnloadedProject.DocumentObj.HierarchyItemObjHash}"
+                    Format="    - HierarchyItemObj = {0} [{1}]"
+                    />
+                <TextBlock Text="{Binding LastUnloadedProject.DocumentObj.HierarchyItemObj.VsHierarchyData,
+                                  StringFormat='       - VsHierarchyData = {0}'}"
+                           />
+                <Separator Margin="0, 10"/>
+                
+                
+                
+                <TextBlock Text="DocumentHashes:" Foreground="#80DDDDDD" />
+                <ItemsControl ItemsSource="{Binding ProjectObj.DocumentObjHashes}"
+                              Background="Transparent"
+                              />
+                <Border Margin="0, 10" />
+
+                
+                <TextBlock Text="HierarchyHashes:" Foreground="#80DDDDDD" />
+                <ItemsControl ItemsSource="{Binding ProjectObj.DocumentObj.HierarchyItemObjHashes}"
+                              Background="Transparent"
+                              />
+
             </StackPanel>
 
             <Button Grid.Row="1"

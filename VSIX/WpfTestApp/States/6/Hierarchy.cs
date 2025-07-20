@@ -3,74 +3,94 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Helpers.Attributes;
+using System.ComponentModel;
 
 
 namespace WpfTestApp.States.MultistateBehaviour {
-    public class HierarchyNode :
+    public class HierarchyCommonState :
+        HelpersV4.Collections.CommonStateBase,
         IDisposable {
 
-        private readonly Helpers.Collections.MultiStateContainer<HierarchyItem, InvalidatedHierarchyItem, HierarchyItemSharedState> _hierarchyNodeState;
-        public Helpers.Collections.MultiStateContainer<HierarchyItem, InvalidatedHierarchyItem, HierarchyItemSharedState> HierarchyNodeState => _hierarchyNodeState;
+        private string _vsHierarchyData;
+        public string VsHierarchyData {
+            get {
+                return _vsHierarchyData;
+            }
+            set {
+                if (_vsHierarchyData != value) {
+                    _vsHierarchyData = value;
+                    base.OnSharedStatePropertyChanged();
+                }
+            }
+        }
 
-        public HierarchyNode() {
-            _hierarchyNodeState = new Helpers.Collections.MultiStateContainer<HierarchyItem, InvalidatedHierarchyItem, HierarchyItemSharedState>(
-                new HierarchyItem(),
-                new InvalidatedHierarchyItem(),
-                new HierarchyItemSharedState()
-                );
+        public HierarchyCommonState(string vsHierarchyData) {
+            _vsHierarchyData = vsHierarchyData;
         }
 
         public void Dispose() {
-            _hierarchyNodeState.Dispose();
         }
     }
 
 
-    public class HierarchyItemSharedState {
+
+    public abstract class HierarchyCommonStateViewModel :
+        HelpersV4.Collections.CommonStateViewModelBase<HierarchyCommonState> {
+        public string VsHierarchyData => this.CommonState.VsHierarchyData;
+
+        protected HierarchyCommonStateViewModel(HierarchyCommonState commonState)
+            : base(commonState) {
+        }
+
+        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName is nameof(HierarchyCommonState.VsHierarchyData)) {
+                base.OnPropertyChanged(nameof(this.VsHierarchyData));
+            }
+        }
     }
+
+
 
     public class HierarchyItem :
-        IDisposable,
-        Helpers.Collections.IMultiStateElement<HierarchyItemSharedState> {
+        HierarchyCommonStateViewModel,
+        HelpersV4.Collections.IMultiStateElement {
 
-        public uint ItemId { get; private set; }
-
-        public HierarchyItem() {
-            ItemId = 11;
+        public HierarchyItem(HierarchyCommonState commonState) : base(commonState) {
         }
-        public void Dispose() {
+        public override void Dispose() {
         }
 
-        public void OnStateEnabled(Helpers._EventArgs.MultiStateElementEnabledEventArgs<HierarchyItemSharedState> e) {
-            if (e.PreviousState is Helpers.Collections.UnknownMultiStateElement<HierarchyItemSharedState>) {
-            }
+        public void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e) {
         }
 
-        public void OnStateDisabled(Helpers._EventArgs.MultiStateElementDisabledEventArgs<HierarchyItemSharedState> e) {
+        public void OnStateDisabled(HelpersV4._EventArgs.MultiStateElementDisabledEventArgs e) {
             if (e.NextState is InvalidatedHierarchyItem) {
             }
+        }
+
+        public override string ToString() {
+            return $"<HierarchyItem>";
         }
     }
 
 
     public class InvalidatedHierarchyItem :
-        IDisposable,
-        Helpers.Collections.IMultiStateElement<HierarchyItemSharedState> {
+        HierarchyCommonStateViewModel,
+        HelpersV4.Collections.IMultiStateElement {
 
-        public uint LastItemId { get; private set; }
-
-        public InvalidatedHierarchyItem() {
+        public InvalidatedHierarchyItem(HierarchyCommonState commonState) : base(commonState) {
         }
-        public void Dispose() {
+        public override void Dispose() {
         }
 
-        public void OnStateEnabled(Helpers._EventArgs.MultiStateElementEnabledEventArgs<HierarchyItemSharedState> e) {
-            if (e.PreviousState is Helpers.Collections.UnknownMultiStateElement<HierarchyItemSharedState>) {
-            }
+
+        public void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e) {
+        }
+        public void OnStateDisabled(HelpersV4._EventArgs.MultiStateElementDisabledEventArgs e) {
         }
 
-        public void OnStateDisabled(Helpers._EventArgs.MultiStateElementDisabledEventArgs<HierarchyItemSharedState> e) {
+        public override string ToString() {
+            return $"<InvalidatedHierarchyItem>";
         }
     }
 }

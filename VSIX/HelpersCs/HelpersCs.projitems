@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collections.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainerV4.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainerV3.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainerV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
