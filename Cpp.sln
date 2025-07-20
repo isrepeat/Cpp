@@ -196,6 +196,10 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HelpersCs.Attributes", "VSI
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HelpersCs.Diagnostic", "VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.shproj", "{5DC1B831-8A22-4C59-9D3F-B081E2F6AF36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCodeAnalyzer", "VSIX\TestCodeAnalyzer\TestCodeAnalyzer.csproj", "{419410D1-3EA3-4D11-940B-A81B342FE616}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HeleprsCs.Visual", "VSIX\HeleprsCs.Visual\HeleprsCs.Visual.shproj", "{86AC5B14-7FBA-4D5B-B711-90E3F7798E0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1103,6 +1107,26 @@ Global
 		{A1425EEC-99C8-47D8-9E26-688AE8BE1D79}.Release|x64.Build.0 = Release|Any CPU
 		{A1425EEC-99C8-47D8-9E26-688AE8BE1D79}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1425EEC-99C8-47D8-9E26-688AE8BE1D79}.Release|x86.Build.0 = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|ARM.Build.0 = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|x64.Build.0 = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Debug|x86.Build.0 = Debug|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|ARM.ActiveCfg = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|ARM.Build.0 = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|ARM64.Build.0 = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|x64.ActiveCfg = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|x64.Build.0 = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|x86.ActiveCfg = Release|Any CPU
+		{419410D1-3EA3-4D11-940B-A81B342FE616}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1186,6 +1210,8 @@ Global
 		{A1425EEC-99C8-47D8-9E26-688AE8BE1D79} = {5E1FE3CC-1775-4DDD-835D-D3FEC7582CC7}
 		{CD563DC0-5C5F-423C-B1CE-74B120659770} = {5E1FE3CC-1775-4DDD-835D-D3FEC7582CC7}
 		{5DC1B831-8A22-4C59-9D3F-B081E2F6AF36} = {5E1FE3CC-1775-4DDD-835D-D3FEC7582CC7}
+		{419410D1-3EA3-4D11-940B-A81B342FE616} = {5E1FE3CC-1775-4DDD-835D-D3FEC7582CC7}
+		{86AC5B14-7FBA-4D5B-B711-90E3F7798E0C} = {5E1FE3CC-1775-4DDD-835D-D3FEC7582CC7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {075C7FB3-3B0A-437F-85D3-E13D0C7A66A3}
@@ -1193,6 +1219,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{05dacba7-9f59-4442-a519-d32aa0373c0a}*SharedItemsImports = 9
 		VSIX\HelpersCs\HelpersCs.projitems*{0eeeeb5d-bb3b-4e9f-b2a7-410ca571ac97}*SharedItemsImports = 13
+		VSIX\HeleprsCs.Visual\HeleprsCs.Visual.projitems*{152f249b-dd89-43aa-9021-2ad93acf4dda}*SharedItemsImports = 4
 		VSIX\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{152f249b-dd89-43aa-9021-2ad93acf4dda}*SharedItemsImports = 4
 		VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{152f249b-dd89-43aa-9021-2ad93acf4dda}*SharedItemsImports = 4
 		VSIX\HelpersCs\HelpersCs.projitems*{152f249b-dd89-43aa-9021-2ad93acf4dda}*SharedItemsImports = 4
@@ -1214,6 +1241,9 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{32ea6b6c-57e5-4cd9-878b-0571653e5339}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{34a69ffa-7fae-4de7-bac0-30b5730831e9}*SharedItemsImports = 9
+		VSIX\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{419410d1-3ea3-4d11-940b-a81b342fe616}*SharedItemsImports = 5
+		VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{419410d1-3ea3-4d11-940b-a81b342fe616}*SharedItemsImports = 5
+		VSIX\HelpersCs\HelpersCs.projitems*{419410d1-3ea3-4d11-940b-a81b342fe616}*SharedItemsImports = 5
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\spdlog\Spdlog.Shared\Spdlog.Shared.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{4ab35171-9952-4a89-9589-8a63e8be47e9}*SharedItemsImports = 4
@@ -1223,9 +1253,11 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{6bec93a0-e1a2-4037-a5df-5ceee0aaa5fd}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{6cef19eb-02db-4b9a-93d8-9e89e662f919}*SharedItemsImports = 4
+		VSIX\HeleprsCs.Visual\HeleprsCs.Visual.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
 		VSIX\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
 		VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
 		VSIX\HelpersCs\HelpersCs.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
+		VSIX\HeleprsCs.Visual\HeleprsCs.Visual.projitems*{86ac5b14-7fba-4d5b-b711-90e3f7798e0c}*SharedItemsImports = 13
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
 		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{8e84e541-50e8-4485-aec4-de0285f2aa12}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{9119a10a-d27c-4eaf-8ee9-1a3097d8c6f6}*SharedItemsImports = 9

@@ -268,7 +268,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 existingSolutionProject.UpdateHierarchy(e);
                 this.AnalyzeDocuments();
                 this.AnalyzeExternalIncludes();
-            }               
+            }
         }
 
         private void OnProjectUnloaded(_EventArgs.ProjectHierarchyChangedEventArgs e) {

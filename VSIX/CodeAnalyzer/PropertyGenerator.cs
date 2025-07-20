@@ -335,6 +335,7 @@ namespace CodeAnalyzer {
 
                 if (hasAnyInvalidatableAttribute) {
                     code += $"{newLine}        if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{";
+                    code += $"{newLine}            System.Diagnostics.Debugger.Break();";
                     code += $"{newLine}            return default;";
                     code += $"{newLine}        }}";
                 }
@@ -355,6 +356,7 @@ namespace CodeAnalyzer {
 
                 if (hasAnyInvalidatableAttribute) {
                     code += $"{newLine}        if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{";
+                    code += $"{newLine}            System.Diagnostics.Debugger.Break();";
                     code += $"{newLine}            return;";
                     code += $"{newLine}        }}";
                 }

@@ -84,8 +84,13 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
         [InvalidatableLazyProperty(AccessMarker.Get, nameof(this.InitializeFilePathField))]
         private string _filePath;
 
+
         private bool _isInvalidated = false;
+        public bool IsInvalidated => _isInvalidated;
+
+
         private bool _isDisposed = false;
+        public bool IsDisposed => _isDisposed;
 
         public HierarchyItem(
             Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy,
