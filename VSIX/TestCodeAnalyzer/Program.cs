@@ -16,9 +16,6 @@ namespace TestCodeAnalyzer {
 
         private static void TestMultistateBehaviour() {
             var projectNode = new Tests.MultistateBehaviour.ProjectNode();
-
-            projectNode.ProjectNodeState.SwitchTo<Tests.MultistateBehaviour.LoadedProject>();
-            projectNode.ProjectNodeState.SwitchTo<Tests.MultistateBehaviour.UnloadedProject>();
         }
     }
 }

@@ -45,7 +45,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
         }
 
         public void Dispose() {
-            this.HierarchyMultiState.Dispose();
+            this.HierarchyMultiState?.Dispose();
         }
 
         private void OnHierarchyMultiStateChanged() {

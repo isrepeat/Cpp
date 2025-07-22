@@ -108,7 +108,6 @@ namespace HelpersV4.Collections {
 
         protected readonly TCommonState _commonState;
         protected readonly Dictionary<Type, IMultiStateElement> _instances = new();
-        //protected readonly Dictionary<Type, Func<TCommonState, object[], IMultiStateElement>> _factories = new();
 
 
         protected MultiStateContainerBase(TCommonState commonState) {
@@ -152,38 +151,6 @@ namespace HelpersV4.Collections {
         }
 
 
-        //public void SwitchToNew<T>(params object[] extraArgs) where T : IMultiStateElement {
-        //    if (!_instances.TryGetValue(typeof(T), out var oldInstance)) {
-        //        throw new InvalidOperationException($"State {typeof(T).Name} is not registered.");
-        //    }
-
-        //    if (!_factories.TryGetValue(typeof(T), out var factory)) {
-        //        throw new InvalidOperationException($"No factory registered for type {typeof(T).Name}.");
-        //    }
-
-        //    if (oldInstance is IDisposable disposable) {
-        //        disposable.Dispose();
-        //    }
-
-        //    var newInstance = factory(this._commonState, extraArgs);
-        //    this.Register<T>(newInstance); // replace oldInstance
-
-        //    var previous = _current;
-        //    _current = newInstance;
-
-        //    this.CurrentHash = this.InstancesHashMap[typeof(T)];
-        //    this.StateChanged?.Invoke();
-
-        //    previous.OnStateDisabled(new HelpersV4._EventArgs.MultiStateElementDisabledEventArgs(
-        //        newInstance,
-        //        oldInstance));
-
-        //    newInstance.OnStateEnabled(new HelpersV4._EventArgs.MultiStateElementEnabledEventArgs(
-        //        previous));
-        //}
-
-
-
         public T? Get<T>() where T : class, IMultiStateElement {
             if (_instances.TryGetValue(typeof(T), out var state)) {
                 return (T)state;
@@ -211,12 +178,6 @@ namespace HelpersV4.Collections {
             this.InstancesHashMap[typeof(T)] = $"0x{RuntimeHelpers.GetHashCode(element):X8}";
             this.InstancesHashSet.Add(this.InstancesHashMap[typeof(T)]);
         }
-
-        //protected void RegisterFactory<T>(Func<TCommonState, object[], T> factory) 
-        //    where T : IMultiStateElement {
-
-        //    _factories[typeof(T)] = (commonState, args) => factory(commonState, args);
-        //}
     }
 
 
@@ -240,23 +201,16 @@ namespace HelpersV4.Collections {
 
         public MultiStateContainer(
             TCommonState commonState,
-            Func<TCommonState, A> initialFactoryA,
-            Func<TCommonState, B> initialFactoryB
+            Func<TCommonState, A> factoryA,
+            Func<TCommonState, B> factoryB
             ) : base(commonState) {
 
             // Создание начальных экземпляров
-            var a = initialFactoryA(_commonState);
-            var b = initialFactoryB(_commonState);
+            var a = factoryA(_commonState);
+            var b = factoryB(_commonState);
 
             base.Register<A>(a);
             base.Register<B>(b);
-
-            //// Регистрация фабрик для последующих SwitchToNew<T>()
-            //base.RegisterFactory<A>((shared, args) =>
-            //    (A)Activator.CreateInstance(typeof(A), new object[] { shared }.Concat(args).ToArray())!);
-
-            //base.RegisterFactory<B>((shared, args) =>
-            //    (B)Activator.CreateInstance(typeof(B), new object[] { shared }.Concat(args).ToArray())!);
         }
     }
 }

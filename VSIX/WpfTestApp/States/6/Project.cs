@@ -70,7 +70,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
         }
 
         public void Dispose() {
-            this.DocumentMultiState.Dispose();
+            this.DocumentMultiState?.Dispose();
         }
 
 

@@ -29,6 +29,15 @@
 
 
     [System.AttributeUsage(System.AttributeTargets.Field)]
+    public sealed class ObservableMultiStatePropertyAttribute : System.Attribute {
+        public ObservableMultiStatePropertyAttribute(
+            Markers.Access.Get p0 = default,
+            Markers.Access.Set p1 = default
+            ) {
+        }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Field)]
     public sealed class InvalidatablePropertyAttribute : System.Attribute {
         public InvalidatablePropertyAttribute(
             Markers.Access.Get p0 = default,

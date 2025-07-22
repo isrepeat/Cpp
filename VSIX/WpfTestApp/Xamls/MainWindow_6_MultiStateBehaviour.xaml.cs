@@ -59,11 +59,7 @@ namespace WpfTestApp {
             this.OnUnloadProjectCommand = new Helpers.RelayCommand<object>(this.OnUnloadProject);
             this.OnReloadProjectCommand = new Helpers.RelayCommand<object>(this.OnReloadProject);
 
-            this.ProjectMultiState = new(
-                new ProjectCommonState("vsHierarchy_0"),
-                commonState => new LoadedProject(commonState),
-                commonState => new UnloadedProject(commonState)
-                );
+            this.ProjectMultiState = new(new ProjectCommonState("vsHierarchy_0"));
             this.OnReloadProjectCommand.Execute(null);
         }
 

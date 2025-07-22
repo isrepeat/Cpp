@@ -94,10 +94,6 @@ namespace CodeAnalyzer {
             SourceProductionContext context,
             ImmutableArray<Class> classes
             ) {
-            //if (!System.Diagnostics.Debugger.IsAttached) {
-            //    System.Diagnostics.Debugger.Launch();
-            //}
-
             Reporter.Msg(context, "[PropertyGenerator] GenerateCode() start");
             Reporter.Msg(context, $"[PropertyGenerator] classes.Count = {classes.Length}");
 
@@ -264,16 +260,36 @@ namespace CodeAnalyzer {
             string newLine = $"\n{indent}";
             string code = "";
 
+
             for (int i = 0; i < cls.Fields.Count; i++) {
                 bool isLastField = (i == cls.Fields.Count - 1);
                 var field = cls.Fields[i];
 
-                if (this.TryGeneratePropertyCode(context, field, indent, out var propertyCode)) {
-                    code += $"{propertyCode}";
-                    if (!isLastField) {
-                        code += $"\n\n\n";
+                //if (this.TryGeneratePropertyCode(context, field, indent, out var propertyCode)) {
+                //    code += $"{propertyCode}";
+                //    if (!isLastField) {
+                //        code += $"\n\n\n";
+                //    }
+                //}
+
+                var template = PropertyTemplate.Base;
+
+                var emitters = new List<IPropertyTemplateEmitter> {
+                    new BasePropertyEmitter(),
+                    new ObservableEmitter(),
+                    new AttachableEmitter(),
+                    new GlobalListeningEmitter(),
+                };
+
+                var pipeline = new CodeGenerationPipeline(field, PropertyTemplate.Base, emitters);
+                code += pipeline.Generate(new() {
+                    [PropertyTemplate.SET.AFTER_ASSIGNMENT] = new() {
+                        typeof(ObservableEmitter),
+                        typeof(AttachableEmitter),
+                        typeof(GlobalListeningEmitter),
                     }
-                }
+                },
+                indent);
             }
 
             result = code.StartsWith("\n")
@@ -309,6 +325,7 @@ namespace CodeAnalyzer {
             }
 
             var hasObservableAttribute = field.ex_HasAttribute<ObservablePropertyAttr>();
+            var hasObservableMultiState = field.ex_HasAttribute<ObservableMultiStatePropertyAttr>();
             var hasInvalidatableAttribute = field.ex_HasAttribute<InvalidatablePropertyAttr>();
             var hasInvalidatableLazyAttribute = field.ex_HasAttribute<InvalidatableLazyPropertyAttr>();
             var hasAnyInvalidatableAttribute = hasInvalidatableAttribute | hasInvalidatableLazyAttribute;

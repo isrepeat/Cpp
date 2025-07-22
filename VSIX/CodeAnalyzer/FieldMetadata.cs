@@ -57,17 +57,31 @@ namespace CodeAnalyzer {
     public sealed class ObservablePropertyAttr : PropertyAttributeBase {
         public ObservablePropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
-
-            if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
                 this.GetterAccess = GetterAccess.Get;
             }
-            argIndex++;
 
-            if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
+            argIndex++;
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.Set;
             }
-            else if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
+            else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.PrivateSet;
+            }
+        }
+    }
+
+
+    public sealed class ObservableMultiStatePropertyAttr : PropertyAttributeBase {
+        public ObservableMultiStatePropertyAttr(AttributeData attributeData) {
+            int argIndex = 0;
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
+                this.GetterAccess = GetterAccess.Get;
+            }
+            
+            argIndex++;
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
+                this.SetterAccess = SetterAccess.Set;
             }
         }
     }
@@ -75,20 +89,20 @@ namespace CodeAnalyzer {
 
     public sealed class InvalidatablePropertyAttr : PropertyAttributeBase {
         public InvalidatablePropertyAttr(AttributeData attributeData) {
-            int argIndex = 0;
 
-            if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
+            int argIndex = 0;
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
                 this.GetterAccess = GetterAccess.Get;
             }
-            //else if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
+            //else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
             //    this.SetterAccess = SetterAccess.PrivateSet;
             //}
-            argIndex++;
 
-            if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
+            argIndex++;
+            if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.Set;
             }
-            else if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
+            else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.PrivateSet;
             }
         }
@@ -100,19 +114,18 @@ namespace CodeAnalyzer {
 
         public InvalidatableLazyPropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
-
-            if (attributeData.TryGetConstructorArgumentValue<string>(argIndex, out var arg0_factoryMethodName)) {
+            if (attributeData.ex_TryGetConstructorArgumentValue<string>(argIndex, out var arg0_factoryMethodName)) {
                 this.FactoryMethodName = arg0_factoryMethodName;
             }    
-            else if (attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
+            else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
                 this.GetterAccess = GetterAccess.Get;
             }
-            argIndex++;
 
-            if (attributeData.TryGetConstructorArgumentValue<string>(argIndex, out var arg1_factoryMethodName)) {
+            argIndex++;
+            if (attributeData.ex_TryGetConstructorArgumentValue<string>(argIndex, out var arg1_factoryMethodName)) {
                 this.FactoryMethodName = arg1_factoryMethodName;
             }
-            else if(attributeData.TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
+            else if(attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
                 this.GetterAccess = GetterAccess.Get;
             }
         }
@@ -131,6 +144,9 @@ namespace CodeAnalyzer {
             foreach (var attributeData in fieldSymbol.GetAttributes()) {
                 if (attributeData.ex_IsAttribute(typeof(Helpers.Attributes.ObservablePropertyAttribute))) {
                     _propertyAttributes.Add(new ObservablePropertyAttr(attributeData));
+                }
+                else if (attributeData.ex_IsAttribute(typeof(Helpers.Attributes.ObservableMultiStatePropertyAttribute))) {
+                    _propertyAttributes.Add(new ObservableMultiStatePropertyAttr(attributeData));
                 }
                 else if (attributeData.ex_IsAttribute(typeof(Helpers.Attributes.InvalidatablePropertyAttribute))) {
                     _propertyAttributes.Add(new InvalidatablePropertyAttr(attributeData));
