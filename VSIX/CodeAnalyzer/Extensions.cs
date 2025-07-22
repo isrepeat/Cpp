@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Helpers.Attributes;
 
 
 namespace CodeAnalyzer {
@@ -26,16 +25,16 @@ namespace CodeAnalyzer {
 
 
         public static class ClassExtensions {
-            public static bool ex_HasFieldAttribute<TAttr>(this Class cls)
-                where TAttr : PropertyAttributeBase {
+            public static bool ex_HasFieldAttribute<TAttr>(this Data.Class cls)
+                where TAttr : Attributes.PropertyAttributeBase {
                 return cls.Fields.Any(field => field.ex_HasAttribute<TAttr>());
             }
         }
 
 
         public static class FieldExtensions {
-            public static bool ex_HasAttribute<TAttr>(this Field field)
-                where TAttr : PropertyAttributeBase {
+            public static bool ex_HasAttribute<TAttr>(this Data.Field field)
+                where TAttr : Attributes.PropertyAttributeBase {
                 return field.PropertyAttributes.Any(attr => attr is TAttr);
             }
         }

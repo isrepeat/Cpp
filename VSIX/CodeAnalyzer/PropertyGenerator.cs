@@ -15,7 +15,8 @@ namespace System.Runtime.CompilerServices {
 }
 
 
-namespace CodeAnalyzer {
+namespace CodeAnalyzer
+{
     [Generator]
     public sealed class PropertyGenerator : IIncrementalGenerator {
         private string __logPrefix = "[CodeAnalyzer.PropertyGenerator]";
@@ -35,8 +36,8 @@ namespace CodeAnalyzer {
 
             var classList = fieldsValueProvider
                 .Select((fields, _) => {
-                    var result = new List<Class>();
-                    var grouped = new Dictionary<INamedTypeSymbol, List<Field>>(SymbolEqualityComparer.Default);
+                    var result = new List<Data.Class>();
+                    var grouped = new Dictionary<INamedTypeSymbol, List<Data.Field>>(SymbolEqualityComparer.Default);
 
                     foreach (var field in fields) {
                         var classSymbol = field.Symbol?.ContainingType;
@@ -45,7 +46,7 @@ namespace CodeAnalyzer {
                         }
 
                         if (!grouped.TryGetValue(classSymbol, out var fieldList)) {
-                            fieldList = new List<Field>();
+                            fieldList = new List<Data.Field>();
                             grouped[classSymbol] = fieldList;
                         }
 
@@ -56,7 +57,7 @@ namespace CodeAnalyzer {
                         var symbol = entry.Key;
                         var fieldList = entry.Value;
 
-                        result.Add(new Class(symbol, fieldList));
+                        result.Add(new Data.Class(symbol, fieldList));
                     }
 
                     return result.ToImmutableArray();
@@ -73,7 +74,7 @@ namespace CodeAnalyzer {
         }
 
 
-        private Field TransformToCompoundFieldMetadata(GeneratorSyntaxContext context, CancellationToken _) {
+        private Data.Field TransformToCompoundFieldMetadata(GeneratorSyntaxContext context, CancellationToken _) {
             var fieldSyntax = (FieldDeclarationSyntax)context.Node;
             var variable = fieldSyntax.Declaration.Variables.First();
             var fieldSymbol = context.SemanticModel.GetDeclaredSymbol(variable) as IFieldSymbol;
@@ -82,7 +83,7 @@ namespace CodeAnalyzer {
                 return null;
             }
 
-            var field = new Field(fieldSyntax, fieldSymbol);
+            var field = new Data.Field(fieldSyntax, fieldSymbol);
             if (field.PropertyAttributes.Count > 0) {
                 return field;
             }
@@ -92,7 +93,7 @@ namespace CodeAnalyzer {
 
         private void GenerateCode(
             SourceProductionContext context,
-            ImmutableArray<Class> classes
+            ImmutableArray<Data.Class> classes
             ) {
             Reporter.Msg(context, "[PropertyGenerator] GenerateCode() start");
             Reporter.Msg(context, $"[PropertyGenerator] classes.Count = {classes.Length}");
@@ -169,7 +170,7 @@ namespace CodeAnalyzer {
 
         private bool TryGenerateInheritanceCode(
             SourceProductionContext context,
-            Class cls,
+            Data.Class cls,
             string indent,
             out string result
             ) {
@@ -177,8 +178,8 @@ namespace CodeAnalyzer {
 
             var interfaceNames = new List<string>();
 
-            if (cls.ex_HasFieldAttribute<InvalidatablePropertyAttr>() ||
-                cls.ex_HasFieldAttribute<InvalidatableLazyPropertyAttr>()
+            if (cls.ex_HasFieldAttribute<Attributes.InvalidatablePropertyAttr>() ||
+                cls.ex_HasFieldAttribute<Attributes.InvalidatableLazyPropertyAttr>()
                 ) {
                 interfaceNames.Add("Helpers.IInvalidatable");
             }
@@ -205,7 +206,7 @@ namespace CodeAnalyzer {
 
         private bool TryGenerateFieldsCode(
             SourceProductionContext context,
-            Class cls,
+            Data.Class cls,
             string indent,
             out string result
             ) {
@@ -215,8 +216,8 @@ namespace CodeAnalyzer {
             var code = "";
 
             var invalidatableFields = cls.Fields
-                .Where(field => field.ex_HasAttribute<InvalidatablePropertyAttr>() ||
-                                field.ex_HasAttribute<InvalidatableLazyPropertyAttr>())
+                .Where(field => field.ex_HasAttribute<Attributes.InvalidatablePropertyAttr>() ||
+                                field.ex_HasAttribute<Attributes.InvalidatableLazyPropertyAttr>())
                 .ToList();
 
             if (invalidatableFields.Count > 0) {
@@ -251,7 +252,7 @@ namespace CodeAnalyzer {
 
         private bool TryGeneratePropertiesCode(
             SourceProductionContext context,
-            Class cls,
+            Data.Class cls,
             string indent,
             out string result
             ) {
@@ -272,21 +273,23 @@ namespace CodeAnalyzer {
                 //    }
                 //}
 
-                var template = PropertyTemplate.Base;
-
-                var emitters = new List<IPropertyTemplateEmitter> {
-                    new BasePropertyEmitter(),
-                    new ObservableEmitter(),
-                    new AttachableEmitter(),
-                    new GlobalListeningEmitter(),
+                var emitters = new List<Templates.IPropertyTemplateEmitter> {
+                    new Attributes.BasePropertyEmitter(),
+                    new Attributes.ObservablePropertyEmmiter(),
+                    new Attributes.ObservableMultiStatePropertyEmmiter(),
+                    new Attributes.InvalidatablePropertyEmmiter(),
                 };
 
-                var pipeline = new CodeGenerationPipeline(field, PropertyTemplate.Base, emitters);
+                var pipeline = new Pipeline.CodeGenerationPipeline(
+                    field,
+                    Templates.PropertyTemplate.Base,
+                    emitters);
+
                 code += pipeline.Generate(new() {
-                    [PropertyTemplate.SET.AFTER_ASSIGNMENT] = new() {
-                        typeof(ObservableEmitter),
-                        typeof(AttachableEmitter),
-                        typeof(GlobalListeningEmitter),
+                    [Templates.PropertyTemplate.SET.AFTER_ASSIGNMENT] = new() {
+                        typeof(Attributes.ObservablePropertyEmmiter),
+                        typeof(Attributes.ObservableMultiStatePropertyEmmiter),
+                        typeof(Attributes.InvalidatablePropertyEmmiter),
                     }
                 },
                 indent);
@@ -302,7 +305,7 @@ namespace CodeAnalyzer {
 
         private bool TryGeneratePropertyCode(
             SourceProductionContext context,
-            Field field,
+            Data.Field field,
             string indent,
             out string result
             ) {
@@ -311,26 +314,26 @@ namespace CodeAnalyzer {
             var attrs = field.PropertyAttributes;
 
             // Определяем необходимость геттера и сеттера
-            bool hasGetter = attrs.Any(a => a.GetterAccess == GetterAccess.Get);
-            bool hasSetter = attrs.Any(a => a.SetterAccess is SetterAccess.Set or SetterAccess.PrivateSet);
+            bool hasGetter = attrs.Any(a => a.GetterAccess == Attributes.GetterAccess.Get);
+            bool hasSetter = attrs.Any(a => a.SetterAccess is Attributes.SetterAccess.Set or Attributes.SetterAccess.PrivateSet);
 
             // Если есть несколько атрибутов, где один требует Set, а другой PrivateSet — выбираем наиболее ограниченный
-            SetterAccess setterAccess = SetterAccess.None;
+            Attributes.SetterAccess setterAccess = Attributes.SetterAccess.None;
 
-            if (attrs.Any(a => a.SetterAccess == SetterAccess.PrivateSet)) {
-                setterAccess = SetterAccess.PrivateSet;
+            if (attrs.Any(a => a.SetterAccess == Attributes.SetterAccess.PrivateSet)) {
+                setterAccess = Attributes.SetterAccess.PrivateSet;
             }
-            else if (attrs.Any(a => a.SetterAccess == SetterAccess.Set)) {
-                setterAccess = SetterAccess.Set;
+            else if (attrs.Any(a => a.SetterAccess == Attributes.SetterAccess.Set)) {
+                setterAccess = Attributes.SetterAccess.Set;
             }
 
-            var hasObservableAttribute = field.ex_HasAttribute<ObservablePropertyAttr>();
-            var hasObservableMultiState = field.ex_HasAttribute<ObservableMultiStatePropertyAttr>();
-            var hasInvalidatableAttribute = field.ex_HasAttribute<InvalidatablePropertyAttr>();
-            var hasInvalidatableLazyAttribute = field.ex_HasAttribute<InvalidatableLazyPropertyAttr>();
+            var hasObservableAttribute = field.ex_HasAttribute<Attributes.ObservablePropertyAttr>();
+            var hasObservableMultiState = field.ex_HasAttribute<Attributes.ObservableMultiStatePropertyAttr>();
+            var hasInvalidatableAttribute = field.ex_HasAttribute<Attributes.InvalidatablePropertyAttr>();
+            var hasInvalidatableLazyAttribute = field.ex_HasAttribute<Attributes.InvalidatableLazyPropertyAttr>();
             var hasAnyInvalidatableAttribute = hasInvalidatableAttribute | hasInvalidatableLazyAttribute;
 
-            var invalidatableLazyAttribute = field.PropertyAttributes.OfType<InvalidatableLazyPropertyAttr>().FirstOrDefault();
+            var invalidatableLazyAttribute = field.PropertyAttributes.OfType<Attributes.InvalidatableLazyPropertyAttr>().FirstOrDefault();
 
             // Validation:
             if (hasObservableAttribute && !hasSetter) {
@@ -368,7 +371,7 @@ namespace CodeAnalyzer {
             }
 
             if (hasSetter) {
-                string setterAccessStr = setterAccess == SetterAccess.PrivateSet ? "private " : "";
+                string setterAccessStr = setterAccess == Attributes.SetterAccess.PrivateSet ? "private " : "";
                 code += $"{newLine}    {setterAccessStr}set {{";
 
                 if (hasAnyInvalidatableAttribute) {
@@ -418,7 +421,7 @@ namespace CodeAnalyzer {
 
         private bool TryGenerateMethodsCode(
             SourceProductionContext context,
-            Class cls,
+            Data.Class cls,
             string indent,
             out string result
             ) {
@@ -428,8 +431,8 @@ namespace CodeAnalyzer {
             string code = "";
 
             var invalidatableFields = cls.Fields
-                .Where(field => field.ex_HasAttribute<InvalidatablePropertyAttr>() ||
-                                field.ex_HasAttribute<InvalidatableLazyPropertyAttr>())
+                .Where(field => field.ex_HasAttribute<Attributes.InvalidatablePropertyAttr>() ||
+                                field.ex_HasAttribute<Attributes.InvalidatableLazyPropertyAttr>())
                 .ToList();
 
             if (invalidatableFields.Count > 0) {
@@ -449,7 +452,7 @@ namespace CodeAnalyzer {
 
         private bool TryGenerateNestedClassesCode(
             SourceProductionContext context,
-            Class cls,
+            Data.Class cls,
             string indent,
             out string result
             ) {
@@ -462,8 +465,8 @@ namespace CodeAnalyzer {
             // Generate InvalidatablePropertiesState class
             //
             var invalidatableFields = cls.Fields
-                .Where(field => field.ex_HasAttribute<InvalidatablePropertyAttr>() ||
-                                field.ex_HasAttribute<InvalidatableLazyPropertyAttr>())
+                .Where(field => field.ex_HasAttribute<Attributes.InvalidatablePropertyAttr>() ||
+                                field.ex_HasAttribute<Attributes.InvalidatableLazyPropertyAttr>())
                 .ToList();
 
             if (invalidatableFields.Count > 0) {
