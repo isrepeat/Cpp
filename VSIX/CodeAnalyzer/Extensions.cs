@@ -37,6 +37,20 @@ namespace CodeAnalyzer {
                 where TAttr : Attributes.PropertyAttributeBase {
                 return field.PropertyAttributes.Any(attr => attr is TAttr);
             }
+
+            public static bool ex_TryGetAttribute<TAttr>(this Data.Field field, out TAttr? result)
+                where TAttr : Attributes.PropertyAttributeBase {
+
+                foreach (var attr in field.PropertyAttributes) {
+                    if (attr is TAttr matched) {
+                        result = matched;
+                        return true;
+                    }
+                }
+
+                result = null;
+                return false;
+            }
         }
 
 

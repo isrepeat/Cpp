@@ -196,7 +196,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HelpersCs.Attributes", "VSI
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HelpersCs.Diagnostic", "VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.shproj", "{5DC1B831-8A22-4C59-9D3F-B081E2F6AF36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCodeAnalyzer", "VSIX\TestCodeAnalyzer\TestCodeAnalyzer.csproj", "{419410D1-3EA3-4D11-940B-A81B342FE616}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCodeAnalyzer", "VSIX\TestCodeAnalyzer\TestCodeAnalyzer.csproj", "{419410D1-3EA3-4D11-940B-A81B342FE616}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HeleprsCs.Visual", "VSIX\HeleprsCs.Visual\HeleprsCs.Visual.shproj", "{86AC5B14-7FBA-4D5B-B711-90E3F7798E0C}"
 EndProject
@@ -1265,6 +1265,7 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a08a7b52-6de6-44e1-b55d-621b6e5a1e6e}*SharedItemsImports = 4
 		VSIX\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{a1425eec-99c8-47d8-9e26-688ae8be1d79}*SharedItemsImports = 5
 		VSIX\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{a1425eec-99c8-47d8-9e26-688ae8be1d79}*SharedItemsImports = 5
+		VSIX\HelpersCs\HelpersCs.projitems*{a1425eec-99c8-47d8-9e26-688ae8be1d79}*SharedItemsImports = 5
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{a1b116ce-961d-42f0-b6c7-82a64b509caa}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{a3451486-ab38-4360-b752-94680b491792}*SharedItemsImports = 9
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{a6a390c3-171d-47b9-b50c-39764ba0bd68}*SharedItemsImports = 4

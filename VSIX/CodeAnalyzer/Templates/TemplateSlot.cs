@@ -36,20 +36,18 @@ namespace CodeAnalyzer.Templates {
             if (obj is not TemplateSlot other) {
                 return false;
             }
-            return Id == other.Id && Kind == other.Kind;
+            return Id == other.Id;
         }
 
         public override int GetHashCode() {
             int hash = 17;
             hash = hash * 23 + (Id?.GetHashCode() ?? 0);
-            hash = hash * 23 + Kind.GetHashCode();
             return hash;
         }
     }
 
 
     public class TemplateSlotDesc {
-        public TemplateSlot Slot { get; init; }
         public string Indent { get; init; }
     }
 }

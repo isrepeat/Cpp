@@ -13,22 +13,44 @@ using Helpers.Attributes;
 
 
 namespace CodeAnalyzer.Templates {
-    public class CodeBlock {
+    public abstract class TemplateReplacement {
         public Type EmitterType;
+    }
+
+    public class TemplateBlock : TemplateReplacement {
+        public Template Template;
+    }
+
+    public class CodeBlock : TemplateReplacement {
         public string Code;
     }
 
 
     public class PropertyTemplateContext {
-        private readonly Dictionary<TemplateSlot, CodeBlock> _mapSlotToCodeBlock = new();
-        private readonly Dictionary<TemplateSlot, List<CodeBlock>> _mapSlotToListConflict = new();
+        private readonly Dictionary<TemplateSlot, TemplateReplacement> _mapSlotToTemplateReplacement = new();
+        private readonly Dictionary<TemplateSlot, List<TemplateReplacement>> _mapSlotToListConflict = new();
+
+        public void InsertTemplate(TemplateSlot slot, Template template, Type emitterType) {
+            var templateBlock = new TemplateBlock {
+                EmitterType = emitterType,
+                Template = template
+            };
+
+            this.InsertBlock(slot, templateBlock);
+        }
+
 
         public void InsertCode(TemplateSlot slot, string code, Type emitterType) {
-            var newBlock = new CodeBlock {
+            var codeBlock = new CodeBlock {
                 EmitterType = emitterType,
                 Code = code
             };
 
+            this.InsertBlock(slot, codeBlock);
+        }
+
+
+        private void InsertBlock(TemplateSlot slot, TemplateReplacement newBlock) {
             // 1. Если уже конфликт — просто добавляем в список
             if (_mapSlotToListConflict.TryGetValue(slot, out var conflictList)) {
                 conflictList.Add(newBlock);
@@ -36,17 +58,17 @@ namespace CodeAnalyzer.Templates {
             }
 
             // 2. Если слота ещё нет — просто вставляем
-            if (!_mapSlotToCodeBlock.ContainsKey(slot)) {
-                _mapSlotToCodeBlock[slot] = newBlock;
+            if (!_mapSlotToTemplateReplacement.ContainsKey(slot)) {
+                _mapSlotToTemplateReplacement[slot] = newBlock;
                 return;
             }
 
             // 3. Конфликт впервые — переносим в список + добавляем новый
-            var existing = _mapSlotToCodeBlock[slot];
-            _mapSlotToCodeBlock.Remove(slot);
+            var existingBlock = _mapSlotToTemplateReplacement[slot];
+            _mapSlotToTemplateReplacement.Remove(slot);
 
-            _mapSlotToListConflict[slot] = new List<CodeBlock> {
-                existing,
+            _mapSlotToListConflict[slot] = new List<TemplateReplacement> {
+                existingBlock,
                 newBlock
             };
         }
@@ -57,19 +79,24 @@ namespace CodeAnalyzer.Templates {
                 return;
             }
 
+            if (conflicts.OfType<TemplateBlock>().Count() > 0) {
+                throw new InvalidOperationException(
+                    $"Do not support conflict resolving for TemplateBlock");
+            }
+
             var resolved = new List<string>();
+            var codeBlockConficts = conflicts.OfType<CodeBlock>();
 
             foreach (var type in order) {
-                var entry = conflicts.FirstOrDefault(e => e.EmitterType == type);
+                var entry = codeBlockConficts.FirstOrDefault(e => e.EmitterType == type);
                 if (entry == null) {
                     throw new InvalidOperationException(
-                        $"Type {type.Name} not found in conflict for slot '{slot}'"
-                    );
+                        $"Type {type.Name} not found in conflict for slot '{slot}'");
                 }
                 resolved.Add(entry.Code);
             }
 
-            _mapSlotToCodeBlock[slot] = new CodeBlock {
+            _mapSlotToTemplateReplacement[slot] = new CodeBlock {
                 EmitterType = null,
                 Code = string.Join("\n", resolved)
             };
@@ -81,13 +108,14 @@ namespace CodeAnalyzer.Templates {
             foreach (var kvp in _mapSlotToListConflict.ToList()) {
                 var slot = kvp.Key;
                 var conflicts = kvp.Value;
+                var codeBlockConficts = conflicts.OfType<CodeBlock>();
 
                 var resolved = orderedTypes
-                    .Where(t => conflicts.Any(e => e.EmitterType == t))
-                    .Select(t => conflicts.First(e => e.EmitterType == t).Code)
+                    .Where(t => codeBlockConficts.Any(e => e.EmitterType == t))
+                    .Select(t => codeBlockConficts.First(e => e.EmitterType == t).Code)
                     .ToList();
 
-                _mapSlotToCodeBlock[slot] = new CodeBlock {
+                _mapSlotToTemplateReplacement[slot] = new CodeBlock {
                     EmitterType = null,
                     Code = string.Join("\n", resolved)
                 };
@@ -97,58 +125,103 @@ namespace CodeAnalyzer.Templates {
         }
 
 
-        public string Render(ParsedPropertyTemplate parsedPropertyTemplate, string indent) {
-            var result = parsedPropertyTemplate.RawText;
+        public string Render(Template rootTemplate, string indent) {
+            var result = this.RenderRecursive(rootTemplate, indent);
+            result = this.CleanupUnusedSlots(result);
+            return indent + result;
+        }
 
-            foreach (var kvp in _mapSlotToCodeBlock) {
+
+        private string RenderRecursive(Template template, string indent) {
+            string result = template.Text;
+
+            foreach (var kvp in template.MapSlotToSlotDesc) {
                 var slot = kvp.Key;
-                var codeBlock = kvp.Value;
+                var slotDesc = kvp.Value;
 
-                var resultCode = "";
+                string replacement;
 
-                if (slot.Kind == SlotKind.Inline) {
-                    resultCode = codeBlock.Code;
+                if (_mapSlotToListConflict.TryGetValue(slot, out var conflictList)) {
+                    var emitters = string.Join(", ", conflictList.Select(e => e.EmitterType?.Name ?? "unknown"));
+                    replacement = $"#error Conflicting emitters for slot {slot.Id}: {emitters}";
                 }
-                else if (slot.Kind == SlotKind.Multiline) {
-                    string slotIndent = parsedPropertyTemplate.MapIdToSlotDesc.TryGetValue(slot.Id, out var slotDesc)
-                        ? slotDesc.Indent
-                        : "";
+                else if (_mapSlotToTemplateReplacement.TryGetValue(slot, out var block)) {
+                    switch (block) {
+                        case CodeBlock codeBlock:
+                            replacement = this.ApplyIndent(codeBlock.Code, slotDesc.Indent, addIndentToFirstLine: false);
+                            break;
 
-                    var lines = codeBlock.Code.Split('\n');
+                        case TemplateBlock templateBlock:
+                            replacement = this.RenderRecursive(templateBlock.Template, slotDesc.Indent);
+                            break;
 
-                    if (lines.Length == 0) {
-                        resultCode = "";
-                    }
-                    else if (lines.Length == 1) {
-                        resultCode = lines[0];
-                    }
-                    else {
-                        resultCode = lines[0] + "\n";
-
-                        var indentedCodeLines = lines
-                            .Skip(1)
-                            .Select(line => slotIndent + line);
-
-                        resultCode += string.Join("\n", indentedCodeLines);
+                        default:
+                            throw new InvalidOperationException($"Unsupported block type: {block.GetType().Name}");
                     }
                 }
+                else {
+                    // Слот не был заполнен — оставим маркер
+                    replacement = $"[[UNUSED_SLOT:{slot.Id}]]";
+                }
 
-                result = result.Replace($"{{{{{slot.Id}}}}}", resultCode);
+                result = result.Replace($"{{{{{slot.Id}}}}}", replacement);
             }
 
-            // Remove other slot-placeholders that was not handled.
-            result = Regex.Replace(
-                result,
-                @"^[ \t]*\{\{[A-Z:_]+\}\}[ \t]*(\r?\n)?",
-                "",
-                RegexOptions.Multiline
-            );
-
-            // Добавить внешний отступ ко всем строкам результата.
-            var finalLines = result.Split('\n');
-            var finalIndentedLines = finalLines.Select(line => indent + line);
-            result = string.Join("\n", finalIndentedLines);
+            result = this.ApplyIndent(result, indent, addIndentToFirstLine: false);
             return result;
+        }
+
+
+        private string ApplyIndent(string text, string indent, bool addIndentToFirstLine) {
+            var lines = text.Split('\n');
+
+            if (lines.Length == 0) {
+                return string.Empty;
+            }
+
+            var indentedFirstLine = addIndentToFirstLine
+                ? indent + lines[0]
+                : lines[0];
+
+            var indentedRestLines = lines
+                .Skip(1)
+                .Select(line => indent + line);
+
+            return string.Join("\n", new[] { indentedFirstLine }.Concat(indentedRestLines));
+        }
+
+
+        private string CleanupUnusedSlots(string text) {
+            var lines = text.Split('\n');
+            var finalLines = new List<string>();
+
+            foreach (var line in lines) {
+                string trimmed = line.Trim();
+
+                // Поиск маркера незаполненного слота.
+                var match = Regex.Match(trimmed, @"\[\[UNUSED_SLOT:([A-Z:_]+)\]\]");
+
+                // Если строка обычная, без маркера — оставляем.
+                if (!match.Success) {
+                    finalLines.Add(line);
+                    continue;
+                }
+
+                string fullMatch = match.Value;
+                string slotId = match.Groups[1].Value;
+
+                // Если строка состоит содержит только маркер — удаляем.
+                if (trimmed == fullMatch) {
+                    continue;
+                }
+
+                // Иначе — маркера встроен в код, это ошибка шаблона
+                throw new InvalidOperationException(
+                    $"Slot '{slotId}' was not filled but is embedded in code:\n{line}"
+                );
+            }
+
+            return string.Join("\n", finalLines);
         }
     }
 }

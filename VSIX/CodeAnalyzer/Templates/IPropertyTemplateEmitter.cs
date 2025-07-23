@@ -14,6 +14,6 @@ using Helpers.Attributes;
 
 namespace CodeAnalyzer.Templates {
     public interface IPropertyTemplateEmitter {
-        void Emit(Data.Field field, PropertyTemplateContext ctx);
+        void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx);
     }
 }

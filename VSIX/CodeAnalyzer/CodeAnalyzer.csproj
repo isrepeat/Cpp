@@ -26,4 +26,6 @@
 
   <Import Project="..\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems" Label="Shared" />
 
+  <Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
+
 </Project>

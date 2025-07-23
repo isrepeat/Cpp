@@ -15,9 +15,8 @@ using CodeAnalyzer.Ex;
 
 
 namespace CodeAnalyzer.Attributes {
-    public sealed class InvalidatablePropertyAttr : PropertyAttributeBase {
+    public sealed class InvalidatablePropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
         public InvalidatablePropertyAttr(AttributeData attributeData) {
-
             int argIndex = 0;
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
                 this.GetterAccess = GetterAccess.Get;
@@ -34,16 +33,42 @@ namespace CodeAnalyzer.Attributes {
                 this.SetterAccess = SetterAccess.PrivateSet;
             }
         }
-    }
 
 
-    public class InvalidatablePropertyEmmiter : IPropertyTemplateEmitter {
-        public void Emit(Data.Field field, PropertyTemplateContext ctx) {
+        public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
             ctx.InsertCode(
-                PropertyTemplate.SET.AFTER_ASSIGNMENT,
-                $"int ccc = 1;",
-                GetType()
-            );
+                PropertyTemplate.Get.BEGIN,
+                $"if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{\n" +
+                $"    System.Diagnostics.Debugger.Break();\n" +
+                $"    return default;\n" +
+                $"}}",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Set.BEGIN,
+                $"if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{\n" +
+                $"    System.Diagnostics.Debugger.Break();\n" +
+                $"    return;\n" +
+                $"}}",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Set.AFTER_ASSIGNMENT,
+                $"_invalidatablePropertiesState.{field.PropName}Cached = value;",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Property.EXTRAS,
+                $"\n\n" +
+                $"public {field.TypeName} {field.PropName}Cached {{\n" +
+                $"    get {{\n" +
+                $"        if (_invalidatablePropertiesState.{field.PropName}Cached == null) {{\n" +
+                $"            _invalidatablePropertiesState.{field.PropName}Cached = {field.Name};\n" +
+                $"        }}\n" +
+                $"        return ({field.TypeName})_invalidatablePropertiesState.{field.PropName}Cached;\n" +
+                $"    }}\n" +
+                $"}}",
+                GetType());
         }
     }
 }

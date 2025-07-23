@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Reflection\Reflaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\TypeMarker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\IAttachable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\IInvalidatable.cs" />

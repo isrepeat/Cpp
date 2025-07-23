@@ -15,7 +15,7 @@ using CodeAnalyzer.Ex;
 
 
 namespace CodeAnalyzer.Attributes {
-    public sealed class ObservablePropertyAttr : PropertyAttributeBase {
+    public sealed class ObservablePropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
         public ObservablePropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
@@ -30,14 +30,12 @@ namespace CodeAnalyzer.Attributes {
                 this.SetterAccess = SetterAccess.PrivateSet;
             }
         }
-    }
 
 
-    public class ObservablePropertyEmmiter : IPropertyTemplateEmitter {
-        public void Emit(Data.Field field, PropertyTemplateContext ctx) {
+        public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
             ctx.InsertCode(
-                PropertyTemplate.SET.AFTER_ASSIGNMENT,
-                $"int aaa = 1;",
+                PropertyTemplate.Set.AFTER_ASSIGNMENT,
+                $"base.OnPropertyChanged(nameof(this.{field.PropName}));",
                 GetType()
             );
         }

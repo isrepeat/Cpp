@@ -15,7 +15,7 @@ using CodeAnalyzer.Ex;
 
 
 namespace CodeAnalyzer.Attributes {
-    public sealed class ObservableMultiStatePropertyAttr : PropertyAttributeBase {
+    public sealed class ObservableMultiStatePropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
         public ObservableMultiStatePropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
@@ -27,13 +27,11 @@ namespace CodeAnalyzer.Attributes {
                 this.SetterAccess = SetterAccess.Set;
             }
         }
-    }
 
 
-    public class ObservableMultiStatePropertyEmmiter : IPropertyTemplateEmitter {
-        public void Emit(Data.Field field, PropertyTemplateContext ctx) {
+        public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
             ctx.InsertCode(
-                PropertyTemplate.SET.AFTER_ASSIGNMENT,
+                PropertyTemplate.Set.AFTER_ASSIGNMENT,
                 $"int bbb = 1;",
                 GetType()
             );

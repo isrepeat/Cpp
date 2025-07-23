@@ -15,7 +15,7 @@ using CodeAnalyzer.Ex;
 
 
 namespace CodeAnalyzer.Attributes {
-    public sealed class InvalidatableLazyPropertyAttr : PropertyAttributeBase {
+    public sealed class InvalidatableLazyPropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
         public string FactoryMethodName { get; }
 
         public InvalidatableLazyPropertyAttr(AttributeData attributeData) {
@@ -35,16 +35,45 @@ namespace CodeAnalyzer.Attributes {
                 this.GetterAccess = GetterAccess.Get;
             }
         }
-    }
 
 
-    public class InvalidatableLazyPropertyEmmiter : IPropertyTemplateEmitter {
-        public void Emit(Data.Field field, PropertyTemplateContext ctx) {
+        public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
             ctx.InsertCode(
-                PropertyTemplate.SET.AFTER_ASSIGNMENT,
-                $"int ddd = 1;",
-                GetType()
-            );
+                PropertyTemplate.Get.BEGIN,
+                $"if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{\n" +
+                $"    System.Diagnostics.Debugger.Break();\n" +
+                $"    return default;\n" +
+                $"}}\n"+
+                $"if ({field.Name} == null) {{\n" +
+                $"    {field.Name} = this.{this.FactoryMethodName}();\n" +
+                $"}}",
+                GetType());
+            
+            ctx.InsertCode(
+                PropertyTemplate.Set.BEGIN,
+                $"if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{\n" +
+                $"    System.Diagnostics.Debugger.Break();\n" +
+                $"    return;\n" +
+                $"}}",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Set.AFTER_ASSIGNMENT,
+                $"_invalidatablePropertiesState.{field.PropName}Cached = value;",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Property.EXTRAS,
+                $"\n\n" +
+                $"public {field.TypeName} {field.PropName}Cached {{\n" +
+                $"    get {{\n" +
+                $"        if (_invalidatablePropertiesState.{field.PropName}Cached == null) {{\n" +
+                $"            _invalidatablePropertiesState.{field.PropName}Cached = {field.Name};\n" +
+                $"        }}\n" +
+                $"        return ({field.TypeName})_invalidatablePropertiesState.{field.PropName}Cached;\n" +
+                $"    }}\n" +
+                $"}}",
+                GetType());
         }
     }
 }

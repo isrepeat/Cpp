@@ -15,31 +15,31 @@ using Helpers.Attributes;
 namespace CodeAnalyzer.Pipeline {
     public class CodeGenerationPipeline {
         private readonly Data.Field _field;
-        private readonly Templates.ParsedPropertyTemplate _parsedPopertyTemplate;
+        private readonly Templates.Template _rootTemplate;
         private readonly List<Templates.IPropertyTemplateEmitter> _emitters;
         private readonly Templates.PropertyTemplateContext _ctx;
 
         public CodeGenerationPipeline(
             Data.Field field,
-            string templateText,
+            Templates.Template rootTemplate,
             List<Templates.IPropertyTemplateEmitter> emitters
             ) {
             _field = field;
-            _parsedPopertyTemplate = new Templates.ParsedPropertyTemplate(templateText);
+            _rootTemplate = rootTemplate;
             _emitters = emitters;
             _ctx = new Templates.PropertyTemplateContext();
         }
 
 
         public string Generate(
-            Dictionary<Templates.TemplateSlot, List<Type>> resolvedOrder,
+            Dictionary<Templates.TemplateSlot, List<Type>> conflictResolvingMap,
             string indent = ""
             ) {
             foreach (var emitter in _emitters) {
-                emitter.Emit(_field, _ctx);
+                emitter.EmitToPropertyTemplate(_field, _ctx);
             }
 
-            foreach (var kvp in resolvedOrder) {
+            foreach (var kvp in conflictResolvingMap) {
                 var slot = kvp.Key;
                 var order = kvp.Value;
 
@@ -49,7 +49,7 @@ namespace CodeAnalyzer.Pipeline {
             var types = _emitters.Select(e => e.GetType());
             _ctx.FallbackResolve(types);
 
-            return _ctx.Render(_parsedPopertyTemplate, indent);
+            return _ctx.Render(_rootTemplate, indent);
         }
     }
 }
