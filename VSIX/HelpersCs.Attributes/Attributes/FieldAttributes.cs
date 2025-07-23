@@ -15,6 +15,8 @@
 
     [System.AttributeUsage(System.AttributeTargets.Field)]
     public sealed class ObservablePropertyAttribute : System.Attribute {
+        public string? NotifyMethod { get; set; }
+
         public ObservablePropertyAttribute(
             Markers.Access.Get p0 = default,
             Markers.Access.Set p1 = default
@@ -30,12 +32,15 @@
 
     [System.AttributeUsage(System.AttributeTargets.Field)]
     public sealed class ObservableMultiStatePropertyAttribute : System.Attribute {
+        public string? NotifyMethod { get; set; }
+
         public ObservableMultiStatePropertyAttribute(
             Markers.Access.Get p0 = default,
             Markers.Access.Set p1 = default
             ) {
         }
     }
+
 
     [System.AttributeUsage(System.AttributeTargets.Field)]
     public sealed class InvalidatablePropertyAttribute : System.Attribute {
@@ -53,10 +58,6 @@
             Markers.Access.Get p0
             ) {
         }
-        //public InvalidatablePropertyAttribute(
-        //    Markers.Access.PrivateSet p0
-        //    ) {
-        //}
     }
 
 

@@ -9,11 +9,9 @@
     <Import_RootNamespace>HelpersCs.Attributes</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\AssemblyAttribtes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\FieldAttributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\ParametersAttributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\PropertyAttributes.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Attributes\" />
   </ItemGroup>
 </Project>

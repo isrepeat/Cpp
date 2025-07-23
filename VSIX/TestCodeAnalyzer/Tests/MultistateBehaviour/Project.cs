@@ -10,10 +10,13 @@ namespace TestCodeAnalyzer.Tests.MultistateBehaviour {
     public partial class ProjectNode :
         Helpers.ObservableObject {
 
-        [ObservableProperty]
+        [ObservableProperty(NotifyMethod = "this.Notify")]
         //[InvalidatableProperty]
         //[InvalidatableLazyProperty(nameof(this.InitName))]
         private string _name;
+
+        public void Notify(string prpoName) {
+        }
 
         public void Invalidate() {
         }

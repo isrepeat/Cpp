@@ -16,6 +16,8 @@ using CodeAnalyzer.Ex;
 
 namespace CodeAnalyzer.Attributes {
     public sealed class ObservablePropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
+        public string? NotifyMethodName { get; private set; }
+
         public ObservablePropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
@@ -29,13 +31,21 @@ namespace CodeAnalyzer.Attributes {
             else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.PrivateSet;
             }
+
+            if (attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "NotifyMethod").Value.Value is string notifyName) {
+                this.NotifyMethodName = notifyName;
+            }
         }
 
 
         public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
+            string notifyCode = string.IsNullOrEmpty(this.NotifyMethodName)
+                ? $"base.OnPropertyChanged(nameof(this.{field.PropName}));"
+                : $"{this.NotifyMethodName}(nameof(this.{field.PropName}));";
+
             ctx.InsertCode(
                 PropertyTemplate.Set.AFTER_ASSIGNMENT,
-                $"base.OnPropertyChanged(nameof(this.{field.PropName}));",
+                $"{notifyCode}",
                 GetType()
             );
         }

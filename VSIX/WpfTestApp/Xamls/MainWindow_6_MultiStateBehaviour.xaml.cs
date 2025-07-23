@@ -24,19 +24,8 @@ using System.Windows.Threading;
 using System.Xml;
 using WpfTestApp.States.MultistateBehaviour;
 
+[assembly: Helpers.Attributes.CodeAnalyzerEnableLogs]
 
-public static class ObjectExtensions {
-    public static string ex_GetObjectAddressHex(this object obj) {
-        GCHandle handle = GCHandle.Alloc(obj, GCHandleType.WeakTrackResurrection);
-        try {
-            IntPtr ptr = GCHandle.ToIntPtr(handle);
-            return ptr.ToString("X");
-        }
-        finally {
-            handle.Free();
-        }
-    }
-}
 
 namespace WpfTestApp {
     public class MultiStateBehaviourViewModel : Helpers.ObservableObject {

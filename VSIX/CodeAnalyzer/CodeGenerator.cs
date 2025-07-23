@@ -15,8 +15,19 @@ namespace System.Runtime.CompilerServices {
 }
 
 
-namespace CodeAnalyzer
-{
+public static class AnalyzerFeatures {
+    public static bool IsLogsEnabled { get; private set; } = false;
+
+    public static void Analyze(Compilation compilation) {
+        var attributes = compilation.Assembly.GetAttributes();
+
+        AnalyzerFeatures.IsLogsEnabled = attributes
+            .Any(attrData => attrData.ex_IsAttribute(typeof(Helpers.Attributes.CodeAnalyzerEnableLogsAttribute)));
+    }
+}
+
+
+namespace CodeAnalyzer {
     [Generator]
     public sealed class CodeGenerator : IIncrementalGenerator {
         private string __logPrefix = "[CodeAnalyzer.CodeGenerator]";
@@ -26,6 +37,18 @@ namespace CodeAnalyzer
             //    System.Diagnostics.Debugger.Launch();
             //}
 
+            // Compute config.
+            var featureFlagsProvider = context.CompilationProvider
+                .Select((compilation, _) => {
+                    AnalyzerFeatures.Analyze(compilation);
+                    return true;
+                });
+
+            context.RegisterSourceOutput(featureFlagsProvider, (spc, _) => {
+            });
+
+
+            // Build List<Field>.
             var fieldsValueProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: this.IsCandidateField,
@@ -34,7 +57,8 @@ namespace CodeAnalyzer
                 .Collect();
 
 
-            var classList = fieldsValueProvider
+            // Build List<Class>.
+            var classesValueProvider = fieldsValueProvider
                 .Select((fields, _) => {
                     var result = new List<Data.Class>();
                     var grouped = new Dictionary<INamedTypeSymbol, List<Data.Field>>(SymbolEqualityComparer.Default);
@@ -64,9 +88,24 @@ namespace CodeAnalyzer
                 });
 
 
-            context.RegisterSourceOutput(classList, this.GenerateCode);
+            context.RegisterSourceOutput(classesValueProvider, this.GenerateCode);
         }
 
+
+        private bool AnalyzeCompilation(Compilation compilation) {
+            bool loggingEnabled = compilation.Assembly
+            .GetAttributes()
+            .Any(attr => attr.AttributeClass?.Name == "EnableCodeAnalyzerLogsAttribute");
+
+            foreach (var attr in compilation.Assembly.GetAttributes()) {
+                if (attr.AttributeClass?.ToDisplayString() == "YourAnalyzerNamespace.EnableCodeAnalyzerLogsAttribute") {
+                    var arg = attr.ConstructorArguments.FirstOrDefault();
+                    return arg.Value as bool? == true;
+                }
+            }
+
+            return true;
+        }
 
         private bool IsCandidateField(SyntaxNode node, CancellationToken _) {
             return node is FieldDeclarationSyntax field &&

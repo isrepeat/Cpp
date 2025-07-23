@@ -50,6 +50,10 @@ namespace CodeAnalyzer.Templates {
         }
 
 
+        public DeferredCodeBuilder GetCodeBuilder(TemplateSlot slot,  Type emitterType) {
+            return new DeferredCodeBuilder(this, slot, emitterType);
+        }
+
         private void InsertBlock(TemplateSlot slot, TemplateReplacement newBlock) {
             // 1. Если уже конфликт — просто добавляем в список
             if (_mapSlotToListConflict.TryGetValue(slot, out var conflictList)) {

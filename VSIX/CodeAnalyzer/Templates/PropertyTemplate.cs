@@ -36,15 +36,15 @@ namespace CodeAnalyzer.Templates {
         public static class Get {
             public static readonly TemplateSlot ACCESS = new("GET:ACCESS", SlotKind.Inline);
             public static readonly TemplateSlot BEGIN = new("GET:BEGIN");
+            public static readonly TemplateSlot RETURN = new("GET:RETURN");
 
             public static readonly Template Template = new Template(
                 text: $"{Get.ACCESS}get {{\n" +
                       $"    {Get.BEGIN}\n" +
-                      $"    return {Property.FIELD_NAME};\n" +
+                      $"    return {Get.RETURN};\n" +
                       $"}}",
                 usedTemplateSlotOwners: new[] {
                     typeof(Get),
-                    typeof(Property),
                 }
             );
         }
@@ -53,6 +53,7 @@ namespace CodeAnalyzer.Templates {
             public static readonly TemplateSlot ACCESS = new("SET:ACCESS", SlotKind.Inline);
             public static readonly TemplateSlot BEGIN = new("SET:BEGIN");
             public static readonly TemplateSlot BEFORE_ASSIGNMENT = new("SET:BEFORE_ASSIGNMENT");
+            //public static readonly TemplateSlot ASSIGNMENT = new("SET:ASSIGNMENT");
             public static readonly TemplateSlot AFTER_ASSIGNMENT = new("SET:AFTER_ASSIGNMENT");
             public static readonly TemplateSlot END = new("SET:END");
 

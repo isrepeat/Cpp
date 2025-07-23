@@ -14,71 +14,27 @@ namespace WpfTestApp.States.MultistateBehaviour {
         HelpersV4.Collections.CommonStateBase,
         IDisposable {
 
+        [ObservableProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
         private string _name = "";
-        public string Name {
-            get => _name;
-            set {
-                if (_name != value) {
-                    _name = value;
-                    base.OnSharedStatePropertyChanged();
-                }
-            }
-        }
 
-
+        [ObservableProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
         private string _projId = "";
-        public string ProjId {
-            get => _projId;
-            set {
-                if (_projId != value) {
-                    _projId = value;
-                    base.OnSharedStatePropertyChanged();
-                }
-            }
-        }
 
-
-        [ObservableMultiStateProperty]
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
         private HelpersV4.Collections.MultiStateContainer<
             DocumentCommonState,
             Document,
             InvalidatedDocument
-            >? _documentMultiState;
-
-        //public HelpersV4.Collections.MultiStateContainer<
-        //    DocumentCommonState,
-        //    Document,
-        //    InvalidatedDocument>
-        //    DocumentMultiState {
-        //    get => _documentMultiState!;
-        //    set {
-        //        if (_documentMultiState != value) {
-        //            if (_documentMultiState != null) {
-        //                _documentMultiState.StateChanged -= this.OnDocumentMultiStateChanged;
-        //                _documentMultiState.Dispose();
-        //            }
-
-        //            _documentMultiState = value;
-        //            _documentMultiState.StateChanged += this.OnDocumentMultiStateChanged;
-
-        //            base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
-        //        }
-        //    }
-        //}
-
+            > _documentMultiState;
 
         public ProjectCommonState(string vsHierarchyData) {
-            this.DocumentMultiState = new(new DocumentCommonState(vsHierarchyData));
+            _documentMultiState = new(new DocumentCommonState(vsHierarchyData));
+            this.DocumentMultiState = _documentMultiState;
         }
 
         public void Dispose() {
             this.DocumentMultiState?.Dispose();
         }
-
-
-        //private void OnDocumentMultiStateChanged() {
-        //    base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
-        //}
     }
 
 

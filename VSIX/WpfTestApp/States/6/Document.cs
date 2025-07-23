@@ -5,51 +5,28 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Helpers.Attributes;
 
 
 namespace WpfTestApp.States.MultistateBehaviour {
-    public class DocumentCommonState :
+    public partial class DocumentCommonState :
         HelpersV4.Collections.CommonStateBase,
         IDisposable {
-        
+
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
         private HelpersV4.Collections.MultiStateContainer<
             HierarchyCommonState,
             HierarchyItem,
-            InvalidatedHierarchyItem>?
-            _hierarchyMultiState;
-
-        public HelpersV4.Collections.MultiStateContainer<
-            HierarchyCommonState,
-            HierarchyItem,
-            InvalidatedHierarchyItem>
-            HierarchyMultiState {
-            get => _hierarchyMultiState!;
-            set {
-                if (_hierarchyMultiState != value) {
-                    if (_hierarchyMultiState != null) {
-                        _hierarchyMultiState.StateChanged -= this.OnHierarchyMultiStateChanged;
-                        _hierarchyMultiState.Dispose();
-                    }
-
-                    _hierarchyMultiState = value;
-                    _hierarchyMultiState.StateChanged += this.OnHierarchyMultiStateChanged;
-
-                    base.OnSharedStatePropertyChanged(nameof(this.HierarchyMultiState));
-                }
-            }
-        }
-
+            InvalidatedHierarchyItem
+            > _hierarchyMultiState;
 
         public DocumentCommonState(string vsHierarchyData) {
-            this.HierarchyMultiState = new(new HierarchyCommonState(vsHierarchyData));
+            _hierarchyMultiState = new(new HierarchyCommonState(vsHierarchyData));
+            this.HierarchyMultiState = _hierarchyMultiState;
         }
 
         public void Dispose() {
             this.HierarchyMultiState?.Dispose();
-        }
-
-        private void OnHierarchyMultiStateChanged() {
-            base.OnSharedStatePropertyChanged(nameof(this.HierarchyMultiState));
         }
     }
 

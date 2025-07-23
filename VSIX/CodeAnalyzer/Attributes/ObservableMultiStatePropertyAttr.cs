@@ -16,6 +16,8 @@ using CodeAnalyzer.Ex;
 
 namespace CodeAnalyzer.Attributes {
     public sealed class ObservableMultiStatePropertyAttr : PropertyAttributeBase, IPropertyTemplateEmitter {
+        public string? NotifyMethodName { get; private set; }
+
         public ObservableMultiStatePropertyAttr(AttributeData attributeData) {
             int argIndex = 0;
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Get>(argIndex, out _)) {
@@ -26,29 +28,43 @@ namespace CodeAnalyzer.Attributes {
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.Set;
             }
+
+            if (attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "NotifyMethod").Value.Value is string notifyName) {
+                this.NotifyMethodName = notifyName;
+            }
         }
 
 
         public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
-            ctx.InsertCode(
-                PropertyTemplate.Set.BEFORE_ASSIGNMENT,
-                $"if ({field.Name} != null) {{\n" +
-                $"    {field.Name}.StateChanged -= this.On{field.PropName}Changed;\n" +
-                $"    {field.Name}.Dispose();\n" +
-                $"}}",
-                GetType());
+            using (var builder = ctx.GetCodeBuilder(PropertyTemplate.Set.BEFORE_ASSIGNMENT, this.GetType())) {
+                builder.Add($"if ({field.Name} != null) {{");
+                builder.Add($"    {field.Name}.StateChanged -= this.On{field.PropName}Changed;");
+                builder.Add($"    {field.Name}.Dispose();");
+                builder.Add($"}}");
+            }
 
-            ctx.InsertCode(
-                PropertyTemplate.Set.AFTER_ASSIGNMENT,
-                $"{field.Name}.StateChanged += this.On{field.PropName}Changed;",
-                GetType());
+            string notifyCode = string.IsNullOrEmpty(this.NotifyMethodName)
+                ? $""
+                : $"{this.NotifyMethodName}(nameof(this.{field.PropName}));";
 
-            ctx.InsertCode(
-                PropertyTemplate.Property.EXTRAS,
-                $"\n\nprivate void On{field.PropName}Changed() {{\n" +
-                $"    this.OnSharedStatePropertyChanged(nameof(this.{field.PropName}));\n" +
-                $"}}",
-                GetType());
+            using (var builder = ctx.GetCodeBuilder(PropertyTemplate.Set.AFTER_ASSIGNMENT, this.GetType())) {
+                builder.Add($"{field.Name}.StateChanged += this.On{field.PropName}Changed;");
+                
+                if (!string.IsNullOrEmpty(notifyCode)) {
+                    builder.Add($"{notifyCode}");
+                }
+            }
+
+            using (var builder = ctx.GetCodeBuilder(PropertyTemplate.Property.EXTRAS, this.GetType())) {
+                builder.Add($"\n\n");
+                builder.Add($"private void On{field.PropName}Changed() {{");
+                
+                if (!string.IsNullOrEmpty(notifyCode)) {
+                    builder.Add($"    {notifyCode}");
+                }
+
+                builder.Add($"}}");
+            }
         }
     }
 }

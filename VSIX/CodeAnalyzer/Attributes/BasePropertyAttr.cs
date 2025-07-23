@@ -32,18 +32,21 @@ namespace CodeAnalyzer.Attributes {
                 .AddRule(new Formatters.SimplifyNamespaceRule(field.ContainingNamespace))
                 .AddRule(new Formatters.MultilineGenericRule());
 
-            ctx.InsertCode(PropertyTemplate.Property.TYPE_NAME, $"{formatter.Format(field.TypeName)}", GetType());
-            ctx.InsertCode(PropertyTemplate.Property.PROP_NAME, $"{field.PropName}", GetType());
+            ctx.InsertCode(PropertyTemplate.Property.TYPE_NAME, $"{formatter.Format(field.TypeName)}", this.GetType());
+            ctx.InsertCode(PropertyTemplate.Property.PROP_NAME, $"{field.PropName}", this.GetType());
             
+
             if (this.GetterAccess != GetterAccess.None) {
-                ctx.InsertTemplate(PropertyTemplate.Property.GETTER, PropertyTemplate.Get.Template, GetType());
+                ctx.InsertTemplate(PropertyTemplate.Property.GETTER, PropertyTemplate.Get.Template, this.GetType());
 
                 var getterAccessStr = this.GetterAccess switch {
                     GetterAccess.Get => "",
                     _ => string.Empty
                 };
-                ctx.InsertCode(PropertyTemplate.Get.ACCESS, $"{getterAccessStr}", GetType());
+                ctx.InsertCode(PropertyTemplate.Get.ACCESS, $"{getterAccessStr}", this.GetType());
+                ctx.InsertCode(PropertyTemplate.Get.RETURN, $"{field.Name}", this.GetType());
             }
+
 
             if (this.SetterAccess != SetterAccess.None) {
                 ctx.InsertTemplate(PropertyTemplate.Property.SETTER, PropertyTemplate.Set.Template, GetType());

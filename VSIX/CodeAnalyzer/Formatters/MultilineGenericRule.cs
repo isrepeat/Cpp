@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using CodeAnalyzer.Ex;
+using System.Data.SqlTypes;
 
 
 namespace CodeAnalyzer.Formatters {
@@ -23,33 +24,39 @@ namespace CodeAnalyzer.Formatters {
     ///             >?
     /// </summary>
     public sealed class MultilineGenericRule : ITypeFormatterRule {
-        public string Apply(string fullTypeName) {
-            int genericStart = fullTypeName.IndexOf('<');
-            int genericEnd = fullTypeName.LastIndexOf('>');
+        public string Apply(string typeName) {
+            int genericStart = typeName.IndexOf('<');
+            int genericEnd = typeName.LastIndexOf('>');
 
-            // Не generic — не форматируем
+            // Не generic — возвращаем как есть.
             if (genericStart == -1 || genericEnd == -1 || genericEnd <= genericStart) {
-                return fullTypeName;
+                return typeName;
             }
 
-            string baseType = fullTypeName.Substring(0, genericStart);
-            string genericContent = fullTypeName.Substring(genericStart + 1, genericEnd - genericStart - 1);
+            // Отрезаем суффикс (всё после '>')
+            string typeSuffix = typeName.Substring(genericEnd + 1); // суффикс: ?, [], * и т.п.
+            string typeWithoutSuffix = typeName.Substring(0, genericEnd + 1);
+
+            string baseType = typeWithoutSuffix.Substring(0, genericStart);
+            string genericContent = typeWithoutSuffix.Substring(genericStart + 1, genericEnd - genericStart - 1);
             string[] typeArgs = genericContent.Split(',').Select(t => t.Trim()).ToArray();
 
-            // Если один аргумент — оставляем однострочно
+            // Если один аргумент — оставляем однострочно.
             if (typeArgs.Length <= 2) {
-                return fullTypeName;
+                return typeName;
             }
 
             var sb = new StringBuilder();
             sb.AppendLine($"{baseType}<");
 
             for (int i = 0; i < typeArgs.Length; i++) {
-                bool isLast = (i == typeArgs.Length - 1);
+                bool isLast = i == typeArgs.Length - 1;
                 sb.AppendLine($"    {typeArgs[i]}{(isLast ? "" : ",")}");
             }
 
-            sb.Append(">?");
+            sb.Append('>');
+            sb.Append(typeSuffix); // <- возвращаем суффикс
+
             return sb.ToString();
         }
     }
