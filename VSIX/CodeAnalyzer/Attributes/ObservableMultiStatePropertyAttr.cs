@@ -31,10 +31,24 @@ namespace CodeAnalyzer.Attributes {
 
         public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
             ctx.InsertCode(
+                PropertyTemplate.Set.BEFORE_ASSIGNMENT,
+                $"if ({field.Name} != null) {{\n" +
+                $"    {field.Name}.StateChanged -= this.On{field.PropName}Changed;\n" +
+                $"    {field.Name}.Dispose();\n" +
+                $"}}",
+                GetType());
+
+            ctx.InsertCode(
                 PropertyTemplate.Set.AFTER_ASSIGNMENT,
-                $"int bbb = 1;",
-                GetType()
-            );
+                $"{field.Name}.StateChanged += this.On{field.PropName}Changed;",
+                GetType());
+
+            ctx.InsertCode(
+                PropertyTemplate.Property.EXTRAS,
+                $"\n\nprivate void On{field.PropName}Changed() {{\n" +
+                $"    this.OnSharedStatePropertyChanged(nameof(this.{field.PropName}));\n" +
+                $"}}",
+                GetType());
         }
     }
 }

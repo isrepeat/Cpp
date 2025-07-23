@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Helpers.Attributes;
 
 
 namespace WpfTestApp.States.MultistateBehaviour {
-    public class ProjectCommonState :
+    public partial class ProjectCommonState :
         HelpersV4.Collections.CommonStateBase,
         IDisposable {
 
@@ -37,32 +38,33 @@ namespace WpfTestApp.States.MultistateBehaviour {
         }
 
 
+        [ObservableMultiStateProperty]
         private HelpersV4.Collections.MultiStateContainer<
             DocumentCommonState,
             Document,
-            InvalidatedDocument>?
-            _documentMultiState;
+            InvalidatedDocument
+            >? _documentMultiState;
 
-        public HelpersV4.Collections.MultiStateContainer<
-            DocumentCommonState,
-            Document,
-            InvalidatedDocument>
-            DocumentMultiState {
-            get => _documentMultiState!;
-            set {
-                if (_documentMultiState != value) {
-                    if (_documentMultiState != null) {
-                        _documentMultiState.StateChanged -= this.OnDocumentMultiStateChanged;
-                        _documentMultiState.Dispose();
-                    }
+        //public HelpersV4.Collections.MultiStateContainer<
+        //    DocumentCommonState,
+        //    Document,
+        //    InvalidatedDocument>
+        //    DocumentMultiState {
+        //    get => _documentMultiState!;
+        //    set {
+        //        if (_documentMultiState != value) {
+        //            if (_documentMultiState != null) {
+        //                _documentMultiState.StateChanged -= this.OnDocumentMultiStateChanged;
+        //                _documentMultiState.Dispose();
+        //            }
 
-                    _documentMultiState = value;
-                    _documentMultiState.StateChanged += this.OnDocumentMultiStateChanged;
+        //            _documentMultiState = value;
+        //            _documentMultiState.StateChanged += this.OnDocumentMultiStateChanged;
 
-                    base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
-                }
-            }
-        }
+        //            base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
+        //        }
+        //    }
+        //}
 
 
         public ProjectCommonState(string vsHierarchyData) {
@@ -74,9 +76,9 @@ namespace WpfTestApp.States.MultistateBehaviour {
         }
 
 
-        private void OnDocumentMultiStateChanged() {
-            base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
-        }
+        //private void OnDocumentMultiStateChanged() {
+        //    base.OnSharedStatePropertyChanged(nameof(this.DocumentMultiState));
+        //}
     }
 
 

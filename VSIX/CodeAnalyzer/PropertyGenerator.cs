@@ -224,23 +224,6 @@ namespace CodeAnalyzer
                 code += $"{newLine}private readonly InvalidatablePropertiesState _invalidatablePropertiesState = new();";
             }
 
-            //if (invalidatableFields.Count > 0) {
-            //    code += $"{newLine}private readonly Lazy<InvalidatablePropertiesState> _invalidatablePropertiesStateLazy = new(() => new InvalidatablePropertiesState(";
-
-            //    for (int i = 0; i < invalidatableFields.Count; i++) {
-            //        bool isLastField = (i == invalidatableFields.Count - 1);
-            //        var f = invalidatableFields[i];
-
-            //        code += $"{newLine}    {f.Name}";
-
-            //        if (!isLastField) {
-            //            code += $",";
-            //        }
-            //    }
-
-            //    code += $"{newLine}));";
-            //}
-
             result = code.StartsWith("\n")
                 ? code.Substring(1)
                 : code;
@@ -266,8 +249,7 @@ namespace CodeAnalyzer
                 bool isLastField = (i == cls.Fields.Count - 1);
                 var field = cls.Fields[i];
 
-                //if (this.TryGeneratePropertyCode(context, field, indent, out var propertyCode)) {
-                if (this.TryGeneratePropertyCodeNew(context, field, indent, out var propertyCode)) {
+                if (this.TryGeneratePropertyCode(context, field, indent, out var propertyCode)) {
                     code += $"{propertyCode}";
                     if (!isLastField) {
                         code += $"\n\n\n";
@@ -283,7 +265,7 @@ namespace CodeAnalyzer
         }
 
 
-        private bool TryGeneratePropertyCodeNew(
+        private bool TryGeneratePropertyCode(
             SourceProductionContext context,
             Data.Field field,
             string indent,
@@ -300,6 +282,7 @@ namespace CodeAnalyzer
             var hasObservableAttribute = field.ex_TryGetAttribute<Attributes.ObservablePropertyAttr>(out var observablePropertyAttr);
             var hasInvalidatableAttribute = field.ex_TryGetAttribute<Attributes.InvalidatablePropertyAttr>(out var invalidatablePropertyAttr);
             var hasInvalidatableLazyAttribute = field.ex_TryGetAttribute<Attributes.InvalidatableLazyPropertyAttr>(out var invalidatableLazyPropertyAttr);
+            var hasObservableMultiStateAttribute = field.ex_TryGetAttribute<Attributes.ObservableMultiStatePropertyAttr>(out var observableMultiStatePropertyAttr);
 
             // Validation:
             if (hasObservableAttribute && !hasSetter) {
@@ -324,25 +307,35 @@ namespace CodeAnalyzer
             if (hasInvalidatableLazyAttribute) {
                 emitters.Add(invalidatableLazyPropertyAttr);
             }
+            if (hasObservableMultiStateAttribute) {
+                emitters.Add(observableMultiStatePropertyAttr);
+            }
 
             var conflictResolvingMap = new Dictionary<Templates.TemplateSlot, List<Type>>();
 
-            if (hasObservableAttribute &&
-                hasInvalidatableAttribute
-                ) {
-                conflictResolvingMap[Templates.PropertyTemplate.Set.AFTER_ASSIGNMENT] = new() {
-                    invalidatablePropertyAttr.GetType(),
-                    observablePropertyAttr.GetType(),
-                };
-            }
-            if (hasObservableAttribute &&
-                hasInvalidatableLazyAttribute
-                ) {
-                conflictResolvingMap[Templates.PropertyTemplate.Set.AFTER_ASSIGNMENT] = new() {
-                    invalidatableLazyPropertyAttr.GetType(),
-                    observablePropertyAttr.GetType(),
-                };
-            }
+            conflictResolvingMap[Templates.PropertyTemplate.Set.AFTER_ASSIGNMENT] = new() {
+                invalidatableLazyPropertyAttr?.GetType(),
+                invalidatablePropertyAttr?.GetType(),
+                observableMultiStatePropertyAttr?.GetType(),
+                observablePropertyAttr?.GetType(),
+            };
+
+            //if (hasObservableAttribute &&
+            //    hasInvalidatableAttribute
+            //    ) {
+            //    conflictResolvingMap[Templates.PropertyTemplate.Set.AFTER_ASSIGNMENT] = new() {
+            //        invalidatablePropertyAttr?.GetType(),
+            //        observablePropertyAttr?.GetType(),
+            //    };
+            //}
+            //if (hasObservableAttribute &&
+            //    hasInvalidatableLazyAttribute
+            //    ) {
+            //    conflictResolvingMap[Templates.PropertyTemplate.Set.AFTER_ASSIGNMENT] = new() {
+            //        invalidatableLazyPropertyAttr?.GetType(),
+            //        observablePropertyAttr?.GetType(),
+            //    };
+            //}
 
 
             var pipeline = new Pipeline.CodeGenerationPipeline(
@@ -355,121 +348,6 @@ namespace CodeAnalyzer
             string code = "";
 
             code += pipeline.Generate(conflictResolvingMap, indent);
-
-            result = code.StartsWith("\n")
-                ? code.Substring(1)
-                : code;
-
-            return result.Length > 0;
-        }
-
-
-        private bool TryGeneratePropertyCode(
-            SourceProductionContext context,
-            Data.Field field,
-            string indent,
-            out string result
-            ) {
-            result = string.Empty;
-
-            var attrs = field.PropertyAttributes;
-
-            // Определяем необходимость геттера и сеттера
-            bool hasGetter = attrs.Any(a => a.GetterAccess == Attributes.GetterAccess.Get);
-            bool hasSetter = attrs.Any(a => a.SetterAccess is Attributes.SetterAccess.Set or Attributes.SetterAccess.PrivateSet);
-
-            // Если есть несколько атрибутов, где один требует Set, а другой PrivateSet — выбираем наиболее ограниченный
-            Attributes.SetterAccess setterAccess = Attributes.SetterAccess.None;
-
-            if (attrs.Any(a => a.SetterAccess == Attributes.SetterAccess.PrivateSet)) {
-                setterAccess = Attributes.SetterAccess.PrivateSet;
-            }
-            else if (attrs.Any(a => a.SetterAccess == Attributes.SetterAccess.Set)) {
-                setterAccess = Attributes.SetterAccess.Set;
-            }
-
-            var hasObservableAttribute = field.ex_HasAttribute<Attributes.ObservablePropertyAttr>();
-            var hasObservableMultiState = field.ex_HasAttribute<Attributes.ObservableMultiStatePropertyAttr>();
-            var hasInvalidatableAttribute = field.ex_HasAttribute<Attributes.InvalidatablePropertyAttr>();
-            var hasInvalidatableLazyAttribute = field.ex_HasAttribute<Attributes.InvalidatableLazyPropertyAttr>();
-            var hasAnyInvalidatableAttribute = hasInvalidatableAttribute | hasInvalidatableLazyAttribute;
-
-            var invalidatableLazyAttribute = field.PropertyAttributes.OfType<Attributes.InvalidatableLazyPropertyAttr>().FirstOrDefault();
-
-            // Validation:
-            if (hasObservableAttribute && !hasSetter) {
-                Reporter.Error(context, $"{__logPrefix} 'ObservablePropertyAttr' need setter, but another attribute suppress setter");
-                return false;
-            }
-            if (hasInvalidatableAttribute && hasInvalidatableLazyAttribute) {
-                Reporter.Error(context, $"{__logPrefix} Do not support both attributes 'InvalidatablePropertyAttr' and 'InvalidatableLazyPropertyAttr'");
-                return false;
-            }
-
-            string newLine = $"\n{indent}";
-            string code = "";
-
-            code += $"{newLine}public {field.TypeName} {field.PropName} {{";
-
-            if (hasGetter) {
-                code += $"{newLine}    get {{";
-
-                if (hasAnyInvalidatableAttribute) {
-                    code += $"{newLine}        if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{";
-                    code += $"{newLine}            System.Diagnostics.Debugger.Break();";
-                    code += $"{newLine}            return default;";
-                    code += $"{newLine}        }}";
-                }
-
-                if (hasInvalidatableLazyAttribute) {
-                    code += $"{newLine}        if ({field.Name} == null) {{";
-                    code += $"{newLine}            {field.Name} = this.{invalidatableLazyAttribute.FactoryMethodName}();";
-                    code += $"{newLine}        }}";
-                }
-
-                code += $"{newLine}        return {field.Name};";
-                code += $"{newLine}    }}";
-            }
-
-            if (hasSetter) {
-                string setterAccessStr = setterAccess == Attributes.SetterAccess.PrivateSet ? "private " : "";
-                code += $"{newLine}    {setterAccessStr}set {{";
-
-                if (hasAnyInvalidatableAttribute) {
-                    code += $"{newLine}        if (!_invalidatablePropertiesState.Is{field.PropName}Valid) {{";
-                    code += $"{newLine}            System.Diagnostics.Debugger.Break();";
-                    code += $"{newLine}            return;";
-                    code += $"{newLine}        }}";
-                }
-
-                code += $"{newLine}        if ({field.Name} != value) {{";
-                code += $"{newLine}            {field.Name} = value;";
-
-                if (hasAnyInvalidatableAttribute) {
-                    code += $"{newLine}            _invalidatablePropertiesState.{field.PropName}Cached = value;";
-                }
-
-                if (hasObservableAttribute) {
-                    code += $"{newLine}            base.OnPropertyChanged(nameof(this.{field.PropName}));";
-                }
-
-                code += $"{newLine}        }}";
-                code += $"{newLine}    }}";
-            }
-
-            code += $"{newLine}}}";
-
-            if (hasAnyInvalidatableAttribute) {
-                code += $"{newLine}";
-                code += $"{newLine}public {field.TypeName} {field.PropName}Cached {{";
-                code += $"{newLine}    get {{";
-                code += $"{newLine}        if (_invalidatablePropertiesState.{field.PropName}Cached == null) {{";
-                code += $"{newLine}            _invalidatablePropertiesState.{field.PropName}Cached = {field.Name};";
-                code += $"{newLine}        }}";
-                code += $"{newLine}        return ({field.TypeName})_invalidatablePropertiesState.{field.PropName}Cached;";
-                code += $"{newLine}    }}";
-                code += $"{newLine}}}";
-            }
 
             result = code.StartsWith("\n")
                 ? code.Substring(1)

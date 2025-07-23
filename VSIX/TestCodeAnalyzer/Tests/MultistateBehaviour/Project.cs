@@ -11,7 +11,7 @@ namespace TestCodeAnalyzer.Tests.MultistateBehaviour {
         Helpers.ObservableObject {
 
         [ObservableProperty]
-        [InvalidatableProperty]
+        //[InvalidatableProperty]
         //[InvalidatableLazyProperty(nameof(this.InitName))]
         private string _name;
 

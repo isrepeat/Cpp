@@ -74,7 +74,7 @@ namespace CodeAnalyzer.Templates {
         }
 
 
-        public void ResolveConflicts(TemplateSlot slot, List<Type> order) {
+        public void ResolveConflicts(TemplateSlot slot, List<Type> resolvedEmitersOrder) {
             if (!_mapSlotToListConflict.TryGetValue(slot, out var conflicts)) {
                 return;
             }
@@ -84,21 +84,26 @@ namespace CodeAnalyzer.Templates {
                     $"Do not support conflict resolving for TemplateBlock");
             }
 
-            var resolved = new List<string>();
             var codeBlockConficts = conflicts.OfType<CodeBlock>();
+            var resolvedCodeLines = new List<string>();
 
-            foreach (var type in order) {
-                var entry = codeBlockConficts.FirstOrDefault(e => e.EmitterType == type);
-                if (entry == null) {
-                    throw new InvalidOperationException(
-                        $"Type {type.Name} not found in conflict for slot '{slot}'");
+            foreach (var emmiterType in resolvedEmitersOrder) {
+                if (emmiterType == null) {
+                    continue;
                 }
-                resolved.Add(entry.Code);
+
+                var codeBlock = codeBlockConficts.FirstOrDefault(e => e.EmitterType == emmiterType);
+                if (codeBlock == null) {
+                    throw new InvalidOperationException(
+                        $"Type {emmiterType.Name} not found in conflict for slot '{slot}'");
+                }
+
+                resolvedCodeLines.AddRange(codeBlock.Code.Split('\n'));
             }
 
             _mapSlotToTemplateReplacement[slot] = new CodeBlock {
                 EmitterType = null,
-                Code = string.Join("\n", resolved)
+                Code = string.Join("\n", resolvedCodeLines)
             };
             _mapSlotToListConflict.Remove(slot);
         }
@@ -201,7 +206,7 @@ namespace CodeAnalyzer.Templates {
                 // Поиск маркера незаполненного слота.
                 var match = Regex.Match(trimmed, @"\[\[UNUSED_SLOT:([A-Z:_]+)\]\]");
 
-                // Если строка обычная, без маркера — оставляем.
+                // Если строка не содержит необработанных маркеров - добавляем ее.
                 if (!match.Success) {
                     finalLines.Add(line);
                     continue;
@@ -210,12 +215,18 @@ namespace CodeAnalyzer.Templates {
                 string fullMatch = match.Value;
                 string slotId = match.Groups[1].Value;
 
-                // Если строка состоит содержит только маркер — удаляем.
+                // Есл строка содержат только лишь необработанный маркер - игнорируем ее.
                 if (trimmed == fullMatch) {
                     continue;
                 }
 
-                // Иначе — маркера встроен в код, это ошибка шаблона
+                // Есл строка содержат специальный необработанный маркер - удаляем его.
+                if (slotId == "EXTRAS") {
+                    finalLines.Add(line.Replace(fullMatch, ""));
+                    continue;
+                }
+
+                // Иначе — необработанный маркер встроен в код, это ошибка шаблона
                 throw new InvalidOperationException(
                     $"Slot '{slotId}' was not filled but is embedded in code:\n{line}"
                 );

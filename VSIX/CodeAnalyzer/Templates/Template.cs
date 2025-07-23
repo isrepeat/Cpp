@@ -12,14 +12,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Helpers.Attributes;
 
 
-//public string Text { get; }
-//public Dictionary<TemplateSlot, TemplateSlotDesc> MapSlotToSlotDesc { get; } = new();
-
-//public Template(string text) {
-//    this.Text = text;
-//    this.ParseTemplate(this.Text);
-//}
-
 namespace CodeAnalyzer.Templates {
     public class Template {
         public string Text { get; }

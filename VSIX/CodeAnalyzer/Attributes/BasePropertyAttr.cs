@@ -28,7 +28,11 @@ namespace CodeAnalyzer.Attributes {
         }
 
         public void EmitToPropertyTemplate(Data.Field field, PropertyTemplateContext ctx) {
-            ctx.InsertCode(PropertyTemplate.Property.TYPE_NAME, $"{field.TypeName}", GetType());
+            var formatter = new Formatters.TypeFormatter()
+                .AddRule(new Formatters.SimplifyNamespaceRule(field.ContainingNamespace))
+                .AddRule(new Formatters.MultilineGenericRule());
+
+            ctx.InsertCode(PropertyTemplate.Property.TYPE_NAME, $"{formatter.Format(field.TypeName)}", GetType());
             ctx.InsertCode(PropertyTemplate.Property.PROP_NAME, $"{field.PropName}", GetType());
             
             if (this.GetterAccess != GetterAccess.None) {

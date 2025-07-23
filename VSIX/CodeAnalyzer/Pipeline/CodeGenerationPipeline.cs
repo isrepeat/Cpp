@@ -41,9 +41,9 @@ namespace CodeAnalyzer.Pipeline {
 
             foreach (var kvp in conflictResolvingMap) {
                 var slot = kvp.Key;
-                var order = kvp.Value;
+                var resolvedEmitersOrder = kvp.Value;
 
-                _ctx.ResolveConflicts(slot, order);
+                _ctx.ResolveConflicts(slot, resolvedEmitersOrder);
             }
 
             var types = _emitters.Select(e => e.GetType());

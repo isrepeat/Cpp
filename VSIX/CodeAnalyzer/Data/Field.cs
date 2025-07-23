@@ -17,6 +17,7 @@ namespace CodeAnalyzer.Data {
         public string Name { get; }
         public string PropName { get; }
         public string TypeName { get; }
+        public string ContainingNamespace { get; }
 
         public FieldMetadataBase(FieldDeclarationSyntax syntax, IFieldSymbol symbol) {
             this.Syntax = syntax;
@@ -25,6 +26,7 @@ namespace CodeAnalyzer.Data {
             this.Name = symbol.Name;
             this.PropName = this.GetPropertyNameFromFieldName(this.Name);
             this.TypeName = symbol.Type.ToDisplayString();
+            this.ContainingNamespace = symbol.ContainingNamespace.ToDisplayString();
         }
 
         private string GetPropertyNameFromFieldName(string fieldName) {
