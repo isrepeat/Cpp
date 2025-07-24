@@ -23,11 +23,14 @@ using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Task = System.Threading.Tasks.Task;
 
+[assembly: Helpers.Attributes.CodeAnalyzerEnableLogs]
+
 #if NET_FRAMEWORK_472
 namespace System.Runtime.CompilerServices {
     internal static class IsExternalInit { } // need for "init" keyword
 }
 #endif
+
 
 namespace TabsManagerExtension {
     /// <summary>

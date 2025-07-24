@@ -17,7 +17,7 @@
     <RootNamespace>TabsManagerExtension</RootNamespace>
     <AssemblyName>TabsManagerExtension</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
@@ -88,17 +88,21 @@
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
     <Compile Include="VsShell\Document\DocumentNode.cs" />
+    <Compile Include="VsShell\Document\DocumentCommonState.cs" />
+    <Compile Include="VsShell\Document\DocumentMultiState.cs" />
     <Compile Include="VsShell\Document\IncludeEntry.cs" />
     <Compile Include="VsShell\Document\ShellWindow.cs" />
     <Compile Include="VsShell\Document\ShellDocument.cs" />
     <Compile Include="VsShell\EventArgs.cs" />
+    <Compile Include="VsShell\Hierarchy\HierarchyItemMultiState.cs" />
+    <Compile Include="VsShell\Hierarchy\HierarchyItemCommonState.cs" />
     <Compile Include="VsShell\Project\ProjectExternalDependenciesAnalyzer.cs" />
     <Compile Include="VsShell\Project\ProjectHierarchyTracker.cs" />
     <Compile Include="VsShell\Project\ProjectSharedItemsAnalyzer.cs" />
     <Compile Include="VsShell\Project\ProjectSourcesAnalyzer.cs" />
     <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
     <Compile Include="VsShell\Project\ProjectNode.cs" />
-    <Compile Include="VsShell\IVsHierarchy.cs" />
+    <Compile Include="VsShell\Hierarchy\IVsHierarchy.cs" />
     <Compile Include="VsShell\Solution\SolutionHierarchyAnalyzerService.cs" />
     <Compile Include="VsShell\VsCommandMapper.cs" />
     <Compile Include="VsShell\Project\LoadedProjectNode.cs" />

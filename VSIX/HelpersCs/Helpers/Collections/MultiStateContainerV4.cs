@@ -170,6 +170,22 @@ namespace HelpersV4.Collections {
         }
 
 
+        public override bool Equals(object? obj) {
+            if (obj is not MultiStateContainerBase<TCommonState> other) {
+                return false;
+            }
+            return EqualityComparer<TCommonState>.Default.Equals(_commonState, other._commonState);
+        }
+
+        public override int GetHashCode() {
+            return EqualityComparer<TCommonState>.Default.GetHashCode(_commonState!);
+        }
+
+        public override string ToString() {
+            return _commonState?.ToString() ?? base.ToString()!;
+        }
+
+
         protected void Register<T>(IMultiStateElement element) 
             where T : IMultiStateElement {
 

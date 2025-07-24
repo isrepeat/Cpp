@@ -9,7 +9,6 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
-using Helpers.Attributes;
 
 
 namespace TabsManagerExtension.VsShell.Utils {
@@ -98,20 +97,23 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
-        public static List<Hierarchy.HierarchyItem> CollectItemsRecursive(
+        public static List<Hierarchy.HierarchyItemMultiStateContainer> CollectItemsRecursive(
             IVsHierarchy hierarchy,
             uint itemId,
-            Func<Hierarchy.HierarchyItem, bool> predicate,
-            Func<Hierarchy.HierarchyItem, bool>? shouldVisitChildren = null
+            Func<Hierarchy.DocumentCommonState, bool> predicate,
+            Func<Hierarchy.DocumentCommonState, bool>? shouldVisitChildren = null
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var result = new List<Hierarchy.HierarchyItem>();
+
+            var result = new List<Hierarchy.HierarchyItemMultiStateContainer>();
+
             VsHierarchyUtils.CollectItemsRecursiveInternal(
                 hierarchy,
                 itemId,
                 predicate,
-                shouldVisitChildren ?? (_ => true), result);
+                shouldVisitChildren ?? (_ => true),
+                result);
 
             return result;
         }
@@ -231,23 +233,23 @@ namespace TabsManagerExtension.VsShell.Utils {
         // Internal logic
         //
         private static void CollectItemsRecursiveInternal(
-            IVsHierarchy hierarchy,
+            IVsHierarchy vsHierarchy,
             uint itemId,
-            Func<Hierarchy.HierarchyItem, bool> predicate,
-            Func<Hierarchy.HierarchyItem, bool> shouldVisitChildren,
-            List<Hierarchy.HierarchyItem> result
+            Func<Hierarchy.DocumentCommonState, bool> predicate,
+            Func<Hierarchy.DocumentCommonState, bool> shouldVisitChildren,
+            List<Hierarchy.HierarchyItemMultiStateContainer> result
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var hierarchyItem = new Hierarchy.HierarchyItem(hierarchy, itemId);
+            var hierarchyItemCommonState = new Hierarchy.HierarchyItemCommonState(vsHierarchy, itemId);
 
-            if (predicate(hierarchyItem)) {
-                result.Add(hierarchyItem);
+            if (predicate(hierarchyItemCommonState)) {
+                result.Add(new(hierarchyItemCommonState));
             }
 
-            if (shouldVisitChildren(hierarchyItem)) {
-                foreach (var childId in Walker.GetChildren(hierarchy, itemId)) {
-                    VsHierarchyUtils.CollectItemsRecursiveInternal(hierarchy, childId, predicate, shouldVisitChildren, result);
+            if (shouldVisitChildren(hierarchyItemCommonState)) {
+                foreach (var childId in Walker.GetChildren(vsHierarchy, itemId)) {
+                    VsHierarchyUtils.CollectItemsRecursiveInternal(vsHierarchy, childId, predicate, shouldVisitChildren, result);
                 }
             }
         }
