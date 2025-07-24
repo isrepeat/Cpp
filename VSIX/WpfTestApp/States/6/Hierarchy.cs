@@ -19,7 +19,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
             set {
                 if (_vsHierarchyData != value) {
                     _vsHierarchyData = value;
-                    base.OnSharedStatePropertyChanged();
+                    base.OnCommonStatePropertyChanged();
                 }
             }
         }
@@ -29,6 +29,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
         }
 
         public void Dispose() {
+            this.VsHierarchyData = "<diposed>";
         }
     }
 
@@ -42,7 +43,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
             : base(commonState) {
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
             if (e.PropertyName is nameof(HierarchyCommonState.VsHierarchyData)) {
                 base.OnPropertyChanged(nameof(this.VsHierarchyData));
             }

@@ -41,6 +41,11 @@ namespace WpfTestApp {
         public States.MultistateBehaviour.UnloadedProject? LastUnloadedProject => _lastUnloadedProject;
 
 
+        States.MultistateBehaviour.Document? _lastDocument;
+        public States.MultistateBehaviour.Document? LastDocument => _lastDocument;
+
+
+
         public ICommand OnUnloadProjectCommand { get; }
         public ICommand OnReloadProjectCommand { get; }
 
@@ -54,19 +59,25 @@ namespace WpfTestApp {
 
 
         private void OnUnloadProject(object parameter) {
+            _lastDocument = _lastLoadedProject?.DocumentObj as States.MultistateBehaviour.Document;
+
             this.ProjectMultiState.SwitchTo<States.MultistateBehaviour.UnloadedProject>();
-            base.OnPropertyChanged(nameof(this.ProjectObj));
-            
             _lastUnloadedProject = this.ProjectMultiState.Current as States.MultistateBehaviour.UnloadedProject;
+
+            base.OnPropertyChanged(nameof(this.ProjectObj));
             base.OnPropertyChanged(nameof(this.LastUnloadedProject));
+            base.OnPropertyChanged(nameof(this.LastLoadedProject));
+            base.OnPropertyChanged(nameof(this.LastDocument));
         }
 
         private void OnReloadProject(object parameter) {
             this.ProjectMultiState.SwitchTo<States.MultistateBehaviour.LoadedProject>();
-            base.OnPropertyChanged(nameof(this.ProjectObj));
-
             _lastLoadedProject = this.ProjectMultiState.Current as States.MultistateBehaviour.LoadedProject;
+
+            base.OnPropertyChanged(nameof(this.ProjectObj));
+            base.OnPropertyChanged(nameof(this.LastUnloadedProject));
             base.OnPropertyChanged(nameof(this.LastLoadedProject));
+            base.OnPropertyChanged(nameof(this.LastDocument));
         }
     }
 

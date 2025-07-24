@@ -11,23 +11,23 @@ using System.ComponentModel;
 using System.Reflection;
 
 
-namespace HelpersV4._EventArgs {
-    public sealed class MultiStateElementEnabledEventArgs : EventArgs {
-        public HelpersV4.Collections.IMultiStateElement PreviousState { get; }
+namespace HelpersV5._EventArgs {
+    public sealed class MultiStateElementEnabledEventArgs<TCommonState> : EventArgs {
+        public HelpersV5.Collections.IMultiStateElement<TCommonState> PreviousState { get; }
         public MultiStateElementEnabledEventArgs(
-            HelpersV4.Collections.IMultiStateElement previousState
+            HelpersV5.Collections.IMultiStateElement<TCommonState> previousState
             ) {
             this.PreviousState = previousState;
         }
     }
 
 
-    public sealed class MultiStateElementDisabledEventArgs : EventArgs {
-        public HelpersV4.Collections.IMultiStateElement NextState { get; }
-        public HelpersV4.Collections.IMultiStateElement? OldNextState { get; }
+    public sealed class MultiStateElementDisabledEventArgs<TCommonState> : EventArgs {
+        public HelpersV5.Collections.IMultiStateElement<TCommonState> NextState { get; }
+        public HelpersV5.Collections.IMultiStateElement<TCommonState>? OldNextState { get; }
         public MultiStateElementDisabledEventArgs(
-            HelpersV4.Collections.IMultiStateElement nextState,
-            HelpersV4.Collections.IMultiStateElement? oldNextState
+            HelpersV5.Collections.IMultiStateElement<TCommonState> nextState,
+            HelpersV5.Collections.IMultiStateElement<TCommonState>? oldNextState
             ) {
             this.NextState = nextState;
             this.OldNextState = oldNextState;
@@ -37,7 +37,7 @@ namespace HelpersV4._EventArgs {
 
 
 
-namespace HelpersV4.Collections {
+namespace HelpersV5.Collections {
     public interface ICommonState {
     }
 
@@ -79,32 +79,35 @@ namespace HelpersV4.Collections {
 
 
 
-    public interface IMultiStateElement {
-        void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e);
-        void OnStateDisabled(HelpersV4._EventArgs.MultiStateElementDisabledEventArgs e);
+    public interface IMultiStateElement<TCommonState> {
+        void OnConstructed(TCommonState commonState);
+        void OnStateEnabled(HelpersV5._EventArgs.MultiStateElementEnabledEventArgs<TCommonState> e);
+        void OnStateDisabled(HelpersV5._EventArgs.MultiStateElementDisabledEventArgs<TCommonState> e);
     }
 
-    public class UnknownMultiStateElement : IMultiStateElement {
-        public void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e) {
+    public class UnknownMultiStateElement<TCommonState> : IMultiStateElement<TCommonState> {
+        public void OnConstructed(TCommonState commonState) {
         }
-        public void OnStateDisabled(HelpersV4._EventArgs.MultiStateElementDisabledEventArgs e) {
+        public void OnStateEnabled(HelpersV5._EventArgs.MultiStateElementEnabledEventArgs<TCommonState> e) {
         }
-    }
-
-
-
-
-    public readonly struct CommonProperty<TState, TValue> {
-        public PropertyInfo Property { get; }
-
-        public CommonProperty(PropertyInfo prop) {
-            if (prop.DeclaringType != typeof(TState)) {
-                throw new ArgumentException($"Property {prop.Name} is not declared in {typeof(TState).Name}");
-            }
-
-            this.Property = prop;
+        public void OnStateDisabled(HelpersV5._EventArgs.MultiStateElementDisabledEventArgs<TCommonState> e) {
         }
     }
+
+
+
+
+    //public readonly struct CommonProperty<TState, TValue> {
+    //    public PropertyInfo Property { get; }
+
+    //    public CommonProperty(PropertyInfo prop) {
+    //        if (prop.DeclaringType != typeof(TState)) {
+    //            throw new ArgumentException($"Property {prop.Name} is not declared in {typeof(TState).Name}");
+    //        }
+
+    //        this.Property = prop;
+    //    }
+    //}
 
 
 
@@ -115,8 +118,8 @@ namespace HelpersV4.Collections {
         public event System.Action? StateChanged;
 
 
-        private IMultiStateElement _current;
-        public IMultiStateElement Current => _current;
+        private IMultiStateElement<TCommonState> _current;
+        public IMultiStateElement<TCommonState> Current => _current;
 
         public Dictionary<Type, string> InstancesHashMap { get; } = new();
         public HashSet<string> InstancesHashSet { get; } = new();
@@ -124,13 +127,13 @@ namespace HelpersV4.Collections {
 
 
         protected readonly TCommonState _commonState;
-        protected readonly Dictionary<Type, IMultiStateElement> _instances = new();
+        protected readonly Dictionary<Type, IMultiStateElement<TCommonState>> _instances = new();
 
 
         protected MultiStateContainerBase(TCommonState commonState) {
             _commonState = commonState;
             
-            var defaultElement = new UnknownMultiStateElement();
+            var defaultElement = new UnknownMultiStateElement<TCommonState>();
             _current = defaultElement;
         }
 
@@ -148,7 +151,7 @@ namespace HelpersV4.Collections {
         }
 
 
-        public void SwitchTo<T>() where T : IMultiStateElement {
+        public void SwitchTo<T>() where T : IMultiStateElement<TCommonState> {
             if (!_instances.TryGetValue(typeof(T), out var next)) {
                 throw new InvalidOperationException($"No state of type {typeof(T).Name} found.");
             }
@@ -159,16 +162,16 @@ namespace HelpersV4.Collections {
             this.CurrentHash = this.InstancesHashMap[typeof(T)];
             this.StateChanged?.Invoke();
 
-            previous.OnStateDisabled(new HelpersV4._EventArgs.MultiStateElementDisabledEventArgs(
+            previous.OnStateDisabled(new HelpersV5._EventArgs.MultiStateElementDisabledEventArgs<TCommonState>(
                 next,
                 null));
 
-            _current.OnStateEnabled(new HelpersV4._EventArgs.MultiStateElementEnabledEventArgs(
+            _current.OnStateEnabled(new HelpersV5._EventArgs.MultiStateElementEnabledEventArgs<TCommonState>(
                 previous));
         }
 
 
-        public T? Get<T>() where T : class, IMultiStateElement {
+        public T? Get<T>() where T : class, IMultiStateElement<TCommonState> {
             if (_instances.TryGetValue(typeof(T), out var state)) {
                 return (T)state;
             }
@@ -178,7 +181,7 @@ namespace HelpersV4.Collections {
         }
 
 
-        public void ForEachOther(System.Action<IMultiStateElement> action) {
+        public void ForEachOther(System.Action<IMultiStateElement<TCommonState>> action) {
             foreach (var state in _instances.Values) {
                 if (!object.ReferenceEquals(state, _current)) {
                     action(state);
@@ -187,9 +190,9 @@ namespace HelpersV4.Collections {
         }
 
 
-        public void ReadCommonState<TValue>(CommonProperty<TCommonState, TValue> prop, out TValue value) {
-            value = (TValue)prop.Property.GetValue(_commonState)!;
-        }
+        //public void ReadCommonState<TValue>(CommonProperty<TCommonState, TValue> prop, out TValue value) {
+        //    value = (TValue)prop.Property.GetValue(_commonState)!;
+        //}
 
 
         public override bool Equals(object? obj) {
@@ -199,20 +202,17 @@ namespace HelpersV4.Collections {
             return EqualityComparer<TCommonState>.Default.Equals(_commonState, other._commonState);
         }
 
-
         public override int GetHashCode() {
             return EqualityComparer<TCommonState>.Default.GetHashCode(_commonState!);
         }
 
-
-        // ToString делегируется в _current.
         public override string ToString() {
-            return _current?.ToString() ?? base.ToString()!;
+            return _commonState?.ToString() ?? base.ToString()!;
         }
 
 
-        protected void Register<T>(IMultiStateElement element) 
-            where T : IMultiStateElement {
+        protected void Register<T>(IMultiStateElement<TCommonState> element) 
+            where T : IMultiStateElement<TCommonState> {
 
             _instances[typeof(T)] = element;
 
@@ -226,33 +226,36 @@ namespace HelpersV4.Collections {
     public class MultiStateContainer<TCommonState, A, B> :
         MultiStateContainerBase<TCommonState>
         where TCommonState : class, ICommonState
-        where A : class, IMultiStateElement
-        where B : class, IMultiStateElement {
+        where A : class, IMultiStateElement<TCommonState>
+        where B : class, IMultiStateElement<TCommonState> {
 
         public MultiStateContainer(TCommonState commonState) 
             : base(commonState) {
 
             // Создание начальных экземпляров
-            var a = (A)Activator.CreateInstance(typeof(A), _commonState)!;
-            var b = (B)Activator.CreateInstance(typeof(B), _commonState)!;
+            var a = (A)Activator.CreateInstance(typeof(A))!;
+            a.OnConstructed(_commonState);
+
+            var b = (B)Activator.CreateInstance(typeof(B))!;
+            b.OnConstructed(_commonState);
 
             base.Register<A>(a);
             base.Register<B>(b);
 
         }
 
-        public MultiStateContainer(
-            TCommonState commonState,
-            Func<TCommonState, A> factoryA,
-            Func<TCommonState, B> factoryB
-            ) : base(commonState) {
+        //public MultiStateContainer(
+        //    TCommonState commonState,
+        //    Func<TCommonState, A> factoryA,
+        //    Func<TCommonState, B> factoryB
+        //    ) : base(commonState) {
 
-            // Создание начальных экземпляров
-            var a = factoryA(_commonState);
-            var b = factoryB(_commonState);
+        //    // Создание начальных экземпляров
+        //    var a = factoryA(_commonState);
+        //    var b = factoryB(_commonState);
 
-            base.Register<A>(a);
-            base.Register<B>(b);
-        }
+        //    base.Register<A>(a);
+        //    base.Register<B>(b);
+        //}
     }
 }

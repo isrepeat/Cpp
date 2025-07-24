@@ -8,13 +8,15 @@ using Helpers.Attributes;
 
 
 namespace TabsManagerExtension.VsShell.Hierarchy {
-    public class HierarchyItemMultiStateContainer :
+    public class HierarchyItemMultiStateElement :
         HelpersV4.Collections.MultiStateContainer<
             HierarchyItemCommonState,
             HierarchyItem,
             InvalidatedHierarchyItem> {
-        public HierarchyItemMultiStateContainer(HierarchyItemCommonState state)
-            : base(state) {
+        public HierarchyItemMultiStateElement(
+            Microsoft.VisualStudio.Shell.Interop.IVsHierarchy vsHierarchy,
+            uint itemId
+            ) : base(new HierarchyItemCommonState(vsHierarchy, itemId)) {
         }
     }
 
@@ -43,14 +45,16 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
         }
 
         public override string ToString() {
-            return this.CommonState.ToString();
+            return $"HierarchyItem(ItemId={this.ItemId}, Name='{this.Name}', CanonicalName='{this.CanonicalName}')";
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            base.OnSharedStatePropertyChanged(sender, e);
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            base.OnCommonStatePropertyChanged(sender, e);
 
-            if (e.PropertyName is nameof(HierarchyItemCommonState.Hierarchy)) {
-                base.OnPropertyChanged(nameof(this.Hierarchy));
+            switch (e.PropertyName) {
+                case nameof(HierarchyItemCommonState.Hierarchy):
+                    this.OnPropertyChanged(nameof(this.Hierarchy));
+                    break;
             }
         }
     }

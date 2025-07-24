@@ -14,12 +14,13 @@ namespace TabsManagerExtension.VsShell.Document {
 
         public VsShell.Project.ProjectNode ProjectNode { get; }
 
-        [ObservableMultiStateProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
-        private Hierarchy.HierarchyItemMultiStateContainer _hierarchyItemMultiState;
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
+        private Hierarchy.HierarchyItemMultiStateElement _hierarchyItemMultiState;
+
 
         public DocumentCommonState(
             VsShell.Project.ProjectNode projectNode,
-            Hierarchy.HierarchyItemMultiStateContainer hierarchyItemMultiState
+            Hierarchy.HierarchyItemMultiStateElement hierarchyItemMultiState
             ) {
             this.ProjectNode = projectNode;
 
@@ -28,6 +29,7 @@ namespace TabsManagerExtension.VsShell.Document {
         }
 
         public void Dispose() {
+            this.HierarchyItemMultiState.Dispose();
         }
 
 
@@ -35,7 +37,6 @@ namespace TabsManagerExtension.VsShell.Document {
             if (obj is not DocumentCommonState other) {
                 return false;
             }
-
             return this.ProjectNode.ProjectGuid == other.ProjectNode.ProjectGuid;
         }
 
@@ -43,36 +44,40 @@ namespace TabsManagerExtension.VsShell.Document {
         public override int GetHashCode() {
             unchecked {
                 int hash = 17;
-
                 hash = hash * 31 + this.ProjectNode.ProjectGuid.GetHashCode();
-                //hash = hash * 31 + this.HierarchyItemCached.ItemIdCached.GetHashCode();
-                //hash = hash * 31 + (this.HierarchyItemCached.FilePathCached != null
-                //    ? StringComparer.OrdinalIgnoreCase.GetHashCode(this.HierarchyItemCached.FilePathCached)
-                //    : 0);
-
                 return hash;
             }
         }
+        
+        public string ToStringCore() {
+            this.HierarchyItemMultiState.ReadCommonState(
+                Hierarchy.HierarchyItemCommonState.PropertyInfo.ItemId, out var itemId);
 
-        public override string ToString() {
-            return $"DocumentNode({this.ToStringCore()})";
-        }
+            this.HierarchyItemMultiState.ReadCommonState(
+                Hierarchy.HierarchyItemCommonState.PropertyInfo.FilePath, out var filePath);
 
-        protected string ToStringCore() {
-            return $"FilePath='{this.HierarchyItemMultiState.FilePath}', Project='{this.ProjectNode.UniqueName}', ItemId={this.HierarchyMultiState.ItemId}";
+            return $"FilePath='{filePath}', Project='{this.ProjectNode.UniqueName}', ItemId={itemId}";
         }
     }
 
 
-    
+
     public abstract class DocumentCommonStateViewModel :
         HelpersV4.Collections.CommonStateViewModelBase<DocumentCommonState> {
+        public VsShell.Project.ProjectNode ProjectNode => this.CommonState.ProjectNode;
+        public object HierarchyItemObj => this.CommonState.HierarchyItemMultiState.Current;
+
         protected DocumentCommonStateViewModel(DocumentCommonState commonState)
             : base(commonState) {
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            // ...
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            switch (e.PropertyName) {
+
+                case nameof(DocumentCommonState.HierarchyItemMultiState):
+                    base.OnPropertyChanged(nameof(this.HierarchyItemObj));
+                    break;
+            }
         }
     }
 }

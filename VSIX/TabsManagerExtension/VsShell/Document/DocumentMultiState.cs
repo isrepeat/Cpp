@@ -5,29 +5,59 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Helpers.Attributes;
+using System.Threading.Tasks;
 
 
 namespace TabsManagerExtension.VsShell.Document {
-    public class DocumentMultiStateContainer :
+    public class DocumentMultiStateElement :
         HelpersV4.Collections.MultiStateContainer<
             DocumentCommonState,
             Document,
             InvalidatedDocument> {
-        public DocumentMultiStateContainer(DocumentCommonState state)
-            : base(state) {
+        public DocumentMultiStateElement(
+            VsShell.Project.ProjectNode projectNode,
+            Hierarchy.HierarchyItemMultiStateElement hierarchyItemMultiState
+            ) : base(new DocumentCommonState(projectNode, hierarchyItemMultiState)) {
         }
     }
 
 
-    public class Document :
+    public class SharedItemMultiStateElement :
+        HelpersV4.Collections.MultiStateContainer<
+            DocumentCommonState,
+            SharedItem,
+            InvalidatedDocument> {
+        public SharedItemMultiStateElement(
+            VsShell.Project.ProjectNode projectNode,
+            Hierarchy.HierarchyItemMultiStateElement hierarchyItemMultiState
+            ) : base(new DocumentCommonState(projectNode, hierarchyItemMultiState)) {
+        }
+    }
+
+
+    public class ExteralIncludeMultiStateElement :
+        HelpersV4.Collections.MultiStateContainer<
+            DocumentCommonState,
+            ExternalInclude,
+            InvalidatedDocument> {
+        public ExteralIncludeMultiStateElement(
+            VsShell.Project.ProjectNode projectNode,
+            Hierarchy.HierarchyItemMultiStateElement hierarchyItemMultiState
+            ) : base(new DocumentCommonState(projectNode, hierarchyItemMultiState)) {
+        }
+    }
+
+
+
+
+    public partial class Document :
         DocumentCommonStateViewModel,
         HelpersV4.Collections.IMultiStateElement {
 
+        [ObservableProperty(AccessMarker.Get, AccessMarker.PrivateSet)]
+        private bool _isOppenedWithProjectContext = false;
 
         public Document(DocumentCommonState commonState) : base(commonState) {
-        }
-        public override void Dispose() {
-            base.Dispose();
         }
 
         public void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e) {
@@ -36,6 +66,7 @@ namespace TabsManagerExtension.VsShell.Document {
             }
             base.CommonState.HierarchyItemMultiState.SwitchTo<Hierarchy.HierarchyItem>();
         }
+
         public void OnStateDisabled(HelpersV4._EventArgs.MultiStateElementDisabledEventArgs e) {
             if (e.NextState is InvalidatedDocument) {
                 base.CommonState.HierarchyItemMultiState.SwitchTo<Hierarchy.InvalidatedHierarchyItem>();
@@ -43,17 +74,54 @@ namespace TabsManagerExtension.VsShell.Document {
         }
 
         public override string ToString() {
-            return this.CommonState.ToString();
+            return $"Document({base.CommonState.ToStringCore()})";
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            base.OnSharedStatePropertyChanged(sender, e);
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            base.OnCommonStatePropertyChanged(sender, e);
+        }
 
-            if (e.PropertyName is nameof(DocumentCommonState.Hierarchy)) {
-                base.OnPropertyChanged(nameof(this.Hierarchy));
-            }
+        protected void OpenWithProjectContext() {
+            // ...
         }
     }
+
+
+
+    //
+    // SharedItem
+    //
+    public sealed class SharedItem : Document {
+        public SharedItem(DocumentCommonState commonState) : base(commonState) {
+        }
+
+        public new void OpenWithProjectContext() {
+            // ...
+        }
+
+        public override string ToString() {
+            return $"SharedItem({base.CommonState.ToStringCore()})";
+        }
+    }
+
+
+
+    //
+    // ExternalInclude
+    //
+    public sealed class ExternalInclude : Document {
+        public ExternalInclude(DocumentCommonState commonState) : base(commonState) {
+        }
+
+        public new void OpenWithProjectContext() {
+            base.OpenWithProjectContext();
+        }
+
+        public override string ToString() {
+            return $"ExternalInclude({base.CommonState.ToStringCore()})";
+        }
+    }
+
 
 
 

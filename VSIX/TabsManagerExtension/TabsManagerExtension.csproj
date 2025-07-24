@@ -96,6 +96,8 @@
     <Compile Include="VsShell\EventArgs.cs" />
     <Compile Include="VsShell\Hierarchy\HierarchyItemMultiState.cs" />
     <Compile Include="VsShell\Hierarchy\HierarchyItemCommonState.cs" />
+    <Compile Include="VsShell\Project\ProjectCommonState.cs" />
+    <Compile Include="VsShell\Project\ProjectMultiState.cs" />
     <Compile Include="VsShell\Project\ProjectExternalDependenciesAnalyzer.cs" />
     <Compile Include="VsShell\Project\ProjectHierarchyTracker.cs" />
     <Compile Include="VsShell\Project\ProjectSharedItemsAnalyzer.cs" />

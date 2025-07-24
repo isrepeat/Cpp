@@ -14,22 +14,22 @@ namespace WpfTestApp.States.MultistateBehaviour {
         HelpersV4.Collections.CommonStateBase,
         IDisposable {
 
-        [ObservableProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
+        [ObservableProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
         private string _name = "";
 
-        [ObservableProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
+        [ObservableProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
         private string _projId = "";
 
-        [ObservableMultiStateProperty(NotifyMethod = "base.OnSharedStatePropertyChanged")]
-        private HelpersV4.Collections.MultiStateContainer<
-            DocumentCommonState,
-            Document,
-            InvalidatedDocument
-            > _documentMultiState;
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
+        private DocumentMultiStateElement _documentMultiState;
+
+
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
+        private ExteralIncludeMultiStateElement _externlIncludeMultiState;
 
         public ProjectCommonState(string vsHierarchyData) {
-            _documentMultiState = new(new DocumentCommonState(vsHierarchyData));
-            this.DocumentMultiState = _documentMultiState;
+            this.DocumentMultiState = new DocumentMultiStateElement(vsHierarchyData);
+            this.ExternlIncludeMultiState = new ExteralIncludeMultiStateElement(vsHierarchyData);
         }
 
         public void Dispose() {
@@ -52,7 +52,7 @@ namespace WpfTestApp.States.MultistateBehaviour {
             this.UpdateHashes();
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
             if (e.PropertyName is nameof(ProjectCommonState.Name)) {
                 base.OnPropertyChanged(nameof(this.Name));
             }
@@ -89,7 +89,8 @@ namespace WpfTestApp.States.MultistateBehaviour {
 
             _ = Task.Run(async () => {
                 await Task.Delay(1000);
-                base.CommonState.DocumentMultiState = new(new DocumentCommonState($"vsHierarchy_{++this.counter}"));
+                base.CommonState.DocumentMultiState = new DocumentMultiStateElement($"vsHierarchy_{++this.counter}");
+                await Task.Delay(500);
                 base.CommonState.DocumentMultiState.SwitchTo<Document>();
             });
         }
@@ -106,8 +107,8 @@ namespace WpfTestApp.States.MultistateBehaviour {
             return $"<LoadedProject>";
         }
 
-        protected override void OnSharedStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            base.OnSharedStatePropertyChanged(sender, e);
+        protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            base.OnCommonStatePropertyChanged(sender, e);
 
             if (e.PropertyName is nameof(ProjectCommonState.ProjId)) {
                 base.OnPropertyChanged(nameof(this.ProjId));
