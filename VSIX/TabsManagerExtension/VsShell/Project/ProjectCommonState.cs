@@ -5,82 +5,111 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Helpers.Attributes;
-using TabsManagerExtension.VsShell.Document;
 
 
 namespace TabsManagerExtension.VsShell.Project {
-    public partial class ProjectCommonState :
-        HelpersV4.Collections.CommonStateBase,
-        IDisposable {
+    namespace _Details {
+        public partial class ProjectCommonState :
+            HelpersV4.Collections.CommonStateBase,
+            IDisposable {
 
-        public ProjectNode ProjectNode { get; }
+            public ProjectNode ProjectNode { get; }
+            public Helpers.Collections.DisposableList<Document.ExternalIncludeEntry> ExternalIncludes { get; } = new();
+            public Helpers.Collections.DisposableList<Document.SharedItemEntry> SharedItems { get; } = new();
+            public Helpers.Collections.DisposableList<Document.DocumentEntry> Sources { get; } = new();
 
-        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
-        private Helpers.Collections.DisposableList<ExteralIncludeMultiStateElement> _externalIncludes = new();
-        
-        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
-        private Helpers.Collections.DisposableList<SharedItemMultiStateElement> _sharedItems = new();
+            [ObservableProperty(AccessMarker.Get, AccessMarker.PrivateSet, NotifyMethod = "base.OnCommonStatePropertyChanged")]
+            private bool _isDisposed;
 
-        [ObservableMultiStateProperty(NotifyMethod = "base.OnCommonStatePropertyChanged")]
-        private Helpers.Collections.DisposableList<DocumentMultiStateElement> _sources = new();
+            public ProjectCommonState(
+                ProjectNode projectNode
+                ) {
+                this.ProjectNode = projectNode;
+            }
 
-        public ProjectCommonState(
-            ProjectNode projectNode
-            ) {
-            this.ProjectNode = projectNode;
+            public void Dispose() {
+                if (this.IsDisposed) {
+                    return;
+                }
+
+                this.ExternalIncludes.ClearAndDispose();
+                this.SharedItems.ClearAndDispose();
+                this.Sources.ClearAndDispose();
+
+                this.IsDisposed = true;
+            }
         }
-
-        public void Dispose() {
-            this.ExternalIncludes.ClearAndDispose();
-            this.SharedItems.ClearAndDispose();
-            this.Sources.ClearAndDispose();
-        }
-    }
+    } // namesace _Details
 
 
 
     public abstract class ProjectCommonStateViewModel :
-        HelpersV4.Collections.CommonStateViewModelBase<ProjectCommonState> {
+        HelpersV4.Collections.CommonStateViewModelBase<_Details.ProjectCommonState> {
         public ProjectNode ProjectNode => base.CommonState.ProjectNode;
-        
+        public Helpers.Collections.DisposableList<Document.ExternalIncludeEntry> ExternalIncludes => base.CommonState.ExternalIncludes;
+        public Helpers.Collections.DisposableList<Document.SharedItemEntry> SharedItems => base.CommonState.SharedItems;
+        public Helpers.Collections.DisposableList<Document.DocumentEntry> Sources => base.CommonState.Sources;
+        public bool IsDisposed => this.CommonState.IsDisposed;
 
-        public Helpers.Collections.DisposableList<
-            ExteralIncludeMultiStateElement
-            > ExternalIncludes => base.CommonState.ExternalIncludes;
-
-
-        public Helpers.Collections.DisposableList<
-            SharedItemMultiStateElement
-            > SharedItems => base.CommonState.SharedItems;
-
-
-        public Helpers.Collections.DisposableList<
-            DocumentMultiStateElement
-            > Sources => base.CommonState.Sources;
-
-
-        protected ProjectCommonStateViewModel(ProjectCommonState commonState)
+        protected ProjectCommonStateViewModel(_Details.ProjectCommonState commonState)
             : base(commonState) {
         }
 
         protected override void OnCommonStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
-                case nameof(ProjectCommonState.ProjectNode):
-                    base.OnPropertyChanged(nameof(this.ProjectNode));
-                    break;
-
-                case nameof(ProjectCommonState.ExternalIncludes):
-                    base.OnPropertyChanged(nameof(this.ExternalIncludes));
-                    break;
-
-                case nameof(ProjectCommonState.SharedItems):
-                    base.OnPropertyChanged(nameof(this.SharedItems));
-                    break;
-
-                case nameof(ProjectCommonState.Sources):
-                    base.OnPropertyChanged(nameof(this.Sources));
+                case nameof(_Details.ProjectCommonState.IsDisposed):
+                    base.OnPropertyChanged(nameof(this.IsDisposed));
                     break;
             }
+        }
+    }
+
+
+    // TODO: Add to CodeAnalyzer support generate generic classes.
+    namespace _Details {
+        public abstract class ProjectEntryBaseViewModel :
+            Helpers.ObservableObject,
+            IDisposable {
+            public ProjectCommonStateViewModel BaseViewModel => this.MultiStateBase.AsViewModel<ProjectCommonStateViewModel>();
+            protected ProjectMultiStateElementBase MultiStateBase { get; }
+
+            public ProjectEntryBaseViewModel(ProjectMultiStateElementBase multiStateBase) {
+                this.MultiStateBase = multiStateBase;
+                this.MultiStateBase.StateChanged += this.OnMultiStateChanged;
+            }
+            public void Dispose() {
+                this.MultiStateBase.StateChanged -= this.OnMultiStateChanged;
+                this.MultiStateBase.Dispose();
+            }
+
+            public override string ToString() {
+                return this.MultiStateBase.ToString();
+            }
+
+            protected abstract void OnMultiStateChanged();
+        }
+    } // namesace _Details
+
+
+
+    public abstract class ProjectEntryBase : _Details.ProjectEntryBaseViewModel {
+        public bool IsLoaded => this.MultiStateBase.Current is LoadedProject;
+        public bool IsUnloaded => this.MultiStateBase.Current is UnloadedProject;
+        public ProjectEntryBase(ProjectMultiStateElementBase multiStateBase) : base(multiStateBase) {
+        }
+        protected override void OnMultiStateChanged() {
+            base.OnPropertyChanged(nameof(this.IsLoaded));
+            base.OnPropertyChanged(nameof(this.IsUnloaded));
+        }
+    }
+
+
+    public partial class ProjectEntry : ProjectEntryBase {
+        [ObservableMultiStateProperty(NotifyMethod = "base.OnPropertyChanged")]
+        private ProjectMultiStateElement _multiState;
+
+        public ProjectEntry(ProjectMultiStateElement multiState) : base(multiState) {
+            this.MultiState = multiState;
         }
     }
 }

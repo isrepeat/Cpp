@@ -87,7 +87,6 @@
     <Compile Include="TemlateSelectors\VirtualMenuItemTemplateSelector.cs" />
     <Compile Include="ToolWindows\EarlyPackageLoadHackToolWindow.cs" />
     <Compile Include="State\TextEditor.cs" />
-    <Compile Include="VsShell\Document\DocumentNode.cs" />
     <Compile Include="VsShell\Document\DocumentCommonState.cs" />
     <Compile Include="VsShell\Document\DocumentMultiState.cs" />
     <Compile Include="VsShell\Document\IncludeEntry.cs" />
@@ -102,12 +101,10 @@
     <Compile Include="VsShell\Project\ProjectHierarchyTracker.cs" />
     <Compile Include="VsShell\Project\ProjectSharedItemsAnalyzer.cs" />
     <Compile Include="VsShell\Project\ProjectSourcesAnalyzer.cs" />
-    <Compile Include="VsShell\Project\UnloadedProjectNode.cs" />
     <Compile Include="VsShell\Project\ProjectNode.cs" />
     <Compile Include="VsShell\Hierarchy\IVsHierarchy.cs" />
     <Compile Include="VsShell\Solution\SolutionHierarchyAnalyzerService.cs" />
     <Compile Include="VsShell\VsCommandMapper.cs" />
-    <Compile Include="VsShell\Project\LoadedProjectNode.cs" />
     <Compile Include="VsShell\Project\ShellProject.cs" />
     <Compile Include="VsShell\Document\SourceFile.cs" />
     <Compile Include="VsShell\TextEditor\TextEditorCommandFilter.cs" />

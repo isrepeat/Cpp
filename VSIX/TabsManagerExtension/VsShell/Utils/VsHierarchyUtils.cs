@@ -97,16 +97,15 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
-        public static List<Hierarchy.HierarchyItemMultiStateContainer> CollectItemsRecursive(
+        public static List<Hierarchy.HierarchyItemEntry> CollectItemsRecursive(
             IVsHierarchy hierarchy,
             uint itemId,
-            Func<Hierarchy.DocumentCommonState, bool> predicate,
-            Func<Hierarchy.DocumentCommonState, bool>? shouldVisitChildren = null
+            Func<Hierarchy.HierarchyItemEntry, bool> predicate,
+            Func<Hierarchy.HierarchyItemEntry, bool>? shouldVisitChildren = null
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-
-            var result = new List<Hierarchy.HierarchyItemMultiStateContainer>();
+            var result = new List<Hierarchy.HierarchyItemEntry>();
 
             VsHierarchyUtils.CollectItemsRecursiveInternal(
                 hierarchy,
@@ -235,19 +234,23 @@ namespace TabsManagerExtension.VsShell.Utils {
         private static void CollectItemsRecursiveInternal(
             IVsHierarchy vsHierarchy,
             uint itemId,
-            Func<Hierarchy.DocumentCommonState, bool> predicate,
-            Func<Hierarchy.DocumentCommonState, bool> shouldVisitChildren,
-            List<Hierarchy.HierarchyItemMultiStateContainer> result
+            Func<Hierarchy.HierarchyItemEntry, bool> predicate,
+            Func<Hierarchy.HierarchyItemEntry, bool> shouldVisitChildren,
+            List<Hierarchy.HierarchyItemEntry> result
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var hierarchyItemCommonState = new Hierarchy.HierarchyItemCommonState(vsHierarchy, itemId);
+            var hierarchyItemEntry = new Hierarchy.HierarchyItemEntry(
+                new Hierarchy.HierarchyItemMultiStateElement(
+                    vsHierarchy,
+                    itemId
+                    ));
 
-            if (predicate(hierarchyItemCommonState)) {
-                result.Add(new(hierarchyItemCommonState));
+            if (predicate(hierarchyItemEntry)) {
+                result.Add(hierarchyItemEntry);
             }
 
-            if (shouldVisitChildren(hierarchyItemCommonState)) {
+            if (shouldVisitChildren(hierarchyItemEntry)) {
                 foreach (var childId in Walker.GetChildren(vsHierarchy, itemId)) {
                     VsHierarchyUtils.CollectItemsRecursiveInternal(vsHierarchy, childId, predicate, shouldVisitChildren, result);
                 }

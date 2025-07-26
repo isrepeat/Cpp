@@ -20,28 +20,36 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
     /// SolutionHierarchyRepresentationsTable
     /// </summary>
     public sealed class SolutionHierarchyRepresentationsTable
-        : Helpers.RepresentationsTableBase<VsShell.Document.DocumentNode> {
+        : Helpers.RepresentationsTableBase<VsShell.Document.DocumentEntryBase> {
 
         private Dictionary<string, List<VsShell.Project.ProjectNode>> _mapFilePathToListProject = new();
-        private Dictionary<VsShell.Project.ProjectNode, Dictionary<string, VsShell.Document.DocumentNode>> _mapProjectToDictFilePathToDocument = new();
+
+        private Dictionary<
+            VsShell.Project.ProjectNode,
+            Dictionary<string, VsShell.Document.DocumentEntryBase>
+            > _mapProjectToDictFilePathToDocument = new();
 
         public override void BuildRepresentations() {
             _mapFilePathToListProject.Clear();
             _mapProjectToDictFilePathToDocument.Clear();
 
             _mapFilePathToListProject = base.Records
-                .GroupBy(r => r.HierarchyItem.FilePath, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(
+                    record => record.BaseViewModel.HierarchyItemEntry.BaseViewModel.FilePath,
+                    StringComparer.OrdinalIgnoreCase
+                )
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(r => r.ProjectNode).Distinct().ToList(),
-                    StringComparer.OrdinalIgnoreCase);
+                    g => g.Select(record => record.BaseViewModel.ProjectNode).Distinct().ToList(),
+                    StringComparer.OrdinalIgnoreCase
+                );
 
             foreach (var record in base.Records) {
-                var projectNode = record.ProjectNode;
-                var documenPath = record.HierarchyItem.FilePath;
+                var projectNode = record.BaseViewModel.ProjectNode;
+                var documenPath = record.BaseViewModel.HierarchyItemEntry.BaseViewModel.FilePath;
 
                 if (!_mapProjectToDictFilePathToDocument.TryGetValue(projectNode, out var dictFilePathToDocument)) {
-                    dictFilePathToDocument = new Dictionary<string, VsShell.Document.DocumentNode>(StringComparer.OrdinalIgnoreCase);
+                    dictFilePathToDocument = new Dictionary<string, VsShell.Document.DocumentEntryBase>(StringComparer.OrdinalIgnoreCase);
                     _mapProjectToDictFilePathToDocument[projectNode] = dictFilePathToDocument;
                 }
 
@@ -60,10 +68,10 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             return Array.Empty<VsShell.Project.ProjectNode>();
         }
 
-        public VsShell.Document.DocumentNode? GetDocumentByProjectAndDocumentPath(VsShell.Project.ProjectNode projectNode, string documentPath) {
+        public VsShell.Document.DocumentEntryBase? GetDocumentByProjectAndDocumentPath(VsShell.Project.ProjectNode projectNode, string documentPath) {
             if (_mapProjectToDictFilePathToDocument.TryGetValue(projectNode, out var dictFilePathToDocument)) {
-                if (dictFilePathToDocument.TryGetValue(documentPath, out var documentNode)) {
-                    return documentNode;
+                if (dictFilePathToDocument.TryGetValue(documentPath, out var documentEntryBase)) {
+                    return documentEntryBase;
                 }
             }
             return null;
@@ -84,16 +92,16 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         private readonly Helpers.Collections.DisposableList<VsShell.Project.ProjectNode> _solutionProjects = new();
         public IReadOnlyList<VsShell.Project.ProjectNode> SolutionProjects => _solutionProjects;
 
-        public IReadOnlyList<VsShell.Project.LoadedProjectNode> LoadedProjects =>
+        public IReadOnlyList<VsShell.Project.LoadedProject> LoadedProjects =>
             _solutionProjects
-                .Select(p => p.CurrentProjectNodeStateObj)
-                .OfType<VsShell.Project.LoadedProjectNode>()
+                .Select(p => p.ProjectEntry.MultiState.Current)
+                .OfType<VsShell.Project.LoadedProject>()
                 .ToList();
 
-        public IReadOnlyList<VsShell.Project.UnloadedProjectNode> UnloadedProjects =>
+        public IReadOnlyList<VsShell.Project.UnloadedProject> UnloadedProjects =>
             _solutionProjects
-                .Select(p => p.CurrentProjectNodeStateObj)
-                .OfType<VsShell.Project.UnloadedProjectNode>()
+                .Select(p => p.ProjectEntry.MultiState.Current)
+                .OfType<VsShell.Project.UnloadedProject>()
                 .ToList();
 
 
@@ -184,14 +192,8 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             _sharedItemsRepresentationsTable.Clear();
 
             foreach (var projectNode in _solutionProjects) {
-                if (projectNode.CurrentProjectNodeStateObj is VsShell.Project.LoadedProjectNode loadedProjectNode) {
-                    _sourcesRepresentationsTable.AddRange(loadedProjectNode.Sources);
-                    _sharedItemsRepresentationsTable.AddRange(loadedProjectNode.SharedItems);
-                }
-                else if (projectNode.CurrentProjectNodeStateObj is VsShell.Project.UnloadedProjectNode unloadedProjectNode) {
-                    _sourcesRepresentationsTable.AddRange(unloadedProjectNode.LastSources);
-                    _sharedItemsRepresentationsTable.AddRange(unloadedProjectNode.LastSharedItems);
-                }
+                _sourcesRepresentationsTable.AddRange(projectNode.ProjectEntry.BaseViewModel.Sources);
+                _sharedItemsRepresentationsTable.AddRange(projectNode.ProjectEntry.BaseViewModel.SharedItems);
             }
 
             _sourcesRepresentationsTable.BuildRepresentations();
@@ -210,12 +212,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             _externalIncludeRepresentationsTable.Clear();
 
             foreach (var projectNode in _solutionProjects) {
-                if (projectNode.CurrentProjectNodeStateObj is VsShell.Project.LoadedProjectNode loadedProjectNode) {
-                    _externalIncludeRepresentationsTable.AddRange(loadedProjectNode.ExternalIncludes);
-                }
-                else if (projectNode.CurrentProjectNodeStateObj is VsShell.Project.UnloadedProjectNode unloadedProjectNode) {
-                    _externalIncludeRepresentationsTable.AddRange(unloadedProjectNode.LastExternalIncludes);
-                }
+                _externalIncludeRepresentationsTable.AddRange(projectNode.ProjectEntry.BaseViewModel.ExternalIncludes);
             }
 
             _externalIncludeRepresentationsTable.BuildRepresentations();

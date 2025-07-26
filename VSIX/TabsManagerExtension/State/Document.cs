@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using static TabsManagerExtension.State.Document.DocumentProjectReferencesInfo;
 
 
 namespace TabsManagerExtension.State.Document {
@@ -96,42 +97,46 @@ namespace TabsManagerExtension.State.Document {
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
             if (e.Action == NotifyCollectionChangedAction.Reset) {
                 foreach (var oldItem in _references) {
-                    oldItem.DocumentNode.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
+                    oldItem.DocumentEntryBase.BaseViewModel.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
                 }
             }
 
             if (e.OldItems != null) {
                 foreach (RefEntry oldItem in e.OldItems) {
-                    oldItem.DocumentNode.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
+                    oldItem.DocumentEntryBase.BaseViewModel.ProjectNode.PropertyChanged -= this.OnProjectNodePropertyChanged;
                 }
             }
             if (e.NewItems != null) {
                 foreach (RefEntry newItem in e.NewItems) {
-                    newItem.DocumentNode.ProjectNode.PropertyChanged += this.OnProjectNodePropertyChanged;
+                    newItem.DocumentEntryBase.BaseViewModel.ProjectNode.PropertyChanged += this.OnProjectNodePropertyChanged;
                 }
             }
 
-            this.UpdateHasUnloadedProjectsProperty();
+            this.UpdateProperty(nameof(this.HasUnloadedProjects));
         }
 
 
         private void OnProjectNodePropertyChanged(object? sender, PropertyChangedEventArgs e) {
             if (e.PropertyName == nameof(VsShell.Project.ProjectNode.IsLoaded)) {
-                this.UpdateHasUnloadedProjectsProperty();
+                this.UpdateProperty(nameof(this.HasUnloadedProjects));
             }
         }
 
-        private void UpdateHasUnloadedProjectsProperty() {
-            bool hasUnloadedProjects = _references.Any(refEntry => !refEntry.DocumentNode.ProjectNode.IsLoaded);
-            this.HasUnloadedProjects = hasUnloadedProjects;
+        private void UpdateProperty(string? propertyName) {
+            switch (propertyName) {
+                case nameof(this.HasUnloadedProjects):
+                    this.HasUnloadedProjects = _references
+                        .Any(refEntry => !refEntry.DocumentEntryBase.BaseViewModel.ProjectNode.IsLoaded);
+                    break;
+            }
         }
 
 
         public class RefEntry : Helpers.ObservableObject {
-            public VsShell.Document.DocumentNode DocumentNode { get; private set; }
+            public VsShell.Document.DocumentEntryBase DocumentEntryBase { get; private set; }
 
-            public RefEntry(VsShell.Document.DocumentNode documentNode) {
-                this.DocumentNode = documentNode;
+            public RefEntry(VsShell.Document.DocumentEntryBase documentEntryBase) {
+                this.DocumentEntryBase = documentEntryBase;
             }
         }
     }
@@ -142,7 +147,6 @@ namespace TabsManagerExtension.State.Document {
         public VsShell.Document.ShellDocument ShellDocument { get; private set; }
         public DocumentProjectReferencesInfo DocumentProjectReferencesInfo { get; } = new();
         public VsShell.Project.ProjectNode ProjectNodeContext { get; set; }
-
 
         public TabItemDocument(VsShell.Document.ShellDocument shellDocument) {
             base.Caption = shellDocument.Document.Name;
@@ -202,7 +206,7 @@ namespace TabsManagerExtension.State.Document {
                 return; // Игнорируем только лишь ссылки на собсвтенные проекты.
             }
 
-            var documentNodes = new List<VsShell.Document.DocumentNode>();
+            var documentEntries = new List<VsShell.Document.DocumentEntryBase>();
 
             //VsShell.Utils.VsHierarchyUtils.LogSolutionHierarchy();
 
@@ -211,7 +215,7 @@ namespace TabsManagerExtension.State.Document {
                     .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
                 
                 if (externalInclude != null) {
-                    documentNodes.Add(externalInclude);
+                    documentEntries.Add(externalInclude);
                 }
             }
 
@@ -221,17 +225,17 @@ namespace TabsManagerExtension.State.Document {
                     .GetDocumentByProjectAndDocumentPath(projectNode, this.FullName);
 
                 if (sharedItemNode != null) {
-                    documentNodes.Add(sharedItemNode);
+                    documentEntries.Add(sharedItemNode);
                 }
             }
 
-            documentNodes = documentNodes
-                .OrderBy(d => d.ProjectNode.UniqueName, StringComparer.OrdinalIgnoreCase)
+            documentEntries = documentEntries
+                .OrderBy(d => d.BaseViewModel.ProjectNode.UniqueName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            foreach (var documentNode in documentNodes) {
+            foreach (var documentEntryBase in documentEntries) {
                 this.DocumentProjectReferencesInfo.References
-                    .Add(new DocumentProjectReferencesInfo.RefEntry(documentNode));
+                    .Add(new DocumentProjectReferencesInfo.RefEntry(documentEntryBase));
             }
         }
 

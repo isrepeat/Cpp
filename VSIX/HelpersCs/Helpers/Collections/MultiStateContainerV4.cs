@@ -24,13 +24,10 @@ namespace HelpersV4._EventArgs {
 
     public sealed class MultiStateElementDisabledEventArgs : EventArgs {
         public HelpersV4.Collections.IMultiStateElement NextState { get; }
-        public HelpersV4.Collections.IMultiStateElement? OldNextState { get; }
         public MultiStateElementDisabledEventArgs(
-            HelpersV4.Collections.IMultiStateElement nextState,
-            HelpersV4.Collections.IMultiStateElement? oldNextState
+            HelpersV4.Collections.IMultiStateElement nextState
             ) {
             this.NextState = nextState;
-            this.OldNextState = oldNextState;
         }
     }
 }
@@ -93,21 +90,6 @@ namespace HelpersV4.Collections {
 
 
 
-
-    public readonly struct CommonProperty<TState, TValue> {
-        public PropertyInfo Property { get; }
-
-        public CommonProperty(PropertyInfo prop) {
-            if (prop.DeclaringType != typeof(TState)) {
-                throw new ArgumentException($"Property {prop.Name} is not declared in {typeof(TState).Name}");
-            }
-
-            this.Property = prop;
-        }
-    }
-
-
-
     public abstract class MultiStateContainerBase<TCommonState> :
         IDisposable
         where TCommonState : ICommonState {
@@ -159,22 +141,30 @@ namespace HelpersV4.Collections {
             this.CurrentHash = this.InstancesHashMap[typeof(T)];
             this.StateChanged?.Invoke();
 
-            previous.OnStateDisabled(new HelpersV4._EventArgs.MultiStateElementDisabledEventArgs(
-                next,
-                null));
-
-            _current.OnStateEnabled(new HelpersV4._EventArgs.MultiStateElementEnabledEventArgs(
-                previous));
+            previous.OnStateDisabled(new HelpersV4._EventArgs.MultiStateElementDisabledEventArgs(next));
+            _current.OnStateEnabled(new HelpersV4._EventArgs.MultiStateElementEnabledEventArgs(previous));
         }
 
 
-        public T? Get<T>() where T : class, IMultiStateElement {
-            if (_instances.TryGetValue(typeof(T), out var state)) {
-                return (T)state;
+        public T As<T>() where T : class, IMultiStateElement {
+            if (_current is T typed) {
+                return typed;
             }
 
-            System.Diagnostics.Debugger.Break();
-            return null;
+            throw new InvalidOperationException(
+                $"The current state is not of type '{typeof(T).Name}'. Actual type: '{_current.GetType().Name}'");
+        }
+
+
+        public TViewModel AsViewModel<TViewModel>()
+            where TViewModel : CommonStateViewModelBase<TCommonState> {
+
+            if (this._current is TViewModel typed) {
+                return typed;
+            }
+
+            throw new InvalidOperationException(
+                $"The current state is not of type '{typeof(TViewModel).Name}'. Actual type: '{this._current.GetType().Name}'");
         }
 
 
@@ -184,11 +174,6 @@ namespace HelpersV4.Collections {
                     action(state);
                 }
             }
-        }
-
-
-        public void ReadCommonState<TValue>(CommonProperty<TCommonState, TValue> prop, out TValue value) {
-            value = (TValue)prop.Property.GetValue(_commonState)!;
         }
 
 

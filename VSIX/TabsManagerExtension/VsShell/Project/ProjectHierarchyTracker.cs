@@ -33,9 +33,9 @@ namespace TabsManagerExtension.VsShell.Project {
 
         public ProjectHierarchyTracker(
             IVsHierarchy projectHierarchy,
-            HashSet<Hierarchy.HierarchyItem> currentExternalDependenciesItems,
-            HashSet<Hierarchy.HierarchyItem> currentSharedItems,
-            HashSet<Hierarchy.HierarchyItem> currentSources
+            HashSet<Hierarchy.HierarchyItemEntry> currentExternalDependenciesItems,
+            HashSet<Hierarchy.HierarchyItemEntry> currentSharedItems,
+            HashSet<Hierarchy.HierarchyItemEntry> currentSources
             ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -135,15 +135,15 @@ namespace TabsManagerExtension.VsShell.Project {
         // ░ API
         // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
         //
-        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentExternalDependenciesItems() {
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentExternalDependenciesItems() {
             return _projectExternalDependenciesAnalyzer.GetCurrentExternalDependenciesItems();
         }
 
-        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentSharedItems() {
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentSharedItems() {
             return _projectSharedItemsAnalyzer.GetCurrentSharedItems();
         }
 
-        public IReadOnlyList<Hierarchy.HierarchyItem> GetCurrentSources() {
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentSources() {
             return _projectSourcesAnalyzer.GetCurrentSources();
         }
 

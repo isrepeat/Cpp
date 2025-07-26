@@ -36,7 +36,7 @@
 
         public ObservableMultiStatePropertyAttribute(
             Markers.Access.Get p0 = default,
-            Markers.Access.Set p1 = default
+            Markers.Access.PrivateSet p1 = default
             ) {
         }
     }

@@ -52,13 +52,13 @@ namespace TabsManagerExtension.VsShell._EventArgs {
 
     public sealed class ProjectHierarchyItemsChangedEventArgs : EventArgs {
         public IVsHierarchy ProjectHierarchy { get; }
-        public IReadOnlyList<Hierarchy.HierarchyItem> Added { get; }
-        public IReadOnlyList<Hierarchy.HierarchyItem> Removed { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> Added { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> Removed { get; }
 
         public ProjectHierarchyItemsChangedEventArgs(
             IVsHierarchy projectHierarchy,
-            IReadOnlyList<Hierarchy.HierarchyItem> added,
-            IReadOnlyList<Hierarchy.HierarchyItem> removed
+            IReadOnlyList<Hierarchy.HierarchyItemEntry> added,
+            IReadOnlyList<Hierarchy.HierarchyItemEntry> removed
             ) {
             this.ProjectHierarchy = projectHierarchy;
             this.Added = added;

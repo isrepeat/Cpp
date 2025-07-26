@@ -28,6 +28,9 @@ namespace CodeAnalyzer.Attributes {
             if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.Set>(argIndex, out _)) {
                 this.SetterAccess = SetterAccess.Set;
             }
+            else if (attributeData.ex_TryGetConstructorArgumentValue<Helpers.Attributes.Markers.Access.PrivateSet>(argIndex, out _)) {
+                this.SetterAccess = SetterAccess.PrivateSet;
+            }
 
             if (attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "NotifyMethod").Value.Value is string notifyName) {
                 this.NotifyMethodName = notifyName;

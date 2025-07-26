@@ -83,29 +83,29 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        public IReadOnlyCollection<VsShell.Project.LoadedProjectNode> GetTransitiveProjectsIncludersByIncludeString(string includeString) {
+        public IReadOnlyCollection<VsShell.Project.LoadedProject> GetTransitiveProjectsIncludersByIncludeString(string includeString) {
             var transitiveIncluders = this.GetTransitiveFilesIncludersByIncludeString(includeString);
             if (transitiveIncluders == null) {
                 return null;
             }
 
             return transitiveIncluders
-                .Select(sf => sf.ProjectNode.CurrentProjectNodeStateObj)
-                .OfType<VsShell.Project.LoadedProjectNode>()
+                .Select(sf => sf.ProjectNode.ProjectEntry.MultiState.Current)
+                .OfType<VsShell.Project.LoadedProject>()
                 .Distinct()
                 .ToList();
         }
 
 
-        public IReadOnlyCollection<VsShell.Project.LoadedProjectNode> GetTransitiveProjectsIncludersByIncludePath(string includePath) {
+        public IReadOnlyCollection<VsShell.Project.LoadedProject> GetTransitiveProjectsIncludersByIncludePath(string includePath) {
             var transitiveIncluders = this.GetTransitiveFilesIncludersByIncludePath(includePath);
             if (transitiveIncluders == null) {
                 return null;
             }
 
             return transitiveIncluders
-                .Select(sf => sf.ProjectNode.CurrentProjectNodeStateObj)
-                .OfType<VsShell.Project.LoadedProjectNode>()
+                .Select(sf => sf.ProjectNode.ProjectEntry.MultiState.Current)
+                .OfType<VsShell.Project.LoadedProject>()
                 .Distinct()
                 .ToList();
         }
@@ -402,7 +402,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
 
-        private void UpdateProjectGraph(VsShell.Project.LoadedProjectNode loadedProjectNode) {
+        private void UpdateProjectGraph(VsShell.Project.LoadedProject loadedProjectNode) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("UpdateProjectGraph()");
             ThreadHelper.ThrowIfNotOnUIThread();
 

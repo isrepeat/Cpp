@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio;
+using Helpers.Attributes;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 
 namespace TabsManagerExtension.VsShell.Project {
@@ -14,33 +17,22 @@ namespace TabsManagerExtension.VsShell.Project {
     }
 
 
-    public sealed class ProjectNode :
+    public sealed partial class ProjectNode :
         Helpers.ObservableObject,
         IProject,
         IDisposable {
 
         public VsShell.Hierarchy.IHierarchy ProjectHierarchy { get; private set; }
         public Guid ProjectGuid { get; }
-        public string Name { get; } = "<unknown>";
-        public string UniqueName { get; } = "<unknown>";
-        public string FullName { get; } = "<unknown>";
+        public string Name { get; }
+        public string UniqueName { get; }
+        public string FullName { get; }
         public bool IsSharedProject { get; }
 
-
+        [ObservableProperty(AccessMarker.Get, AccessMarker.PrivateSet)]
         private bool _isLoaded = false;
-        public bool IsLoaded {
-            get => _isLoaded;
-            private set {
-                if (_isLoaded != value) {
-                    _isLoaded = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
 
-        private readonly Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> _projectNodeState;
-        private Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode> ProjectNodeState => _projectNodeState;
-        public object? CurrentProjectNodeStateObj => _projectNodeState.Current;
+        public ProjectEntry ProjectEntry { get; }
         
 
         private bool _disposed = false;
@@ -78,10 +70,7 @@ namespace TabsManagerExtension.VsShell.Project {
 
             this.IsSharedProject = this.FullName.EndsWith(".vcxitems", StringComparison.OrdinalIgnoreCase);
 
-            _projectNodeState = new Helpers.Collections.MultiStateContainer<LoadedProjectNode, UnloadedProjectNode>(
-                  new LoadedProjectNode(this),
-                  new UnloadedProjectNode(this)
-                );
+            this.ProjectEntry = new ProjectEntry(new ProjectMultiStateElement(this));
 
             this.UpdateLoadedState();
         }
@@ -95,14 +84,7 @@ namespace TabsManagerExtension.VsShell.Project {
                 return;
             }
 
-            if (_projectNodeState.Current is IDisposable disposable) { 
-                disposable.Dispose();
-            }
-            _projectNodeState.ForEachOther((Helpers.Collections.IMultiStateElement element) => {
-                if (element is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-            });
+            this.ProjectEntry.Dispose();
 
             _disposed = true;
         }
@@ -140,6 +122,11 @@ namespace TabsManagerExtension.VsShell.Project {
         }
 
 
+        private void OnCommonStatePropertyChanged([CallerMemberName] string? propertyName = null) {
+            // Dummy ...
+        }
+
+
         //
         // Internal logic
         //
@@ -161,16 +148,12 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private void UpdateLoadedState() {
             if (this.ProjectHierarchy is VsShell.Hierarchy.IRealHierarchy) {
-                _projectNodeState.SwitchTo<LoadedProjectNode>();
-
+                this.ProjectEntry.MultiState.SwitchTo<LoadedProject>();
                 this.IsLoaded = true;
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set LoadedProjectNode for {this.UniqueName}");
             }
             else { // (this.ProjectHierarchy is VsShell.Hierarchy.IVsStubHierarchy)
-                _projectNodeState.SwitchTo<UnloadedProjectNode>();
-
+                this.ProjectEntry.MultiState.SwitchTo<UnloadedProject>();
                 this.IsLoaded = false;
-                Helpers.Diagnostic.Logger.LogDebug($"[UpdateLoadedState] Set UnloadedProjectNode for {this.UniqueName}");
             }
         }
     }

@@ -8,17 +8,33 @@ using Helpers.Attributes;
 
 
 namespace TabsManagerExtension.VsShell.Hierarchy {
-    public class HierarchyItemMultiStateElement :
+    public abstract class HierarchyItemMultiStateElementBase :
         HelpersV4.Collections.MultiStateContainer<
-            HierarchyItemCommonState,
+            _Details.HierarchyItemCommonState,
             HierarchyItem,
             InvalidatedHierarchyItem> {
+
+        protected HierarchyItemMultiStateElementBase(_Details.HierarchyItemCommonState commonState)
+            : base(commonState) {
+        }
+
+        protected HierarchyItemMultiStateElementBase(
+            _Details.HierarchyItemCommonState commonState,
+            Func<_Details.HierarchyItemCommonState, HierarchyItem> factoryA,
+            Func<_Details.HierarchyItemCommonState, InvalidatedHierarchyItem> factoryB)
+            : base(commonState, factoryA, factoryB) {
+        }
+    }
+
+
+    public class HierarchyItemMultiStateElement : HierarchyItemMultiStateElementBase {
         public HierarchyItemMultiStateElement(
             Microsoft.VisualStudio.Shell.Interop.IVsHierarchy vsHierarchy,
             uint itemId
-            ) : base(new HierarchyItemCommonState(vsHierarchy, itemId)) {
+            ) : base(new _Details.HierarchyItemCommonState(vsHierarchy, itemId)) {
         }
     }
+
 
 
     public class HierarchyItem :
@@ -27,7 +43,7 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
 
         public IHierarchy Hierarchy => this.CommonState.Hierarchy;
 
-        public HierarchyItem(HierarchyItemCommonState commonState) : base(commonState) {
+        public HierarchyItem(_Details.HierarchyItemCommonState commonState) : base(commonState) {
         }
         public override void Dispose() {
             base.Dispose();
@@ -52,7 +68,7 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
             base.OnCommonStatePropertyChanged(sender, e);
 
             switch (e.PropertyName) {
-                case nameof(HierarchyItemCommonState.Hierarchy):
+                case nameof(_Details.HierarchyItemCommonState.Hierarchy):
                     this.OnPropertyChanged(nameof(this.Hierarchy));
                     break;
             }
@@ -65,10 +81,7 @@ namespace TabsManagerExtension.VsShell.Hierarchy {
         HierarchyItemCommonStateViewModel,
         HelpersV4.Collections.IMultiStateElement {
 
-        public InvalidatedHierarchyItem(HierarchyItemCommonState commonState) : base(commonState) {
-        }
-        public override void Dispose() {
-            base.Dispose();
+        public InvalidatedHierarchyItem(_Details.HierarchyItemCommonState commonState) : base(commonState) {
         }
 
         public void OnStateEnabled(HelpersV4._EventArgs.MultiStateElementEnabledEventArgs e) {

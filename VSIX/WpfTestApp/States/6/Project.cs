@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Helpers.Attributes;
+using HelpersV4.Collections;
 
 
 namespace WpfTestApp.States.MultistateBehaviour {
