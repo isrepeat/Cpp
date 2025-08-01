@@ -23,11 +23,14 @@ using Microsoft.VisualStudio.VCCodeModel;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Task = System.Threading.Tasks.Task;
 
+[assembly: Helpers.Attributes.CodeAnalyzerEnableLogs]
+
 #if NET_FRAMEWORK_472
 namespace System.Runtime.CompilerServices {
     internal static class IsExternalInit { } // need for "init" keyword
 }
 #endif
+
 
 namespace TabsManagerExtension {
     /// <summary>
@@ -65,10 +68,10 @@ namespace TabsManagerExtension {
 
 
         private void InitializeEvents() {
-            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded += this.OnSolutionLoaded;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded.Add(this.OnSolutionLoaded);
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionLoaded.InvokeForLastHandlerIfTriggered();
 
-            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed += this.OnSolutionClosed;
+            VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed.Add(this.OnSolutionClosed);
             VsShell.Services.VsIDEStateFlagsTrackerService.Instance.SolutionClosed.InvokeForLastHandlerIfTriggered();
         }
 

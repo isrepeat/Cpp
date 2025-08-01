@@ -20,9 +20,9 @@ namespace TabsManagerExtension.VsShell.Services {
         
         public static readonly Guid SolutionExistsGuid = new Guid(UIContextGuids80.SolutionExists);
 
-        public Helpers.Events.Action<Guid, bool> IDEStateFlagsChanged = new();
-        public Helpers.Events.Action<string> SolutionLoaded = new();
-        public Helpers.Events.Action<string> SolutionClosed = new();
+        public readonly Helpers.Events.Action<Guid, bool> IDEStateFlagsChanged = new();
+        public readonly Helpers.Events.Action<string> SolutionLoaded = new();
+        public readonly Helpers.Events.Action<string> SolutionClosed = new();
 
         private readonly Dictionary<Guid, bool> _contextStateMap = new();
         private readonly Dictionary<uint, Guid> _contextCookiesMap = new();

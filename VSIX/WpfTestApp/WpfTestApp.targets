@@ -11,7 +11,8 @@
 	  <!--<SelectedMainWindow>MainWindow_2_SelectionViewModel</SelectedMainWindow>-->
 	  <!--<SelectedMainWindow>MainWindow_3_MarkupExtensions</SelectedMainWindow>-->
 	  <!--<SelectedMainWindow>MainWindow_4_TextEditorAnchorMenu</SelectedMainWindow>-->
-	  <SelectedMainWindow>MainWindow_5_ProjectParser</SelectedMainWindow>
+	  <!--<SelectedMainWindow>MainWindow_5_ProjectParser</SelectedMainWindow>-->
+	  <SelectedMainWindow>MainWindow_6_MultiStateBehaviour</SelectedMainWindow>
   </PropertyGroup>
 
 

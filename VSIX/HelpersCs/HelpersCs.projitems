@@ -9,48 +9,29 @@
     <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Controls\Separator.xaml.cs">
-      <DependentUpon>Separator.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\CustomListBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collections.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions\WeakReferenceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\CommonState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\CommonStateViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\MultiStateEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\MultiStateContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\MultiStateContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\ActionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Assert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Reflection\Reflaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TypeMarker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IAttachable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IInvalidatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Text\Text.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\DelayedEventsHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Time\TimerManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Variant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\TriggeredAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\ToggleOnMouseDownBehavior.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AdornerService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\GlobalFlags.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Graphics.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BindingProxy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MenuItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RelayCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\DisposableList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Win32\WindowWin32Controller.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)MarkupExtensions\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Controls\Separator.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>

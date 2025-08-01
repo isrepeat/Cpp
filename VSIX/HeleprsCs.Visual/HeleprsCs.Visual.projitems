@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>86ac5b14-7fba-4d5b-b711-90e3f7798e0c</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>HeleprsCs.Visual</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Controls\FormattedTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Controls\Separator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\FormattedTextBlock.xaml.cs">
+      <DependentUpon>FormattedTextBlock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AdornerService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\AttachedProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusStateAttachedProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\FocusWatcherBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AttachedProperties\ToggleOnMouseDownBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BaseUserControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\BindingProxy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Collections\GroupsSelectionCoordinator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\Separator.xaml.cs">
+      <DependentUpon>Separator.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FocusWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Graphics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MarkupExtensions\FromNearControlExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MenuItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\InvalidatableProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\ObservableProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\VisibilityProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RelayCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Time\DelayedEventsHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Time\TimerManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\VisualTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Win32\WindowWin32Controller.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
+  </ItemGroup>
+</Project>

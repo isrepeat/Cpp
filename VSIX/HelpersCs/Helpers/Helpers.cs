@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using System.Windows.Threading;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+
 
 namespace Helpers {
     public class ObservableObject : INotifyPropertyChanged {
@@ -101,6 +101,33 @@ namespace Helpers {
             catch {
                 Helpers.Diagnostic.Logger.LogError($"[Property: {propertyName}] Exception occurred during property update.");
                 throw;
+            }
+        }
+    }
+
+
+    public static class Reflection {
+        public static IEnumerable<TInterface> GetPropertiesOf<TInterface>(object instance) {
+            if (instance == null) {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
+            var type = instance.GetType();
+
+            var properties = type.GetProperties(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic);
+
+            foreach (var prop in properties) {
+                if (!typeof(TInterface).IsAssignableFrom(prop.PropertyType)) {
+                    continue;
+                }
+
+                var value = prop.GetValue(instance);
+                if (value is TInterface casted) {
+                    yield return casted;
+                }
             }
         }
     }

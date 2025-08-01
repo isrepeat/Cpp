@@ -19,8 +19,8 @@ using TabsManagerExtension.State.TextEditor;
 
 namespace TabsManagerExtension.Controls {
     public partial class TextEditorOverlayControl : Helpers.BaseUserControl {
-        private Helpers.VisibilityProperty _isAnchorToggleButtonVisible = new();
-        public Helpers.VisibilityProperty IsAnchorToggleButtonVisible {
+        private Helpers.Properties.VisibilityProperty _isAnchorToggleButtonVisible = new();
+        public Helpers.Properties.VisibilityProperty IsAnchorToggleButtonVisible {
             get => _isAnchorToggleButtonVisible;
             set {
                 if (_isAnchorToggleButtonVisible != value) {
@@ -30,8 +30,8 @@ namespace TabsManagerExtension.Controls {
             }
         }
 
-        private Helpers.VisibilityProperty _isAnchorListVisible = new();
-        public Helpers.VisibilityProperty IsAnchorListVisible {
+        private Helpers.Properties.VisibilityProperty _isAnchorListVisible = new();
+        public Helpers.Properties.VisibilityProperty IsAnchorListVisible {
             get => _isAnchorListVisible;
             set {
                 if (_isAnchorListVisible != value) {

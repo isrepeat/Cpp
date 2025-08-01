@@ -21,7 +21,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
-using Task = System.Threading.Tasks.Task;
 using Helpers.Ex;
 using TabsManagerExtension.State.Document;
 
@@ -855,7 +854,7 @@ namespace TabsManagerExtension.Controls {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (parameter is DocumentProjectReferencesInfo.RefEntry refEntry) {
-                this.MoveDocumentToProjectGroup(refEntry.DocumentNode);
+                this.MoveDocumentToProjectGroup(refEntry.DocumentEntryBase);
             }
         }
 
@@ -866,8 +865,9 @@ namespace TabsManagerExtension.Controls {
 
             if (parameter is DocumentProjectReferencesInfo documentProjectReferencesInfo) {
                 foreach (var refEntry in documentProjectReferencesInfo.References) {
-                    if (!refEntry.DocumentNode.ProjectNode.IsLoaded) {
-                        VsShell.Utils.VsHierarchyUtils.ReloadProject(refEntry.DocumentNode.ProjectNode.ProjectGuid);
+                    var projectViewModel = refEntry.ProjectEntry.BaseViewModel;
+                    if (projectViewModel is VsShell.Project.UnloadedProject) {
+                        VsShell.Utils.VsHierarchyUtils.ReloadProject(projectViewModel.ProjectGuid);
                     }
                 }
             }
@@ -1000,14 +1000,14 @@ namespace TabsManagerExtension.Controls {
                             },
                         };
                         if (tabItemDocument.ShellDocument != null) {
-                            tabItemDocument.UpdateProjectReferenceList();
+                            tabItemDocument.DocumentProjectReferencesInfo.UpdateReferences();
 
                             if (tabItemDocument.DocumentProjectReferencesInfo.References.Count > 0) {
                                 this.VirtualMenuItems.Add(new Helpers.MenuItemSeparator());
 
                                 foreach (var refEntry in tabItemDocument.DocumentProjectReferencesInfo.References) {
                                     this.VirtualMenuItems.Add(new Helpers.MenuItemCommand {
-                                        Header = refEntry.DocumentNode.ProjectNode.Name,
+                                        Header = refEntry.ProjectEntry.BaseViewModel.Name,
                                         Command = new Helpers.RelayCommand<object>(this.OnMoveTabItemToRelatedProject),
                                         CommandParameterContext = refEntry,
                                     });
@@ -1194,29 +1194,43 @@ namespace TabsManagerExtension.Controls {
         }
 
 
-        private void MoveDocumentToProjectGroup(VsShell.Document.DocumentNode documentNode) {
+        private void MoveDocumentToProjectGroup(VsShell.Document.DocumentEntryBase documentEntryBase) {
             using var __logFunctionScoped = Helpers.Diagnostic.Logger.LogFunctionScope("MoveDocumentToProjectGroup()");
             ThreadHelper.ThrowIfNotOnUIThread();
+            
+            this.OpenTabItemWithProjectContext(documentEntryBase);
 
-            this.OpenTabItemWithProjectContext(documentNode);
+            var docVM = documentEntryBase.BaseViewModel;
+            var hierarchyVM = documentEntryBase.BaseViewModel.HierarchyItemEntry.BaseViewModel;
 
-            var tabItemDocument = this.FindTabItem(documentNode.FilePath);
+            var tabItemDocument = this.FindTabItem(hierarchyVM.FilePath);
             if (tabItemDocument != null) {
                 this.RemoveTabItemFromGroups(tabItemDocument);
-                this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(documentNode.ProjectNode.Name));
+                this.AddTabItemToGroupIfMissing(tabItemDocument, new TabItemsDefaultGroup(docVM.ProjectBaseViewModel.Name));
             }
         }
 
 
-        private void OpenTabItemWithProjectContext(VsShell.Document.DocumentNode documentNode) {
-            if (documentNode is VsShell.Document.ExternalInclude externalInclude) {
-                externalInclude.OpenWithProjectContext();
-                Console.Beep(frequency: 1000, duration: 300);
+        private void OpenTabItemWithProjectContext(VsShell.Document.DocumentEntryBase documentEntryBase) {
+            if (documentEntryBase is VsShell.Document.ExternalIncludeEntry externalIncludeEntry) {
+                if (externalIncludeEntry.MultiState.Current is VsShell.Document.ExternalInclude externalInclude) {
+                    externalInclude.OpenWithProjectContext();
+                    Console.Beep(frequency: 1000, duration: 300);
+                }
+                else if (externalIncludeEntry.MultiState.Current is VsShell.Document.InvalidatedDocument invalidatedDocument) {
+                    System.Diagnostics.Debugger.Break();
+                }
                 return;
             }
-            else if (documentNode is VsShell.Document.SharedItemNode sharedItemNode) {
-                sharedItemNode.OpenWithProjectContext();
-                Console.Beep(frequency: 1000, duration: 300);
+            else if (documentEntryBase is VsShell.Document.SharedItemEntry sharedItemEntry) {
+                if (sharedItemEntry.MultiState.Current is VsShell.Document.SharedItem sharedItem) {
+                    sharedItem.OpenWithProjectContext();
+                    Console.Beep(frequency: 1000, duration: 300);
+                }
+                else if (sharedItemEntry.MultiState.Current is VsShell.Document.InvalidatedDocument invalidatedDocument) {
+                    invalidatedDocument.OpenWithProjectContext();
+                }
+                return;
             }
         }
 

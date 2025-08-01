@@ -2,12 +2,22 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 
-	<Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
+  <Import Project="..\HelpersCs\HelpersCs.projitems" Label="Shared" />
+
+
+  <Import Project="..\HelpersCs.Attributes\HelpersCs.Attributes.projitems" Label="Shared" />
+
+
+  <Import Project="..\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems" Label="Shared" />
+
+
+  <Import Project="..\HeleprsCs.Visual\HeleprsCs.Visual.projitems" Label="Shared" />
 
 	<!-- Custom targets -->
 	<Import Project="$(MSBuildThisFileDirectory)\WpfTestApp.targets" />
@@ -17,5 +27,13 @@
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.6.10" />
+	</ItemGroup>
+  
+  <!--<ItemGroup>
+    <Analyzer Include="..\CodeAnalyzer\obj\Debug\netstandard2.0\CodeAnalyzer.dll" />
+  </ItemGroup>-->
+  
+	<ItemGroup>
+    <ProjectReference Include="..\CodeAnalyzer\CodeAnalyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 </Project>
