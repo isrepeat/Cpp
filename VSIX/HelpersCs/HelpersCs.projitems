@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\CustomListBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Debug.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collections.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions\WeakReferenceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\CommonState.cs" />
