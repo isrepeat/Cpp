@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
@@ -14,6 +15,9 @@
 
 
   <Import Project="..\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems" Label="Shared" />
+
+
+  <Import Project="..\HeleprsCs.Visual\HeleprsCs.Visual.projitems" Label="Shared" />
 
 	<!-- Custom targets -->
 	<Import Project="$(MSBuildThisFileDirectory)\WpfTestApp.targets" />
