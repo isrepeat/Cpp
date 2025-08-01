@@ -26,6 +26,10 @@ namespace CodeAnalyzer {
             string message,
             ReporterIdentationMarker reporterIdentationMarker = ReporterIdentationMarker.None
             ) {
+            if (!AnalyzerFeatures.IsLogsEnabled) {
+                return;
+            }
+
             var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             var lineCounter = 0;
 

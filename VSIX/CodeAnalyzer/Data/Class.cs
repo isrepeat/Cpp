@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using CodeAnalyzer.Ex;
 
 
-namespace CodeAnalyzer {
+namespace CodeAnalyzer.Data {
     public abstract class ClassMetadataBase {
         public INamedTypeSymbol Symbol { get; }
 
