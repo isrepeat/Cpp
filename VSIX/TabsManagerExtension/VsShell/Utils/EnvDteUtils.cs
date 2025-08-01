@@ -54,15 +54,15 @@ namespace TabsManagerExtension.VsShell.Utils {
         }
 
 
-        public static EnvDTE.Project? GetDteProjectFromHierarchy(IVsHierarchy hierarchy) {
+        public static EnvDTE.Project? GetDteProjectFromHierarchy(IVsHierarchy vsHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (hierarchy == null) {
-                throw new ArgumentNullException(nameof(hierarchy));
+            if (vsHierarchy == null) {
+                throw new ArgumentNullException(nameof(vsHierarchy));
             }
 
             // Пробуем через VSHPROPID_ExtObject (быстрее)
-            hierarchy.GetProperty(
+            vsHierarchy.GetProperty(
                 VSConstants.VSITEMID_ROOT,
                 (int)__VSHPROPID.VSHPROPID_ExtObject,
                 out var extObject);
@@ -72,7 +72,7 @@ namespace TabsManagerExtension.VsShell.Utils {
             }
 
             // Fallback через GUID
-            hierarchy.GetGuidProperty(
+            vsHierarchy.GetGuidProperty(
                 VSConstants.VSITEMID_ROOT,
                 (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
                 out var projectGuid);
@@ -95,12 +95,12 @@ namespace TabsManagerExtension.VsShell.Utils {
                 return null;
             }
 
-            int hr = vsSolution.GetProjectOfUniqueName(project.UniqueName, out IVsHierarchy hierarchy);
-            return ErrorHandler.Succeeded(hr) ? hierarchy : null;
+            int hr = vsSolution.GetProjectOfUniqueName(project.UniqueName, out IVsHierarchy vsHierarchy);
+            return ErrorHandler.Succeeded(hr) ? vsHierarchy : null;
         }
 
 
-        public static string GetDteProjectUniqueNameFromVsHierarchy(IVsHierarchy hierarchy) {
+        public static string GetDteProjectUniqueNameFromVsHierarchy(IVsHierarchy vsHierarchy) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var vsSolution = PackageServices.TryGetVsSolution();
@@ -108,7 +108,7 @@ namespace TabsManagerExtension.VsShell.Utils {
                 return null;
             }
 
-            vsSolution.GetUniqueNameOfProject(hierarchy, out var uniqueName);
+            vsSolution.GetUniqueNameOfProject(vsHierarchy, out var uniqueName);
             return uniqueName ?? "<unknown>";
         }
 

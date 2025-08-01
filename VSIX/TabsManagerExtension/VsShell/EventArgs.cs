@@ -23,44 +23,28 @@ namespace TabsManagerExtension.VsShell._EventArgs {
     }
 
     public sealed class ProjectHierarchyChangedEventArgs : EventArgs {
-        public VsShell.Hierarchy.IVsHierarchy? OldHierarchy { get; }
-        public VsShell.Hierarchy.IVsHierarchy NewHierarchy { get; }
+        public Hierarchy.HierarchyItemEntry? OldHierarchy { get; }
+        public Hierarchy.HierarchyItemEntry NewHierarchy { get; }
 
         public ProjectHierarchyChangedEventArgs(
-            VsShell.Hierarchy.IVsHierarchy? oldHierarchy,
-            VsShell.Hierarchy.IVsHierarchy newHierarchy
+            Hierarchy.HierarchyItemEntry? oldHierarchy,
+            Hierarchy.HierarchyItemEntry newHierarchy
             ) {
             this.OldHierarchy = oldHierarchy;
             this.NewHierarchy = newHierarchy;
         }
-
-        public bool TryGetRealHierarchy(out VsShell.Hierarchy.IVsRealHierarchy realHierarchy) {
-            if (this.NewHierarchy is VsShell.Hierarchy.IVsRealHierarchy realNewHierarchy) {
-                realHierarchy = realNewHierarchy;
-                return true;
-            }
-            else if (this.OldHierarchy is VsShell.Hierarchy.IVsRealHierarchy realOldHierarchy) {
-                realHierarchy = realOldHierarchy;
-                return true;
-            }
-
-            realHierarchy = null;
-            return false;
-        }
     }
 
 
+
     public sealed class ProjectHierarchyItemsChangedEventArgs : EventArgs {
-        public IVsHierarchy ProjectHierarchy { get; }
-        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Added { get; }
-        public IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> Removed { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> Added { get; }
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> Removed { get; }
 
         public ProjectHierarchyItemsChangedEventArgs(
-            IVsHierarchy projectHierarchy,
-            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> added,
-            IReadOnlyList<Utils.VsHierarchyUtils.HierarchyItem> removed
+            IReadOnlyList<Hierarchy.HierarchyItemEntry> added,
+            IReadOnlyList<Hierarchy.HierarchyItemEntry> removed
             ) {
-            this.ProjectHierarchy = projectHierarchy;
             this.Added = added;
             this.Removed = removed;
         }

@@ -31,7 +31,9 @@ namespace TabsManagerExtension.VsShell.Project {
 
         private bool _disposed = false;
 
-        public ProjectHierarchyTracker(IVsHierarchy projectHierarchy) {
+        public ProjectHierarchyTracker(
+            IVsHierarchy projectHierarchy
+            ) {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _projectHierarchy = projectHierarchy;
@@ -63,6 +65,8 @@ namespace TabsManagerExtension.VsShell.Project {
             if (_disposed) {
                 return;
             }
+
+            Helpers.Events.ActionUtils.ClearSubscribers(this);
 
             _projectSourcesAnalyzer.SourcesChanged -= this.OnSourcesChanged;
             _projectSourcesAnalyzer = null;
@@ -123,6 +127,23 @@ namespace TabsManagerExtension.VsShell.Project {
         public int OnInvalidateIcon(IntPtr hicon) {
             //Helpers.Diagnostic.Logger.LogDebug($"[Watcher] OnInvalidateIcon");
             return VSConstants.S_OK;
+        }
+
+
+        //
+        // ░ API
+        // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+        //
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentExternalDependenciesItems() {
+            return _projectExternalDependenciesAnalyzer.GetCurrentExternalDependenciesItems();
+        }
+
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentSharedItems() {
+            return _projectSharedItemsAnalyzer.GetCurrentSharedItems();
+        }
+
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentSources() {
+            return _projectSourcesAnalyzer.GetCurrentSources();
         }
 
 

@@ -83,18 +83,16 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
                 var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pHierarchy);
                 Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnAfterOpenProject(): {dteProject?.UniqueName}");
 
-                var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pHierarchy) as VsShell.Hierarchy.IVsRealHierarchy;
-                if (pNewHierarchy != null) {
-                    this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
-                        null, // oldHierarchy отсутствует, т.к. проект не переходил из stubHierarchy, а сразу загружен в Solution.
-                        pNewHierarchy
-                    ));
-                }
-                else {
-                    // Это крайний случай: если Factory не смогла создать IVsRealHierarchy,
-                    // возможно передан неподдерживаемый IVsHierarchy (например Misc Files).
-                    Helpers.Diagnostic.Logger.LogWarning($"[VsSolutionEventsTrackerService] Could not cast hierarchy to IVsRealHierarchy.");
-                }
+                var newHierarchyItemEntry = Hierarchy.HierarchyItemEntry.CreateWithState<Hierarchy.RealHierarchyItem>(
+                    new Hierarchy.HierarchyItemMultiStateElement(
+                        pHierarchy,
+                        VSConstants.VSITEMID_ROOT
+                        ));
+
+                this.ProjectLoaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
+                    null, // oldHierarchyItemEntry отсутствует, т.к. проект не переходил из stubHierarchy, а сразу загружен в Solution.
+                    newHierarchyItemEntry
+                ));
             }
             return VSConstants.S_OK;
         }
@@ -108,7 +106,7 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
         }
 
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
-            // Used OnAfterOpenProject instead.
+            // NOTE: Used OnAfterOpenProject instead.
             return VSConstants.S_OK;
         }
 
@@ -122,15 +120,21 @@ namespace TabsManagerExtension.VsShell.Solution.Services {
             var dteProject = Utils.EnvDteUtils.GetDteProjectFromHierarchy(pRealHierarchy);
             Helpers.Diagnostic.Logger.LogDebug($"[VsSolutionEventsTrackerService] OnBeforeUnloadProject(): {dteProject?.UniqueName}");
 
-            var pOldHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pRealHierarchy) as VsShell.Hierarchy.IVsRealHierarchy
-                ?? throw new InvalidCastException("Expected IVsRealHierarchy but got different type.");
+            var oldHierarchyItemEntry = Hierarchy.HierarchyItemEntry.CreateWithState<Hierarchy.RealHierarchyItem>(
+                new Hierarchy.HierarchyItemMultiStateElement(
+                    pRealHierarchy,
+                    VSConstants.VSITEMID_ROOT
+                    ));
 
-            var pNewHierarchy = VsShell.Hierarchy.VsHierarchyFactory.CreateHierarchy(pStubHierarchy) as VsShell.Hierarchy.IVsStubHierarchy
-                ?? throw new InvalidCastException("Expected IVsStubHierarchy but got different type.");
+            var newHierarchyItemEntry = Hierarchy.HierarchyItemEntry.CreateWithState<Hierarchy.StubHierarchyItem>(
+                new Hierarchy.HierarchyItemMultiStateElement(
+                    pStubHierarchy,
+                    VSConstants.VSITEMID_ROOT
+                    ));
 
             this.ProjectUnloaded?.Invoke(new _EventArgs.ProjectHierarchyChangedEventArgs(
-                pOldHierarchy,
-                pNewHierarchy
+                oldHierarchyItemEntry,
+                newHierarchyItemEntry
                 ));
 
             return VSConstants.S_OK;

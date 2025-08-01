@@ -12,12 +12,28 @@ namespace TabsManagerExtension.VsShell.Project {
         public event Action<_EventArgs.ProjectHierarchyItemsChangedEventArgs>? SharedItemsChanged;
 
         private readonly IVsHierarchy _projectHierarchy;
-        private readonly HashSet<Utils.VsHierarchyUtils.HierarchyItem> _currentSharedItems = new();
+        private readonly HashSet<Hierarchy.HierarchyItemEntry> _currentSharedItems = new();
 
-        public ProjectSharedItemsAnalyzer(IVsHierarchy projectHierarchy) {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            _projectHierarchy = projectHierarchy;
+        public ProjectSharedItemsAnalyzer(
+            IVsHierarchy projectHierarchy
+            ) : this(projectHierarchy, new HashSet<Hierarchy.HierarchyItemEntry>()) {
         }
+
+        public ProjectSharedItemsAnalyzer(
+            IVsHierarchy projectHierarchy,
+            HashSet<Hierarchy.HierarchyItemEntry> currentSharedItems
+            ) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            _projectHierarchy = projectHierarchy;
+            _currentSharedItems = currentSharedItems;
+        }
+
+
+        public IReadOnlyList<Hierarchy.HierarchyItemEntry> GetCurrentSharedItems() {
+            return _currentSharedItems.ToList();
+        }
+
 
         public void Refresh() {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -25,19 +41,18 @@ namespace TabsManagerExtension.VsShell.Project {
             var sharedItems = Utils.VsHierarchyUtils.CollectItemsRecursive(
                 _projectHierarchy,
                 VSConstants.VSITEMID_ROOT,
-                item => this.IsSharedItem(item));
+                this.AcceptItemPredicate);
 
-            var newSharedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(sharedItems);
+            var newSharedItems = new HashSet<Hierarchy.HierarchyItemEntry>(sharedItems);
 
-            var removedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(_currentSharedItems);
+            var removedItems = new HashSet<Hierarchy.HierarchyItemEntry>(_currentSharedItems);
             removedItems.ExceptWith(newSharedItems);
 
-            var addedItems = new HashSet<Utils.VsHierarchyUtils.HierarchyItem>(newSharedItems);
+            var addedItems = new HashSet<Hierarchy.HierarchyItemEntry>(newSharedItems);
             addedItems.ExceptWith(_currentSharedItems);
 
             if (addedItems.Count > 0 || removedItems.Count > 0) {
                 this.SharedItemsChanged?.Invoke(new _EventArgs.ProjectHierarchyItemsChangedEventArgs(
-                    _projectHierarchy,
                     addedItems.ToList(),
                     removedItems.ToList()
                 ));
@@ -47,11 +62,17 @@ namespace TabsManagerExtension.VsShell.Project {
             _currentSharedItems.UnionWith(newSharedItems);
         }
 
-        private bool IsSharedItem(Utils.VsHierarchyUtils.HierarchyItem item) {
-            ThreadHelper.ThrowIfNotOnUIThread();
 
+        private bool AcceptItemPredicate(Hierarchy.HierarchyItemEntry hierarchyItemEntry) {
+            var hierarchyItem = hierarchyItemEntry.MultiState.As<Hierarchy.RealHierarchyItem>();
+            return this.IsSharedItem(hierarchyItem);
+        }
+
+        private bool IsSharedItem(Hierarchy.RealHierarchyItem hierarchyItem) {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            
             _projectHierarchy.GetProperty(
-                item.ItemId,
+                hierarchyItem.ItemId,
                 (int)__VSHPROPID7.VSHPROPID_IsSharedItem,
                 out var isSharedItemObj);
 
