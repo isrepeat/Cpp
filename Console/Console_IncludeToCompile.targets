@@ -57,7 +57,8 @@
       <!--<BuildFiles Include="main_60_Json.cpp" />-->
       <!--<BuildFiles Include="main_61_Ext_std_*.cpp" />-->
       <!--<BuildFiles Include="main_62_Concepts.cpp" />-->
-      <BuildFiles Include="main_63_ranges.cpp" />
+      <!--<BuildFiles Include="main_63_ranges.cpp" />-->
+      <BuildFiles Include="main_64_fixed_string.cpp" />
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />
