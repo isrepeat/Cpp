@@ -217,6 +217,7 @@
     <ClCompile Include="main_60_Json.cpp" />
     <ClCompile Include="main_61_Ext_std_memory.cpp" />
     <ClCompile Include="main_62_Concepts.cpp" />
+    <ClCompile Include="main_63_ranges.cpp" />
     <ClCompile Include="main_6_command_parser.cpp" />
     <ClCompile Include="main_7_regex_replace_group.cpp" />
     <ClCompile Include="main_8_test_uPtr_Dtor_thread_join_sideeffect.cpp" />
