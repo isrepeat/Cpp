@@ -899,6 +899,10 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{6bec93a0-e1a2-4037-a5df-5ceee0aaa5fd}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{6cef19eb-02db-4b9a-93d8-9e89e662f919}*SharedItemsImports = 4
+		UtilityHelpersLib\HelpersCs\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
+		UtilityHelpersLib\HelpersCs\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
+		UtilityHelpersLib\HelpersCs\HelpersCs.Visual\HelpersCs.Visual.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
+		UtilityHelpersLib\HelpersCs\HelpersCs\HelpersCs.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
 		UtilityHelpersLib\HelpersCs\HelpersCs.Visual\HelpersCs.Visual.projitems*{86ac5b14-7fba-4d5b-b711-90e3f7798e0c}*SharedItemsImports = 13
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{8e6397bf-29ae-4d5a-a7e7-87f332256bda}*SharedItemsImports = 9
 		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{8e84e541-50e8-4485-aec4-de0285f2aa12}*SharedItemsImports = 9
@@ -919,9 +923,9 @@ Global
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{c99c2242-d38a-4e7a-925e-bdb32cf888a4}*SharedItemsImports = 4
 		UtilityHelpersLib\HelpersCs\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{cd563dc0-5c5f-423c-b1ce-74b120659770}*SharedItemsImports = 13
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{d2f14f8e-303b-4ae6-a98b-b789cd19981d}*SharedItemsImports = 4
-		UtilityHelpersLib\HelpersCs\HelpersCs\HelpersCs.projitems*{d52f7ac6-8a94-4332-9b40-f5e898479c68}*SharedItemsImports = 5
 		UtilityHelpersLib\HelpersCs\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{d52f7ac6-8a94-4332-9b40-f5e898479c68}*SharedItemsImports = 5
 		UtilityHelpersLib\HelpersCs\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{d52f7ac6-8a94-4332-9b40-f5e898479c68}*SharedItemsImports = 5
+		UtilityHelpersLib\HelpersCs\HelpersCs\HelpersCs.projitems*{d52f7ac6-8a94-4332-9b40-f5e898479c68}*SharedItemsImports = 5
 		OtherProjects\AMQP\AMQP.Shared\AMQP.Shared.vcxitems*{d8e029e4-6932-4aa5-9c72-a225d461bd5b}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
