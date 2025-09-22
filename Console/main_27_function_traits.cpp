@@ -1,348 +1,260 @@
-#include <Windows.h>
-#include <vector>
-#include <iostream>
+#include <Helpers/Meta/FunctionTraits.h>
+#include <type_traits>
 #include <functional>
-#include <Helpers/FunctionTraits.hpp>
+#include <utility>
+#include <tuple>
 
 
+namespace test {
+	using namespace H::meta;
+
+	template <typename T, typename U>
+	constexpr bool same = std::is_same_v<T, U>;
+
+	namespace Free {
+		long Fn(int, float) {
+			return 1;
+		}
+
+		long FnNoexcept(int, float) noexcept {
+			return 2;
+		}
+
+		struct Class {
+			static int FnStaticMember(int, double) noexcept {
+				return 0;
+			}
+		};
+	} // namespace Free
 
 
-long CStyleFunc(int i, float f = 0.0f) {
-    return 77;
-};
+	static_assert(same<FunctionTraits<decltype(&Free::Fn)>::Ret, long>);
+	static_assert(FunctionTraits<decltype(&Free::Fn)>::ArgumentCount == 2);
+	static_assert(same<FunctionTraits<decltype(&Free::Fn)>::arg<0>::type, int>);
+	static_assert(same<FunctionTraits<decltype(&Free::Fn)>::arg<1>::type, float>);
+	static_assert(FunctionTraits<decltype(&Free::Fn)>::Kind == FuncKind::CstyleFunc);
+	static_assert(FunctionTraits<decltype(&Free::Fn)>::IsNoexcept == false);
+	static_assert(FunctionTraits<decltype(&Free::Fn)>::IsConst == false);
+	static_assert(FunctionTraits<decltype(&Free::Fn)>::Ref == RefQual::None);
 
-struct Functor {
-    int x;
-    double operator() (int i, float f = 0.0f) {
-        return 17.0;
-    }
-};
+	static_assert(same<FunctionTraits<decltype(&Free::FnNoexcept)>::Ret, long>);
+	static_assert(FunctionTraits<decltype(&Free::FnNoexcept)>::ArgumentCount == 2);
+	static_assert(FunctionTraits<decltype(&Free::FnNoexcept)>::Kind == FuncKind::CstyleFunc);
+	static_assert(FunctionTraits<decltype(&Free::FnNoexcept)>::IsNoexcept == true);
 
-struct FunctorConst {
-    double operator() (int i, float f = 0.0f) const {
-        return 17.0;
-    }
-};
-
-template <typename Fn>
-constexpr bool IsCStyleFunc() {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::CstyleFunc) {
-        return true;
-    }
-    return false;
-}
-template <typename Fn>
-constexpr bool IsCStyleFunc_(Fn fn) {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::CstyleFunc) {
-        return true;
-    }   
-    return false;
-}
-
-template <typename Fn>
-constexpr bool IsClassMember() {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::ClassMember) {
-        return true;
-    }
-    return false;
-}
-template <typename Fn>
-constexpr bool IsClassMember_(Fn fn) {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::ClassMember) {
-        return true;
-    }
-    return false;
-}
-
-template <typename Fn>
-constexpr bool IsFunctor() {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::Functor) {
-        return true;
-    }
-    return false;
-}
-template <typename Fn>
-constexpr bool IsFunctor_(Fn fn) {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::Functor) {
-        return true;
-    }
-    return false;
-}
-
-template <typename Fn>
-constexpr bool IsLambda() {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::Lambda) {
-        return true;
-    }
-    return false;
-}
-template <typename Fn>
-constexpr bool IsLambda_(Fn fn) {
-    if constexpr (H::FunctionTraits<Fn>::Kind == H::FuncKind::Lambda) {
-        return true;
-    }
-    return false;
-}
+	static_assert(same<FunctionTraits<decltype(&Free::Class::FnStaticMember)>::Ret, int>);
+	static_assert(FunctionTraits<decltype(&Free::Class::FnStaticMember)>::Kind == FuncKind::CstyleFunc);
+	static_assert(FunctionTraits<decltype(&Free::Class::FnStaticMember)>::IsNoexcept == true);
 
 
+	namespace Member {
+		struct Quals {
+			// cv / noexcept 
+			int Fn(double) { return 0; }
+			int FnConst(double) const { return 0; }
+			int FnNoexcept(double) noexcept { return 0; }
+			int FnConstNoexcept(double) const noexcept { return 0; }
 
-class Temp {
-public:
-    int xxx = 1488;
-    std::string sss = "Hello";
-
-public:
-    float Foo(char) const {
-        static const std::function<void()> staticConstLambda = [this] { // this captured once
-            Sleep(1);
-            if (xxx == 1488) {
-                int xx = 9;
-            }
-            Sleep(1);
-            if (sss == "Hello") {
-                int xx = 9;
-            }
-            Sleep(1);
-        };
-        static std::function<void()> staticLambda = [this] { // this will captured every time
-            Sleep(1);
-            if (xxx == 1488) {
-                int xx = 9;
-            }
-            Sleep(1);
-            if (sss == "Hello") {
-                int xx = 9;
-            }
-            Sleep(1);
-        };
-
-        staticConstLambda();
-        staticLambda();
-
-        return 3.14f;
-    }
-};
+			// cv / ref / noexcept
+			int FnLRef(double)& { return 0; }
+			int FnRRef(double)&& { return 0; }
+			int FnConstLRef(double) const& { return 0; }
+			int FnConstRRef(double) const&& { return 0; }
+			int FnLRefNoexcept(double) & noexcept { return 0; }
+			int FnRRefNoexcept(double) && noexcept { return 0; }
+			int FnConstLRefNoexcept(double) const& noexcept { return 0; }
+			int FnConstRRefNoexcept(double) const&& noexcept { return 0; }
+		};
+	} // namespace Member
 
 
+	static_assert(same<FunctionTraits<decltype(&Member::Quals::Fn)>::Class, Member::Quals>);
+	static_assert(same<FunctionTraits<decltype(&Member::Quals::Fn)>::Signature, int(Member::Quals::*)(double)>);
+	static_assert(FunctionTraits<decltype(&Member::Quals::Fn)>::Kind == FuncKind::ClassMember);
+	static_assert(FunctionTraits<decltype(&Member::Quals::Fn)>::Ref == RefQual::None);
+	static_assert(FunctionTraits<decltype(&Member::Quals::Fn)>::IsConst == false);
+	static_assert(FunctionTraits<decltype(&Member::Quals::Fn)>::IsNoexcept == false);
 
-template <typename Fn, typename Rt = typename H::FunctionTraits<Fn>::Ret>
-Rt GetResult(Fn callback) {
-    if constexpr (std::is_same_v<Rt, void>) {
-        callback(8, 2.0f);
-        return;
-    }
-    return callback(8, 2.0f);
-}
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConst)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConst)>::Ref == RefQual::None);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnLRef)>::Ref == RefQual::LValue);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnRRef)>::Ref == RefQual::RValue);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstLRef)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstLRef)>::Ref == RefQual::LValue);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstRRef)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstRRef)>::Ref == RefQual::RValue);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnNoexcept)>::IsNoexcept == true);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstNoexcept)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstNoexcept)>::IsNoexcept == true);
+	
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnLRefNoexcept)>::Ref == RefQual::LValue);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnLRefNoexcept)>::IsNoexcept == true);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnRRefNoexcept)>::Ref == RefQual::RValue);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnRRefNoexcept)>::IsNoexcept == true);
+
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstLRefNoexcept)>::Ref == RefQual::LValue);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstLRefNoexcept)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstLRefNoexcept)>::IsNoexcept == true);
+
+	static_assert(same<
+		FunctionTraits<decltype(&Member::Quals::FnConstRRefNoexcept)>::Signature,
+		int(Member::Quals::*)(double) const && noexcept
+	>);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstRRefNoexcept)>::Ref == RefQual::RValue);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstRRefNoexcept)>::IsConst == true);
+	static_assert(FunctionTraits<decltype(&Member::Quals::FnConstRRefNoexcept)>::IsNoexcept == true);
+	
+
+	namespace Callable {
+		//
+		// Callable-типы с одиночным operator(): Functor vs Lambda, ref-квалификаторы
+		//
+		struct Functor {
+			int operator()(char) { return 1; }
+		};
+
+		struct FunctorConst {
+			int operator()(char) const { return 1; }
+		};
+
+		// union как callable Ч корректно, HasNonOverloadedCallOp пропустит
+		union UnionConst {
+			int operator()(char) const { return 1; }
+		};
+
+		// NOTE: 
+		// ” этого класса несколько operator(), поэтому нельз€ использовать FunctionTraits<FunctorRefQual>
+		// напр€мую, нужно €вно указать, какую именно перегрузку мы хотим, через FunctionTraitsWithSignature.
+		struct FunctorOverloadedQual {
+			int operator()(char) { return 1; }
+			int operator()(char) const { return 2; }
+			int operator()(char) noexcept { return 3; }
+			int operator()(char) const noexcept { return 4; }
+		};
+
+		struct FunctorOverloadedRefQual {
+			int operator()(char)& { return 1; }
+			int operator()(char)&& { return 2; }
+			int operator()(char) const& { return 3; }
+			int operator()(char) const&& { return 4; }
+			int operator()(char) & noexcept { return 5; }
+			int operator()(char) && noexcept { return 6; }
+			int operator()(char) const& noexcept { return 7; }
+			int operator()(char) const&& noexcept { return 8; }
+		};
+
+		using Sig = int(char);
+		using SigConst = int(char) const;
+		using SigNoexcept = int(char) noexcept;
+		using SigConstNoexcept = int(char) const noexcept;
+
+		using SigLRef = int(char)&;
+		using SigRRef = int(char)&&;
+		using SigConstLRef = int(char) const&;
+		using SigConstRRef = int(char) const&&;
+		using SigLRefNoexcept = int(char) & noexcept;
+		using SigRRefNoexcept = int(char) && noexcept;
+		using SigConstLRefNoexcept = int(char) const& noexcept;
+		using SigConstRRefNoexcept = int(char) const&& noexcept;
+
+		// Ћ€мбды (без/с захватами) Ч это просто анонимные callable-типы.
+		constexpr auto Lambda = [](short, long) noexcept -> int { return 0; };
+		auto LambdaWithCapture = [x = 42](short, long) -> int { return x; };
+	} // namespace Callable
 
 
-std::shared_ptr<double> MyFunc(std::wstring, int) {
-    return {};
-}
+	static_assert(same<FunctionTraits<Callable::Functor>::Ret, int>);
+	static_assert(FunctionTraits<Callable::Functor>::ArgumentCount == 1);
+	static_assert(FunctionTraits<Callable::Functor>::Kind == FuncKind::Functor);
+	static_assert(FunctionTraits<Callable::Functor>::Ref == RefQual::None);
+	static_assert(FunctionTraits<Callable::Functor>::IsConst == false);
 
+	static_assert(same<FunctionTraits<Callable::FunctorConst>::Ret, int>);
+	static_assert(FunctionTraits<Callable::FunctorConst>::ArgumentCount == 1);
+	static_assert(FunctionTraits<Callable::FunctorConst>::Kind == FuncKind::Functor);
+	static_assert(FunctionTraits<Callable::FunctorConst>::IsConst == true);
 
-template <typename>
-struct Invokation;
+	static_assert(same<FunctionTraits<Callable::UnionConst>::Ret, int>);
+	static_assert(FunctionTraits<Callable::UnionConst>::ArgumentCount == 1);
+	static_assert(FunctionTraits<Callable::UnionConst>::Kind == FuncKind::Functor);
+	static_assert(FunctionTraits<Callable::UnionConst>::IsConst == true);
 
-template <std::size_t... I>
-struct Invokation<std::index_sequence<I...>> {
-    template <typename Fn>
-    static constexpr int Method(Fn fn) {
-        return sizeof...(I);
-    }
-};
+	// ” std::function ровно один operator() с нужной сигнатурой Ч он должен анализироватьс€ как callable-тип:
+	using StdFn = std::function<void(int, float)>;
 
-//template <typename Fn>
-//constexpr int Invoke(Fn fn) {
-//    return Invokation<std::make_index_sequence<H::FunctionTraits<Fn>::ArgumentCount>>::Method(fn);
-//}
+	static_assert(FunctionTraits<StdFn>::Kind == FuncKind::Functor);
+	static_assert(same<FunctionTraits<StdFn>::Ret, void>);
+	static_assert(FunctionTraits<StdFn>::ArgumentCount == 2);
 
+	// NOTE: FunctionTraitsWithSignature маршрутизирует в pointer-to-member, значит Kind будет ClassMember
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedQual, Callable::Sig>::Kind == FuncKind::ClassMember);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedQual, Callable::Sig>::Ref == RefQual::None);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedQual, Callable::Sig>::IsConst == false);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedQual, Callable::Sig>::IsNoexcept == false);
+
+	static_assert(same<
+		FunctionTraitsWithSignature<Callable::FunctorOverloadedRefQual, Callable::SigConstRRefNoexcept>::Class,
+		Callable::FunctorOverloadedRefQual
+	>);
+	static_assert(same<
+		FunctionTraitsWithSignature<Callable::FunctorOverloadedRefQual, Callable::SigConstRRefNoexcept>::Signature,
+		int(Callable::FunctorOverloadedRefQual::*)(char) const&& noexcept
+	>);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedRefQual, Callable::SigConstRRefNoexcept>::Ref == RefQual::RValue);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedRefQual, Callable::SigConstRRefNoexcept>::IsConst == true);
+	static_assert(FunctionTraitsWithSignature<Callable::FunctorOverloadedRefQual, Callable::SigConstRRefNoexcept>::IsNoexcept == true);
+
+	static_assert(same<FunctionTraits<decltype(Callable::Lambda)>::Ret, int>);
+	static_assert(FunctionTraits<decltype(Callable::Lambda)>::ArgumentCount == 2);
+	static_assert(FunctionTraits<decltype(Callable::Lambda)>::Kind == FuncKind::Functor);
+	static_assert(FunctionTraits<decltype(Callable::Lambda)>::IsNoexcept == true);
+
+	static_assert(same<FunctionTraits<decltype(Callable::LambdaWithCapture)>::Ret, int>);
+	static_assert(FunctionTraits<decltype(Callable::LambdaWithCapture)>::Kind == FuncKind::Functor);
+
+	//
+	// arg<i>::type и arg_val<i>::type
+	//
+	int FreePtrRef(int*&, const double*);
+
+	static_assert(same<FunctionTraits<decltype(&FreePtrRef)>::arg<0>::type, int*&>);
+	static_assert(same<FunctionTraits<decltype(&FreePtrRef)>::arg<1>::type, const double*>);
+	static_assert(same<FunctionTraits<decltype(&FreePtrRef)>::arg_val<0>::type, int>); // remove_ref + remove_ptr
+	static_assert(same<FunctionTraits<decltype(&FreePtrRef)>::arg_val<1>::type, const double>);
+
+	//
+	// Concepts
+	//
+	using CStyleFn = decltype(&Free::Fn);
+	using MemberFn = decltype(&Member::Quals::FnConstRRefNoexcept);
+	using CallableFn = Callable::FunctorConst;
+
+	static_assert(concepts::has_static_function<CStyleFn>);
+	static_assert(!concepts::has_method<CStyleFn>);
+
+	static_assert(concepts::has_method<MemberFn>);
+	static_assert(!concepts::has_static_function<MemberFn>);
+
+	// ƒл€ callable-типа с одиночным operator() Ч HasMethod == false, это именно callable-класс:
+	static_assert(!concepts::has_method<CallableFn>);
+	static_assert(!concepts::has_static_function<CallableFn>);
+
+	// Has*WithSignature Ч провер€ют точное совпадение Signature:
+	static_assert(concepts::has_static_function_with_signature<CStyleFn, long (*)(int, float)>);
+	static_assert(!concepts::has_static_function_with_signature<CStyleFn, long (*)(float, int)>);
+
+	// ƒл€ member pointer сигнатуры:
+	static_assert(concepts::has_method_with_signature<MemberFn, int (Member::Quals::*)(double) const&& noexcept > );
+
+} // namespace test
 
 
 int main() {
-
-    Temp temp;
-    //temp.xxx = 911;
-    //temp.sss = "World";
-    //temp.Foo('0');
-
-    int localValue = 9;
-
-    Functor functor;
-    FunctorConst functorConst;
-
-    //std::function<void(int)> stdFunc = nullptr;
-    std::function<void(int, float)> stdFunc = [localValue](int i, float f = 0.0f) {
-        long(i * 10);
-        return;
-    };
-    auto lambda = [](int i, float f = 0.0f) { 
-        return long(i * 10); 
-    };
-    auto lambdaWithCapture = [localValue](int i, float f = 0.0f) {
-        return long(i * 10); 
-    };
-
-
-    H::FunctionTraits<decltype(&MyFunc)>::Ret;
-    H::FunctionTraits<decltype(&MyFunc)>::Function;
-    H::FunctionTraits<decltype(&MyFunc)>::Arguments;
-    H::FunctionTraits<decltype(&MyFunc)>::ArgumentCount;
-
-    
-    //H::FunctionTraits<,>::Ret;
-    //H::FunctionTraits<long(*)(int, float)>::Ret;
-    //H::FunctionTraits<long(*)(int, float)>::Function;
-
-    ////InvokeInner(&MyFunc, std::wstring{}, 2);
-    //InvokeInner(&MyFunc, L"", 2);
-    //InvokeInner(&MyFunc, std::wstring{}, 2);
-    //InvokeInner(std::make_index_sequence<3>{});
-    
-    constexpr int res = Invokation<std::make_index_sequence<4>>::Method(&MyFunc);
-
-    auto resCStyleFunc = GetResult(&CStyleFunc);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(&CStyleFunc)>::Ret, long>); // NOTE: & - is important
-    //static_assert(std::is_same_v<H::FunctionTraits<decltype(&CStyleFunc)>::Class, void>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(&CStyleFunc)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(&CStyleFunc)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(&CStyleFunc)>::Kind == H::FuncKind::CstyleFunc);
-    static_assert(H::FunctionTraits<decltype(&CStyleFunc)>::IsPointerToMemberFunction == false);
-    static_assert(IsLambda_(&CStyleFunc) == false);
-    static_assert(IsFunctor_(&CStyleFunc) == false);
-    static_assert(IsCStyleFunc_(&CStyleFunc) == true); // <--
-    static_assert(IsClassMember_(&CStyleFunc) == false);
-    static_assert(IsLambda<decltype(&CStyleFunc)>() == false);
-    static_assert(IsFunctor<decltype(&CStyleFunc)>() == false);
-    static_assert(IsCStyleFunc<decltype(&CStyleFunc)>() == true); // <--
-    static_assert(IsClassMember<decltype(&CStyleFunc)>() == false);
-
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(&Temp::Foo)>::Ret, float>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(&Temp::Foo)>::Class, Temp>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(&Temp::Foo)>::arg<0>::type, char>);
-    static_assert(H::FunctionTraits<decltype(&Temp::Foo)>::ArgumentCount == 1);
-    static_assert(H::FunctionTraits<decltype(&Temp::Foo)>::Kind == H::FuncKind::ClassMember);
-    static_assert(H::FunctionTraits<decltype(&Temp::Foo)>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(&Temp::Foo) == false);
-    static_assert(IsFunctor_(&Temp::Foo) == false);
-    static_assert(IsCStyleFunc_(&Temp::Foo) == false);
-    static_assert(IsClassMember_(&Temp::Foo) == true); // <--
-    static_assert(IsLambda<decltype(&Temp::Foo)>() == false);
-    static_assert(IsFunctor<decltype(&Temp::Foo)>() == false);
-    static_assert(IsCStyleFunc<decltype(&Temp::Foo)>() == false);
-    static_assert(IsClassMember<decltype(&Temp::Foo)>() == true); // <--
-
-    auto resFunctorLValue = GetResult(functor);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functor)>::Ret, double>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functor)>::Class, Functor>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functor)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(functor)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(functor)>::Kind == H::FuncKind::Functor);
-    static_assert(H::FunctionTraits<decltype(functor)>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(functor) == false);
-    static_assert(IsFunctor_(functor) == true); // <--, Will fails if Functor class have non-contexpr members 
-    static_assert(IsCStyleFunc_(functor) == false);
-    static_assert(IsClassMember_(functor) == false);
-    static_assert(IsLambda<decltype(functor)>() == false);
-    static_assert(IsFunctor<decltype(functor)>() == true); // <--
-    static_assert(IsCStyleFunc<decltype(functor)>() == false);
-    static_assert(IsClassMember<decltype(functor)>() == false);
-
-    auto resFunctorRValue = GetResult(Functor{});
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(Functor{})>::Ret, double>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(Functor{})>::Class, Functor>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(Functor{})>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(Functor{})>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(Functor{})>::Kind == H::FuncKind::Functor);
-    static_assert(H::FunctionTraits<decltype(Functor{})>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(Functor{}) == false);
-    static_assert(IsFunctor_(Functor{}) == true); // <-- Ok, even if Functor have non-constexpr members
-    static_assert(IsCStyleFunc_(Functor{}) == false);
-    static_assert(IsClassMember_(Functor{}) == false);
-    static_assert(IsLambda<decltype(Functor{})>() == false);
-    static_assert(IsFunctor<decltype(Functor{})>() == true); // <--
-    static_assert(IsCStyleFunc<decltype(Functor{})>() == false);
-    static_assert(IsClassMember<decltype(Functor{})>() == false);
-
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functorConst)>::Ret, double>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functorConst)>::Class, FunctorConst>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(functorConst)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(functorConst)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(functorConst)>::Kind == H::FuncKind::Lambda);
-    static_assert(H::FunctionTraits<decltype(functorConst)>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(functorConst) == true); // <--, Will fails if Functor class have non-contexpr members 
-    static_assert(IsFunctor_(functorConst) == false);
-    static_assert(IsCStyleFunc_(functorConst) == false);
-    static_assert(IsClassMember_(functorConst) == false);
-    static_assert(IsLambda<decltype(functorConst)>() == true); // <--
-    static_assert(IsFunctor<decltype(functorConst)>() == false);
-    static_assert(IsCStyleFunc<decltype(functorConst)>() == false);
-    static_assert(IsClassMember<decltype(functorConst)>() == false);
-
-    static_assert(std::is_same_v < H::FunctionTraits<decltype(FunctorConst{})> ::Ret, double>);
-    static_assert(std::is_same_v < H::FunctionTraits<decltype(FunctorConst{})> ::Class, FunctorConst>);
-    static_assert(std::is_same_v < H::FunctionTraits<decltype(FunctorConst{})> ::arg<0>::type,int>);
-    static_assert(H::FunctionTraits<decltype(FunctorConst{})>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(FunctorConst{})>::Kind == H::FuncKind::Lambda);
-    static_assert(H::FunctionTraits<decltype(FunctorConst{})>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(FunctorConst{}) == true); // <-- Ok, even if Functor have non-constexpr members
-    static_assert(IsFunctor_(FunctorConst{}) == false);
-    static_assert(IsCStyleFunc_(FunctorConst{}) == false);
-    static_assert(IsClassMember_(FunctorConst{}) == false);
-    static_assert(IsLambda<decltype(FunctorConst{}) > () == true); // <--
-    static_assert(IsFunctor<decltype(FunctorConst{}) > () == false);
-    static_assert(IsCStyleFunc<decltype(FunctorConst{}) > () == false);
-    static_assert(IsClassMember<decltype(FunctorConst{}) > () == false);
-
-    GetResult(stdFunc);
-    //Invoke([]() { return 12; });
-    //Invoke([] {});
-    //auto resStdFunc = GetResult(stdFunc);
-    //Invoke(stdFunc);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(stdFunc)>::Ret, void>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(stdFunc)>::Class, std::_Func_class<void, int, float>>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(stdFunc)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(stdFunc)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(stdFunc)>::Kind == H::FuncKind::Lambda);
-    static_assert(H::FunctionTraits<decltype(stdFunc)>::IsPointerToMemberFunction == true);
-    //static_assert(IsLambda_(stdFunc) == true); // Fails because std::function have non-contexpr members
-    //static_assert(IsFunctor_(stdFunc) == false);
-    //static_assert(IsCStyleFunc_(stdFunc) == false);
-    //static_assert(IsClassMember_(stdFunc) == false);
-    static_assert(IsLambda<decltype(stdFunc)>() == true); // <--
-    static_assert(IsFunctor<decltype(stdFunc)>() == false);
-    static_assert(IsCStyleFunc<decltype(stdFunc)>() == false);
-    static_assert(IsClassMember<decltype(stdFunc)>() == false);
-
-    auto resLambda = GetResult(lambda);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(lambda)>::Ret, long>);
-    //static_assert(std::is_same_v<H::FunctionTraits<decltype(lambda)>::Class, ???>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(lambda)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(lambda)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(lambda)>::Kind == H::FuncKind::Lambda);
-    static_assert(H::FunctionTraits<decltype(lambda)>::IsPointerToMemberFunction == true);
-    static_assert(IsLambda_(lambda) == true); // <--
-    static_assert(IsFunctor_(lambda) == false);
-    static_assert(IsCStyleFunc_(lambda) == false);
-    static_assert(IsClassMember_(lambda) == false);
-    static_assert(IsLambda<decltype(lambda)>() == true); // <--
-    static_assert(IsFunctor<decltype(lambda)>() == false);
-    static_assert(IsCStyleFunc<decltype(lambda)>() == false);
-    static_assert(IsClassMember<decltype(lambda)>() == false);
-
-    auto resLambdaWithCapture = GetResult(lambdaWithCapture);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(lambdaWithCapture)>::Ret, long>);
-    //static_assert(std::is_same_v<H::FunctionTraits<decltype(lambdaWithCapture)>::Class, ???>);
-    static_assert(std::is_same_v<H::FunctionTraits<decltype(lambdaWithCapture)>::arg<0>::type, int>);
-    static_assert(H::FunctionTraits<decltype(lambdaWithCapture)>::ArgumentCount == 2);
-    static_assert(H::FunctionTraits<decltype(lambdaWithCapture)>::Kind == H::FuncKind::Lambda);
-    static_assert(H::FunctionTraits<decltype(lambdaWithCapture)>::IsPointerToMemberFunction == true);
-    //static_assert(IsLambda_(lambdaWithCapture) == true); // Fails because lambda have captured values
-    //static_assert(IsFunctor_(lambdaWithCapture) == false);
-    //static_assert(IsCStyleFunc_(lambdaWithCapture) == false);
-    //static_assert(IsClassMember_(lambdaWithCapture) == false);
-    static_assert(IsLambda<decltype(lambdaWithCapture)>() == true); // <--
-    static_assert(IsFunctor<decltype(lambdaWithCapture)>() == false);
-    static_assert(IsCStyleFunc<decltype(lambdaWithCapture)>() == false);
-    static_assert(IsClassMember<decltype(lambdaWithCapture)>() == false);
-    return 0;
+	return 0;
 }

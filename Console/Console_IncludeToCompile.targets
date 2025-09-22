@@ -44,6 +44,7 @@
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.cpp"/>
       <NotBuildFiles Include="%(ExcludedDirsFromBuild.Identity)\*.h"/>
 
+      <!--<BuildFiles Include="main.cpp" />-->
       <!--<BuildFiles Include="main_1_*.cpp" />-->
       <!--<BuildFiles Include="main_23_regex_*.cpp" />-->
       <!--<BuildFiles Include="main_27_*.cpp" />-->
@@ -53,10 +54,11 @@
       <!--<BuildFiles Include="main_57_Time.cpp" />-->
       <!--<BuildFiles Include="main_58_Remote_debug.cpp" />-->
       <!--<BuildFiles Include="main_59_*.cpp" />-->
-      <BuildFiles Include="main_60_Json.cpp" />
+      <!--<BuildFiles Include="main_60_Json.cpp" />-->
       <!--<BuildFiles Include="main_61_Ext_std_*.cpp" />-->
       <!--<BuildFiles Include="main_62_Concepts.cpp" />-->
-      <!--<BuildFiles Include="main.cpp" />-->
+      <BuildFiles Include="main_63_ranges.cpp" />
+      <!--<BuildFiles Include="main_64_fixed_string.cpp" />-->
 
       <FilesExcludedFromBuild Include="@(NotBuildFiles)" Exclude="@(BuildFiles)"/>
       <ClCompile Remove="@(FilesExcludedFromBuild)" />

@@ -320,6 +320,12 @@
     <ClCompile Include="[13] Nuget CppRestSdk\Tests.cpp">
       <Filter>Source Files\[13] Nuget CppRestSdk</Filter>
     </ClCompile>
+    <ClCompile Include="main_63_ranges.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_64_fixed_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
