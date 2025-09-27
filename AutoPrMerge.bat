@@ -1,130 +1,87 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
+REM ===============================================================
+REM AutoPrMerge.bat
+REM - Searches for %_SUBMODULE_NAME%.sln (independent of submodule folder name)
+REM - Inside %_SUBMODULE_DIR% searches for AutoPrMerge.ps1
+REM - Runs the PowerShell script, forwarding all arguments
+REM ===============================================================
 
-REM --- Navigate to current repo directory ---
-CD /D "%~dp0"
-
-REM --- Check if we are in a Git repository ---
-git rev-parse --is-inside-work-tree >nul 2>&1
-IF ERRORLEVEL 1 (
-    ECHO "Error: This is not a Git repository."
-    PAUSE
-    EXIT /B
+REM Determine search root: repo root if available, otherwise batch file folder.
+SET "_BAT_DIR=%~dp0"
+FOR /F "usebackq delims=" %%R IN (`git rev-parse --show-toplevel 2^>NUL`) DO SET "_REPO_ROOT=%%R"
+IF NOT DEFINED _REPO_ROOT (
+    SET "_REPO_ROOT=%_BAT_DIR%"
 )
+IF "%_REPO_ROOT:~-1%"=="\" SET "_REPO_ROOT=%_REPO_ROOT:~0,-1%"
 
-REM --- Check if GitHub CLI is installed ---
-gh --version >nul 2>&1
-IF ERRORLEVEL 1 (
-    ECHO "GitHub CLI (gh) is not installed."
-    PAUSE
-    EXIT /B
-)
+SET "_SUBMODULE_NAME=UtilityHelpersLib"
 
-REM --- Get user input ---
-SET /P Head=Enter Source Branch (head): 
-SET /P Base=Enter Target Branch (base): 
-SET /P Title=Enter Pull Request Title: 
-SET /P NewBranch=Enter optional new branch name (leave empty to skip): 
-
-REM --- Optional body ---
-SET Body=Auto-generated PR from script
-
-REM --- Push current branch ---
-git push origin %Head%
-
-
-REM --- Create Pull Request ---
-ECHO Creating Pull Request...
-gh pr create --title "%Title%" --body "%Body%" --base "%Base%" --head "%Head%"
-IF ERRORLEVEL 1 (
-    ECHO "Failed to create Pull Request."
-    PAUSE
-    EXIT /B
-)
-
-
-REM --- Get PR number using gh CLI JSON parsing ---
-FOR /F "delims=" %%I IN ('gh pr list --state open --head "%Head%" --json number --jq ".[0].number"') DO SET PR_Number=%%I
-
-IF NOT DEFINED PR_Number (
-    ECHO "Error: Unable to find Pull Request number."
-    PAUSE
-    EXIT /B
-)
-
-ECHO Pull Request created with number #%PR_Number%
-
-
-REM --- Merge Pull Request ---
-ECHO Merging Pull Request...
-gh pr merge %PR_Number% --merge --subject "Merge PR #%PR_Number% %Title%"
-IF ERRORLEVEL 1 (
-    ECHO "Failed to merge Pull Request."
-    PAUSE
-    EXIT /B
-)
-
-ECHO Pull Request #%PR_Number% successfully merged.
-
-
-REM --- Get repo owner/name path ---
-FOR /F "tokens=*" %%I IN ('gh repo view --json nameWithOwner --jq ".nameWithOwner"') DO SET RepoPath=%%I
-
-
-REM --- Delete source branch via GitHub API ---
-ECHO Deleting source branch %Head%...
-gh api repos/%RepoPath%/git/refs/heads/%Head% -X DELETE
-IF ERRORLEVEL 1 (
-    ECHO "Failed to delete branch %Head%."
-    PAUSE
-    EXIT /B
-)
-
-ECHO Source branch %Head% successfully deleted.
-
-
-REM --- Prune deleted branches locally ---
-ECHO Cleaning up local references...
-git fetch origin --prune
-IF ERRORLEVEL 1 (
-    ECHO "Failed to prune deleted branches."
-    PAUSE
-    EXIT /B
-)
-
-ECHO Local references successfully pruned.
-
-
-REM --- Handle optional new branch logic ---
-IF NOT "%NewBranch%"=="" (
-
-    REM --- Get the name of the currently checked-out local branch ---
-    FOR /F "delims=" %%b IN ('git branch --show-current') DO SET CurrentBranch=%%b
-
-    REM --- Debug output: current branch and the merged source branch ---
-    ECHO Current branch: [!CurrentBranch!]
-    ECHO Head branch:    [%Head%]
-
-    REM --- If we are still on the merged source branch (Head) ---
-    IF "!CurrentBranch!"=="%Head%" (
-        REM --- Rename the current branch to the new branch name ---
-        ECHO Renaming local branch "%Head%" to "%NewBranch%"...
-        git branch -m "%NewBranch%"
-    ) ELSE (
-        REM --- Otherwise, delete the local source branch ---
-        ECHO Deleting local branch "%Head%"...
-        git branch -D "%Head%"
-
-        REM --- Create a new branch from origin/Base without tracking ---
-        ECHO Creating new branch "%NewBranch%" from origin/%Base%...
-        git checkout --no-track -b "%NewBranch%" "origin/%Base%"
+REM ---------------------------------------------------------------
+REM 0) Fast-path candidates (nearest likely locations)
+REM    - same dir as .bat
+REM    - sibling subfolder named %_SUBMODULE_NAME%
+REM    - repo root
+REM    - subfolder under repo root
+REM ---------------------------------------------------------------
+SET "_SUBMODULE_SLN="
+FOR %%C IN (
+    "%_BAT_DIR%%_SUBMODULE_NAME%.sln"
+    "%_BAT_DIR%%_SUBMODULE_NAME%\%_SUBMODULE_NAME%.sln"
+    "%_REPO_ROOT%\%_SUBMODULE_NAME%.sln"
+    "%_REPO_ROOT%\%_SUBMODULE_NAME%\%_SUBMODULE_NAME%.sln"
+) DO (
+    IF EXIST "%%~fC" (
+        SET "_SUBMODULE_SLN=%%~fC"
+        GOTO :FOUND_SUBMODULE_SLN
     )
-
-    REM --- Rebase the new branch onto the latest base from origin ---
-    ECHO Rebasing "%NewBranch%" onto origin/%Base%"...
-    git rebase "origin/%Base%"
 )
 
+REM ---------------------------------------------------------------
+REM 1) Fallback: recursive search anywhere under repo root
+REM Using DIR:
+REM   /s     -- search recursively
+REM   /b     -- bare format (only paths)
+REM   /a:-d  -- files only (exclude directories)
+REM   2^>nul -- suppress "File Not Found" message
+REM ---------------------------------------------------------------
+FOR /F "delims=" %%F IN ('
+    DIR /s /b /a:-d "%_REPO_ROOT%\%_SUBMODULE_NAME%.sln" 2^>nul
+') DO (
+    SET "_SUBMODULE_SLN=%%~fF"
+    GOTO :FOUND_SUBMODULE_SLN
+)
 
-ECHO Done.
+ECHO [AutoPrMerge] Could not find "%_SUBMODULE_NAME%.sln" under "%_REPO_ROOT%".
+ECHO [AutoPrMerge] Make sure the submodule "%_SUBMODULE_NAME%" is initialized:
+ECHO     git submodule update --init --recursive
+SET "_RC=1"
+GOTO :EXIT_SCRIPT
+
+:FOUND_SUBMODULE_SLN
+REM Extract directory containing %_SUBMODULE_SLN%.
+FOR %%I IN ("%_SUBMODULE_SLN%") DO SET "_SUBMODULE_DIR=%%~dpI"
+
+REM Search for AutoPrMerge.ps1 inside the submodule directory (recursive).
+SET "_PS1_PATH="
+FOR /F "delims=" %%P IN ('
+    DIR /s /b /a:-d "%_SUBMODULE_DIR%\AutoPrMerge.ps1" 2^>nul
+') DO (
+    SET "_PS1_PATH=%%~fP"
+    GOTO :FOUND_PS1
+)
+
+ECHO [AutoPrMerge] Could not find AutoPrMerge.ps1 under "%_SUBMODULE_DIR%".
+ECHO [AutoPrMerge] Please verify the script exists inside the submodule.
+SET "_RC=1"
+GOTO :EXIT_SCRIPT
+
+:FOUND_PS1
+REM Run PowerShell implementation, forwarding all arguments.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%_PS1_PATH%" -BatDir "%~dp0." %*
+SET "_RC=%ERRORLEVEL%"
+GOTO :EXIT_SCRIPT
+
+:EXIT_SCRIPT
 PAUSE
+ENDLOCAL & EXIT /B %_RC%
