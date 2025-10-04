@@ -139,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model\Activators.h" />
+    <ClInclude Include="Model\NeuralVar.h" />
     <ClInclude Include="Model\Neuron.h" />
     <ClInclude Include="Model\Preceptron.h" />
   </ItemGroup>

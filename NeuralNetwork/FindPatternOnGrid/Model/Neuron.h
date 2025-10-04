@@ -1,40 +1,49 @@
 #pragma once
-#include <Helpers/Math.h>
 #include "Activators.h"
+#include "NeuralVar.h"
 
 namespace Model {
 	template <std::size_t N>
 	class Neuron {
 	public:
-		Neuron(
-			H::Math::Function1D activationFn = Activators::Sigmoid
-		)
+		struct _Data {
+			NeuralVector<double, N> weights;
+			NeuralScalar<double> bias;
+		};
+
+		Neuron(H::Math::Function1D activationFn = Activators::Sigmoid)
 			: activationFn(std::move(activationFn)) {
 		}
 
-		std::size_t Size() const {
-			return this->weights.Size();
+		const _Data& Data() const {
+			return this->data;
 		}
 
-		void SetWeights(
+		void SetData(
 			H::Math::Vec<double, N> newWeights,
 			double newBias
 		) {
-			this->weights = std::move(newWeights);
-			this->bias = newBias;
+			this->data.weights.value = std::move(newWeights);
+			this->data.bias.value = newBias;
 		}
 
-		void SetGrads(
+		void SetDataGradient(
 			H::Math::Vec<double, N> newGradWeights,
 			double newGradBias
 		) {
-			this->gradWeights = std::move(newGradWeights);
-			this->gradBias = newGradBias;
+			this->data.weights.grad = std::move(newGradWeights);
+			this->data.bias.grad = newGradBias;
+		}
+
+		template <typename TRep>
+		void ApplyGradient(H::Rational<TRep> learningRate) {
+			this->data.weights.ApplyGradient(learningRate);
+			this->data.bias.ApplyGradient(learningRate);
 		}
 
 		// z = w·x + b (линейная часть)
 		double Preactivate(const H::Math::Vec<double, N>& x) {
-			this->last_z = this->weights * x + this->bias;
+			this->last_z = this->data.weights.value * x + this->data.bias.value;
 			return this->last_z;
 		}
 
@@ -49,15 +58,16 @@ namespace Model {
 			return this->Activate(this->Preactivate(x));
 		}
 
+		// Для тестирования
+		double Predict(const H::Math::Vec<double, N>& x) const {
+			const double z = this->data.weights.value.value * x + this->data.bias.value;
+			return this->activationFn(z);
+		}
+
 	private:
+		_Data data;
 		H::Math::Function1D activationFn;
-		H::Math::Vec<double, N> weights;
-		double bias;
-
-		// Буферы градиентов (будут заполнены в обучении)
-		H::Math::Vec<double, N> gradWeights; // dL/dw
-		double gradBias{}; // dL/db
-
+		
 		// Кэши для будущего backprop
 		double last_z{}; // z = w·x + b
 		double last_y{}; // y = act(z)

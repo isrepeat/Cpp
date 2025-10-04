@@ -10,7 +10,7 @@ namespace Model {
 			},
 			H::Math::Function1D::MakeDerivative<1>(
 				// Производная не используется для перцептрона (но оставим сигнатуру для совместимости)
-				[](double /*z*/, double /*y*/) {
+				[](double /*z*/) {
 					return 0.0;
 				}
 			)
@@ -21,9 +21,10 @@ namespace Model {
 				return 1.0 / (1.0 + std::exp(-z));
 			},
 			H::Math::Function1D::MakeDerivative<1>(
-				// derivative может принимать либо z, либо уже y=?(z); используем y для численной устойчивости
-				[](double /*z*/, double y) {
-					return y * (1.0 - y);
+				[](double /*z*/, std::any& metaData) {
+					// В производной удобнее зависеть от y = σ(z).
+					const double y = std::any_cast<double>(metaData); // y = σ(z)
+					return y * (1.0 - y);							  // σ'(z) = σ(z)(1-σ(z))
 				}
 			)
 		);
@@ -33,7 +34,8 @@ namespace Model {
 				return z > 0.0 ? z : 0.0;
 			},
 			H::Math::Function1D::MakeDerivative<1>(
-				[](double z, double /*y*/) {
+				[](double z) {
+					// В производной удобнее зависеть от z.
 					return z > 0.0 ? 1.0 : 0.0;
 				}
 			)

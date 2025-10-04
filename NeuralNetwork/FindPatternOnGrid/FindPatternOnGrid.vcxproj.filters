@@ -24,5 +24,8 @@
     <ClInclude Include="Model\Preceptron.h">
       <Filter>Source Files\Model</Filter>
     </ClInclude>
+    <ClInclude Include="Model\NeuralVar.h">
+      <Filter>Source Files\Model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
