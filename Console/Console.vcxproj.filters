@@ -326,6 +326,9 @@
     <ClCompile Include="main_64_fixed_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main_65_coroutine_sleep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_11_enum_to_string.h">
