@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{17f767e6-631b-4068-a504-810de9e39431}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AacCodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AlacCodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AmrNbCodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\DolbyAC3CodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\EncoderEnumerator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\FlacCodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\MP3CodecFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\PlatformClassFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\PlatformHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\Wma8CodecFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AacCodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AlacCodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\AmrNbCodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\DolbyAC3CodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\EncoderEnumerator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\FlacCodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\MP3CodecFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\PlatformHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\Wma8CodecFactory.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)MediaRecorderCore.Shared.UWP.targets" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>0eeeeb5d-bb3b-4e9f-b2a7-410ca571ac97</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>HelpersCs.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\CustomListBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\Collections.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions\WeakReferenceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\CommonState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\CommonStateViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\MultiStateEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\MultiState\MultiStateContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DirectoryWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\ActionUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Assert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Reflection\Reflaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TypeMarker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IAttachable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IInvalidatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Text\Text.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Variant.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Events\TriggeredAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RepresentationsTableBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\GlobalFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Metadata.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Collections\DisposableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Helpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Math.cs" />
+  </ItemGroup>
+</Project>

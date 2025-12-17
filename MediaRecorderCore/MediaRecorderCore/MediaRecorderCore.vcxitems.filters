@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{2d119b42-32c4-41ce-8765-b81bf121ac11}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)MediaRecorderCore.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiBufferFactory.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiManagerBufferFactory.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\ChunkMerger.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\FinalizedWithWarningException.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IMFVideoSampleAllocatorSimpleNotify.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorder.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorderFactory.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\pch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MFOutputTexResize\MFOutputTexResizeRgbaToNV12.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecCompressedSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecLosslessSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\IAudioCodecSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\IVideoCodecSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaContainerExtension.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormat.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecs.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecsEnumerator.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecsSupport.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatFactory.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoCodecSimpleSettings.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AudioCodecSettingsItemCmp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AudioCodecSettingsItemSortHelpers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiBufferFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiBufferFactoryFn.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiBufferFactoryWin8.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\AvDxgiManagerBufferFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\ChunkMerger.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\CodecsTable.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\FinalizedWithWarningException.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IAvDxBufferFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IMediaRecorder.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IMediaRecorderFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IMFVideoSampleAllocatorGenericNotify.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\IMFVideoSampleAllocatorSimpleNotify.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorder.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorderFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorderMessageEnum.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorderMessageEnumDef.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaRecorderParams.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\pch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\targetver.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IAacCodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IAlacCodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IAmrNbCodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IDolbyAC3CodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IEncoderEnumerator.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IFlacCodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IMP3CodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\IWma8CodecFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\Platform\PlatformClassFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MFOutputTexResize\IMFOutputTexResize.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MFOutputTexResize\MFOutputTexResizeRgbaToNV12.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecBasicSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecBitrateSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecCompressedSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecLosslessSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItem.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecType.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecTypeDef.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\IAudioCodecSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\IVideoCodecSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaContainerExtension.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaContainerType.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaContainerTypeDef.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormat.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecs.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecsEnumerator.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatCodecsSupport.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\MediaFormatFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoCodecBasicSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoCodecSimpleSettings.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoCodecType.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoCodecTypeDef.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\VideoRateControlModeDef.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AbsOptionalDistance.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AudioCodecSettingsItemCmp.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AudioCodecSettingsItemCmpDetails.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\AudioCodecSettingsItemSortHelpers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MediaRecorderCore\MediaFormat\AudioCodecSettingsItemSort\CmpOrder.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

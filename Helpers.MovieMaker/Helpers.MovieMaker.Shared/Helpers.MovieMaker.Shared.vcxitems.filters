@@ -1,0 +1,870 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\array_wrapper.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ArrayIBuffer.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ChunkedDataBuffer.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\comptr_array.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\comptr_vector.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ConcurrencyVector.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ConcurrentQueue.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ObjectPoolMt.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\dynamic_stack_array.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\vector_pool.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\vector_queue.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\VectorIBuffer.h">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\Bimap.hpp">
+      <Filter>Sources\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\AABB.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ActiveWorkCounter.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\AggregateException.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Aligned.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\AlignedAllocator.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ArgsTemplate.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\as_optional.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\async_class.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\bit_view.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\BlendState\BlendStateCache.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\BmpSize.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Callback.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\CLRCallback.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Comparators.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Containers\ComPtrArray.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\cond_add_reference.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\condition_variable.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\config.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\coroutine3.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\CoUniquePtr.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\CreateModeFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\critical_section.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\PPL\critical_section_guard.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\PPL\critical_section_lock.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D2DBitmapCopy.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D2DCtxMt.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\D2DTargetState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\D2DTransformState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D3D9Dev.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\D3D11ImageIOutput.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D3dStructWrappers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\D3DTargetState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\DebugScopedWatch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Deleter.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Dx.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDevice.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceCtx.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceCtxProvider.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceMt.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxgiMutexLock.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxHelpers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxIncludes.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStack.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStackResources.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStackState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\EnumClassBitFlagOperators.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Event.hpp">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\FakeIOutput.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\FileAccessModeFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\FileDeleteModeFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\GestureHelper.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HardDrive.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Hashers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HData.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\WinRT\HDataWinRT.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HJson.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HJsonNative.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Logger\HLogger.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HMath.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HMathCP.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HmoduleUnique.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HResultException.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HSystem.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HText.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\HTime.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ICancellationToken.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ICloneable.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\IEvent.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IFileFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IFilesystemFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IFolderFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ILockListItemLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ILockLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ImageContainerEnum.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ImageUtils.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ImageUtilsEncodeOptions.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\InspectableLocks.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\IOutput.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\IPack.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\IProgress.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\IRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IStreamFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\ItemResultFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IWinStreamExt.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\jsonNative\dist\json\json.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\jsonNative\dist\json\json-forwards.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspectorImpl.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspectorImpl.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspectorScope.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspEvent.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspThreadTree.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspTreeNode.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspValue.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\LockRangeLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockTreeAction.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Macros.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\MappedResource.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MatrixMultiStack.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MatrixStack.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MFGenericAsyncResult.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFHelpers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFInclude.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFLibs.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFMediaBufferLock.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFUser.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\msclr_auto_ptr.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Logger\NativeLogger.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ObservableToken.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Observer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\BlendState\OMBlendState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\OMRenderTargetState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\service\Operation.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\OrientationTypes.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PackageProvider.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\pch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverter.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverterCopy.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverterFactory.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverterStd8Bit.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Metainfo\PointerGetter.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PointerWrappers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\PplCsLockLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\QueuedLock.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\QueuedLockItem.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\rational.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\raw_ptr.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Metainfo\RawType.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\RefWrapper.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\result.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\RSScissorState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\RSState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\RSViewportState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\PPL\safe_task.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Scope.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\PushStackScoped.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ScopedTimer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\SeekOriginFS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\service\Service.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\ShaderResourcesState.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\ShaderType.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\shared_auto_gcroot.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\shared_gcroot.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Metainfo\Signature.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Singleton.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\StdMutexLockLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\StepTimer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\StopWatch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Structs.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\SwapChainPanelOutput.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\SyncQueuedLockItem.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ThreadCsLockLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ThreadLockStackLS.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ThreadPool.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ThreadTask.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ThreadTaskBase.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Timer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\ToString.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\TypeConverter.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\typeswitch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\unique_ptr_extensions.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\UniqueHandle.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\UniquePROPVARIANT.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\UnlockableResource.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Text\UriCodec.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\VarArgAction.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\VarArgFunc.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\WinRtRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\WrapperCache.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Dx\XMVectorBox.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Meta\ZeroDefaultValue.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\jsonNative\jsoncpp_git_info.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\movable_ptr.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ProgressRange.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)libhelpers\WinRT\RunOnUIThread.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\AABB.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\ActiveWorkCounter.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\AggregateException.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\BlendState\BlendStateCache.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\BmpSize.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Callback.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Comparators.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\critical_section.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\CtorDtorImplFS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D2DBitmapCopy.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D2DCtxMt.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\D2DTargetState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\D2DTransformState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D3D9Dev.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\D3D11ImageIOutput.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\D3dStructWrappers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\DebugScopedWatch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDevice.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceCtx.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceCtxProvider.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxDeviceMt.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxgiMutexLock.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\DxHelpers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStackResources.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Layers\DxLayerStackState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\FakeIOutput.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\GestureHelper.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HardDrive.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Hashers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HData.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\WinRT\HDataWinRT.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HJson.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HJsonNative.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HMath.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HMathCP.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HmoduleUnique.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HResultException.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HSystem.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HText.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\HTime.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\ICancellationToken.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Filesystem\IFilesystemFS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ILockListItemLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ILockLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\ImageUtils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\ImageUtilsEncodeOptions.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\InspectableLocks.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\IOutput.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\IRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\jsonNative\dist\jsoncpp.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspectorImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspectorImpl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspectorScope.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspEvent.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspThreadTree.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspTreeNode.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockInspValue.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\LockRangeLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockInspector\LockTreeAction.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\MappedResource.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MatrixMultiStack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MatrixStack.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MFGenericAsyncResult.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFHelpers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFMediaBufferLock.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\MediaFoundation\MFUser.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Logger\NativeLogger.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\BlendState\OMBlendState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\PackageProvider.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\pch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverter.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\PixelConverter\PixelConverterCopy.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\PplCsLockLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\QueuedLock.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\QueuedLockItem.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\State\RSState.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\StdMutexLockLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\StepTimer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Structs.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\Renderer\SwapChainPanelOutput.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\SyncQueuedLockItem.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ThreadCsLockLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Thread\LockStack\ThreadLockStackLS.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Timer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\ToString.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\TypeConverter.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\UniqueHandle.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\UniquePROPVARIANT.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Text\UriCodec.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)libhelpers\Dx\XMVectorBox.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{bc7633d5-a579-43ab-9807-f91089a0a496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Containers">
+      <UniqueIdentifier>{6bb10d33-2124-43c7-b58a-feff89dcb03f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Helpers.MovieMaker.Shared.targets" />
+  </ItemGroup>
+</Project>

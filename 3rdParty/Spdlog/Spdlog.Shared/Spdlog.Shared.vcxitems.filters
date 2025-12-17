@@ -1,0 +1,339 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{01561ef5-ce82-4db7-ac97-121161f9eda1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\spdlog">
+      <UniqueIdentifier>{11f00c68-d423-4e9d-b635-ab34c7ca42a0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Spdlog.Shared.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\CustomTypeSpecialization.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\LogHelpers.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\async.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\async_logger.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\async_logger-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\common.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\common-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\formatter.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fwd.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\logger.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\logger-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\pattern_formatter.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\pattern_formatter-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\spdlog.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\spdlog-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\stopwatch.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\tweakme.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\version.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\android_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\ansicolor_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\ansicolor_sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\base_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\base_sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\basic_file_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\basic_file_sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\callback_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\daily_file_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\dist_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\dup_filter_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\hourly_file_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\kafka_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\mongo_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\msvc_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\null_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\ostream_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\qt_sinks.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\ringbuffer_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\rotating_file_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\rotating_file_sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\stdout_color_sinks.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\stdout_color_sinks-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\stdout_sinks.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\stdout_sinks-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\syslog_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\systemd_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\tcp_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\udp_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\win_eventlog_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\wincolor_sink.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\sinks\wincolor_sink-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bin_to_hex.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\chrono.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\compile.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\fmt.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\ostr.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\ranges.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\std.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\xchar.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\backtracer.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\backtracer-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\circular_q.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\console_globals.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\file_helper.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\file_helper-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\fmt_helper.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\log_msg.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\log_msg_buffer.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\log_msg_buffer-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\log_msg-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\mpmc_blocking_q.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\null_mutex.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\os.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\os-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\periodic_worker.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\periodic_worker-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\registry.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\registry-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\synchronous_factory.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\tcp_client.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\tcp_client-windows.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\thread_pool.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\thread_pool-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\udp_client.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\udp_client-windows.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\details\windows_include.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\cfg\argv.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\cfg\env.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\cfg\helpers.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\cfg\helpers-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\args.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\chrono.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\color.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\compile.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\core.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\format.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\format-inl.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\locale.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\os.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\ostream.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\printf.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\ranges.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\std.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\fmt\bundled\xchar.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Spdlog\spdlog\mdc.h">
+      <Filter>Sources\spdlog</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Spdlog\LogHelpers.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

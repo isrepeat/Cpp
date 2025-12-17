@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ComAPI.Shared.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ComAPI">
+      <UniqueIdentifier>{12813dec-3eed-4d82-ae44-d74f8d6a1640}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ComAPI\ComAPI.cpp">
+      <Filter>ComAPI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ComAPI\ComAPI.h">
+      <Filter>ComAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ComAPI\common.h">
+      <Filter>ComAPI</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
