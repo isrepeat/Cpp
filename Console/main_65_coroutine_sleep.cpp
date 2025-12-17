@@ -14,10 +14,10 @@ struct TimerAwaitable {
     }
 
     void await_suspend(std::coroutine_handle<> handle) {
-        worker = std::jthread([handle, delay = delay]() {
+        std::thread([handle, delay = delay]() {
             std::this_thread::sleep_for(delay);
             handle.resume();
-        });
+        }).detach();
     }
 
     void await_resume() const noexcept {
@@ -25,7 +25,6 @@ struct TimerAwaitable {
 
 private:
     std::chrono::milliseconds delay;
-    std::jthread worker;
 };
 
 struct Task {
