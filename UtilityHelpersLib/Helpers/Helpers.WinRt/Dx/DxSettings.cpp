@@ -30,37 +30,39 @@ namespace Helpers {
             {
                 Platform::WeakReference weakRef = Platform::WeakReference(this);
 
-                this->dxSettings->GetDxSettingsHandlers()->msaaChanged.Add([weakRef] {
+                auto events = this->dxSettings->GetEvents();
+
+                this->eventSubscriptions.push_back(events->msaaChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->MsaaChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->vsyncChanged.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->vsyncChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->VSyncChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->currentAdapterChanged.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->currentAdapterChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->CurrentAdapterChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->adapersUpdated.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->adapersUpdated.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->AdaptersUpdated();
                         });
-                    });
+                    }));
             }
 
             bool DxSettings::MSAA::get() {
