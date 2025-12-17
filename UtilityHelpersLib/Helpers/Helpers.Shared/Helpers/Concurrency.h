@@ -1,6 +1,6 @@
 #pragma once
 #include "common.h"
-#include "FunctionTraits.hpp"
+#include "Meta/FunctionTraits.h"
 #include <functional>
 #include <ppltasks.h>
 #include <chrono>
@@ -43,7 +43,7 @@ namespace CV {
 }
 
 namespace HELPERS_NS {
-    template <typename Callback, typename Result = typename FunctionTraits<Callback>::Ret>
+    template <typename Callback, typename Result = typename meta::FunctionTraits<Callback>::Ret>
     Result CvExecuteCallbackAfterWaitWithPredicate(
         std::unique_lock<std::mutex>& lk, std::condition_variable& cv,
         std::function<bool(std::function<void()>)> Predicate, Callback userCallback, bool executeCallbackInPredicate = true)
@@ -57,7 +57,7 @@ namespace HELPERS_NS {
         return CvExecuteCallbackAfterWaitWithPredicateInternal<Callback, Result>(Predicate, std::move(userCallback), executeCallbackInPredicate);
     }
 
-    template <class _Rep, class _Period, typename Callback, typename Result = typename FunctionTraits<Callback>::Ret>
+    template <class _Rep, class _Period, typename Callback, typename Result = typename meta::FunctionTraits<Callback>::Ret>
     Result CvExecuteCallbackAfterWaitWithPredicate(
         std::unique_lock<std::mutex>& lk, std::condition_variable& cv, const std::chrono::duration<_Rep, _Period>& waitTime,
         std::function<bool(std::function<void()>)> Predicate, Callback userCallback, bool executeCallbackInPredicate = true)
