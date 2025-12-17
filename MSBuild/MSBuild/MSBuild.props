@@ -5,15 +5,15 @@
   </PropertyGroup>
 
   <!-- Include other targets -->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_1_PercentPropertyBackref.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_2_ItemDefenitionGroup.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_3_ExcludeFromCompile.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_4_PublicIncludeDirectories.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_5_RebuildAdminTasks.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_6_DynamicImport.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_7_Conditions.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_8_Replace.targets" />-->
-  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_9_CaptureConfigurationFromPartialName.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_01_PercentPropertyBackref.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_02_ItemDefenitionGroup.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_03_ExcludeFromCompile.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_04_PublicIncludeDirectories.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_05_RebuildAdminTasks.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_06_DynamicImport.targets" />-->
+  <Import Project="$(MSBuildProjectDirectory)\MSBuild_07_Conditions.targets" />
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_08_Replace.targets" />-->
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_09_CaptureConfigurationFromPartialName.targets" />-->
   <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_10_TargetWithResults.targets" />-->
-  <Import Project="$(MSBuildProjectDirectory)\MSBuild_11_Download.targets" />
+  <!--<Import Project="$(MSBuildProjectDirectory)\MSBuild_11_Download.targets" />-->
 </Project>

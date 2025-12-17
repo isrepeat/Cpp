@@ -8,9 +8,7 @@
 #include <string>
 #include <memory>
 #include <regex>
-#include <Helpers/Logger.h>
 
 int main() {
-
 	return 0;
 }
