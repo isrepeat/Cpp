@@ -1,75 +1,109 @@
 #pragma once
 #include "common.h"
-#include "FunctionTraits.hpp"
+//#include "Meta/FunctionTraits.h"
+
+#include <condition_variable>
+#include <type_traits>
 #include <functional>
-#include <ppltasks.h>
+#include <optional>
+#include <utility>
+#include <cassert>
 #include <chrono>
 #include <mutex>
 
-namespace {
-    template <typename Callback, typename Result>
-    Result CvExecuteCallbackAfterWaitWithPredicateInternal(
-        std::function<bool(std::function<void()>)> Predicate, Callback userCallback, bool executeCallbackInPredicate)
-    {
-        if constexpr (std::is_same_v<Result, void>) {
-            if (executeCallbackInPredicate) { // for usual case - execute userCallback where Predicate return 'true'
-                Predicate([&] {
-                    userCallback();
-                    });
-            }
-            else {
-                userCallback();
-            }
-        }
-        else {
-            if (executeCallbackInPredicate) {
-                Result result;
-                Predicate([&] {
-                    result = userCallback();
-                    });
-                return result; // CHECK: how it works with std::vector and r-value
-            }
-            else {
-                return userCallback();
-            }
-        }
-    }
-}
-
-
 namespace CV {
-    static const bool WAIT = false;
-    static const bool NO_WAIT = true;
+    inline constexpr bool WAIT = false;
+    inline constexpr bool NO_WAIT = true;
 }
 
 namespace HELPERS_NS {
-    template <typename Callback, typename Result = typename FunctionTraits<Callback>::Ret>
-    Result CvExecuteCallbackAfterWaitWithPredicate(
-        std::unique_lock<std::mutex>& lk, std::condition_variable& cv,
-        std::function<bool(std::function<void()>)> Predicate, Callback userCallback, bool executeCallbackInPredicate = true)
-    {
+    namespace detail {
+        template <typename Callback>
+        using CallbackResultT = std::invoke_result_t<Callback&>;
+
+        template <typename Callback>
+        inline CallbackResultT<Callback> CvExecuteCallbackAfterWaitWithPredicateInternal(
+            std::function<bool(std::function<void()>)> predicate,
+            Callback userCallback,
+            bool executeCallbackInPredicate
+        ) {
+            using Result = CallbackResultT<Callback>;
+
+            if constexpr (std::is_void_v<Result>) {
+                if (executeCallbackInPredicate) {
+                    predicate([&] {
+                        userCallback();
+                        });
+                }
+                else {
+                    userCallback();
+                }
+            }
+            else {
+                if (executeCallbackInPredicate) {
+                    std::optional<Result> resultOpt;
+
+                    predicate([&] {
+                        resultOpt.emplace(userCallback());
+                        });
+
+                    assert(resultOpt.has_value() && "Predicate did not execute callback but Result is required.");
+                    return std::move(*resultOpt); // CHECK: how it works with std::vector and r-value
+                }
+                else {
+                    return userCallback();
+                }
+            }
+        }
+    } // namespace detail
+
+
+    template <typename Callback>
+    std::invoke_result_t<Callback&> CvExecuteCallbackAfterWaitWithPredicate(
+        std::unique_lock<std::mutex>& lk,
+        std::condition_variable& cv,
+        std::function<bool(std::function<void()>)> predicate,
+        Callback userCallback,
+        bool executeCallbackInPredicate = true
+    ) {
         cv.wait(lk, [&] {
-            return Predicate(nullptr);
+            return predicate(nullptr);
             });
 
-
         // if we here so Predicate(nullptr) returned true (CV::NO_WAIT)
-        return CvExecuteCallbackAfterWaitWithPredicateInternal<Callback, Result>(Predicate, std::move(userCallback), executeCallbackInPredicate);
+        return detail::CvExecuteCallbackAfterWaitWithPredicateInternal<Callback>(
+            std::move(predicate),
+            std::move(userCallback),
+            executeCallbackInPredicate
+        );
     }
 
-    template <class _Rep, class _Period, typename Callback, typename Result = typename FunctionTraits<Callback>::Ret>
-    Result CvExecuteCallbackAfterWaitWithPredicate(
-        std::unique_lock<std::mutex>& lk, std::condition_variable& cv, const std::chrono::duration<_Rep, _Period>& waitTime,
-        std::function<bool(std::function<void()>)> Predicate, Callback userCallback, bool executeCallbackInPredicate = true)
-    {
+    template <
+        class _Rep,
+        class _Period,
+        typename Callback
+    >
+    std::invoke_result_t<Callback&> CvExecuteCallbackAfterWaitWithPredicate(
+        std::unique_lock<std::mutex>& lk,
+        std::condition_variable& cv,
+        const std::chrono::duration<_Rep, _Period>& waitTime,
+        std::function<bool(std::function<void()>)> predicate,
+        Callback userCallback,
+        bool executeCallbackInPredicate = true
+    ) {
         bool cvRes = cv.wait_for(lk, waitTime, [&] {
-            return Predicate(nullptr);
+            return predicate(nullptr);
             });
 
         if (cvRes == CV::WAIT) {
+            // timeout
         }
 
         // if we here so eather Predicate(nullptr) returned true or waitTime expired (CV::WAIT or CV::NO_WAIT)
-        return CvExecuteCallbackAfterWaitWithPredicateInternal<Callback, Result>(Predicate, std::move(userCallback), executeCallbackInPredicate);
+        return detail::CvExecuteCallbackAfterWaitWithPredicateInternal<Callback>(
+            std::move(predicate),
+            std::move(userCallback),
+            executeCallbackInPredicate
+        );
     }
 }

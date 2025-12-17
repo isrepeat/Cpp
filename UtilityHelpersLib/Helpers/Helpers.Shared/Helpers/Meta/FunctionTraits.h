@@ -6,13 +6,13 @@
 
 namespace HELPERS_NS {
 	namespace meta {
-		namespace concepts {
-			template <typename T>
-			concept has_non_overloaded_call_op = requires {
-				// Эта форма не компилируется, если operator() перегружен/шаблонный
-				&T::operator();
-			};
-		} // namespace concepts
+        namespace concepts {
+            template <typename T>
+            concept has_non_overloaded_call_op = requires {
+                // Эта форма не компилируется, если operator() перегружен/шаблонный
+                &T::operator();
+            };
+        } // namespace concepts
 
 		//
 		// ░ Implemantation
@@ -24,13 +24,13 @@ namespace HELPERS_NS {
 			//			
 			struct MemFunPtrTag {};
 			// Тип попадает сюда, если это УКАЗАТЕЛЬ НА ЧЛЕН-ФУНКЦИЮ класса:
-			//   TRange (C::*)(Args...) [cv/ref/noexcept]
+			//   TRet (C::*)(Args...) [cv/ref/noexcept]
 			// Включает в себя и указатели на operator() внутри класса (у функторов/лямбд),
 			// потому что `decltype(&T::operator())` всегда имеет вид pointer-to-member.
 
 			struct FunPtrTag {};
 			// Сюда попадает свободная C-style функция или static-метод:
-			//   TRange (*)(Args...) [noexcept]
+			//   TRet (*)(Args...) [noexcept]
 
 			struct CallableTag {};
 			// Сюда попадает САМ тип класса/union, у которого есть operator():
@@ -42,19 +42,19 @@ namespace HELPERS_NS {
 			// Всё остальное, что не распознано (не функция, не указатель, не callable тип).
 
 			template <typename T>
-			using category_t =
-				std::conditional_t<std::is_member_function_pointer_v<T>, MemFunPtrTag,
-				std::conditional_t<std::is_pointer_v<T> and std::is_function_v<std::remove_pointer_t<T>>, FunPtrTag,
-				std::conditional_t<std::is_class_v<T> or std::is_union_v<T>, CallableTag,
-				UnknownTag>>>;
+            using category_t =
+                std::conditional_t<std::is_member_function_pointer_v<T>, MemFunPtrTag,
+                std::conditional_t<std::is_pointer_v<T>&& std::is_function_v<std::remove_pointer_t<T>>, FunPtrTag,
+                std::conditional_t<std::is_class_v<T> || std::is_union_v<T>, CallableTag,
+                UnknownTag>>>;
 
 			//
 			// ░ FunctionTraitsBaseArgs
 			//
-			template <typename TRange, typename... A>
+			template <typename TRet, typename... A>
 			struct FunctionTraitsBaseArgs {
 				enum { ArgumentCount = sizeof...(A) };
-				using Ret = TRange;
+				using Ret = TRet;
 				using Arguments = std::tuple<A...>;
 
 				template <std::size_t i>
@@ -83,64 +83,64 @@ namespace HELPERS_NS {
 			template <typename C, typename TSignature>
 			struct select_call_operator;
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...)> {
-				using type = TRange(C::*)(A...);
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...)> {
+				using type = TRet(C::*)(A...);
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const> {
-				using type = TRange(C::*)(A...) const;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const> {
+				using type = TRet(C::*)(A...) const;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...)&> {
-				using type = TRange(C::*)(A...)&;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...)&> {
+				using type = TRet(C::*)(A...)&;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const&> {
-				using type = TRange(C::*)(A...) const&;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const&> {
+				using type = TRet(C::*)(A...) const&;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...)&&> {
-				using type = TRange(C::*)(A...)&&;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...)&&> {
+				using type = TRet(C::*)(A...)&&;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const&&> {
-				using type = TRange(C::*)(A...) const&&;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const&&> {
+				using type = TRet(C::*)(A...) const&&;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) noexcept> {
-				using type = TRange(C::*)(A...) noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) noexcept> {
+				using type = TRet(C::*)(A...) noexcept;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const noexcept> {
-				using type = TRange(C::*)(A...) const noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const noexcept> {
+				using type = TRet(C::*)(A...) const noexcept;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) & noexcept> {
-				using type = TRange(C::*)(A...) & noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) & noexcept> {
+				using type = TRet(C::*)(A...) & noexcept;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const& noexcept> {
-				using type = TRange(C::*)(A...) const& noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const& noexcept> {
+				using type = TRet(C::*)(A...) const& noexcept;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) && noexcept> {
-				using type = TRange(C::*)(A...) && noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) && noexcept> {
+				using type = TRet(C::*)(A...) && noexcept;
 			};
 
-			template <typename C, typename TRange, typename... A>
-			struct select_call_operator<C, TRange(A...) const&& noexcept> {
-				using type = TRange(C::*)(A...) const&& noexcept;
+			template <typename C, typename TRet, typename... A>
+			struct select_call_operator<C, TRet(A...) const&& noexcept> {
+				using type = TRet(C::*)(A...) const&& noexcept;
 			};
 
 			template <typename C, typename TSignature>
@@ -152,7 +152,7 @@ namespace HELPERS_NS {
 			template <typename T>
 			struct FunctionTraitsCallable {
 				static_assert(
-					concepts::has_non_overloaded_call_op<T>,
+					concepts::has_non_overloaded_call_op_v<T>,
 					"operator() is overloaded or templated; use FunctionTraitsWithSignature<T,Sig>"
 					);
 
@@ -187,24 +187,24 @@ namespace HELPERS_NS {
 #define NOEXCEPT_SPEC noexcept
 
 #define HFT_DEFINE_MEMPTR_TRAITS(CV, REF, NOEXCEPT, IS_CONST_BOOL, REF_QUAL_ENUM, IS_NOEXCEPT_BOOL) \
-        template <typename TRange, typename C, typename... A> \
-        struct impl::FunctionTraitsImpl<TRange (C::*)(A...) CV REF NOEXCEPT, impl::MemFunPtrTag> \
-            : impl::FunctionTraitsBaseArgs<TRange, A...> \
+        template <typename TRet, typename C, typename... A> \
+        struct impl::FunctionTraitsImpl<TRet (C::*)(A...) CV REF NOEXCEPT, impl::MemFunPtrTag> \
+            : impl::FunctionTraitsBaseArgs<TRet, A...> \
         { \
             using Class = C; \
-            using Signature = TRange (C::*)(A...) CV REF NOEXCEPT; \
+            using Signature = TRet (C::*)(A...) CV REF NOEXCEPT; \
             static constexpr bool IsConst = IS_CONST_BOOL; \
             static constexpr bool IsNoexcept = IS_NOEXCEPT_BOOL; \
             static constexpr RefQual Ref = REF_QUAL_ENUM; \
         };
 
 #define HFT_DEFINE_FUNPTR_TRAITS(NOEXCEPT, IS_NOEXCEPT_BOOL) \
-        template <typename TRange, typename... A> \
-        struct impl::FunctionTraitsImpl<TRange (*)(A...) NOEXCEPT, impl::FunPtrTag> \
-            : impl::FunctionTraitsBaseArgs<TRange, A...> \
+        template <typename TRet, typename... A> \
+        struct impl::FunctionTraitsImpl<TRet (*)(A...) NOEXCEPT, impl::FunPtrTag> \
+            : impl::FunctionTraitsBaseArgs<TRet, A...> \
         { \
             using Class = void; \
-            using Signature = TRange (*)(A...) NOEXCEPT; \
+            using Signature = TRet (*)(A...) NOEXCEPT; \
             static constexpr bool IsConst = false; \
             static constexpr bool IsNoexcept = IS_NOEXCEPT_BOOL; \
             static constexpr RefQual Ref = RefQual::None; \
@@ -244,8 +244,8 @@ namespace HELPERS_NS {
 		// ░ FunctionTraits: Primary template
 		//
 		// По category_t<TFn> маршрутизирует в одну из реализаций:
-		// - MemFunPtrTag для TRange (C::*)(...) [cv/ref/noexcept]
-		// - FunPtrTag для TRange (*)(...) [noexcept]
+		// - MemFunPtrTag для TRet (C::*)(...) [cv/ref/noexcept]
+		// - FunPtrTag для TRet (*)(...) [noexcept]
 		// - CallableTag/UnknownTag (для них реализаций нет) => перехватывает специализация ниже
 		template <typename TFn>
 		struct FunctionTraits : impl::FunctionTraitsImpl<TFn, impl::category_t<TFn>> {

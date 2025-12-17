@@ -8,8 +8,8 @@ namespace HELPERS_NS {
 		template<typename T, typename TContainer = std::deque<T> >
 		class iterable_queue : public std::queue<T, TContainer> {
 		public:
-			using iterator = TContainer::iterator;
-			using const_iterator = TContainer::const_iterator;
+			using iterator = typename TContainer::iterator;
+			using const_iterator = typename TContainer::const_iterator;
 
 			iterator begin() { return this->c.begin(); }
 			iterator end() { return this->c.end(); }
