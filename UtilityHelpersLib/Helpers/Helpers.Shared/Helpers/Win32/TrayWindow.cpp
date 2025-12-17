@@ -1,4 +1,6 @@
 #include "TrayWindow.h"
+
+#if COMPILE_FOR_DESKTOP
 #include <Helpers/Logger.h>
 #include <shellapi.h>
 
@@ -75,3 +77,4 @@ namespace HELPERS_NS {
 		}
 	}
 }
+#endif // COMPILE_FOR_DESKTOP

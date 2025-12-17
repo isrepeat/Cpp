@@ -1,12 +1,12 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "DxSettings.h"
 
 namespace Helpers {
     namespace WinRt {
         namespace Dx {
             Adapter::Adapter(H::Dx::Adapter adapter)
-                : adapter{ adapter }
-            {}
+                : adapter{ adapter } {
+            }
 
             uint32_t Adapter::Idx::get() {
                 return this->adapter.GetIndex();
@@ -26,41 +26,42 @@ namespace Helpers {
 
 
             DxSettings::DxSettings()
-                : dxSettings{ std::make_shared<H::Dx::DxSettings>() }
-            {
+                : dxSettings{ std::make_shared<H::Dx::DxSettings>() } {
                 Platform::WeakReference weakRef = Platform::WeakReference(this);
 
-                this->dxSettings->GetDxSettingsHandlers()->msaaChanged.Add([weakRef] {
+                auto& events = this->dxSettings->GetEvents();
+
+                this->eventSubscriptions.push_back(events->msaaChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->MsaaChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->vsyncChanged.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->vsyncChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->VSyncChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->currentAdapterChanged.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->currentAdapterChanged.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->CurrentAdapterChanged();
                         });
-                    });
+                    }));
 
-                this->dxSettings->GetDxSettingsHandlers()->adapersUpdated.Add([weakRef] {
+                this->eventSubscriptions.push_back(events->adapersUpdated.Subscribe([weakRef] {
                     auto _this = weakRef.Resolve<DxSettings>();
                     if (!_this) return;
                     concurrency::create_async([=]() {
                         _this->AdaptersUpdated();
                         });
-                    });
+                    }));
             }
 
             bool DxSettings::MSAA::get() {

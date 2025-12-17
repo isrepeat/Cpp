@@ -222,12 +222,28 @@ namespace LOGGER_NS_ALIAS = LOGGER_NS; // set your alias for original "logger na
 //#pragma message("include 'LogHelpers.h' [helpers files included]")
 
 #include <unordered_map>
+#include <type_traits>
 #include <filesystem>
 #include <string>
 #include <memory>
 #include <array>
 #include <set>
 
+namespace LOGGER_NS {
+    namespace detail {
+        template<typename T>
+        struct type_identity { using type = T; };
+
+        template<typename T>
+        using type_identity_t = typename type_identity<T>::type;
+
+        template<typename T>
+        struct remove_cvref { using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type; };
+
+        template<typename T>
+        using remove_cvref_t = typename remove_cvref<T>::type;
+    }
+}
 
 namespace LOGGER_NS {
     // define a "__classFullnameLogging" "member checker" class
@@ -340,14 +356,14 @@ namespace LOGGER_NS {
             TClass* classPtr,
             std::shared_ptr<spdlog::logger> logger,
             spdlog::source_loc location,
-			spdlog::level::level_enum level,
-			fmt::basic_format_string<T, std::type_identity_t<TArgs>...> format,
-			TArgs&&... args
-		) {
+            spdlog::level::level_enum level,
+            fmt::basic_format_string<T, detail::type_identity_t<TArgs>...> format,
+            TArgs&&... args
+        ) {
             auto& _this = GetInstance();
             std::unique_lock lk{ _this.mxCustomFlagHandlers };
 
-            if constexpr (has_member(std::remove_cvref_t<TClass>, __ClassFullnameLogging)) {
+            if constexpr (has_member(detail::remove_cvref_t<TClass>, __ClassFullnameLogging)) {
                 _this.className = L" ["
                     + (classPtr ? classPtr->GetFullClassNameW() : TClass::GetOriginalClassName() + L"(nullptr)")
                     + L"]";

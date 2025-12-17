@@ -1,4 +1,6 @@
 #include "MainWindow.h"
+
+#if COMPILE_FOR_DESKTOP
 #include <Helpers/Logger.h>
 #include <exception>
 
@@ -159,3 +161,4 @@ namespace HELPERS_NS {
 		}
 	}
 }
+#endif // COMPILE_FOR_DESKTOP

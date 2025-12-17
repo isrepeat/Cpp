@@ -1,5 +1,7 @@
 #pragma once
 #include "Helpers/common.h"
+
+#if COMPILE_FOR_DESKTOP
 #include "Helpers/Event/Signal.h"
 #include "Helpers/HWindows.h"
 #include "Helpers/Math.h"
@@ -53,3 +55,4 @@ namespace HELPERS_NS {
 		};
 	}
 }
+#endif // COMPILE_FOR_DESKTOP

@@ -1,6 +1,9 @@
 #pragma once
 #include "Helpers/common.h"
+
+#if COMPILE_FOR_DESKTOP
 #include "MainWindow.h"
+#include <shellapi.h>
 
 namespace HELPERS_NS {
 	namespace Win32 {
@@ -33,3 +36,4 @@ namespace HELPERS_NS {
 		};
 	}
 }
+#endif // COMPILE_FOR_DESKTOP

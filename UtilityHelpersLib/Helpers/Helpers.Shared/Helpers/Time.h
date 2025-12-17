@@ -272,6 +272,7 @@ private:
 };
 
 
+#if defined(__cpp_lib_format)
 //
 // ░ std::formatter specializations
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 
@@ -301,6 +302,7 @@ struct std::formatter<HELPERS_NS::Chrono::DurationBase<Rep, Period>, CharT> {
 private:
 	std::formatter<float, CharT> innerFormatter;
 };
+#endif // __cpp_lib_format
 #endif // SPDLOG_SUPPORT
 
 

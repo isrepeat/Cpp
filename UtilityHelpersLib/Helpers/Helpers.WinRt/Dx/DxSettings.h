@@ -1,6 +1,8 @@
-﻿#pragma once
+#pragma once
 #include <Helpers/Dx/DxSettings.h>
+#include <Helpers/Event/IEvent.h>
 #include "Delegates.h"
+#include <vector>
 
 namespace Helpers {
     namespace WinRt {
@@ -66,6 +68,7 @@ namespace Helpers {
 
             private:
                 std::shared_ptr<H::Dx::DxSettings> dxSettings;
+                std::vector<std::shared_ptr<H::Event::ISubscriptionToken>> eventSubscriptions;
             };
         }
     }
