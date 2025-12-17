@@ -36,6 +36,8 @@ struct Task {
         std::exception_ptr storedException;
     };
 
+    struct promise_type;
+
     struct FinalAwaiter {
         std::shared_ptr<SharedState> state;
 
