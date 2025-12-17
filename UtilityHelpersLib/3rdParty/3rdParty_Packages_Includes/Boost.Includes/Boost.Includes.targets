@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Make sure this file are imported in .vcxitems -->
+  <PropertyGroup>
+    <!-- Ensure version is correct -->
+    <BoostIncludesDir>$(MSBuildThisFileDirectory)..\..\..\packages\boost.1.84.0\lib\native\include</BoostIncludesDir>
+    <!-- Expose boost includes dir for other projects -->
+    <PublicIncludeDirectories>$(PublicIncludeDirectories);$(BoostIncludesDir)</PublicIncludeDirectories>
+  </PropertyGroup>
+  
+  <!-- Add boost includes dir as additional includes dirs to whoever imports this project -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(BoostIncludesDir)
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

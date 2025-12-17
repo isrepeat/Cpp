@@ -1,0 +1,276 @@
+<!--
+***********************************************************************************************
+DCT.CppCommon.targets
+
+TODO: Provide way to download this file to current solution dir from some server 
+      and import it ('DCT.CppCommot.targets') in Directory.Build.targets.
+      
+      For example, add DownloadFile task for 'DCT.CppCommot.targets' file to Directory.Build.targets 
+      and mark it as task that will be executed before Restore nugets.
+
+This file defines the helper tasks required to build some projects.
+***********************************************************************************************
+-->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- NOTE: All custom tasks should starts from 'T'. -->
+
+  <!--
+      ** TNewLine **
+      
+      Description:
+        Put new line.
+  -->
+  <UsingTask TaskName="TNewLine" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        Log.LogMessage(MessageImportance.High, "\n");
+      </Code>
+    </Task>
+  </UsingTask>
+  
+
+  <!--
+      ** TMessage **
+      
+      Description:
+        Wrapper under <Message> with Importance = 'High'.
+        
+      Parameters:
+      [optional]
+        Project = <string>
+      [required]
+        Text;
+  -->
+  <UsingTask TaskName="TMessage" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <Project />
+      <Text Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (string.IsNullOrEmpty(Project)) {
+              Log.LogMessage(MessageImportance.High, Text);
+          }
+          else {
+              Log.LogMessage(MessageImportance.High, string.Format("==== [{0}] {1}", Project, Text));
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  
+  <!--
+      ** TGetMatchedFiles **
+      
+      Description:
+        Return mathced items.
+  -->
+  <UsingTask TaskName="TGetMatchedFiles" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <inRegExpression Required="true" />
+      <inFiles Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+      <outResult Output="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (inFiles.Length > 0) {
+              outResult = new TaskItem[inFiles.Length];
+            
+              for (int i = 0; i < inFiles.Length; i++) {
+                  ITaskItem item = inFiles[i];
+                  string itemFullPath = item.GetMetadata("FullPath");
+              
+                  if (Regex.Match(itemFullPath, inRegExpression).Success) {
+                      outResult[i] = new TaskItem(item.ItemSpec);
+                  }  
+              }
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  
+  <!--
+      ** TCaptureConfigurationPlatformForRecursiveDir **
+      
+      Description:
+        This task return new items (based on 'inFiles') with additional helper metadata:
+        %(__Platform): capture original %(Platform) (3 regex group) but also change 'Win32' to 'x86';
+        %(__Configuration): capture original %(Configuration) (2 regex group);
+        %(__RecursiveDir_rest): capture 5 regex group;
+      
+      Parameters:
+      [optional]
+        inUsedPlatform = any|x86|x64;
+        inTargetPlatform = any|x86|x64;
+        inUsedConfiguration = any|Debug|Release;
+        inConfigurationIsOptional = false|true;
+        inMakeRecursiveDirNugetRuntimes = false|true;
+        inNonConfiguratedItemsBehaviour = None|PlaceInUsedConfiguration;
+      [required]
+        inFiles;
+      [out]
+        outResult;
+      
+      Regex groups:
+        [1] - Build path
+        [2] - Configuration
+        [3] - Platform
+        [4] - Optional subfolder (project name)
+        [5] - Rest path
+  -->
+  <UsingTask TaskName="TCaptureConfigurationPlatformForRecursiveDir" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <inUsedPlatform />
+      <inTargetPlatform />
+      <inUsedConfiguration />
+      <inConfigurationIsOptional /> 
+      <inMakeRecursiveDirNugetRuntimes />
+	    <inNonConfiguratedItemsBehaviour />
+      <inFiles Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+      <outResult Output="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.Collections.Generic"/>
+      <Using Namespace="System.Text.RegularExpressions"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Func<string, string[], string> GetValidParamValue = (string paramValue, string[] validValues) => {
+              if (string.IsNullOrEmpty(paramValue)) {
+                  return validValues[0]; // get first value as default
+              }
+                
+              foreach (var validValue in validValues) {
+                  if (string.Equals(paramValue, validValue, StringComparison.OrdinalIgnoreCase)) {
+                      return paramValue;
+                  }
+              }
+              
+              Log.LogError(string.Format(
+                "The '{0}' variable does not take one of the possible valid values: {1}"
+                , paramValue
+                , string.Join(",", validValues)
+              ));
+              return "";
+          };
+
+          // Set defult values or check validation for params.
+          inUsedPlatform = GetValidParamValue(inUsedPlatform, new string[] {"any", "x86", "x64"});
+          inTargetPlatform = GetValidParamValue(inTargetPlatform, new string[] {"any", "x86", "x64"});
+          inUsedConfiguration = GetValidParamValue(inUsedConfiguration, new string[] {"any", "Debug", "Release"});
+          inConfigurationIsOptional = GetValidParamValue(inConfigurationIsOptional, new string[] {"false", "true"});       
+          inMakeRecursiveDirNugetRuntimes = GetValidParamValue(inMakeRecursiveDirNugetRuntimes, new string[] {"false", "true"});          
+          inNonConfiguratedItemsBehaviour = GetValidParamValue(inNonConfiguratedItemsBehaviour, new string[] {"None", "PlaceInUsedConfiguration"});       
+          
+          if (inFiles.Length > 0) {
+              var outList = new List<TaskItem>();
+              
+              string regExToCaptureConfigurationPlatform = @"(.*?\\?)(Debug|Release)\\(x86|x64|Win32)\\(.*?\\)?(.*)";
+							int captureIdxPlatform = 3;
+							int captureIdxConfiguration = 2;
+							int captureIdxOptionalSubfolder = 4;
+							int captureIdxRecursiveDirRest = 5;
+							
+              if (inConfigurationIsOptional == "true") {
+                  regExToCaptureConfigurationPlatform = @"(.*?\\?)(?:(Debug|Release)\\)?(x86|x64|Win32)\\(.*?\\)?(.*)";
+              }
+							
+              for (int i = 0; i < inFiles.Length; i++) {
+                  ITaskItem item = inFiles[i];
+                  string itemRecursiveDir = item.GetMetadata("RecursiveDir");
+                  
+                  var regexMatch = Regex.Match(itemRecursiveDir, regExToCaptureConfigurationPlatform);
+                  if (regexMatch.Success) {
+                      // Assign captured groups to readable vars.
+                      var capturedPlatform = regexMatch.Groups[captureIdxPlatform].Value;
+                      var capturedConfiguration = regexMatch.Groups[captureIdxConfiguration].Value;
+                      var capturedOptionalSubfolder = regexMatch.Groups[captureIdxOptionalSubfolder].Value; // not used now
+                      var capturedRecursiveDirRest = regexMatch.Groups[captureIdxRecursiveDirRest].Value;
+                      
+                      // Handle optional input parameters and construct metadata.
+											if (!string.IsNullOrEmpty(capturedConfiguration)) { // capturedConfiguration is optional for some cases 
+                          if (inUsedConfiguration != "any") {
+                              if (!string.Equals(capturedConfiguration, inUsedConfiguration, StringComparison.OrdinalIgnoreCase)) {
+                                  continue;
+                              }
+                          }
+											}
+                      
+                      if (string.Equals(capturedPlatform, "Win32", StringComparison.OrdinalIgnoreCase)) {
+                          capturedPlatform = "x86";
+                      }
+                      
+                      if (inUsedPlatform != "any") {
+                          if (!string.Equals(capturedPlatform, inUsedPlatform, StringComparison.OrdinalIgnoreCase)) {
+                              continue;
+                          }
+                      }
+                      
+                      
+                      if (inMakeRecursiveDirNugetRuntimes == "true") {                          
+                          // Try use capturedPlatform and capturedConfiguration by default.
+                          var platforms = new string[] { capturedPlatform };
+                          var configurations = new string[] { capturedConfiguration };
+                          
+                          if (inUsedPlatform == "any") {
+                              // do nothing, it is unexpected usage.
+                          }
+                          else {
+                              if (inTargetPlatform == "any") {
+                                  platforms = new string[] { "x86", "x64" };
+                              }
+                              else {
+                                  platforms = new string[] { inTargetPlatform };
+                              }
+                          }
+                                                    
+                          // If capturedConfiguration was not found (inConfigurationIsOptional == true) then use inNonConfiguratedItemsBehaviour.
+                          if (string.IsNullOrEmpty(capturedConfiguration)) {
+                              if (inNonConfiguratedItemsBehaviour == "None") {
+                                  configurations = new string[] { "Release" }; // By default assume it as "Release".
+                              }
+                              else if (inNonConfiguratedItemsBehaviour == "PlaceInUsedConfiguration") {
+                                  if (inUsedConfiguration == "any") {
+                                      configurations = new string[] { "Debug", "Release" };
+                                  }
+                                  else {
+                                      configurations = new string[] { inUsedConfiguration };
+                                  }
+                              }
+                          }
+                          
+                          foreach (var platform in platforms) {
+                              foreach (var configuration in configurations) {
+                                  outList.Add(new TaskItem(item.ItemSpec));
+                                  outList.Last().SetMetadata("__Platform", capturedPlatform);
+                                  outList.Last().SetMetadata("__Configuration", capturedConfiguration);
+                                  outList.Last().SetMetadata("__RecursiveDirNugetRuntimes", string.Format(
+                                      "win10-{0}\\native\\{1}\\{2}"
+                                      , platform
+                                      , configuration
+                                      , capturedRecursiveDirRest
+                                  ));    
+                              }
+                          }
+                      }
+                      else {
+                          outList.Add(new TaskItem(item.ItemSpec));
+                          outList.Last().SetMetadata("__Platform", capturedPlatform);
+                          outList.Last().SetMetadata("__Configuration", capturedConfiguration);
+                          outList.Last().SetMetadata("__RecursiveDir_rest", capturedRecursiveDirRest);
+                      }
+                  }  
+              }
+              outResult = outList.ToArray();
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

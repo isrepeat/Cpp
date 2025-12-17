@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Dx\DxSettings.cpp">
+      <Filter>Dx</Filter>
+    </ClCompile>
+    <ClCompile Include="Dx\SwapChainPanel.cpp">
+      <Filter>Dx</Filter>
+    </ClCompile>
+    <ClCompile Include="InitDataFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Delegates.h" />
+    <ClInclude Include="Dx\DxSettings.h">
+      <Filter>Dx</Filter>
+    </ClInclude>
+    <ClInclude Include="Dx\SwapChainPanel.h">
+      <Filter>Dx</Filter>
+    </ClInclude>
+    <ClInclude Include="HMath.h" />
+    <ClInclude Include="InitDataFactory.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Dx">
+      <UniqueIdentifier>{e3bf475c-9656-4107-9cae-b7f67c85e8af}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

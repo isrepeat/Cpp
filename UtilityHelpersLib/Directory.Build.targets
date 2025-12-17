@@ -1,0 +1,82 @@
+<Project>
+  <!-- ::::::: Импорт ближайшего родительского Directory.Build.targets ::::::: -->
+  <PropertyGroup>
+    <_ParentDirectoryBuildTargets>$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets','$(MSBuildThisFileDirectory)..\'))</_ParentDirectoryBuildTargets>
+    <_ParentDirectoryBuildTargetsNorm Condition="'$(_ParentDirectoryBuildTargets)'!=''">$([System.IO.Path]::GetFullPath('$(_ParentDirectoryBuildTargets)'))</_ParentDirectoryBuildTargetsNorm>
+    <_CurrentDirectoryBuildTargetsNorm>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileFullPath)'))</_CurrentDirectoryBuildTargetsNorm>
+  </PropertyGroup>
+
+  <Import Project="$(_ParentDirectoryBuildTargets)"
+          Condition="'$(_ParentDirectoryBuildTargetsNorm)'!='' and
+                     '$(_ParentDirectoryBuildTargetsNorm)'!='$(_CurrentDirectoryBuildTargetsNorm)'" />
+
+  <!-- Флаг _IsLocal.
+       Нужен чтобы писать условия которые будут выполняться только если текущий
+       Directory.Build.targets является ближайщим к текущему решению $(SolutionDir). -->
+  <PropertyGroup>
+    <_NearestDirectoryBuildTargetsForSolution Condition="'$(SolutionDir)'!=''">$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets','$(SolutionDir)'))</_NearestDirectoryBuildTargetsForSolution>
+    <_NearestDirectoryBuildTargetsForSolutionNorm Condition="'$(_NearestDirectoryBuildTargetsForSolution)'!=''">$([System.IO.Path]::GetFullPath('$(_NearestDirectoryBuildTargetsForSolution)'))</_NearestDirectoryBuildTargetsForSolutionNorm>
+    <_IsLocal>False</_IsLocal>
+    <_IsLocal Condition="'$(_NearestDirectoryBuildTargetsForSolutionNorm)'!='' and
+                         '$(_NearestDirectoryBuildTargetsForSolutionNorm)'=='$(_CurrentDirectoryBuildTargetsNorm)'">True</_IsLocal>
+  </PropertyGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::::::::::: Общие настройки ClCompile :::::::::::::::::::::: -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        MSBuildProject__RootNamespace=$(RootNamespace)
+      </PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- ::::::::::::::::: Import внешних targets (если есть) :::::::::::::::::: -->
+  <Import Project="$(MSBuildThisFileDirectory)\DCT.CppCommon.targets"
+          Condition="'$(_IsLocal)'=='True' and
+                      Exists('$(MSBuildThisFileDirectory)\DCT.CppCommon.targets')" />
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- ::::::::::::::::::::::: Импорт PROJECT.targets :::::::::::::::::::::::: -->
+  <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets"
+          Condition="'$(_IsLocal)'=='True' and
+                     Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets')" />
+
+  <ItemGroup Condition="'$(_IsLocal)'=='True'">
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).targets')" />
+  </ItemGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::::::::::::::: Отладочный вывод ::::::::::::::::::::::::::: -->
+  <Target Name="__PrintDirectoryBuildPropsInfoTask"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(_IsLocal)'=='True' and
+                     '$(__PrintDirectoryBuildPropsInfo)' == 'True'">
+    <PropertyGroup>
+      <NewLine>%0D%0A</NewLine>
+    </PropertyGroup>
+    <Message Importance="high" Text="$(NewLine)" />
+    <Message Importance="high" Text="[$(SolutionName)] Directory.Build.props info:" />
+    <Message Importance="high" Text="SolutionName = $(SolutionName)" />
+    <Message Importance="high" Text="SolutionDir = $(SolutionDir)" />
+    <Message Importance="high" Text="OutDir = $(OutDir)" />
+    <Message Importance="high" Text="IntDir = $(IntDir)" />
+    <Message Importance="high" Text="__OutDirOverride = $(__OutDirOverride)" />
+    <Message Importance="high" Text="__IntDirOverride = $(__IntDirOverride)" />
+    <Message Importance="high" Text="$(NewLine)" />
+  </Target>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::::::::::: Проверка внешних targets ::::::::::::::::::::::: -->
+  <Target Name="__EnsureExternalTargetsAreImportedTask"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(_IsLocal)'=='True'">
+    <PropertyGroup>
+      <ErrorText>Can't import file = {0}</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)\DCT.CppCommon.targets')"
+           Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)\DCT.CppCommon.targets'))" />
+  </Target>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+</Project>

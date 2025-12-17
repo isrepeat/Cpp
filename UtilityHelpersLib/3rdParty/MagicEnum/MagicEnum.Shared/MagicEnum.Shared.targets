@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Make sure this file are imported in .vcxitems -->
+  <PropertyGroup>
+    <MagicEnumSourcesDir>$(MSBuildThisFileDirectory)MagicEnum</MagicEnumSourcesDir>
+    <!-- Expose own dir for other projects -->
+    <PublicIncludeDirectories>$(PublicIncludeDirectories);$(MSBuildThisFileDirectory);$(MagicEnumSourcesDir)</PublicIncludeDirectories>
+  </PropertyGroup>
+
+  <!-- Explicitly add $(MSBuildThisFileDirectory) because it automatically 
+       added only with direct import but not through another .targets.
+  -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(MSBuildThisFileDirectory);
+        $(MagicEnumSourcesDir)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

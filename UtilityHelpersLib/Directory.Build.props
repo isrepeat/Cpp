@@ -1,0 +1,56 @@
+<Project>
+  <!-- :::::::: Импорт ближайшего родительского Directory.Build.props :::::::: -->
+  <PropertyGroup>
+    <_ParentDirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props','$(MSBuildThisFileDirectory)..\'))</_ParentDirectoryBuildProps>
+    <_ParentDirectoryBuildPropsNorm Condition="'$(_ParentDirectoryBuildProps)'!=''">$([System.IO.Path]::GetFullPath('$(_ParentDirectoryBuildProps)'))</_ParentDirectoryBuildPropsNorm>
+    <_CurrentDirectoryBuildPropsNorm>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileFullPath)'))</_CurrentDirectoryBuildPropsNorm>
+  </PropertyGroup>
+
+  <Import Project="$(_ParentDirectoryBuildProps)"
+          Condition="'$(_ParentDirectoryBuildPropsNorm)'!='' and
+                     '$(_ParentDirectoryBuildPropsNorm)'!='$(_CurrentDirectoryBuildPropsNorm)'" />
+
+  <!-- Флаг _IsLocal.
+       Нужен чтобы писать условия которые будут выполняться только если текущий
+       Directory.Build.props является ближайщим к текущему решению $(SolutionDir). -->
+  <PropertyGroup>
+    <_NearestDirectoryBuildPropsForSolution Condition="'$(SolutionDir)'!=''">$([MSBuild]::GetPathOfFileAbove('Directory.Build.props','$(SolutionDir)'))</_NearestDirectoryBuildPropsForSolution>
+    <_NearestDirectoryBuildPropsForSolutionNorm Condition="'$(_NearestDirectoryBuildPropsForSolution)'!=''">$([System.IO.Path]::GetFullPath('$(_NearestDirectoryBuildPropsForSolution)'))</_NearestDirectoryBuildPropsForSolutionNorm>
+    <_IsLocal>False</_IsLocal>
+    <_IsLocal Condition="'$(_NearestDirectoryBuildPropsForSolutionNorm)'!='' and
+                         '$(_NearestDirectoryBuildPropsForSolutionNorm)'=='$(_CurrentDirectoryBuildPropsNorm)'">True</_IsLocal>
+  </PropertyGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- ::::::::::::::::::::::::: Default properties :::::::::::::::::::::::::: -->
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)!VS_TMP\Build\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)!VS_TMP\Intermediate\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</IntDir>
+  </PropertyGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::: [Optional] Handle overridable properties ::::::::::::::: -->
+  <PropertyGroup>
+    <OutDir Condition="'$(__OutDirOverride)'!=''">$(__OutDirOverride)</OutDir>
+    <IntDir Condition="'$(__IntDirOverride)'!=''">$(__IntDirOverride)</IntDir>
+  </PropertyGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::::: Экспортируемые / прокидуемые свойства :::::::::::::::: -->
+  <PropertyGroup Condition="'$(_IsLocal)'=='True'">
+    <!-- Определи здесь свойства которые можно использовать в дочерних Directory.Build.props
+         (которые импортируют текущий Directory.Build.props). 
+         Например __OutDirOverride, __IntDirOverride ... -->
+    <!-- ... -->
+  </PropertyGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+  <!-- :::::::::::::::::::::::: Импорт PROJECT.props ::::::::::::::::::::::::: -->
+  <Import Project="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="'$(_IsLocal)'=='True' and
+                     Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')" />
+
+  <ItemGroup Condition="'$(_IsLocal)'=='True'">
+    <!-- First remove duplicate item if exist because otherwise msbuild says error. -->
+    <None Remove="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props" />
+    <None Include="$(MSBuildProjectDirectory)\$(MSBuildProjectName).props"
+          Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).props')" />
+  </ItemGroup>
+  <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+</Project>
