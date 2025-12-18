@@ -599,6 +599,8 @@ HRESULT AvReader::OnReadSampleAsync(
 	try {
 		if (FAILED(hrStatus)) {
 			LOG_FAILED(hrStatus);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+			return hrStatus;
 		}
 
 		if (dwStreamFlags & MF_SOURCE_READERF_ENDOFSTREAM) {
@@ -654,12 +656,32 @@ HRESULT AvReader::OnReadSampleAsync(
 			mfSampleBuffer
 			);
 
-		// Render received media sample
-		if (mediaType == MFMediaType_Video) {
-			hr = ProcessVideoSample(std::move(mfSample));
-		}
-		else if (mediaType == MFMediaType_Audio) {
-			hr = ProcessAudioSample(std::move(mfSample));
+			// Render received media sample
+			if (mediaType == MFMediaType_Video) {
+				try {
+					hr = ProcessVideoSample(std::move(mfSample));
+				}
+				catch (...) {
+					LOG_ERROR_D("ProcessVideoSample вызвал исключение");
+					hr = E_FAIL;
+				}
+			}
+			else if (mediaType == MFMediaType_Audio) {
+				try {
+					hr = ProcessAudioSample(std::move(mfSample));
+				}
+				catch (...) {
+					LOG_ERROR_D("ProcessAudioSample вызвал исключение");
+					hr = E_FAIL;
+				}
+			}
+			else {
+				LOG_WARNING_D("Неизвестный mediaType в OnReadSampleAsync");
+				hr = S_OK;
+			}
+
+			if (FAILED(hr)) {
+				return hr;
 		}
 
 		if (restartAfterSample) {
@@ -668,15 +690,14 @@ HRESULT AvReader::OnReadSampleAsync(
 
 		return S_OK;
 	}
-		catch (...) {
-			LOG_ERROR_D("catch exception in OnReadSampleAsync");
-			Dbreak;
+	catch (...) {
+		LOG_ERROR_D("catch exception in OnReadSampleAsync");
 
-			this->ClearStream(avSourceStreamManager, dwStreamIndex);
-			hr = E_FAIL;
-		}
-		return hr;
+		this->ClearStream(avSourceStreamManager, dwStreamIndex);
+		hr = E_FAIL;
 	}
+	return hr;
+}
 
 HRESULT AvReader::OnFlushAsync(DWORD dwStreamIndex) {
 	std::unique_lock lk{ mx };
