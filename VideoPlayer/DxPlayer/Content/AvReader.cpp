@@ -138,6 +138,11 @@ H::Chrono::Hns AvReader::GetSourceDuration() {
 	return this->sourceDuration;
 }
 
+void AvReader::SetLoopPlayback(bool enableLoop) {
+	std::lock_guard lk{ mx };
+	this->loopPlaybackEnabled = enableLoop;
+}
+
 AvReader::_AvSourceStreamManagerSafeObj::_Locked AvReader::GetLockedAvSourceStreamManager() {
 	return avSourceStreamManagerSafeObj->Lock();
 }
