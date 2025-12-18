@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AvReader.h"
+#include <Helpers/Logger.h>
 
 #if defined(__cppwinrt) || defined(WINRT_BASE_H)
 #include <winrt/base.h>
