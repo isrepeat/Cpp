@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{7D4DC392-282A-4150-A847-3777ABDAC32B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{CF5B045C-8E69-4B72-A6C7-40C89666DF44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{97028FB6-3208-4E18-8F45-28D2190C8097}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="App.xaml.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DeviceResources.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DirectXHelper.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\StepTimer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\SimpleRenderer.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXPage.xaml.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="DxPlayerTemplateMain.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DeviceResources.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\SimpleRenderer.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXPage.xaml.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="DxPlayerTemplateMain.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Filter>UI</Filter>
+    </ApplicationDefinition>
+    <Page Include="DirectXPage.xaml">
+      <Filter>UI</Filter>
+    </Page>
+  </ItemGroup>
+</Project>
