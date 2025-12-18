@@ -13,8 +13,9 @@ namespace DxTools {
 	{
 		Microsoft::WRL::ComPtr<IDXGISurface> dxgiSurface;
 		HRESULT hr = texture.As(&dxgiSurface);
-		if (FAILED(hr))
-			return nullptr;
+        if (FAILED(hr)) {
+            return nullptr;
+        }
 
 		D3D11_TEXTURE2D_DESC desc;
 		texture->GetDesc(&desc);
@@ -32,8 +33,9 @@ namespace DxTools {
 			&pBitmap
 		);
 
-		if (FAILED(hr))
-			return nullptr;
+        if (FAILED(hr)) {
+            return nullptr;
+        }
 
 		return pBitmap;
 	}
@@ -159,15 +161,16 @@ namespace DxPlayer {
 
 		H::Size_f logicalSize = this->swapChainPanel->GetLogicalSize();
 
-		d2dCtx->SaveDrawingState(this->stateBlock.Get());
+		//d2dCtx->SaveDrawingState(this->stateBlock.Get());
 		d2dCtx->BeginDraw();
 		d2dCtx->Clear(D2D1::ColorF(D2D1::ColorF::Gray));
 
-
 		std::unique_ptr<MF::MFVideoSample> videoSample;
 		if (this->lastRenderedVideoSample) {
-			H::Chrono::Hns elapsedTimeFromLastRenderedVideoSample = std::chrono::duration_cast<H::Chrono::Hns::_MyBase>(
-				std::chrono::high_resolution_clock::now() - this->lastRenderedVideoSampleTimePoint);
+            H::Chrono::Hns elapsedTimeFromLastRenderedVideoSample =
+                std::chrono::duration_cast<H::Chrono::Hns::_MyBase>(
+                    std::chrono::high_resolution_clock::now() - this->lastRenderedVideoSampleTimePoint
+                );
 
 			auto distanceToNextVideoSample = this->lastRenderedVideoSample->duration - elapsedTimeFromLastRenderedVideoSample;
 			auto distanceToNextVideoSampleMs = distanceToNextVideoSample.ToDuration<H::Chrono::milliseconds_f>();
@@ -187,11 +190,9 @@ namespace DxPlayer {
 			videoSample = this->avReader->PopNextVideoSample();
 		}
 
-
 		if (videoSample) {
 			this->lastRenderedVideoSample = std::move(videoSample);
 		}
-
 
 		this->RenderVideoSample(this->lastRenderedVideoSample);
 
@@ -202,7 +203,7 @@ namespace DxPlayer {
 			H::System::ThrowIfFailed(hr);
 		}
 
-		d2dCtx->RestoreDrawingState(this->stateBlock.Get());
+		//d2dCtx->RestoreDrawingState(this->stateBlock.Get());
 
 		this->avReader->RequestNeccessaryVideoSamples();
 	}
@@ -221,7 +222,6 @@ namespace DxPlayer {
 
 			D3D11_TEXTURE2D_DESC frameDesc;
 			videoSample->texture->GetDesc(&frameDesc);
-
 
 			// Scale the frame keeping aspect ratio
 			auto renderTargetSize = this->swapChainPanel->GetRenderTargetSize();
