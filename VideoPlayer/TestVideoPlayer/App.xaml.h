@@ -5,7 +5,7 @@
 namespace TestVideoPlayer
 {
 	[Windows::Foundation::Metadata::WebHostHidden]
-	ref class App sealed : public Windows::UI::Xaml::Application
+	ref class App sealed
 	{
 	public:
 		App();
