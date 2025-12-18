@@ -566,10 +566,14 @@ HRESULT AvReader::OnReadSampleAsync(
 	_In_ LONGLONG llTimestamp,
 	_In_opt_ IMFSample* pSample)
 {
-	//LOG_DEBUG_D("OnReadSample(streamIdx = {}, currPos = {})"
-	//	, dwStreamIndex
-	//	, H::Chrono::Hns{ llTimestamp }
-	//);
+	// All state that belongs to AvReader is guarded by mx to keep SourceReader callbacks serialized.
+	// We also lock the stream manager once and reuse it for the whole handler to avoid
+	// inconsistent state between requests and queue updates.
+	//
+	// The method handles three concerns:
+	//   1) detect end-of-stream and optionally restart playback when looping is enabled;
+	//   2) ignore empty samples while keeping stream queues in a consistent state;
+	//   3) dispatch valid samples to the appropriate video/audio processors.
 
 	// NOTE: mx also must guarantee that avSourceStreamManagerSafeObj will not change any stream indices
 	std::unique_lock lk{ mx };
@@ -594,6 +598,8 @@ HRESULT AvReader::OnReadSampleAsync(
 	try {
 		if (dwStreamFlags & MF_SOURCE_READERF_ENDOFSTREAM) {
 			LOG_DEBUG_D("END OF STREAM");
+			// ClearStream expects a stream index. The previous code passed dwStreamFlags,
+			// which was incorrect when END_OF_STREAM was signaled. We now pass dwStreamIndex.
 			this->ClearStream(avSourceStreamManager, dwStreamIndex);
 
 			restartAfterSample = this->loopPlaybackEnabled;
