@@ -566,14 +566,14 @@ HRESULT AvReader::OnReadSampleAsync(
 	_In_ LONGLONG llTimestamp,
 	_In_opt_ IMFSample* pSample)
 {
-	// All state that belongs to AvReader is guarded by mx to keep SourceReader callbacks serialized.
-	// We also lock the stream manager once and reuse it for the whole handler to avoid
-	// inconsistent state between requests and queue updates.
+	// Все состояние AvReader защищено mx, чтобы коллбеки SourceReader выполнялись последовательно.
+	// Менеджер потоков блокируем один раз на весь метод, чтобы исключить расхождение состояния
+	// между запросами новых сэмплов и их обработкой.
 	//
-	// The method handles three concerns:
-	//   1) detect end-of-stream and optionally restart playback when looping is enabled;
-	//   2) ignore empty samples while keeping stream queues in a consistent state;
-	//   3) dispatch valid samples to the appropriate video/audio processors.
+	// Метод решает три задачи:
+	//   1) детектирует конец потока и при включённом цикле запускает воспроизведение с начала;
+	//   2) игнорирует пустые сэмплы, сохраняя очереди потоков в валидном состоянии;
+	//   3) отправляет валидные сэмплы в обработчики видео/аудио.
 
 	// NOTE: mx also must guarantee that avSourceStreamManagerSafeObj will not change any stream indices
 	std::unique_lock lk{ mx };
@@ -586,6 +586,7 @@ HRESULT AvReader::OnReadSampleAsync(
 		LOG_FAILED(hr);
 
 		if (SUCCEEDED(hr)) {
+			LOG_DEBUG_D("Loop playback: запрашиваем первые сэмплы после перемотки на начало");
 			this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Video);
 			this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Audio);
 		}
@@ -596,6 +597,10 @@ HRESULT AvReader::OnReadSampleAsync(
 	bool restartAfterSample = false;
 
 	try {
+		if (FAILED(hrStatus)) {
+			LOG_FAILED(hrStatus);
+		}
+
 		if (dwStreamFlags & MF_SOURCE_READERF_ENDOFSTREAM) {
 			LOG_DEBUG_D("END OF STREAM");
 			// ClearStream expects a stream index. The previous code passed dwStreamFlags,
@@ -614,22 +619,34 @@ HRESULT AvReader::OnReadSampleAsync(
 			return S_OK;
 		}
 
-		// Determine sample type
+		// Определяем тип сэмпла без исключений, чтобы избежать внезапного падения
 		Microsoft::WRL::ComPtr<IMFMediaType> pType;
 		GUID mediaType;
 		hr = this->sourceReader->GetCurrentMediaType(dwStreamIndex, &pType);
-		H::System::ThrowIfFailed(hr);
+		if (FAILED(hr)) {
+			LOG_FAILED(hr);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+			return hr;
+		}
 
 		hr = pType->GetMajorType(&mediaType);
-		H::System::ThrowIfFailed(hr);
+		if (FAILED(hr)) {
+			LOG_FAILED(hr);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+			return hr;
+		}
 
 		DWORD mfSampleTotalLength = 0;
 		hr = pSample->GetTotalLength(&mfSampleTotalLength);
+		LOG_FAILED(hr);
 
 		Microsoft::WRL::ComPtr<IMFMediaBuffer> mfSampleBuffer;
 		hr = pSample->ConvertToContiguousBuffer(&mfSampleBuffer);
 		LOG_FAILED(hr);
-		H::System::ThrowIfFailed(hr);
+		if (FAILED(hr)) {
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+			return hr;
+		}
 
 		auto mfSample = std::make_unique<MF::MFSample>(
 			MFTools::GetSampleTime(pSample),
@@ -651,15 +668,15 @@ HRESULT AvReader::OnReadSampleAsync(
 
 		return S_OK;
 	}
-	catch (...) {
-		LOG_ERROR_D("catch exception");
-		Dbreak;
+		catch (...) {
+			LOG_ERROR_D("catch exception in OnReadSampleAsync");
+			Dbreak;
 
-		this->ClearStream(avSourceStreamManager, dwStreamIndex);
-		hr = E_FAIL;
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+			hr = E_FAIL;
+		}
+		return hr;
 	}
-	return hr;
-}
 
 HRESULT AvReader::OnFlushAsync(DWORD dwStreamIndex) {
 	std::unique_lock lk{ mx };
