@@ -574,16 +574,37 @@ HRESULT AvReader::OnReadSampleAsync(
 	// NOTE: mx also must guarantee that avSourceStreamManagerSafeObj will not change any stream indices
 	std::unique_lock lk{ mx };
 	HRESULT hr = S_OK;
+	auto avSourceStreamManager = this->avSourceStreamManagerSafeObj->Lock();
 
 	try {
 		if (dwStreamFlags & MF_SOURCE_READERF_ENDOFSTREAM) {
 			LOG_DEBUG_D("END OF STREAM");
-			this->ClearStream(this->avSourceStreamManagerSafeObj->Lock(), dwStreamFlags);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+
+			if (this->loopPlaybackEnabled) {
+				this->lastSeekPosition = 0_hns;
+				hr = MFTools::SourceReader::SetPosition(this->sourceReader, this->lastSeekPosition);
+				LOG_FAILED(hr);
+
+				if (SUCCEEDED(hr)) {
+					// Очистим текущие буферы и запросим первые сэмплы заново
+					if (auto activeVideoStream = avSourceStreamManager->GetActiveVideoStream()) {
+						activeVideoStream->ClearSamples();
+						this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Video);
+					}
+					if (auto activeAudioStream = avSourceStreamManager->GetActiveAudioStream()) {
+						activeAudioStream->ClearSamples();
+						this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Audio);
+					}
+				}
+
+				return hr;
+			}
 		}
 
 		if (!pSample) {
 			LOG_WARNING_D("SAMPLE IS NULL");
-			this->ClearStream(this->avSourceStreamManagerSafeObj->Lock(), dwStreamFlags);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
 			return S_OK;
 		}
 
