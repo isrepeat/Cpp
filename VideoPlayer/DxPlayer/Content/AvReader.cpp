@@ -138,6 +138,11 @@ H::Chrono::Hns AvReader::GetSourceDuration() {
 	return this->sourceDuration;
 }
 
+void AvReader::SetLoopPlayback(bool enableLoop) {
+	std::lock_guard lk{ mx };
+	this->loopPlaybackEnabled = enableLoop;
+}
+
 AvReader::_AvSourceStreamManagerSafeObj::_Locked AvReader::GetLockedAvSourceStreamManager() {
 	return avSourceStreamManagerSafeObj->Lock();
 }
@@ -569,16 +574,37 @@ HRESULT AvReader::OnReadSampleAsync(
 	// NOTE: mx also must guarantee that avSourceStreamManagerSafeObj will not change any stream indices
 	std::unique_lock lk{ mx };
 	HRESULT hr = S_OK;
+	auto avSourceStreamManager = this->avSourceStreamManagerSafeObj->Lock();
+
+	auto restartPlayback = [&]() -> HRESULT {
+		this->lastSeekPosition = 0_hns;
+		hr = MFTools::SourceReader::SetPosition(this->sourceReader, this->lastSeekPosition);
+		LOG_FAILED(hr);
+
+		if (SUCCEEDED(hr)) {
+			this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Video);
+			this->RequestNextSampleInternal(avSourceStreamManager, AvStreamType::Audio);
+		}
+
+		return hr;
+	};
+
+	bool restartAfterSample = false;
 
 	try {
 		if (dwStreamFlags & MF_SOURCE_READERF_ENDOFSTREAM) {
 			LOG_DEBUG_D("END OF STREAM");
-			this->ClearStream(this->avSourceStreamManagerSafeObj->Lock(), dwStreamFlags);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
+
+			restartAfterSample = this->loopPlaybackEnabled;
+			if (restartAfterSample && !pSample) {
+				return restartPlayback();
+			}
 		}
 
 		if (!pSample) {
 			LOG_WARNING_D("SAMPLE IS NULL");
-			this->ClearStream(this->avSourceStreamManagerSafeObj->Lock(), dwStreamFlags);
+			this->ClearStream(avSourceStreamManager, dwStreamIndex);
 			return S_OK;
 		}
 
@@ -613,13 +639,17 @@ HRESULT AvReader::OnReadSampleAsync(
 			hr = ProcessAudioSample(std::move(mfSample));
 		}
 
+		if (restartAfterSample) {
+			return restartPlayback();
+		}
+
 		return S_OK;
 	}
 	catch (...) {
 		LOG_ERROR_D("catch exception");
 		Dbreak;
 
-		this->ClearStream(this->avSourceStreamManagerSafeObj->Lock(), dwStreamFlags);
+		this->ClearStream(avSourceStreamManager, dwStreamIndex);
 		hr = E_FAIL;
 	}
 	return hr;

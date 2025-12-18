@@ -20,6 +20,8 @@ public:
 
     H::Chrono::Hns GetSourceDuration();
 
+    void SetLoopPlayback(bool enableLoop);
+
     _AvSourceStreamManagerSafeObj::_Locked GetLockedAvSourceStreamManager();
 
     //void SeekAsync(AvReaderRewindParams rewindParams);
@@ -105,6 +107,7 @@ private:
     //std::weak_ptr<AvReaderRewindAsyncResult> rewindAsyncResultWeak;
     H::Chrono::Hns lastSeekPosition = 0_hns;
     H::Chrono::Hns sourceDuration = 0_hns;
+    bool loopPlaybackEnabled = false;
 };
 
 #elif ENGINE_TYPE == DX_PLAYER_RENDER
