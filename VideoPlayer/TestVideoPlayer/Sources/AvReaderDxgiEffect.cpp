@@ -57,11 +57,8 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
         this->sharedTextureDesc = srcTextureDesc;
 
         constexpr size_t poolSize = 3;
-        auto renderDevice = this->dxDeviceSafeObj->Lock()->GetD3DDevice();
-        this->renderTextures.clear();
-        this->renderTextures.resize(poolSize);
         for (size_t i = 0; i < poolSize; ++i) {
-            this->sharedTextures.push_back(std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, renderDevice, mfD3dDevice));
+            this->sharedTextures.push_back(std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice));
         }
     }
 
@@ -70,22 +67,7 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
     this->sharedTextureCursor = (this->sharedTextureCursor + 1) % this->sharedTextures.size();
 
     sharedTexture.CopyFrom(mfSampleTexture);
-
-    auto renderDevice = this->dxDeviceSafeObj->Lock();
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dCtx;
-    renderDevice->GetD3DDevice()->GetImmediateContext(d3dCtx.GetAddressOf());
-
-    // Ensure we have a renderable copy on the render device without keyed mutex requirements.
-    auto& dstTexture = this->renderTextures[poolIndex];
-    if (!dstTexture) {
-        hr = renderDevice->GetD3DDevice()->CreateTexture2D(&this->sharedTextureDesc, nullptr, dstTexture.GetAddressOf());
-        H::System::ThrowIfFailed(hr);
-    }
-
-    {
-        auto lockedDstShared = sharedTexture.GetLockedTextureOnDstDevice();
-        d3dCtx->CopyResource(dstTexture.Get(), lockedDstShared.GetTexture());
-    }
+    auto dstTexture = sharedTexture.GetDstTexture();
 
     MF::MFSample mfSampleCopy = *mfSample;
     mfSampleCopy.buffer = nullptr; // release original reference to IMFSample
