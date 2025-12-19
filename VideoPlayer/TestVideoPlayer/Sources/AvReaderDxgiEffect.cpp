@@ -38,9 +38,11 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
     hr = dxgiBuffer->GetResource(IID_PPV_ARGS(&mfSampleTexture));
     H::System::ThrowIfFailed(hr);
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> dstTexture;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> sharedTextureOnRenderDevice;
     {
-        H::Dx::MFDXGIDeviceManagerLock mfDxgiDeviceManagerLock{ this->mfDxgiDeviceManager }; // it may block current thread when device lock / unlock
+        // NOTE: This lock is required to access the Media Foundation DXGI device,
+        // but should be held for a minimal time to avoid blocking the render thread.
+        H::Dx::MFDXGIDeviceManagerLock mfDxgiDeviceManagerLock{ this->mfDxgiDeviceManager };
 
         Microsoft::WRL::ComPtr<ID3D11Device> mfD3dDevice;
         hr = mfDxgiDeviceManagerLock.LockDevice(mfD3dDevice.GetAddressOf());
@@ -52,14 +54,19 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
         mfSampleTexture->GetDesc(&srcTextureDesc);
 
         if (!this->sharedTexture) {
+            // Create a keyed-mutex shared texture once and reuse it across frames so that
+            // the render device can read directly without an extra per-frame copy or
+            // texture creation.
             this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
         }
-        this->sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
+
+        // Copies only into the shared texture and returns the render-device view.
+        this->sharedTexture->CopyTexture(sharedTextureOnRenderDevice.GetAddressOf(), mfSampleTexture);
     }
 
     MF::MFSample mfSampleCopy = *mfSample;
     mfSampleCopy.buffer = nullptr; // release original reference to IMFSample
-    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, dstTexture);
+    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, sharedTextureOnRenderDevice);
     return sample;
 
 #else

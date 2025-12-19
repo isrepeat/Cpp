@@ -78,20 +78,15 @@ namespace HELPERS_NS {
                 srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
             }
 
-            {
+            if (ppDstTexture) {
                 auto textureOnDstDeviceLocked = this->GetLockedTextureOnDstDevice();
 
-                D3D11_TEXTURE2D_DESC srcTextureDesc = {};
-                srcTexture->GetDesc(&srcTextureDesc);
-            
-                hr = this->dstDevice->CreateTexture2D(&srcTextureDesc, nullptr, ppDstTexture);
-                HELPERS_NS::System::ThrowIfFailed(hr);
-
-                Microsoft::WRL::ComPtr<ID3D11DeviceContext> dstDeviceContext;
-                this->dstDevice->GetImmediateContext(dstDeviceContext.GetAddressOf());
-
-                // Copy from shared texture to dstTexture
-                dstDeviceContext->CopyResource(*ppDstTexture, textureOnDstDeviceLocked.GetTexture());
+                // Reuse the existing shared texture on the destination device instead of
+                // creating a new texture on every frame. The keyed mutex guarantees that
+                // the copy above is complete before the texture is handed off to the
+                // consumer.
+                *ppDstTexture = textureOnDstDeviceLocked.GetTexture();
+                (*ppDstTexture)->AddRef();
             }
         }
 
