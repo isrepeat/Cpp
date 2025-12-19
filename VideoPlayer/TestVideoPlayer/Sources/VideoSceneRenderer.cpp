@@ -216,21 +216,21 @@ namespace TestVideoPlayer {
 			auto dpiScaleFactor = this->swapChainPanel->GetDpi() / 96.0f;
 
 			// Create a ID2D1Bitmap1 out of the frame texture. If the texture is shared via keyed mutex,
-			// lock it for reading instead of copying it to a new resource.
+			// lock it for reading instead of copying it to a new resource and keep the lock until after DrawImage.
 			Microsoft::WRL::ComPtr<ID3D11Texture2D> frameTexture = videoSample->texture;
 			D3D11_TEXTURE2D_DESC frameDesc{};
 			frameTexture->GetDesc(&frameDesc);
 
 			Microsoft::WRL::ComPtr<ID2D1Bitmap1> frame;
-			if (frameDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX) {
-				Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyedMutex;
-				if (SUCCEEDED(frameTexture.As(&keyedMutex))) {
-					// Writer releases with key 1, reader acquires with the same key and releases with 0.
-					HRESULT hr = keyedMutex->AcquireSync(1, 0);
-					if (SUCCEEDED(hr)) {
-						frame = DxTools::CreateFrameBitmap(dxCtx, frameTexture);
-						keyedMutex->ReleaseSync(0);
-					}
+			Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyedMutex;
+			bool frameLocked = false;
+
+			if (frameDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX && SUCCEEDED(frameTexture.As(&keyedMutex))) {
+				// Writer releases with key 1, reader acquires with the same key and releases with 0.
+				HRESULT hr = keyedMutex->AcquireSync(1, INFINITE);
+				if (SUCCEEDED(hr)) {
+					frame = DxTools::CreateFrameBitmap(dxCtx, frameTexture);
+					frameLocked = true;
 				}
 			}
 			else {
@@ -238,6 +238,9 @@ namespace TestVideoPlayer {
 			}
 
 			if (!frame) {
+				if (frameLocked && keyedMutex) {
+					keyedMutex->ReleaseSync(0);
+				}
 				return;
 			}
 
@@ -271,6 +274,10 @@ namespace TestVideoPlayer {
 			this->centerEffect->SetValue(D2D1_2DAFFINETRANSFORM_PROP_TRANSFORM_MATRIX, matrix);
 
 			d2dCtx->DrawImage(this->centerEffect.Get());
+
+			if (frameLocked && keyedMutex) {
+				keyedMutex->ReleaseSync(0);
+			}
 		}
 	}
 }
