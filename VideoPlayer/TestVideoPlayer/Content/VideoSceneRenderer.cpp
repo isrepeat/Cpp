@@ -1,5 +1,4 @@
 #include "pch.h"
-#if ENGINE_TYPE == MEDIA_ENDIGNE_LOGIC
 #include "VideoSceneRenderer.h"
 #include <Helpers/Dx/DxHelpers.h>
 #include <Helpers/File.h>
@@ -254,4 +253,3 @@ namespace TestVideoPlayer {
 		}
 	}
 }
-#endif

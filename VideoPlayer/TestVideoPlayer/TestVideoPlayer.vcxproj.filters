@@ -21,9 +21,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Common\DeviceResources.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Content\AvReader.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -34,12 +31,6 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="Content\AvSourceStreamManager.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\Sample3DSceneRenderer.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\SampleFpsTextRenderer.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="Content\VideoSceneRenderer.cpp">
@@ -57,12 +48,6 @@
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Config.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\DeviceResources.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="Common\DirectXHelper.h">
@@ -90,12 +75,6 @@
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="Content\MediaSample.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\Sample3DSceneRenderer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\SampleFpsTextRenderer.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="Content\ShaderStructures.h">
