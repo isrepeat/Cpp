@@ -9,54 +9,115 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="App.xaml.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="App.xaml.cpp">
+    <ClCompile Include="DxPlayerMain.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXPage.xaml.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="MainPage.xaml.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DeviceResources.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReaderDxgiEffect.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReaderDxgiManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvSourceStreamManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\Sample3DSceneRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\SampleFpsTextRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\VideoSceneRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="App.xaml.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="App.xaml.h">
+    <ClInclude Include="DxPlayerMain.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXPage.xaml.h">
       <Filter>Sources</Filter>
     </ClInclude>
     <ClInclude Include="MainPage.xaml.h">
       <Filter>Sources</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\LockScreenLogo.scale-200.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\SplashScreen.scale-200.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\Square150x150Logo.scale-200.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\Square44x44Logo.scale-200.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\StoreLogo.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\Wide310x150Logo.scale-200.png">
-      <Filter>Assets</Filter>
-    </Image>
+    <ClInclude Include="pch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Config.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DeviceResources.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DirectXHelper.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\StepTimer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AudioWaveFormat.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReader.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReaderDxgiEffect.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReaderDxgiManager.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvSourceStreamManager.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\IAvReaderEffect.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\MediaSample.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\Sample3DSceneRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\SampleFpsTextRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\ShaderStructures.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\VideoSceneRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Filter>Sources</Filter>
     </ApplicationDefinition>
+    <Page Include="DirectXPage.xaml">
+      <Filter>Sources</Filter>
+    </Page>
     <Page Include="MainPage.xaml">
       <Filter>Sources</Filter>
     </Page>
