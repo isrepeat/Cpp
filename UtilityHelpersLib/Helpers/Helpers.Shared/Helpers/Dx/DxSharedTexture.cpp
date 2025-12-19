@@ -95,6 +95,28 @@ namespace HELPERS_NS {
             }
         }
 
+        void DxSharedTexture::CopyFrom(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture) {
+            {
+                auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice();
+
+                Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
+                srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
+
+                // Copy srcTexture that allocated on srcDevice to shared texture
+                srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
+            }
+
+            // Acquire/release on destination device to ensure the new content is visible.
+            {
+                auto textureOnDstDeviceLocked = this->GetLockedTextureOnDstDevice();
+                (void)textureOnDstDeviceLocked;
+            }
+        }
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> DxSharedTexture::GetDstTexture() const {
+            return this->dstDeviceTexture;
+        }
+
 
         DxSharedTextureLocked::DxSharedTextureLocked(
             Microsoft::WRL::ComPtr<ID3D11Texture2D> tex,

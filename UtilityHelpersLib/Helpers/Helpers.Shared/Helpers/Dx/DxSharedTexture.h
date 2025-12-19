@@ -26,6 +26,9 @@ namespace HELPERS_NS {
             //DxSharedTextureLocker GetTextureOnSrcDevice() const;
             //DxSharedTextureLocker GetTextureOnDstDevice() const;
 
+            void CopyFrom(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture);
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> GetDstTexture() const;
+
             void CopyTexture(
                 ID3D11Texture2D** ppDstTexture,
                 const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture);
