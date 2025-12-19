@@ -12,8 +12,7 @@ namespace MEDIA_FOUNDATION_NS {
         MFSampleDataAccessor(const Microsoft::WRL::ComPtr<IMFMediaBuffer>& buffer)
             : buffer{ buffer }
             , bufferData{ nullptr }
-            , bufferSize{ 0 }
-        {
+            , bufferSize{ 0 } {
             HRESULT hr = S_OK;
             BYTE* data;
             DWORD maxLength, length;
@@ -53,7 +52,6 @@ namespace MEDIA_FOUNDATION_NS {
         Microsoft::WRL::ComPtr<IMFMediaBuffer> buffer;
         void* bufferData;
         size_t bufferSize;
-
     };
 
     struct MFSample : MF::SampleInfo {
@@ -76,8 +74,8 @@ namespace MEDIA_FOUNDATION_NS {
 
         MFVideoSample(const MFSample& mfSample, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture)
             : MFSample{ mfSample }
-            , texture{ texture }
-        {}
+            , texture{ texture } {
+        }
     };
 
     struct MFAudioSample : MFSample {
@@ -85,7 +83,7 @@ namespace MEDIA_FOUNDATION_NS {
 
         MFAudioSample(const MFSample& mfSample, std::vector<BYTE> audioData)
             : MFSample{ mfSample }
-            , audioData{ std::move(audioData) }
-        {}
+            , audioData{ std::move(audioData) } {
+        }
     };
 }

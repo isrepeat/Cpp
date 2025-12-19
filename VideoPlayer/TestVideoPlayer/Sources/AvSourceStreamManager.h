@@ -1,13 +1,13 @@
 #pragma once
-#include "IAvReaderEffect.h"
-#include "AudioWaveFormat.h"
-#include "MediaSample.h"
-
 #include <Helpers/MediaFoundation/MFInclude.h>
 #include <Helpers/ThreadSafeObject.hpp>
 #include <Helpers/Rational.h>
 #include <Helpers/Memory.h>
 #include <Helpers/Math.h>
+
+#include "IAvReaderEffect.h"
+#include "AudioWaveFormat.h"
+#include "MediaSample.h"
 
 #include <ppltasks.h>
 #include <cstdint>
@@ -143,7 +143,6 @@ private:
 
 
 
-
 class AvStreamAudio : public AvStreamBase, public AvStreamSamplesProcessedQueue {
 public:
     AvStreamAudio(
@@ -193,7 +192,7 @@ public:
     AvStreamVideo* GetFirstVideoStream();
     AvStreamAudio* GetFirstAudioStream();
 
-    
+
     void DisableAllStreams();
     void DisableStream(AvStreamType streamType, int32_t streamIdx);
 
