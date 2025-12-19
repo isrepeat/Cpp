@@ -21,8 +21,15 @@ namespace HELPERS_NS {
 
             explicit operator bool() const;
 
-            DxSharedTextureLocked GetLockedTextureOnDstDevice() const;
-            DxSharedTextureLocked GetLockedTextureOnSrcDevice() const;
+            DxSharedTextureLocked GetLockedTextureOnDstDevice(UINT acquireKey = 0, UINT releaseKey = 0) const;
+            DxSharedTextureLocked GetLockedTextureOnSrcDevice(UINT acquireKey = 0, UINT releaseKey = 0) const;
+            void WriteToSharedTexture(
+                const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture,
+                UINT acquireKey = 0,
+                UINT releaseKey = 1);
+
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> GetDstTexture() const { return this->dstDeviceTexture; }
+            Microsoft::WRL::ComPtr<IDXGIKeyedMutex> GetDstKeyedMutex() const { return this->dstDeviceTextureMtx; }
             //DxSharedTextureLocker GetTextureOnSrcDevice() const;
             //DxSharedTextureLocker GetTextureOnDstDevice() const;
 
@@ -45,7 +52,9 @@ namespace HELPERS_NS {
         public:
             DxSharedTextureLocked(
                 Microsoft::WRL::ComPtr<ID3D11Texture2D> tex,
-                Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx);
+                Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx,
+                UINT acquireKey,
+                UINT releaseKey);
             ~DxSharedTextureLocked();
 
             ID3D11Texture2D* GetTexture() const;
@@ -53,6 +62,7 @@ namespace HELPERS_NS {
         private:
             Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
             Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx;
+            UINT releaseKey = 0;
         };
 
         // allows use texture only when texture mutex is locked

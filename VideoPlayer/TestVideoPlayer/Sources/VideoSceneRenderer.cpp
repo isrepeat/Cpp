@@ -215,12 +215,33 @@ namespace TestVideoPlayer {
 		if (videoSample) {
 			auto dpiScaleFactor = this->swapChainPanel->GetDpi() / 96.0f;
 
-			// Create a ID2D1Bitmap1 out of the frame texture
-			auto frame = DxTools::CreateFrameBitmap(dxCtx, videoSample->texture);
-			this->scaleEffect->SetInput(0, frame.Get());
+			// Create a ID2D1Bitmap1 out of the frame texture. If the texture is shared via keyed mutex,
+			// lock it for reading instead of copying it to a new resource.
+			Microsoft::WRL::ComPtr<ID3D11Texture2D> frameTexture = videoSample->texture;
+			D3D11_TEXTURE2D_DESC frameDesc{};
+			frameTexture->GetDesc(&frameDesc);
 
-			D3D11_TEXTURE2D_DESC frameDesc;
-			videoSample->texture->GetDesc(&frameDesc);
+			Microsoft::WRL::ComPtr<ID2D1Bitmap1> frame;
+			if (frameDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX) {
+				Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyedMutex;
+				if (SUCCEEDED(frameTexture.As(&keyedMutex))) {
+					// Writer releases with key 1, reader acquires with the same key and releases with 0.
+					HRESULT hr = keyedMutex->AcquireSync(1, 0);
+					if (SUCCEEDED(hr)) {
+						frame = DxTools::CreateFrameBitmap(dxCtx, frameTexture);
+						keyedMutex->ReleaseSync(0);
+					}
+				}
+			}
+			else {
+				frame = DxTools::CreateFrameBitmap(dxCtx, frameTexture);
+			}
+
+			if (!frame) {
+				return;
+			}
+
+			this->scaleEffect->SetInput(0, frame.Get());
 
 			// Scale the frame keeping aspect ratio
 			auto renderTargetSize = this->swapChainPanel->GetRenderTargetSize();

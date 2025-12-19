@@ -38,28 +38,29 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
     hr = dxgiBuffer->GetResource(IID_PPV_ARGS(&mfSampleTexture));
     H::System::ThrowIfFailed(hr);
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> dstTexture;
-    {
-        H::Dx::MFDXGIDeviceManagerLock mfDxgiDeviceManagerLock{ this->mfDxgiDeviceManager }; // it may block current thread when device lock / unlock
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> sharedDstTexture;
+    H::Dx::MFDXGIDeviceManagerLock mfDxgiDeviceManagerLock{ this->mfDxgiDeviceManager }; // it may block current thread when device lock / unlock
 
-        Microsoft::WRL::ComPtr<ID3D11Device> mfD3dDevice;
-        hr = mfDxgiDeviceManagerLock.LockDevice(mfD3dDevice.GetAddressOf());
-        if (FAILED(hr)) {
-            Dbreak;
-        }
-
-        D3D11_TEXTURE2D_DESC srcTextureDesc = {};
-        mfSampleTexture->GetDesc(&srcTextureDesc);
-
-        if (!this->sharedTexture) {
-            this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
-        }
-        this->sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
+    Microsoft::WRL::ComPtr<ID3D11Device> mfD3dDevice;
+    hr = mfDxgiDeviceManagerLock.LockDevice(mfD3dDevice.GetAddressOf());
+    if (FAILED(hr)) {
+        Dbreak;
     }
+
+    D3D11_TEXTURE2D_DESC srcTextureDesc = {};
+    mfSampleTexture->GetDesc(&srcTextureDesc);
+
+    if (!this->sharedTexture) {
+        this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
+    }
+
+    // Copy decoded frame into shared keyed texture once per sample
+    this->sharedTexture->WriteToSharedTexture(mfSampleTexture, 0, 1);
+    sharedDstTexture = this->sharedTexture->GetDstTexture();
 
     MF::MFSample mfSampleCopy = *mfSample;
     mfSampleCopy.buffer = nullptr; // release original reference to IMFSample
-    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, dstTexture);
+    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, sharedDstTexture);
     return sample;
 
 #else

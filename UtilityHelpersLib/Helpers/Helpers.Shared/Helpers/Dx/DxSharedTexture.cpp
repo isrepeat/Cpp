@@ -48,11 +48,24 @@ namespace HELPERS_NS {
             return this->sharedTextureHandle != nullptr;
         }
 
-        DxSharedTextureLocked DxSharedTexture::GetLockedTextureOnDstDevice() const {
-            return DxSharedTextureLocked(this->dstDeviceTexture, this->dstDeviceTextureMtx);
+        DxSharedTextureLocked DxSharedTexture::GetLockedTextureOnDstDevice(UINT acquireKey, UINT releaseKey) const {
+            return DxSharedTextureLocked(this->dstDeviceTexture, this->dstDeviceTextureMtx, acquireKey, releaseKey);
         }
-        DxSharedTextureLocked DxSharedTexture::GetLockedTextureOnSrcDevice() const {
-            return DxSharedTextureLocked(this->srcDeviceTexture, this->srcDeviceTextureMtx);
+        DxSharedTextureLocked DxSharedTexture::GetLockedTextureOnSrcDevice(UINT acquireKey, UINT releaseKey) const {
+            return DxSharedTextureLocked(this->srcDeviceTexture, this->srcDeviceTextureMtx, acquireKey, releaseKey);
+        }
+
+        void DxSharedTexture::WriteToSharedTexture(
+            const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture,
+            UINT acquireKey,
+            UINT releaseKey)
+        {
+            auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice(acquireKey, releaseKey);
+
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
+            srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
+
+            srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
         }
         //DxSharedTextureLocker DxSharedTexture::GetTextureOnSrcDevice() const {
         //    return DxSharedTextureLocker(this->dstDeviceTexture, this->dstDeviceTextureMtx);
@@ -98,16 +111,19 @@ namespace HELPERS_NS {
 
         DxSharedTextureLocked::DxSharedTextureLocked(
             Microsoft::WRL::ComPtr<ID3D11Texture2D> tex,
-            Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx) 
+            Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx,
+            UINT acquireKey,
+            UINT releaseKey) 
             : tex(tex)
             , texMtx(texMtx)
+            , releaseKey(releaseKey)
         {
-            HRESULT hr = this->texMtx->AcquireSync(0, INFINITE);
+            HRESULT hr = this->texMtx->AcquireSync(acquireKey, INFINITE);
             H::System::ThrowIfFailed(hr);
         }
 
         DxSharedTextureLocked::~DxSharedTextureLocked() {
-            HRESULT hr = this->texMtx->ReleaseSync(0);
+            HRESULT hr = this->texMtx->ReleaseSync(this->releaseKey);
             H::System::ThrowIfFailed(hr);
         }
 
