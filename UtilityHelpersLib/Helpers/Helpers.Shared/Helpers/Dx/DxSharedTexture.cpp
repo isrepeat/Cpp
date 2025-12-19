@@ -63,36 +63,18 @@ namespace HELPERS_NS {
         //}
 
 
-        void DxSharedTexture::CopyTexture(
-            ID3D11Texture2D** ppDstTexture,
+        DxSharedTextureLocked DxSharedTexture::CopyFrom(
             const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture)
         {
-            HRESULT hr = S_OK;
-            {
-                auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice();
+            auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice();
 
-                Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
-                srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
+            srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
 
-                // Copy srcTexture that allocated on srcDevice to shared texture
-                srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
-            }
+            // Copy srcTexture that allocated on srcDevice to shared texture
+            srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
 
-            {
-                auto textureOnDstDeviceLocked = this->GetLockedTextureOnDstDevice();
-
-                D3D11_TEXTURE2D_DESC srcTextureDesc = {};
-                srcTexture->GetDesc(&srcTextureDesc);
-            
-                hr = this->dstDevice->CreateTexture2D(&srcTextureDesc, nullptr, ppDstTexture);
-                HELPERS_NS::System::ThrowIfFailed(hr);
-
-                Microsoft::WRL::ComPtr<ID3D11DeviceContext> dstDeviceContext;
-                this->dstDevice->GetImmediateContext(dstDeviceContext.GetAddressOf());
-
-                // Copy from shared texture to dstTexture
-                dstDeviceContext->CopyResource(*ppDstTexture, textureOnDstDeviceLocked.GetTexture());
-            }
+            return this->GetLockedTextureOnDstDevice();
         }
 
 
@@ -102,17 +84,47 @@ namespace HELPERS_NS {
             : tex(tex)
             , texMtx(texMtx)
         {
-            HRESULT hr = this->texMtx->AcquireSync(0, INFINITE);
-            H::System::ThrowIfFailed(hr);
+            if (this->texMtx) {
+                HRESULT hr = this->texMtx->AcquireSync(0, INFINITE);
+                H::System::ThrowIfFailed(hr);
+            }
+        }
+
+        DxSharedTextureLocked::DxSharedTextureLocked(DxSharedTextureLocked&& other) noexcept
+            : tex{ std::move(other.tex) }
+            , texMtx{ std::move(other.texMtx) } {
+            other.tex.Reset();
+            other.texMtx.Reset();
+        }
+
+        DxSharedTextureLocked& DxSharedTextureLocked::operator=(DxSharedTextureLocked&& other) noexcept {
+            if (this != &other) {
+                // release current lock if exists
+                if (this->texMtx) {
+                    HRESULT hr = this->texMtx->ReleaseSync(0);
+                    H::System::ThrowIfFailed(hr);
+                }
+                this->tex = std::move(other.tex);
+                this->texMtx = std::move(other.texMtx);
+                other.tex.Reset();
+                other.texMtx.Reset();
+            }
+            return *this;
         }
 
         DxSharedTextureLocked::~DxSharedTextureLocked() {
-            HRESULT hr = this->texMtx->ReleaseSync(0);
-            H::System::ThrowIfFailed(hr);
+            if (this->texMtx) {
+                HRESULT hr = this->texMtx->ReleaseSync(0);
+                H::System::ThrowIfFailed(hr);
+            }
         }
 
         ID3D11Texture2D* DxSharedTextureLocked::GetTexture() const {
             return this->tex.Get();
+        }
+
+        bool DxSharedTextureLocked::IsLocked() const {
+            return this->texMtx != nullptr;
         }
 
 

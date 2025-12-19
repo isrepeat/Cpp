@@ -38,7 +38,7 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
     hr = dxgiBuffer->GetResource(IID_PPV_ARGS(&mfSampleTexture));
     H::System::ThrowIfFailed(hr);
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> dstTexture;
+    H::Dx::DxSharedTextureLocked lockedSharedTexture{ nullptr, nullptr };
     {
         H::Dx::MFDXGIDeviceManagerLock mfDxgiDeviceManagerLock{ this->mfDxgiDeviceManager }; // it may block current thread when device lock / unlock
 
@@ -54,12 +54,13 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
         if (!this->sharedTexture) {
             this->sharedTexture = std::make_unique<H::Dx::DxSharedTexture>(srcTextureDesc, this->dxDeviceSafeObj->Lock()->GetD3DDevice(), mfD3dDevice);
         }
-        this->sharedTexture->CopyTexture(dstTexture.GetAddressOf(), mfSampleTexture);
+        lockedSharedTexture = this->sharedTexture->CopyFrom(mfSampleTexture);
     }
 
     MF::MFSample mfSampleCopy = *mfSample;
     mfSampleCopy.buffer = nullptr; // release original reference to IMFSample
-    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, dstTexture);
+    auto sample = std::make_unique<MF::MFVideoSample>(mfSampleCopy, lockedSharedTexture.GetTexture());
+    this->lastLockedTexture = std::move(lockedSharedTexture);
     return sample;
 
 #else

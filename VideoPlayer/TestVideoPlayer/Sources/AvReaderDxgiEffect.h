@@ -5,7 +5,7 @@
 #include <Helpers/Dx/DxgiDeviceLock.h>
 #include <Helpers/Dx/DxDevice.h>
 
-#define AvReaderDxgiManager_NEW_LOGIC 0
+#define AvReaderDxgiManager_NEW_LOGIC 1
 
 class AvReaderDxgiEffect : public IAvReaderEffect {
 public:
@@ -24,5 +24,6 @@ private:
     Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> mfDxgiDeviceManager;
 #endif
     std::unique_ptr<H::Dx::DxSharedTexture> sharedTexture;
+    H::Dx::DxSharedTextureLocked lastLockedTexture;
     DirectX::XMUINT2 videoSize;
 };

@@ -26,8 +26,7 @@ namespace HELPERS_NS {
             //DxSharedTextureLocker GetTextureOnSrcDevice() const;
             //DxSharedTextureLocker GetTextureOnDstDevice() const;
 
-            void CopyTexture(
-                ID3D11Texture2D** ppDstTexture,
+            DxSharedTextureLocked CopyFrom(
                 const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture);
 
         private:
@@ -43,12 +42,18 @@ namespace HELPERS_NS {
 
         class DxSharedTextureLocked {
         public:
+            DxSharedTextureLocked() = default;
             DxSharedTextureLocked(
                 Microsoft::WRL::ComPtr<ID3D11Texture2D> tex,
                 Microsoft::WRL::ComPtr<IDXGIKeyedMutex> texMtx);
+            DxSharedTextureLocked(const DxSharedTextureLocked&) = delete;
+            DxSharedTextureLocked& operator=(const DxSharedTextureLocked&) = delete;
+            DxSharedTextureLocked(DxSharedTextureLocked&& other) noexcept;
+            DxSharedTextureLocked& operator=(DxSharedTextureLocked&& other) noexcept;
             ~DxSharedTextureLocked();
 
             ID3D11Texture2D* GetTexture() const;
+            bool IsLocked() const;
 
         private:
             Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
