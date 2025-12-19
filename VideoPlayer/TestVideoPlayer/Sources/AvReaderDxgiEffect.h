@@ -26,6 +26,8 @@ private:
     std::vector<std::unique_ptr<H::Dx::DxSharedTexture>> sharedTextures;
     size_t sharedTextureCursor = 0;
     D3D11_TEXTURE2D_DESC sharedTextureDesc = {};
+
+    std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>> renderTextures;
 #endif
     std::unique_ptr<H::Dx::DxSharedTexture> sharedTexture;
     DirectX::XMUINT2 videoSize;
