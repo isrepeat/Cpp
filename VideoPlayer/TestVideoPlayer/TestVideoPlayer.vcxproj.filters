@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{1646d8f1-6ff9-463d-9589-17b39fbef883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{8c783b8a-9c2d-424a-97d6-1dc67b1b8b6b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DxPlayerMain.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXPage.xaml.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DeviceResources.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReader.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReaderDxgiEffect.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvReaderDxgiManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\AvSourceStreamManager.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\Sample3DSceneRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\SampleFpsTextRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\VideoSceneRenderer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="App.xaml.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="DxPlayerMain.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXPage.xaml.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Config.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DeviceResources.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DirectXHelper.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\StepTimer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AudioWaveFormat.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReader.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReaderDxgiEffect.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvReaderDxgiManager.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\AvSourceStreamManager.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\IAvReaderEffect.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\MediaSample.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\Sample3DSceneRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\SampleFpsTextRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\ShaderStructures.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\VideoSceneRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Filter>Sources</Filter>
+    </ApplicationDefinition>
+    <Page Include="DirectXPage.xaml">
+      <Filter>Sources</Filter>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <Filter>Sources</Filter>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ColorMatrix_PS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Default_PS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Default_VS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HDRToneMapping_PS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Proxy1_PS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Proxy1_VS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Proxy2_PS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Proxy2_VS.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
