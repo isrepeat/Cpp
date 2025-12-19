@@ -54,6 +54,19 @@ namespace HELPERS_NS {
         DxSharedTextureLocked DxSharedTexture::GetLockedTextureOnSrcDevice() const {
             return DxSharedTextureLocked(this->srcDeviceTexture, this->srcDeviceTextureMtx);
         }
+        DxSharedTextureLocked DxSharedTexture::LockDstTexture() const {
+            return this->GetLockedTextureOnDstDevice();
+        }
+        void DxSharedTexture::CopyFromSource(
+            const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture) {
+            auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice();
+
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
+            srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
+
+            // Copy srcTexture that allocated on srcDevice to shared texture
+            srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
+        }
         //DxSharedTextureLocker DxSharedTexture::GetTextureOnSrcDevice() const {
         //    return DxSharedTextureLocker(this->dstDeviceTexture, this->dstDeviceTextureMtx);
         //}
@@ -68,15 +81,7 @@ namespace HELPERS_NS {
             const Microsoft::WRL::ComPtr<ID3D11Texture2D>& srcTexture)
         {
             HRESULT hr = S_OK;
-            {
-                auto textureOnSrcDeviceLocked = this->GetLockedTextureOnSrcDevice();
-
-                Microsoft::WRL::ComPtr<ID3D11DeviceContext> srcDeviceContext;
-                srcDevice->GetImmediateContext(srcDeviceContext.GetAddressOf());
-
-                // Copy srcTexture that allocated on srcDevice to shared texture
-                srcDeviceContext->CopyResource(textureOnSrcDeviceLocked.GetTexture(), srcTexture.Get());
-            }
+            this->CopyFromSource(srcTexture);
 
             {
                 auto textureOnDstDeviceLocked = this->GetLockedTextureOnDstDevice();

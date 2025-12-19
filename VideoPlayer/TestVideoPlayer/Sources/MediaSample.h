@@ -5,6 +5,18 @@
 #include <mfobjects.h>
 #include <d3d11.h>
 #include <wrl.h>
+#include <memory>
+
+namespace HELPERS_NS {
+    namespace Dx {
+        class DxSharedTextureLocked;
+    }
+}
+namespace H {
+    namespace Dx {
+        class DxSharedTextureLocked;
+    }
+}
 
 namespace MEDIA_FOUNDATION_NS {
     class MFSampleDataAccessor {
@@ -70,10 +82,15 @@ namespace MEDIA_FOUNDATION_NS {
     };
 
     struct MFVideoSample : MFSample {
+        std::unique_ptr<H::Dx::DxSharedTextureLocked> sharedTextureLock;
         Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
 
-        MFVideoSample(const MFSample& mfSample, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture)
+        MFVideoSample(
+            const MFSample& mfSample,
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+            std::unique_ptr<H::Dx::DxSharedTextureLocked> sharedTextureLock = nullptr)
             : MFSample{ mfSample }
+            , sharedTextureLock{ std::move(sharedTextureLock) }
             , texture{ texture } {
         }
     };
