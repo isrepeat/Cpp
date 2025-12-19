@@ -140,7 +140,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="Common\Config.h" />
-    <ClInclude Include="Common\DeviceResources.h" />
     <ClInclude Include="Content\AudioWaveFormat.h" />
     <ClInclude Include="Content\AvReader.h" />
     <ClInclude Include="Content\AvReaderDxgiEffect.h" />
@@ -155,8 +154,6 @@
     </ClInclude>
     <ClInclude Include="Common\DirectXHelper.h" />
     <ClInclude Include="Common\StepTimer.h" />
-    <ClInclude Include="Content\Sample3DSceneRenderer.h" />
-    <ClInclude Include="Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Content\ShaderStructures.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -164,7 +161,6 @@
     <ClCompile Include="App.xaml.cpp">
       <DependentUpon>App.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Common\DeviceResources.cpp" />
     <ClCompile Include="Content\AvReader.cpp" />
     <ClCompile Include="Content\AvReaderDxgiEffect.cpp" />
     <ClCompile Include="Content\AvReaderDxgiManager.cpp" />
@@ -174,8 +170,6 @@
     <ClCompile Include="DirectXPage.xaml.cpp">
       <DependentUpon>DirectXPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Content\SampleFpsTextRenderer.cpp" />
-    <ClCompile Include="Content\Sample3DSceneRenderer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

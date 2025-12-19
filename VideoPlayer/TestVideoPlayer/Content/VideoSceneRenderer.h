@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#if ENGINE_TYPE == MEDIA_ENDIGNE_LOGIC
 #include <Helpers/MediaFoundation/SampleInfo.h>
 #include <Helpers/Dx/SwapChainPanel.h>
 #include <Helpers/Rational.h>
@@ -70,4 +69,3 @@ namespace TestVideoPlayer {
 		bool loadingComplete;
 	};
 }
-#endif
