@@ -72,8 +72,8 @@ std::unique_ptr<MF::MFVideoSample> AvReaderDxgiEffect::Process(std::unique_ptr<M
     sharedTexture.CopyFrom(mfSampleTexture);
 
     auto renderDevice = this->dxDeviceSafeObj->Lock();
-    auto renderDeviceCtx = renderDevice->LockContext();
-    auto d3dCtx = renderDeviceCtx->D3D();
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dCtx;
+    renderDevice->GetD3DDevice()->GetImmediateContext(d3dCtx.GetAddressOf());
 
     // Ensure we have a renderable copy on the render device without keyed mutex requirements.
     auto& dstTexture = this->renderTextures[poolIndex];
