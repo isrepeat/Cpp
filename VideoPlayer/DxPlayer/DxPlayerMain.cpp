@@ -73,6 +73,7 @@ void DxPlayerMain::StartRenderLoop() {
 					m_openFileAction = nullptr;
 
 					auto avReader = std::make_unique<AvReader>(reinterpret_cast<IStream*>(stream), this->swapChainPanelNative->GetDxDevice());
+					avReader->SetLoopPlayback(true);
 					m_sceneRenderer->Init(std::move(avReader));
 
 					auto workItemHandler = ref new WorkItemHandler([this](IAsyncAction^ action) {
