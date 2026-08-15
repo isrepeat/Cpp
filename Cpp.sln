@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35312.102
+# Visual Studio Version 18
+VisualStudioVersion = 18.9.12105.275 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!Solution", "!Solution", "{4EF46011-9825-429E-BE7E-069EA094EDFC}"
 	ProjectSection(SolutionItems) = preProject
@@ -142,8 +142,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.UWP", "UtilityHelpe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.WinRt", "UtilityHelpersLib\Helpers\Helpers.WinRt\Helpers.WinRt.vcxproj", "{AD8F9708-44EA-4CEC-B78D-C376EB02C2B8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelpersWinApi.CX", "UtilityHelpersLib\Helpers\HelpersWinApi.CX\HelpersWinApi.CX.vcxproj", "{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComAPI.Shared", "UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems", "{9AE2E2F4-5B16-4D19-9D1F-799A9E18CA69}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Helpers.Includes", "UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems", "{301BF8C8-F7CA-429F-8B12-DED615A64508}"
@@ -201,6 +199,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestLibrary.WinRt.WinUI3", "WinUI3\TestLibrary.WinRt.WinUI3\TestLibrary.WinRt.WinUI3.vcxproj", "{6D62EBFC-519C-4F47-85B1-45BFB63B2C2C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console", "Console\Console.vcxproj", "{27C2C410-8770-4D35-941C-6EA738388F43}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D2F14F8E-303B-4AE6-A98B-B789CD19981D} = {D2F14F8E-303B-4AE6-A98B-B789CD19981D}
+		{298AB331-24AA-4F41-916E-2206023F8085} = {298AB331-24AA-4F41-916E-2206023F8085}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NeuralNetwork", "NeuralNetwork", "{9C415253-3A4F-490E-927A-E9197D1A650E}"
 EndProject
@@ -588,16 +590,6 @@ Global
 		{AD8F9708-44EA-4CEC-B78D-C376EB02C2B8}.Release|x64.Build.0 = Release|x64
 		{AD8F9708-44EA-4CEC-B78D-C376EB02C2B8}.Release|x86.ActiveCfg = Release|Win32
 		{AD8F9708-44EA-4CEC-B78D-C376EB02C2B8}.Release|x86.Build.0 = Release|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Debug|x64.ActiveCfg = Debug|x64
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Debug|x64.Build.0 = Debug|x64
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Debug|x86.ActiveCfg = Debug|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Debug|x86.Build.0 = Debug|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Release|Any CPU.ActiveCfg = Release|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Release|x64.ActiveCfg = Release|x64
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Release|x64.Build.0 = Release|x64
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Release|x86.ActiveCfg = Release|Win32
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD}.Release|x86.Build.0 = Release|Win32
 		{1AAAE5AF-7872-4E58-933A-93F3DEB54FCF}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{1AAAE5AF-7872-4E58-933A-93F3DEB54FCF}.Debug|Any CPU.Build.0 = Debug|x64
 		{1AAAE5AF-7872-4E58-933A-93F3DEB54FCF}.Debug|x64.ActiveCfg = Debug|x64
@@ -876,7 +868,6 @@ Global
 		{298AB331-24AA-4F41-916E-2206023F8085} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{1F26DD5B-02C2-4192-AC91-06BED3D214F3} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{AD8F9708-44EA-4CEC-B78D-C376EB02C2B8} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
-		{6BEC93A0-E1A2-4037-A5DF-5CEEE0AAA5FD} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{9AE2E2F4-5B16-4D19-9D1F-799A9E18CA69} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{301BF8C8-F7CA-429F-8B12-DED615A64508} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
 		{A3451486-AB38-4360-B752-94680B491792} = {3EE95BCE-9008-402E-8AAA-17A4F04C0759}
@@ -915,7 +906,6 @@ Global
 		UtilityHelpersLib\Helpers\ComAPI.Shared\ComAPI.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\Helpers\Helpers.Shared\Helpers.Shared.vcxitems*{1f26dd5b-02c2-4192-ac91-06bed3d214f3}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
-		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{27c2c410-8770-4d35-941c-6ea738388f43}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\Boost.Includes\Boost.Includes.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\JsonParser\JsonParser.Shared\JsonParser.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\MagicEnum\MagicEnum.Shared\MagicEnum.Shared.vcxitems*{298ab331-24aa-4f41-916e-2206023f8085}*SharedItemsImports = 4
@@ -933,7 +923,6 @@ Global
 		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{4dc532ad-a19b-4ec5-9923-990df8f4a9ab}*SharedItemsImports = 4
 		UtilityHelpersLib\HelpersCs\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{5dc1b831-8a22-4c59-9d3f-b081e2f6af36}*SharedItemsImports = 13
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{63bb29a8-e9c3-4070-9e45-900fa2f2da8a}*SharedItemsImports = 9
-		UtilityHelpersLib\Helpers\Helpers.Includes\Helpers.Includes.vcxitems*{6bec93a0-e1a2-4037-a5df-5ceee0aaa5fd}*SharedItemsImports = 4
 		UtilityHelpersLib\3rdParty\3rdParty_Packages_Includes\3rdParty.Includes\3rdParty.Includes.vcxitems*{6cef19eb-02db-4b9a-93d8-9e89e662f919}*SharedItemsImports = 4
 		UtilityHelpersLib\HelpersCs\HelpersCs.Attributes\HelpersCs.Attributes.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5
 		UtilityHelpersLib\HelpersCs\HelpersCs.Diagnostic\HelpersCs.Diagnostic.projitems*{74175162-7b5d-473f-9c88-b849b4768278}*SharedItemsImports = 5

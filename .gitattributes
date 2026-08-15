@@ -1,0 +1,23 @@
+# Git хранит текстовые файлы с LF и выдаёт их в рабочую копию с LF.
+# Это предотвращает смешивание LF и CRLF разными редакторами.
+* text=auto eol=lf
+
+# Командные файлы Windows используют CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Бинарные файлы не должны подвергаться преобразованию окончаний строк.
+*.dll binary
+*.exe binary
+*.gif binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.lib binary
+*.nupkg binary
+*.pdf binary
+*.png binary
+*.pri binary
+*.pdb binary
+*.winmd binary
+*.zip binary

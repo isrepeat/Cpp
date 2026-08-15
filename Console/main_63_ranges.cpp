@@ -1,4 +1,4 @@
-#include <Helpers/Std/Extensions/rangesEx.h>
+п»ї#include <Helpers/Std/Extensions/rangesEx.h>
 #include <Helpers/Logger.h>
 
 namespace Test {
@@ -20,7 +20,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 6, 2, 8 };
-			LOG_ASSERT(got == expected, "to<vector> должен материализовать порядок элементов");
+			LOG_ASSERT(got == expected, "to<vector> must preserve the transformed element order");
 		}
 
 
@@ -32,7 +32,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::set<int>>();
 
 			std::set<int> expected{ 2, 3, 5 };
-			LOG_ASSERT(got == expected, "to<set> должен убрать дубликаты и отсортировать по правилам set");
+			LOG_ASSERT(got == expected, "to<set> must remove duplicates and preserve set ordering");
 		}
 
 
@@ -52,7 +52,7 @@ namespace Test {
 				{ "three", 3 },
 				{ "two", 2 }
 			};
-			LOG_ASSERT(got == expected, "to<map> должен корректно копировать пары <K,V>");
+			LOG_ASSERT(got == expected, "to<map> must preserve key-value pairs");
 		}
 	} // namespace ranges_to
 
@@ -73,7 +73,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2, 3 };
-			LOG_ASSERT(got == expected, "drop_last(2) на [1..5] должен дать [1..3]");
+			LOG_ASSERT(got == expected, "drop_last(2) on [1..5] must produce [1..3]");
 		}
 
 
@@ -89,7 +89,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2, 3 };
-			LOG_ASSERT(got == expected, "drop_last(0) должен вернуть все элементы без изменений");
+			LOG_ASSERT(got == expected, "drop_last(0) must keep every element");
 		}
 
 
@@ -107,7 +107,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{/* empty */ };
-			LOG_ASSERT(got == expected, "drop_last(N>Nsize) должен вернуть пустой диапазон");
+			LOG_ASSERT(got == expected, "drop_last(N > size) must produce an empty range");
 		}
 
 
@@ -125,7 +125,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2, 3 };
-			LOG_ASSERT(got == expected, "drop_last на forward_list должен работать корректно");
+			LOG_ASSERT(got == expected, "drop_last on forward_list must preserve element order");
 		}
 	} // namespace ranges_drop_last
 
@@ -147,7 +147,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2, 3, 4, 5 };
-			LOG_ASSERT(got == expected, "concat(vec[1,2,3], vec[4,5]) должен дать [1..5]");
+			LOG_ASSERT(got == expected, "concat([1,2,3], [4,5]) must produce [1..5]");
 		}
 
 
@@ -164,7 +164,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 7, 8 };
-			LOG_ASSERT(got == expected, "concat(empty, [7,8]) должен дать [7,8]");
+			LOG_ASSERT(got == expected, "concat(empty, [7,8]) must produce [7,8]");
 		}
 
 
@@ -181,7 +181,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 9 };
-			LOG_ASSERT(got == expected, "concat([9], empty) должен вернуть [9]");
+			LOG_ASSERT(got == expected, "concat([9], empty) must produce [9]");
 		}
 
 
@@ -197,7 +197,7 @@ namespace Test {
 			auto ed = std::ranges::end(rng);
 
 			if (!(it == ed)) {
-				LOG_ERROR_D("concat(empty, empty) должен быть пустым");
+				LOG_ERROR_D("concat(empty, empty) must be empty");
 				assert(false);
 			}
 		}
@@ -228,7 +228,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 2, 4, 50, 60, 70 };
-			LOG_ASSERT(got == expected, "concat должен сохранять порядок: [2,4] + [50,60,70]");
+			LOG_ASSERT(got == expected, "concat must preserve order: [2,4] + [50,60,70]");
 		}
 	} // namespace ranges_concat
 
@@ -246,7 +246,7 @@ namespace Test {
 
 
 		void Test_FlattenTree_Empty() {
-			std::vector<std::shared_ptr<Node>> roots; // пусто
+			std::vector<std::shared_ptr<Node>> roots; // No root nodes.
 
 			auto rng =
 				roots
@@ -259,7 +259,7 @@ namespace Test {
 				rng
 				| STD_EXT_NS::ranges::views::to<std::vector<std::shared_ptr<Node>>>();
 
-			LOG_ASSERT(got.empty(), "flatten_tree от пустого списка корней должен быть пустым");
+			LOG_ASSERT(got.empty(), "flatten_tree over an empty root range must be empty");
 		}
 
 
@@ -281,7 +281,7 @@ namespace Test {
 			LOG_ASSERT(
 				got.size() == 1 &&
 				got[0]->value == 42,
-				"flatten_tree от одного узла должен вернуть его самого");
+				"flatten_tree over one root must return that root");
 		}
 
 
@@ -309,7 +309,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2, 3 };
-			LOG_ASSERT(got == expected, "flatten_tree должен обойти линейную цепочку по порядку");
+			LOG_ASSERT(got == expected, "flatten_tree must traverse a linear chain from root to leaf");
 		}
 
 
@@ -333,9 +333,9 @@ namespace Test {
 					})
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
-			// порядок DFS: root, затем left, затем right
+			// Pre-order DFS: root, then left, then right.
 			std::vector<int> expected{ 10, 20, 30 };
-			LOG_ASSERT(got == expected, "flatten_tree должен обойти root-left-right в DFS-порядке");
+			LOG_ASSERT(got == expected, "flatten_tree must produce root-left-right pre-order DFS");
 		}
 
 
@@ -358,7 +358,7 @@ namespace Test {
 				| STD_EXT_NS::ranges::views::to<std::vector<int>>();
 
 			std::vector<int> expected{ 1, 2 };
-			LOG_ASSERT(got == expected, "flatten_tree должен обходить все корни по порядку");
+			LOG_ASSERT(got == expected, "flatten_tree must preserve the order of multiple roots");
 		}
 	} // namespace ranges_flatten_tree
 }
